@@ -56,7 +56,7 @@ AC_DEFUN([AC_NEW_SUBDIR],
 # ------------------] LIBRARIES [
 
 
-dnl HP-UX provides a library calles libhplx includes linux apis.
+dnl HP-UX provides a library called libhplx which provides linux apis.
 AC_ARG_VAR(HPLX_LIBRARY_PATH, [Path to the hplx library directory (only for hp-ux systems).])
 AC_ARG_VAR(HPLX_INCLUDE_PATH, [Path to the hplx include directory (only for hp-ux systems).])
 AC_CHECK_LIB([hplx], [hstrerror],
@@ -77,6 +77,12 @@ dnl Linux distributes dlopen() in libdl.
 AC_CHECK_LIB([dl], [dlopen])
 dnl Tru64 distributes vasprintf() in -liberty
 AC_CHECK_LIB([iberty], [vasprintf])
+AC_CHECK_LIB([m],[cos],,
+  AC_MSG_ERROR([this library is required]))
+AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
+  AC_MSG_ERROR([this library is required]))
+AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
+  AC_MSG_ERROR([this library is required]))
 
 # ------------------] GETOPT_LONG [
 
@@ -165,6 +171,15 @@ AC_CHECK_FUNCS(vsyslog)
 
 AC_PATH_PROG(PERL, perl, "no")
 AM_CONDITIONAL([COND_PERL], [test "$PERL" != no])
+
+# ------------------] SWIG [
+#
+
+AM_PATH_PYTHON(2.3)
+AX_PKG_SWIG(1.3.17, [], [ AC_MSG_ERROR([SWIG is required to build..]) ])
+AX_SWIG_MULTI_MODULE_SUPPORT
+AX_SWIG_ENABLE_CXX
+AX_SWIG_PYTHON
 
 # ------------------] AC_OUTPUT [
 #

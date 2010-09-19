@@ -76,7 +76,7 @@ wrong_usage(const char *msg)
 		(void)fprintf(stderr, "%s\n", msg);
 	}
 	(void)fprintf(stderr,
-		      "Try `updatedd --help' for more information.\n");
+		      "Try `bayesian-binning --help' for more information.\n");
 
 	exit(EXIT_FAILURE);
 
