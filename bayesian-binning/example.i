@@ -32,6 +32,20 @@
     }
 }
 
+%typemap(out) Vector * {
+    PyObject* list = PyList_New($1->size);
+    int i;
+    for(i = 0; i < $1->size; i++) {
+       PyList_SetItem(list, i, PyFloat_FromDouble($1->vec[i]));
+    }
+    $result = list;
+}
+
+%typemap(freearg) Vector * {
+    free(((Vector *)$1)->vec);
+    free((Vector *)$1);
+}
+
 %typemap(in) Matrix * {
     if (!PyList_Check($input)) {
         PyErr_SetString(PyExc_TypeError, "Not a matrix.");
@@ -78,9 +92,17 @@
     }
 }
 
-%typemap(freearg) Vector * {
-    free(((Vector *)$1)->vec);
-    free((Vector *)$1);
+%typemap(out) Matrix * {
+    PyObject* mat = PyList_New($1->rows);
+    int i, j;
+    for(i = 0; i < $1->rows; i++) {
+       PyObject* item = PyList_New($1->columns);
+       PyList_SetItem(mat, i, item);
+       for(j = 0; j < $1->columns; j++) {
+          PyList_SetItem(item, j, PyFloat_FromDouble($1->mat[i][j]));
+       }
+    }
+    $result = mat;
 }
 
 %typemap(freearg) Matrix * {

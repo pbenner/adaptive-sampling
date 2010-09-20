@@ -1,4 +1,8 @@
 
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_odeiv.h>
+
 struct vector {
         int size;
         double *vec;
@@ -14,5 +18,5 @@ typedef struct vector Vector;
 typedef struct matrix Matrix;
 
 extern int cube( int n );
-extern int test( Matrix *m);
+extern Matrix * test( Matrix *v);
 extern double product(Vector *l);

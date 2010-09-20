@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv.h>
-
 #include "example.h"
 
 int cube(int n)
@@ -12,20 +8,23 @@ int cube(int n)
         return n * n * n;
 }
 
-int test(Matrix *matrix)
+gsl_matrix * toGslMatrix(Matrix *matrix)
 {
-        int i, j;
         gsl_matrix *m = gsl_matrix_alloc(matrix->rows, matrix->columns);
+        int i, j;
 
         for(i = 0; i < matrix->rows; i++) {
                 for(j = 0; j < matrix->columns; j++) {
                         gsl_matrix_set(m, i, j, matrix->mat[i][j]);
                 }
         }
-        gsl_matrix_fprintf(stdout, m, "%.g");
-
-        gsl_matrix_free(m);
+        return m;
 }
+
+Matrix * test(Matrix *v)
+{
+        return v;
+} 
 
 double product(Vector *l) {
         int i;
