@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "interface.h"
+#include "bayesian-binning.h"
 
 Vector * allocVector(int size) {
         Vector *v  = (Vector *)malloc(sizeof(Vector));
@@ -65,7 +66,10 @@ Matrix * fromGslMatrix(const gsl_matrix * matrix)
 
 Matrix * binning(Vector *v)
 {
-        Matrix *m;
+        gsl_matrix *tmp = bin(v);
+        Matrix *m = fromGslMatrix(tmp);
+
+        gsl_matrix_free(tmp);
 
         return m;
 }

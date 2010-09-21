@@ -6,7 +6,7 @@
 INCLUDES = -I$(top_srcdir)/include
 
 ## bayesian-binning library
-lib_LTLIBRARIES  = libbayesian-binning.la
+noinst_LTLIBRARIES  = libbayesian-binning.la
 libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h
 
 ## main program
