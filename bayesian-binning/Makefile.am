@@ -12,20 +12,20 @@ bayesian_binning_CFLAGS = -DLIBPATH="\"$(pkglibdir)\""
 INCLUDES = -I$(top_srcdir)/include
 
 ## swig
-BUILT_SOURCES    = example_wrap.c
-EXAMPLE_SOURCES  = example.i example.c
+BUILT_SOURCES    = interface_wrap.c
+SWIG_SOURCES  = interface.i interface.c
 
-pkgpython_PYTHON      = example.py
-pkgpyexec_LTLIBRARIES = _example.la
-_example_la_SOURCES   = example_wrap.c $(EXAMPLE_SOURCES)
-_example_la_CFLAGS    = $(AX_SWIG_PYTHON_CPPFLAGS)
-_example_la_LDFLAGS   = -module
+pkgpython_PYTHON      = interface.py
+pkgpyexec_LTLIBRARIES = _interface.la
+_interface_la_SOURCES   = interface_wrap.c $(SWIG_SOURCES)
+_interface_la_CFLAGS    = $(AX_SWIG_PYTHON_CPPFLAGS)
+_interface_la_LDFLAGS   = -module
 
-example_wrap.c: $(EXAMPLE_SOURCES)
+interface_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) $(AX_SWIG_PYTHON_OPT) -o $@ $<
 
 clean-local:
-	$(RM) example_wrap.c example.py example.pyc
+	$(RM) interface_wrap.c interface.py interface.pyc
 
 ## manuals
 man1_MANS = bayesian-binning.1

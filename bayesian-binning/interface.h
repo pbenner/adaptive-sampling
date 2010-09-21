@@ -17,6 +17,10 @@ struct matrix {
 typedef struct vector Vector;
 typedef struct matrix Matrix;
 
-extern int cube( int n );
-extern Matrix * test( Matrix *v);
-extern double product(Vector *l);
+extern void freeVector(Vector *v);
+extern void freeMatrix(Matrix *m);
+extern Vector * allocVector(int size);
+extern Matrix * allocMatrix(int rows, int columns);
+
+extern Matrix * binning(Vector *v);
+extern Matrix * test(Matrix *v);
