@@ -3,23 +3,28 @@
 ## common CFLAGS
 ##AM_CFLAGS = -Wall -Wwrite-strings -Wstrict-prototypes -Wno-trigraphs -fPIC
 
+INCLUDES = -I$(top_srcdir)/include
+
+## bayesian-binning library
+lib_LTLIBRARIES  = libbayesian-binning.la
+libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h
+
 ## main program
 bin_PROGRAMS = bayesian-binning
-bayesian_binning_SOURCES = bayesian-binning.c bayesian-binning.h
-bayesian_binning_LDADD = $(LIBOBJS) $(top_builddir)/libexception/libexception.la
-bayesian_binning_CFLAGS = -DLIBPATH="\"$(pkglibdir)\""
-
-INCLUDES = -I$(top_srcdir)/include
+bayesian_binning_SOURCES = main.c
+bayesian_binning_LDADD   = $(LIBOBJS) $(top_builddir)/libexception/libexception.la libbayesian-binning.la
+bayesian_binning_CFLAGS  = -DLIBPATH="\"$(pkglibdir)\""
 
 ## swig
 BUILT_SOURCES    = interface_wrap.c
-SWIG_SOURCES  = interface.i interface.c
+SWIG_SOURCES     = interface.i interface.c
 
-pkgpython_PYTHON      = interface.py
-pkgpyexec_LTLIBRARIES = _interface.la
+pkgpython_PYTHON        = interface.py
+pkgpyexec_LTLIBRARIES   = _interface.la
 _interface_la_SOURCES   = interface_wrap.c $(SWIG_SOURCES)
 _interface_la_CFLAGS    = $(AX_SWIG_PYTHON_CPPFLAGS)
 _interface_la_LDFLAGS   = -module
+_interface_la_LIBADD     = libbayesian-binning.la
 
 interface_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) $(AX_SWIG_PYTHON_OPT) -o $@ $<
