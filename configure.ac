@@ -84,6 +84,9 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
   AC_MSG_ERROR([this library is required]))
 
+AC_CHECK_LIB([gmp], [__gmpz_init],,
+  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/])])
+
 # ------------------] GETOPT_LONG [
 
 AC_DEFUN([FUNC_GETOPT_LONG],

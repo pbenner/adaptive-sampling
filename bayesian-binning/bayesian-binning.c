@@ -1,4 +1,24 @@
+/* Copyright (C) 2010 Philipp Benner
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
+#include <config.h>
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include <gsl/gsl_errno.h>
@@ -10,6 +30,8 @@
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_exp.h>
 
+#include <gmp.h>
+
 typedef struct {
         int T; // number of timesteps
         unsigned int trials;
@@ -19,6 +41,31 @@ typedef struct {
         double sigma;
 } binProblem;
 
+static
+mpf_t * allocMPFArray(size_t size)
+{
+        size_t i;
+        mpf_t *a = (mpf_t *)malloc((size+1)*sizeof(mpf_t));
+
+        for (i = 0; i<size; i++) {
+                mpf_init(a[i]);
+        }
+
+        return a;
+}
+
+static
+void freeMPFArray(mpf_t *a, size_t size)
+{
+        size_t i;
+
+        for (i = 0; i<size; i++) {
+                mpf_clear(a[i]);
+        }
+        free(a);
+}
+
+static
 unsigned int spikes(binProblem *bp, size_t ks, size_t ke)
 {
         unsigned int spikes = 0, i;
@@ -29,6 +76,7 @@ unsigned int spikes(binProblem *bp, size_t ks, size_t ke)
         return spikes;
 }
 
+static
 unsigned int gaps(binProblem *bp, size_t ks, size_t ke)
 {
         unsigned int gaps = 0, i;
@@ -39,87 +87,7 @@ unsigned int gaps(binProblem *bp, size_t ks, size_t ke)
         return gaps;
 }
 
-double prior(binProblem *bp, unsigned int M)
-{
-//        double tmp = gsl_sf_gamma(bp->sigma + bp->gamma)/
-//                (gsl_sf_gamma(bp->sigma)*gsl_sf_gamma(bp->gamma));
-        double tmp = gsl_ran_beta_pdf(1, bp->sigma, bp->gamma);
-
-        printf("gsl_ran_beta_pdf: %.20f\n", gsl_ran_beta_pdf(1,1,1));
-        printf("gsl_ran_beta_pdf: %.20f\n", tmp);
-
-        return (M+1)*tmp/gsl_sf_choose(bp->T-1,M);
-}
-
-double getIEC(binProblem *bp, size_t ks, size_t ke)
-{
-        unsigned int s = spikes(bp, ks, ke);
-        unsigned int g = gaps(bp, ks, ke);
-        double r;
-
-//        r = (gsl_sf_gamma(s+bp->sigma)*gsl_sf_gamma(g+bp->gamma))/
-//                gsl_sf_gamma(s+bp->sigma+g+bp->gamma);
-        r = gsl_ran_beta_pdf(1, s+bp->sigma, g+bp->gamma);
-
-        return r;
-}
-
-void reset(binProblem *bp, size_t k[], size_t m, unsigned int M)
-{
-        size_t i;
-
-             if (m == 0) k[0] = 0;
-        else if (m <  M) k[m] = k[m-1]+1;
-
-        for (i = m+1; i<M-1; i++) {
-                k[i] = k[i-1]+1;
-        }
-        k[M-1] = bp->T-1;
-}
-
-int increment(binProblem *bp, size_t k[], unsigned int M)
-{
-        size_t i, m;
-
-        for (i = 1; i<=M; i++) {
-                m=M-i;
-                if (k[m] < k[m+1]-1) {
-                        k[m] += 1;
-                        reset(bp, k, m+1, M);
-                        return 1;
-                }
-        }
-        return 0;
-}
-
-void printk(size_t k[], unsigned int M)
-{
-        int m;
-
-        for (m = 0; m<M; m++) {
-                printf("%ld ", k[m]);
-        }
-        printf("\n");
-}
-
-double evidence(binProblem *bp, unsigned int M)
-{
-        size_t k[M], m;
-        double tmp1 = 0, tmp2;
-
-        reset(bp, k, 0, M);
-
-        do {
-                tmp2 = 1;
-                for (m = 0; m < M-1; m++) {
-                        tmp2 *= getIEC(bp, k[m]+1, k[m+1])*getIEC(bp, 0, k[0]);
-                }
-                tmp1 += tmp2;
-        } while(increment(bp, k, M));
-
-        return prior(bp, M)*tmp1;
-}
-
+static
 unsigned int getCount(binProblem *bp, size_t ks, size_t ke)
 {
         unsigned int spikes = 0, i;
@@ -130,58 +98,85 @@ unsigned int getCount(binProblem *bp, size_t ks, size_t ke)
         return spikes;
 }
 
-void evidences(binProblem *bp, double *ev)
+static
+void evidences(binProblem *bp, mpf_t *ev)
 {
         unsigned int k, kk, n, m, lb;
         unsigned int M = bp->T-1;
         unsigned int N = getCount(bp, -1, bp->T-1);
-        double a[bp->T];
+        mpf_t *a = allocMPFArray(bp->T);
+        mpz_t tmp1, tmp2;
+        mpf_t tmp3, tmp4;
+
+        mpz_init(tmp1);
+        mpz_init(tmp2);
+        mpf_init(tmp3);
+        mpf_init(tmp4);
 
         for (k = 0; k <= bp->T-1; k++) {
                 n = getCount(bp, -1, k);
-//                a[k] = gsl_sf_fact(n)/gsl_sf_pow_int(k+1, n);
-                a[k] = gsl_sf_lnfact(n) - n*gsl_sf_log(k+1);
-//                a[k] = gsl_sf_exp(gsl_sf_lnfact(n) - n*gsl_sf_log(k+1));
-//                printf("a[%d]=%f\n", k, a[k]);
+                mpz_fac_ui(tmp1, n);
+                mpf_set_ui(tmp3, k+1);
+                mpf_pow_ui(tmp4, tmp3, n);
+                mpf_set_z (tmp3, tmp1);
+                mpf_div(a[k], tmp3, tmp4);
         }
-//        ev[0] = a[M]/gsl_sf_fact(N);
-        ev[0] = a[M] - gsl_sf_lnfact(N);
-//        ev[0] = gsl_sf_log(a[M]) - gsl_sf_lnfact(N);
+        mpz_fac_ui(tmp1, N);
+        mpf_set_z (tmp3, tmp1);
+        mpf_div(ev[0], a[M], tmp3);
 
         for (m = 1; m <= M; m++) {
                 if (m==M) { lb = bp->T-1; }
                 else      { lb = m; }
 
                 for (k = bp->T-1; k >= lb; k--) {
-                        a[k] = 0;
+                        mpf_set_ui(a[k], 0);
                         for (kk = m-1; kk <= k-1; kk++) {
-                                double tmp;
                                 n = getCount(bp, kk, k);
-//                                a[k] += a[kk]*
-//                                        gsl_sf_fact(n)/gsl_sf_pow_int(k-kk, n);
-//                                gsl_sf_log(k-kk);
-                                tmp = a[kk] + gsl_sf_lnfact(n) - n*gsl_sf_log(k-kk);
-//                                tmp = gsl_sf_log(a[kk]) + gsl_sf_lnfact(n) - n*gsl_sf_log(k-kk);
-                                a[k] = a[k] + gsl_sf_log(1 + gsl_sf_exp(tmp-a[k]));
-//                                a[k] = a[k] + gsl_sf_exp(tmp);
-//                                printf("a[%d]=%f\n", k, a[k]);
+                                mpz_fac_ui(tmp1, n);
+                                mpf_set_ui(tmp3, k-kk);
+                                mpf_pow_ui(tmp4, tmp3, n);
+                                mpf_set_z (tmp3, tmp1);
+                                mpf_div(tmp4, tmp3, tmp4);
+                                mpf_mul(tmp3, a[kk],tmp4);
+                                mpf_add(a[k], a[k], tmp3);
                         }
                 }
-//                ev[m] = a[bp->T-1]*
-//                        gsl_sf_fact(bp->T-1-m)*gsl_sf_fact(m)*gsl_sf_fact(m)/
-//                        (gsl_sf_fact(bp->T-1)*gsl_sf_fact(N+m));
-                ev[m] = a[bp->T-1] +
-                        gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m) -
-                        gsl_sf_lnfact(bp->T-1)   -   gsl_sf_lnfact(N+m);
+                mpz_fac_ui(tmp1, bp->T-1-m);
+                mpz_fac_ui(tmp2, m);
+                mpz_mul(tmp2, tmp2, tmp2);
+                mpz_mul(tmp2, tmp1, tmp2);
+                mpf_set_z (tmp3, tmp2);
+                mpz_fac_ui(tmp1, bp->T-1);
+                mpz_fac_ui(tmp2, N+m);
+                mpz_mul(tmp2, tmp1, tmp2);
+                mpf_set_z (tmp4, tmp2);
+                mpf_div(tmp4, tmp3, tmp4);
+                mpf_mul(ev[m], a[bp->T-1], tmp4);
         }
+
+        mpz_clear(tmp1);
+        mpz_clear(tmp2);
+        mpf_clear(tmp3);
+        mpf_clear(tmp4);
+        freeMPFArray(a, bp->T);
 }
 
-void pdensity(binProblem *bp, double *pdf)
+static
+void pdensity(binProblem *bp, double *pdf, double *var)
 {
         unsigned int i, j;
-        double *ev1 = (double *)malloc((bp->T+1)*sizeof(double));
-        double *ev2 = (double *)malloc((bp->T+1)*sizeof(double));
-        double sum1, sum2;
+        mpf_t *ev1 = allocMPFArray(bp->T+1);
+        mpf_t *ev2 = allocMPFArray(bp->T+1);
+        mpf_t *ev3 = allocMPFArray(bp->T+1);
+        mpf_t sum1, sum2, sum3;
+        mpf_t tmp1, tmp2;
+
+        mpf_init(sum1);
+        mpf_init(sum2);
+        mpf_init(sum3);
+        mpf_init(tmp1);
+        mpf_init(tmp2);
 
         for (i=0; i<bp->T; i++) {
                 evidences(bp, ev1);
@@ -191,22 +186,42 @@ void pdensity(binProblem *bp, double *pdf)
                 evidences(bp, ev2);
                 gsl_vector_set(
                         bp->counts, i,
-                        gsl_vector_get(bp->counts, i)-1);
+                        gsl_vector_get(bp->counts, i)+1);
+                evidences(bp, ev3);
+                gsl_vector_set(
+                        bp->counts, i,
+                        gsl_vector_get(bp->counts, i)-2);
 
-                sum1 = 0; sum2 = 0;
+                mpf_set_ui(sum1, 0);
+                mpf_set_ui(sum2, 0);
+                mpf_set_ui(sum3, 0);
                 for (j=0; j<bp->T; j++) {
-                        sum1 = ev1[j];
+                        mpf_add(sum1, sum1, ev1[j]);
+                        mpf_add(sum2, sum2, ev2[j]);
+                        mpf_add(sum3, sum3, ev3[j]);
                 }
+                mpf_div(tmp1, sum2, sum1);
+                mpf_div(tmp2, sum3, sum1);
+                pdf[i] = mpf_get_d(tmp1);
+                var[i] = mpf_get_d(tmp2);
         }
 
-        free(ev1);
-        free(ev2);
+        mpf_clear(sum1);
+        mpf_clear(sum2);
+        mpf_clear(sum3);
+        mpf_clear(tmp1);
+        mpf_clear(tmp2);
+        freeMPFArray(ev1, bp->T+1);
+        freeMPFArray(ev2, bp->T+1);
+        freeMPFArray(ev3, bp->T+1);
 }
 
 gsl_matrix * bin(gsl_vector *counts, unsigned int trials)
 {
+        gsl_matrix *m = gsl_matrix_alloc(2,counts->size);
+        double pdf[counts->size];
+        double var[counts->size];
         unsigned int i;
-        gsl_matrix *m = gsl_matrix_alloc(2,2);
         binProblem bp;
 
         bp.trials = trials;
@@ -215,13 +230,11 @@ gsl_matrix * bin(gsl_vector *counts, unsigned int trials)
         bp.gamma  = 32;
         bp.sigma  = 1;
 
-        double *ev = (double *)malloc((bp.T+1)*sizeof(double));
-        evidences(&bp, ev);
+        pdensity(&bp, pdf, var);
         for (i = 0; i<=bp.T-1; i++) {
-                printf("%.15f ", ev[i]);
+                gsl_matrix_set(m, 0, i, pdf[i]);
+                gsl_matrix_set(m, 1, i, var[i]);
         }
-        printf("\n");
-        free(ev);
 
         return m;
 }
