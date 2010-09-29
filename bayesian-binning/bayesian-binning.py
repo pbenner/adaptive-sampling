@@ -44,7 +44,19 @@ def usage():
 # plotting
 # ------------------------------------------------------------------------------
 
-def plotbin(x, result):
+def plotspikes(ax, x, timings):
+    """Plot trials of spike trains."""
+    X = []
+    Y = []
+    for i in range(0, len(timings)):
+        for val in timings[i]:
+            X.append(val)
+            Y.append(i)
+    ax.set_xlim(x[0],x[-1])
+    ax.set_ylabel('Trials')
+    ax.plot(X, Y, 'k|')
+
+def plotbin(ax, x, result):
     """Plot the binning result."""
     font = {'family'     : 'serif',
             'color'      : 'k',
@@ -54,12 +66,12 @@ def plotbin(x, result):
     N = len(result[0])
     if x==None:
         x = np.arange(0, N, 1)
-    plot(x, [a + b for a, b in zip(result[0], result[1])], 'k--')
-    plot(x, [a - b for a, b in zip(result[0], result[1])], 'k--')
-    plot(x, result[0], 'r')
-    xlabel('bin', font)
-    ylabel('P(x)', font)
-    show()
+    ax.set_xlim(x[0],x[-1])
+    ax.plot(x, [a + b for a, b in zip(result[0], result[1])], 'k--')
+    ax.plot(x, [a - b for a, b in zip(result[0], result[1])], 'k--')
+    ax.plot(x, result[0], 'r')
+    ax.set_xlabel('bin', font)
+    ax.set_ylabel('P(x)', font)
 
 # binning
 # ------------------------------------------------------------------------------
@@ -99,7 +111,10 @@ def parseConfig(file):
         prior       = list(np.repeat(1, N))
         #prior       = list(np.repeat(0, N))
         #prior[1]    = 1
-        plotbin(None, bin(counts, trials, prior))
+        fig = figure()
+        ax1 = fig.add_subplot(1,2,1)
+        plotbin(ax1, None, bin(counts, trials, prior))
+        show()
     if config.has_section('Trials'):
         binsize     = config.getint('Trials', 'binsize')
         timings_str = config.get   ('Trials', 'timings')
@@ -112,7 +127,12 @@ def parseConfig(file):
         trials      = len(timings)
         N           = len(counts)
         prior       = list(np.repeat(1, N))
-        plotbin(x, bin(counts, trials, prior))
+        fig = figure()
+        ax1 = fig.add_subplot(2,1,1)
+        ax2 = fig.add_subplot(2,1,2)
+        plotspikes(ax1, x, timings)
+        plotbin(ax2, x, bin(counts, trials, prior))
+        show()
 
 # main
 # ------------------------------------------------------------------------------
