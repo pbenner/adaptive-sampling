@@ -21,6 +21,7 @@ import os
 import interface
 import ConfigParser
 import numpy as np
+import math
 from matplotlib import *
 from matplotlib.pyplot import *
 
@@ -40,32 +41,10 @@ def usage():
     print "   -h, --help         - print help"
     print "   -v, --verbose      - be verbose"
 
-# binning
-# ------------------------------------------------------------------------------
-
-def bin(file):
-    """Read config file and call the binning library."""
-    config = ConfigParser.RawConfigParser()
-    config.read(file)
-
-    trials     = config.getint('Data', 'trials')
-    counts_str = config.get   ('Data', 'counts')
-    counts     = []
-
-    for value in counts_str.split(' '):
-        counts.append(int(value))
-
-    N          = len(counts)
-    prior      = list(np.repeat(1, N))
-    #prior      = list(np.repeat(0, N))
-    #prior[1]   = 1
-    result     = interface.binning(counts, trials, prior)
-    return result
-
 # plotting
 # ------------------------------------------------------------------------------
 
-def plotbin(result):
+def plotbin(x, result):
     """Plot the binning result."""
     font = {'family'     : 'serif',
             'color'      : 'k',
@@ -73,13 +52,67 @@ def plotbin(result):
             'size'       : 12 }
 
     N = len(result[0])
-    x = np.arange(0, N, 1)
+    if x==None:
+        x = np.arange(0, N, 1)
     plot(x, [a + b for a, b in zip(result[0], result[1])], 'k--')
     plot(x, [a - b for a, b in zip(result[0], result[1])], 'k--')
     plot(x, result[0], 'r')
     xlabel('bin', font)
     ylabel('P(x)', font)
     show()
+
+# binning
+# ------------------------------------------------------------------------------
+
+def bin(counts, trials, prior):
+    """Call the binning library."""
+    return interface.binning(counts, trials, prior)
+
+# parse config file
+# ------------------------------------------------------------------------------
+
+def timingsToCounts(timings, binsize):
+    MIN    = min(map(min, timings))
+    MAX    = max(map(max, timings))
+    N      = int(math.ceil(float(MAX-MIN)/binsize))
+    counts = list(np.repeat(0, N+1))
+    x      = range(MIN, MAX+binsize, binsize)
+    for trial in timings:
+        for t in trial:
+            n = int(math.ceil(float(t-MIN)/binsize))
+            counts[n] += 1
+    return x, counts
+
+def parseConfig(file):
+    config = ConfigParser.RawConfigParser()
+    config.read(file)
+
+    if config.has_section('Counts'):
+        trials      = config.getint('Counts', 'trials')
+        counts_str  = config.get   ('Counts', 'counts')
+        counts      = []
+
+        for value in counts_str.split(' '):
+            counts.append(int(value))
+
+        N           = len(counts)
+        prior       = list(np.repeat(1, N))
+        #prior       = list(np.repeat(0, N))
+        #prior[1]    = 1
+        plotbin(None, bin(counts, trials, prior))
+    if config.has_section('Trials'):
+        binsize     = config.getint('Trials', 'binsize')
+        timings_str = config.get   ('Trials', 'timings')
+        timings     = []
+        for line in timings_str.split('\n'):
+            if line != '':
+                timings.append([int(a) for a in line.split(' ')])
+
+        x, counts   = timingsToCounts(timings, binsize)
+        trials      = len(timings)
+        N           = len(counts)
+        prior       = list(np.repeat(1, N))
+        plotbin(x, bin(counts, trials, prior))
 
 # main
 # ------------------------------------------------------------------------------
@@ -102,8 +135,7 @@ def main():
     if len(tail) != 1:
         usage()
         return 1
-    result = bin(tail[0])
-    plotbin(result)
+    parseConfig(tail[0])
     return 0
 
 if __name__ == "__main__":
