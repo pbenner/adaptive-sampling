@@ -89,14 +89,16 @@ Matrix * fromGslMatrix(const gsl_matrix * matrix)
         return m;
 }
 
-Matrix * binning(Vector *counts, unsigned int trials)
+Matrix * binning(Vector *counts, unsigned int trials, Vector *prior)
 {
         gsl_vector *tmp1 = toGslVector(counts);
-        gsl_matrix *tmp2 = bin(tmp1, trials);
-        Matrix *m = fromGslMatrix(tmp2);
+        gsl_vector *tmp2 = toGslVector(prior);
+        gsl_matrix *tmp3 = bin(tmp1, trials, tmp2);
+        Matrix *m = fromGslMatrix(tmp3);
 
         gsl_vector_free(tmp1);
-        gsl_matrix_free(tmp2);
+        gsl_vector_free(tmp2);
+        gsl_matrix_free(tmp3);
 
         return m;
 }

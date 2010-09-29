@@ -36,6 +36,7 @@ typedef struct {
         int T; // number of timesteps
         unsigned int trials;
         gsl_vector *counts;
+        gsl_vector *prior;
         // hyperparameters
         double gamma;
         double sigma;
@@ -196,9 +197,15 @@ void pdensity(binProblem *bp, double *pdf, double *var)
                 mpf_set_ui(sum2, 0);
                 mpf_set_ui(sum3, 0);
                 for (j=0; j<bp->T; j++) {
-                        mpf_add(sum1, sum1, ev1[j]);
-                        mpf_add(sum2, sum2, ev2[j]);
-                        mpf_add(sum3, sum3, ev3[j]);
+                        mpf_mul_ui(tmp1, ev1[j],
+                                   gsl_vector_get(bp->prior, j));
+                        mpf_add(sum1, sum1, tmp1);
+                        mpf_mul_ui(tmp1, ev2[j],
+                                   gsl_vector_get(bp->prior, j));
+                        mpf_add(sum2, sum2, tmp1);
+                        mpf_mul_ui(tmp1, ev3[j],
+                                   gsl_vector_get(bp->prior, j));
+                        mpf_add(sum3, sum3, tmp1);
                 }
                 mpf_div(tmp1, sum2, sum1);
                 mpf_div(tmp2, sum3, sum1);
@@ -216,7 +223,7 @@ void pdensity(binProblem *bp, double *pdf, double *var)
         freeMPFArray(ev3, bp->T+1);
 }
 
-gsl_matrix * bin(gsl_vector *counts, unsigned int trials)
+gsl_matrix * bin(gsl_vector *counts, unsigned int trials, gsl_vector *prior)
 {
         gsl_matrix *m = gsl_matrix_alloc(2,counts->size);
         double pdf[counts->size];
@@ -226,6 +233,7 @@ gsl_matrix * bin(gsl_vector *counts, unsigned int trials)
 
         bp.trials = trials;
         bp.counts = counts;
+        bp.prior  = prior;
         bp.T      = counts->size;
         bp.gamma  = 32;
         bp.sigma  = 1;
