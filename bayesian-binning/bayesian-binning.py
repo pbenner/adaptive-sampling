@@ -112,7 +112,7 @@ def parseConfig(file):
         #prior       = list(np.repeat(0, N))
         #prior[1]    = 1
         fig = figure()
-        ax1 = fig.add_subplot(1,2,1)
+        ax1 = fig.add_subplot(1,1,1)
         plotbin(ax1, None, bin(counts, trials, prior))
         show()
     if config.has_section('Trials'):
