@@ -24,6 +24,8 @@ import numpy as np
 import math
 from matplotlib import *
 from matplotlib.pyplot import *
+import matplotlib.patches as patches
+import matplotlib.path as path
 
 # global options
 # ------------------------------------------------------------------------------
@@ -43,6 +45,28 @@ def usage():
 
 # plotting
 # ------------------------------------------------------------------------------
+font = {'family'     : 'serif',
+        'color'      : 'k',
+        'weight'     : 'normal',
+        'size'       : 12 }
+
+def plotmodelpost(ax, modelpost):
+    N = len(modelpost)
+    x = np.arange(0, N+1, 1)
+    modelpost.insert(0, 0)
+    ax.step(x, modelpost, 'r--', where='mid', linewidth=1)
+    ax.grid(True)
+
+    left    = np.array(x[:-1]) + 0.5
+    right   = np.array(x[1:])  + 0.5
+    bottom  = np.zeros(len(left))
+    top     = bottom + modelpost[1:]
+    XY      = np.array([[left,left,right,right], [bottom,top,top,bottom]]).T
+    barpath = path.Path.make_compound_path_from_polys(XY)
+    patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
+    ax.add_patch(patch)
+    ax.set_xlabel('B',  font)
+    ax.set_ylabel('P(B|D)', font)
 
 def plotspikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -56,21 +80,17 @@ def plotspikes(ax, x, timings):
     ax.set_ylabel('Trials')
     ax.plot(X, Y, 'k|')
 
-def plotbin(ax, x, result):
+def plotbin(ax, x, exp, var):
     """Plot the binning result."""
-    font = {'family'     : 'serif',
-            'color'      : 'k',
-            'weight'     : 'normal',
-            'size'       : 12 }
 
-    N = len(result[0])
+    N = len(exp)
     if x==None:
         x = np.arange(0, N, 1)
     ax.set_xlim(x[0],x[-1])
-    ax.plot(x, [a + b for a, b in zip(result[0], result[1])], 'k--')
-    ax.plot(x, [a - b for a, b in zip(result[0], result[1])], 'k--')
-    ax.plot(x, result[0], 'r')
-    ax.set_xlabel('bin', font)
+    ax.plot(x, [a + b for a, b in zip(exp, var)], 'k--')
+    ax.plot(x, [a - b for a, b in zip(exp, var)], 'k--')
+    ax.plot(x, exp, 'r')
+    ax.set_xlabel('bin',  font)
     ax.set_ylabel('P(x)', font)
 
 # binning
@@ -111,9 +131,13 @@ def parseConfig(file):
         prior       = list(np.repeat(1, N))
         #prior       = list(np.repeat(0, N))
         #prior[1]    = 1
-        fig = figure()
-        ax1 = fig.add_subplot(1,1,1)
-        plotbin(ax1, None, bin(counts, trials, prior))
+        result      = bin(counts, trials, prior)
+        fig1 = figure()
+        ax1  = fig1.add_subplot(1,1,1)
+        plotbin(ax1, None, result[0], result[1])
+        fig2 = figure()
+        ax2  = fig2.add_subplot(1,1,1)
+        plotmodelpost(ax2, result[2])
         show()
     if config.has_section('Trials'):
         binsize     = config.getint('Trials', 'binsize')
@@ -127,11 +151,15 @@ def parseConfig(file):
         trials      = len(timings)
         N           = len(counts)
         prior       = list(np.repeat(1, N))
-        fig = figure()
-        ax1 = fig.add_subplot(2,1,1)
-        ax2 = fig.add_subplot(2,1,2)
+        result      = bin(counts, trials, prior)
+        fig1 = figure()
+        ax1  = fig1.add_subplot(2,1,1)
+        ax2  = fig1.add_subplot(2,1,2)
         plotspikes(ax1, x, timings)
-        plotbin(ax2, x, bin(counts, trials, prior))
+        plotbin(ax2, x, result[0], result[1])
+        fig2 = figure()
+        ax3  = fig2.add_subplot(1,1,1)
+        plotmodelpost(ax3, result[2])
         show()
 
 # main

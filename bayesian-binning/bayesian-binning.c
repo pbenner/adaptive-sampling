@@ -164,7 +164,7 @@ void evidences(binProblem *bp, mpf_t *ev)
 }
 
 static
-void pdensity(binProblem *bp, double *pdf, double *var)
+void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
 {
         unsigned int i, j;
         mpf_t *ev1 = allocMPFArray(bp->T+1);
@@ -179,27 +179,41 @@ void pdensity(binProblem *bp, double *pdf, double *var)
         mpf_init(tmp1);
         mpf_init(tmp2);
 
+        // compute evidence
+        evidences(bp, ev1);
+        // compute model posteriors
+        mpf_set_ui(sum1, 0);
+        for (j=0; j<bp->T; j++) {
+                mpf_mul_ui(tmp1, ev1[j],
+                           gsl_vector_get(bp->prior, j));
+                mpf_add(sum1, sum1, tmp1);
+        }
+        for (j=0; j<bp->T; j++) {
+                mpf_div(tmp1, ev1[j], sum1);
+                mpost[j] = mpf_get_d(tmp1);
+        }
+        // for each timestep compute expectation and variance
+        // from the model average
         for (i=0; i<bp->T; i++) {
-                evidences(bp, ev1);
+                fflush(stdout);
+                // expectation
                 gsl_vector_set(
                         bp->counts, i,
                         gsl_vector_get(bp->counts, i)+1);
                 evidences(bp, ev2);
+                // variance
                 gsl_vector_set(
                         bp->counts, i,
                         gsl_vector_get(bp->counts, i)+1);
                 evidences(bp, ev3);
+                // reset data
                 gsl_vector_set(
                         bp->counts, i,
                         gsl_vector_get(bp->counts, i)-2);
 
-                mpf_set_ui(sum1, 0);
                 mpf_set_ui(sum2, 0);
                 mpf_set_ui(sum3, 0);
                 for (j=0; j<bp->T; j++) {
-                        mpf_mul_ui(tmp1, ev1[j],
-                                   gsl_vector_get(bp->prior, j));
-                        mpf_add(sum1, sum1, tmp1);
                         mpf_mul_ui(tmp1, ev2[j],
                                    gsl_vector_get(bp->prior, j));
                         mpf_add(sum2, sum2, tmp1);
@@ -225,9 +239,10 @@ void pdensity(binProblem *bp, double *pdf, double *var)
 
 gsl_matrix * bin(gsl_vector *counts, unsigned int trials, gsl_vector *prior)
 {
-        gsl_matrix *m = gsl_matrix_alloc(2,counts->size);
+        gsl_matrix *m = gsl_matrix_alloc(3, counts->size);
         double pdf[counts->size];
         double var[counts->size];
+        double mpost[counts->size];
         unsigned int i;
         binProblem bp;
 
@@ -238,10 +253,11 @@ gsl_matrix * bin(gsl_vector *counts, unsigned int trials, gsl_vector *prior)
         bp.gamma  = 32;
         bp.sigma  = 1;
 
-        pdensity(&bp, pdf, var);
+        pdensity(&bp, pdf, var, mpost);
         for (i = 0; i<=bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
+                gsl_matrix_set(m, 2, i, mpost[i]);
         }
 
         return m;
