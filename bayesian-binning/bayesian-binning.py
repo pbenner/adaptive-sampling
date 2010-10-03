@@ -96,9 +96,12 @@ def plotbin(ax, x, exp, var):
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(counts, trials, prior):
+def bin(counts, trials, mprior):
     """Call the binning library."""
-    return interface.binning(counts, trials, prior)
+    counts_i = map(int, counts)
+    trials_i = int(trials)
+    mprior_i = map(float, mprior)
+    return interface.binning(counts_i, trials_i, mprior_i)
 
 # parse config file
 # ------------------------------------------------------------------------------
