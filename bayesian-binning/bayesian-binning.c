@@ -184,18 +184,19 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         // compute model posteriors
         mpf_set_ui(sum1, 0);
         for (j=0; j<bp->T; j++) {
-                mpf_mul_ui(tmp1, ev1[j],
-                           gsl_vector_get(bp->prior, j));
+                mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
+                mpf_mul(tmp1, ev1[j], tmp2);
                 mpf_add(sum1, sum1, tmp1);
         }
         for (j=0; j<bp->T; j++) {
-                mpf_div(tmp1, ev1[j], sum1);
+                mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
+                mpf_mul(tmp1, ev1[j], tmp2);
+                mpf_div(tmp1, tmp1, sum1);
                 mpost[j] = mpf_get_d(tmp1);
         }
         // for each timestep compute expectation and variance
         // from the model average
         for (i=0; i<bp->T; i++) {
-                fflush(stdout);
                 // expectation
                 gsl_vector_set(
                         bp->counts, i,
@@ -214,12 +215,13 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
                 mpf_set_ui(sum2, 0);
                 mpf_set_ui(sum3, 0);
                 for (j=0; j<bp->T; j++) {
-                        mpf_mul_ui(tmp1, ev2[j],
-                                   gsl_vector_get(bp->prior, j));
-                        mpf_add(sum2, sum2, tmp1);
-                        mpf_mul_ui(tmp1, ev3[j],
-                                   gsl_vector_get(bp->prior, j));
-                        mpf_add(sum3, sum3, tmp1);
+                        if (gsl_vector_get(bp->prior, j) > 0) {
+                                mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
+                                mpf_mul(tmp1, ev2[j], tmp2); // mult. with prior
+                                mpf_add(sum2, sum2, tmp1);
+                                mpf_mul(tmp1, ev3[j], tmp2); // mult. with prior
+                                mpf_add(sum3, sum3, tmp1);
+                        }
                 }
                 mpf_div(tmp1, sum2, sum1);
                 mpf_div(tmp2, sum3, sum1);

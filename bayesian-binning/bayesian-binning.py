@@ -115,6 +115,16 @@ def timingsToCounts(timings, binsize):
             counts[n] += 1
     return x, counts
 
+def readMPrior(models_str, N):
+    models = []
+    mprior = list(np.repeat(0, N))
+    for str in models_str.split(' '):
+        models.append(int(str))
+    num_models = len(models)
+    for model in models:
+        mprior[model-1] = 1.0/num_models
+    return mprior
+
 def parseConfig(file):
     config = ConfigParser.RawConfigParser()
     config.read(file)
@@ -129,8 +139,8 @@ def parseConfig(file):
 
         N           = len(counts)
         prior       = list(np.repeat(1, N))
-        #prior       = list(np.repeat(0, N))
-        #prior[1]    = 1
+        if config.has_option('Counts', 'mprior'):
+            prior   = readMPrior(config.get('Counts', 'mprior'), N)
         result      = bin(counts, trials, prior)
         fig1 = figure()
         ax1  = fig1.add_subplot(1,1,1)
@@ -151,6 +161,8 @@ def parseConfig(file):
         trials      = len(timings)
         N           = len(counts)
         prior       = list(np.repeat(1, N))
+        if config.has_option('Trials', 'mprior'):
+            prior   = readMPrior(config.get('Trials', 'mprior'), N)
         result      = bin(counts, trials, prior)
         fig1 = figure()
         ax1  = fig1.add_subplot(2,1,1)
