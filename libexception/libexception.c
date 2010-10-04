@@ -35,6 +35,8 @@
 #define PERROR		1
 #define HERROR		2
 
+int verbose = 0;
+
 static char *
 create_buffer(int err_type, const char *msg)
 {

@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <exception.h>
+
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
@@ -31,6 +33,8 @@
 #include <gsl/gsl_sf_exp.h>
 
 #include <gmp.h>
+
+#include "datatypes.h"
 
 typedef struct {
         int T; // number of timesteps
@@ -139,7 +143,6 @@ void evidences(binProblem *bp, mpf_t *ev)
         mpf_div(ev[0], a[M], tmp3);
 
         for (m = 1; m <= M; m++) {
-                (void)fprintf(stderr, "%.1f%%", (float)m/M);
                 if (m==M) { lb = bp->T-1; }
                 else      { lb = m; }
 
@@ -209,7 +212,9 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         }
         // for each timestep compute expectation and variance
         // from the model average
+        (void)printf("T: %d\n", bp->T);
         for (i=0; i<bp->T; i++) {
+                notice(NONE, "%.1f%%\n", (float)100*i/bp->T);
                 // expectation
                 gsl_vector_set(
                         bp->counts, i,
@@ -252,7 +257,11 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         freeMPFArray(ev3, bp->T+1);
 }
 
-gsl_matrix * bin(gsl_vector *counts, unsigned int trials, gsl_vector *prior)
+gsl_matrix * bin(
+        gsl_vector *counts,
+        unsigned int trials,
+        gsl_vector *prior,
+        Options *options)
 {
         gsl_matrix *m = gsl_matrix_alloc(3, counts->size);
         double pdf[counts->size];
@@ -260,6 +269,7 @@ gsl_matrix * bin(gsl_vector *counts, unsigned int trials, gsl_vector *prior)
         double mpost[counts->size];
         unsigned int i;
         binProblem bp;
+        verbose = options->verbose;
 
         bp.trials = trials;
         bp.counts = counts;

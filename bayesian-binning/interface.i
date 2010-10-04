@@ -3,6 +3,21 @@
 #include "interface.h"
 %}
 
+%typemap(in) Options * {
+    $1 = (Options *)malloc(sizeof(Options));
+    PyObject *verbose = PyDict_GetItem($input, "verbose");
+    if (verbose == Py_True) {
+       $1->verbose = 1;
+    }
+    else {
+       $1->verbose = 0;
+    }
+}
+
+%typemap(freearg) Options * {
+    free($1);
+}
+
 %typemap(in) Vector * {
     if (!PyList_Check($input)) {
         PyErr_SetString(PyExc_TypeError, "Not a list.");

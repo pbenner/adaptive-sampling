@@ -101,7 +101,7 @@ def bin(counts, trials, mprior):
     counts_i = map(int, counts)
     trials_i = int(trials)
     mprior_i = map(float, mprior)
-    return interface.binning(counts_i, trials_i, mprior_i)
+    return interface.binning(counts_i, trials_i, mprior_i, options)
 
 # parse config file
 # ------------------------------------------------------------------------------
@@ -180,8 +180,10 @@ def parseConfig(file):
 # main
 # ------------------------------------------------------------------------------
 
+options = {'verbose' : False}
+
 def main():
-    global verbose
+    global options
     try:
         opts, tail = getopt.getopt(sys.argv[1:], "hv", ["help", "output="])
     except getopt.GetoptError:
@@ -191,7 +193,7 @@ def main():
     for o, a in opts:
         if o == "-v":
             print "verbose mode turned on"
-            verbose = True
+            options["verbose"] = True
         if o in ("-h", "--help"):
             usage()
             return 0

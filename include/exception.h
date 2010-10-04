@@ -20,6 +20,8 @@
 
 #include <stdarg.h>
 
+extern int verbose;
+
 extern void std_warn(int mode, const char *msg, ...)
 __attribute__ ((format(printf,2,3)));
 
@@ -90,11 +92,13 @@ static int use_syslog = 0;
 	}
 
 #  define notice(mode, fmt, args...)		\
-	if(use_syslog == 0) {			\
-		std_notice(mode, fmt, ## args);	\
-	} else {				\
-		log_notice(mode, fmt, ## args);	\
-	}
+        if(verbose == 1) {                      \
+                if(use_syslog == 0) {           \
+                        std_notice(mode, fmt, ## args);	\
+                } else {				\
+                        log_notice(mode, fmt, ## args);	\
+                }                                       \
+        }
 
 #else
 
