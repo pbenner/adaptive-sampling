@@ -46,7 +46,7 @@ static
 mpf_t * allocMPFArray(size_t size)
 {
         size_t i;
-        mpf_t *a = (mpf_t *)malloc((size+1)*sizeof(mpf_t));
+         mpf_t *a = (mpf_t *)malloc((size+1)*sizeof(mpf_t));
 
         for (i = 0; i<size; i++) {
                 mpf_init(a[i]);
@@ -100,10 +100,22 @@ unsigned int getCount(binProblem *bp, size_t ks, size_t ke)
 }
 
 static
+int minM(binProblem *bp)
+{
+        int i;
+        for (i = bp->T-1; i>0; i--) {
+                if (gsl_vector_get(bp->prior, i) > 0) {
+                        return i;
+                }
+        }
+        return i;
+}
+
+static
 void evidences(binProblem *bp, mpf_t *ev)
 {
         unsigned int k, kk, n, m, lb;
-        unsigned int M = bp->T-1;
+        unsigned int M = minM(bp);
         unsigned int N = getCount(bp, -1, bp->T-1);
         mpf_t *a = allocMPFArray(bp->T);
         mpz_t tmp1, tmp2;
