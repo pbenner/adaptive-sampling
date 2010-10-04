@@ -104,7 +104,10 @@ static int use_syslog = 0;
 
 #  define err(mode, fmt, args...) std_err(mode, fmt, ## args);
 #  define warn(mode, fmt, args...) std_warn(mode, fmt, ## args);
-#  define notice(mode, fmt, args...) std_notice(mode, fmt, ## args);
+#  define notice(mode, fmt, args...)            \
+        if(verbose == 1) {                      \
+                std_notice(mode, fmt, ## args); \
+        }
 
 #endif
 

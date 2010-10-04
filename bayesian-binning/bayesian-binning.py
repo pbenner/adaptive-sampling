@@ -185,13 +185,13 @@ options = {'verbose' : False}
 def main():
     global options
     try:
-        opts, tail = getopt.getopt(sys.argv[1:], "hv", ["help", "output="])
+        opts, tail = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
     except getopt.GetoptError:
         usage()
         return 2
     output = None
     for o, a in opts:
-        if o == "-v":
+        if o in ("-v", "--verbose"):
             print "verbose mode turned on"
             options["verbose"] = True
         if o in ("-h", "--help"):

@@ -212,9 +212,9 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         }
         // for each timestep compute expectation and variance
         // from the model average
-        (void)printf("T: %d\n", bp->T);
+        notice(NONE, "T: %d", bp->T);
         for (i=0; i<bp->T; i++) {
-                notice(NONE, "%.1f%%\n", (float)100*i/bp->T);
+                notice(NONE, "%.1f%%", (float)100*i/bp->T);
                 // expectation
                 gsl_vector_set(
                         bp->counts, i,

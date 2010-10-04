@@ -5,7 +5,7 @@
 
 %typemap(in) Options * {
     $1 = (Options *)malloc(sizeof(Options));
-    PyObject *verbose = PyDict_GetItem($input, "verbose");
+    PyObject *verbose = PyDict_GetItemString($input, "verbose");
     if (verbose == Py_True) {
        $1->verbose = 1;
     }
