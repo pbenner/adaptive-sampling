@@ -30,6 +30,7 @@
 #include <version.h>
 #include <limits.h> /* PATH_MAX */
 
+#include "datatypes.h"
 #include "bayesian-binning.h"
 
 void

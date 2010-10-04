@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <exception.h>
+
 #include "interface.h"
 #include "bayesian-binning.h"
 
@@ -89,11 +91,11 @@ Matrix * fromGslMatrix(const gsl_matrix * matrix)
         return m;
 }
 
-Matrix * binning(Vector *counts, unsigned int trials, Vector *prior)
+Matrix * binning(Vector *counts, unsigned int trials, Vector *prior, Options *options)
 {
         gsl_vector *tmp1 = toGslVector(counts);
         gsl_vector *tmp2 = toGslVector(prior);
-        gsl_matrix *tmp3 = bin(tmp1, trials, tmp2);
+        gsl_matrix *tmp3 = bin(tmp1, trials, tmp2, options);
         Matrix *m = fromGslMatrix(tmp3);
 
         gsl_vector_free(tmp1);

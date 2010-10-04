@@ -8,6 +8,7 @@ INCLUDES = -I$(top_srcdir)/include
 ## bayesian-binning library
 noinst_LTLIBRARIES  = libbayesian-binning.la
 libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h
+libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
 
 ## main program
 bin_PROGRAMS = bayesian-binning
