@@ -139,6 +139,7 @@ void evidences(binProblem *bp, mpf_t *ev)
         mpf_div(ev[0], a[M], tmp3);
 
         for (m = 1; m <= M; m++) {
+                (void)fprintf(stderr, "%.1f%%", (float)m/M);
                 if (m==M) { lb = bp->T-1; }
                 else      { lb = m; }
 
