@@ -81,7 +81,7 @@ unsigned int spikes(binProblem *bp, size_t ks, size_t ke)
 {
         unsigned int spikes = 0, i;
 
-        for (i = ks; i<ke; i++) {
+        for (i = ks+1; i <= ke; i++) {
                 spikes += (unsigned int)gsl_vector_get(bp->counts, i);
         }
         return spikes;
@@ -92,7 +92,7 @@ unsigned int gaps(binProblem *bp, size_t ks, size_t ke)
 {
         unsigned int gaps = 0, i;
 
-        for (i = ks; i<ke; i++) {
+        for (i = ks+1; i <= ke; i++) {
                 gaps += bp->trials - (unsigned int)gsl_vector_get(bp->counts, i);
         }
         return gaps;
@@ -110,22 +110,38 @@ unsigned int getCount(binProblem *bp, size_t ks, size_t ke)
 }
 
 static
-mpf_t * betaInv(unsigned int p, unsigned int q)
+mpf_t * beta(unsigned int p, unsigned int q)
 {
-        mpz_fac_ui(tmp1, p-1);
-        mpz_fac_ui(tmp2, q-1);
-        mpz_mul(tmp1, tmp1, tmp2);
-        mpz_fac_ui(tmp2, p+q-1);
+        mpz_fac_ui(tmp1, p-1);     // tmp1 = (p-1)!
+        mpz_fac_ui(tmp2, q-1);     // tmp2 = (q-1)!
+        mpz_mul(tmp1, tmp1, tmp2); // tmp1 = (p-1)!(q-1)!
+        mpz_fac_ui(tmp2, p+q-1);   // tmp2 = (p+q-1)!
         
-        mpf_set_z(tmp3, tmp1);
-        mpf_set_z(tmp4, tmp2);
-        mpf_div(tmp4, tmp3, tmp4);
+        mpf_set_z(tmp3, tmp1);     // tmp3 = (p-1)!(q-1)!
+        mpf_set_z(tmp4, tmp2);     // tmp4 = (p+q-1)!
+        mpf_div(tmp4, tmp4, tmp3); // tmp4 = (p+q-1)! / (p-1)!(q-1)!
 
         return &tmp4;
 }
 
 static
-void eic(binProblem *bp, mpf_t *a, unsigned int k, unsigned int kk)
+mpf_t * betaInv(unsigned int p, unsigned int q)
+{
+        mpz_fac_ui(tmp1, p-1);     // tmp1 = (p-1)!
+        mpz_fac_ui(tmp2, q-1);     // tmp2 = (q-1)!
+        mpz_mul(tmp1, tmp1, tmp2); // tmp1 = (p-1)!(q-1)!
+        mpz_fac_ui(tmp2, p+q-1);   // tmp2 = (p+q-1)!
+        
+        mpf_set_z(tmp3, tmp1);     // tmp3 = (p-1)!(q-1)!
+        mpf_set_z(tmp4, tmp2);     // tmp4 = (p+q-1)!
+        mpf_div(tmp4, tmp3, tmp4); // tmp4 = (p-1)!(q-1)! / (p+q-1)!
+
+        return &tmp4;
+}
+
+
+static
+mpf_t * eic(binProblem *bp, unsigned int k, unsigned int kk)
 {
         // multinomial
         if (bp->likelihood == 1) {
@@ -136,15 +152,14 @@ void eic(binProblem *bp, mpf_t *a, unsigned int k, unsigned int kk)
                 mpf_pow_ui(tmp4, tmp3, n);
                 mpf_set_z (tmp3, tmp1);
                 mpf_div(tmp4, tmp3, tmp4);
-                mpf_mul(tmp3, a[kk],tmp4);
-                mpf_add(a[k], a[k], tmp3);
         }
         // binomial
         if (bp->likelihood == 2) {
-                unsigned int s = spiked(bp, kk, k);
+                unsigned int s = spikes(bp, kk, k);
                 unsigned int g = gaps  (bp, kk, k);
-                betaInv();
+                mpf_set(tmp4, *betaInv(s+bp->sigma, g+bp->gamma));
         }
+        return &tmp4;
 }
 
 static
@@ -165,7 +180,16 @@ mpf_t * prior(binProblem *bp, unsigned int N, unsigned int m)
         }
         // binomial
         if (bp->likelihood == 2) {
+                mpf_mul_ui(tmp4, *beta(bp->sigma, bp->gamma), m+1);
+                mpz_fac_ui(tmp1, m);          // tmp1 = M!
+                mpz_fac_ui(tmp2, bp->T-1-m);  // tmp2 = (K-M-1)!
+                mpz_mul(tmp2, tmp1, tmp2);    // tmp2 = (K-M-1)!M!
+                mpf_set_z(tmp3, tmp2);        // tmp3 = (K-M-1)!M!
+                mpf_mul(tmp3, tmp3, tmp4);    // tmp3 = (K-M-1)!M!Beta
 
+                mpz_fac_ui(tmp1, bp->T-1);    // tmp1 = (K-1)!
+                mpf_set_z(tmp4, tmp1);        // tmp4 = (K-1)!
+                mpf_div(tmp4, tmp3, tmp4);
         }
 
         return &tmp4;
@@ -186,7 +210,7 @@ int minM(binProblem *bp)
 static
 void evidences(binProblem *bp, mpf_t *ev)
 {
-        unsigned int k, kk, n, m, lb;
+        unsigned int k, kk, m, lb;
         unsigned int M = minM(bp);
         unsigned int N = getCount(bp, -1, bp->T-1);
         mpf_t *a = allocMPFArray(bp->T);
@@ -197,16 +221,9 @@ void evidences(binProblem *bp, mpf_t *ev)
         mpf_init(tmp4);
 
         for (k = 0; k <= bp->T-1; k++) {
-                n = getCount(bp, -1, k);
-                mpz_fac_ui(tmp1, n);
-                mpf_set_ui(tmp3, k+1);
-                mpf_pow_ui(tmp4, tmp3, n);
-                mpf_set_z (tmp3, tmp1);
-                mpf_div(a[k], tmp3, tmp4);
+                mpf_set(a[k], *eic(bp, k, -1));
         }
-        mpz_fac_ui(tmp1, N);
-        mpf_set_z (tmp3, tmp1);
-        mpf_div(ev[0], a[M], tmp3);
+        mpf_mul(ev[0], a[bp->T-1], *prior(bp, N, 0));
 
         for (m = 1; m <= M; m++) {
                 if (m==M) { lb = bp->T-1; }
@@ -215,7 +232,8 @@ void evidences(binProblem *bp, mpf_t *ev)
                 for (k = bp->T-1; k >= lb; k--) {
                         mpf_set_ui(a[k], 0);
                         for (kk = m-1; kk <= k-1; kk++) {
-                                eic(bp, a, k, kk);
+                                mpf_mul(tmp3, a[kk], *eic(bp, k, kk));
+                                mpf_add(a[k], a[k],  tmp3);
                         }
                 }
                 mpf_mul(ev[m], a[bp->T-1], *prior(bp, N, m));
