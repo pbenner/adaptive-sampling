@@ -37,11 +37,15 @@ verbose = False
 
 def usage():
     """Print usage."""
+    print
     print "bayesian-binning.py [option]... FILE "
     print
     print "Options:"
+    print "       --likelihood   - multinomial, binomial"
+    print
     print "   -h, --help         - print help"
     print "   -v, --verbose      - be verbose"
+    print
 
 # plotting
 # ------------------------------------------------------------------------------
@@ -180,12 +184,14 @@ def parseConfig(file):
 # main
 # ------------------------------------------------------------------------------
 
-options = {'verbose' : False}
+options = {
+    'verbose'    : False,
+    'likelihood' : 1}
 
 def main():
     global options
     try:
-        opts, tail = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
+        opts, tail = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose", "likelihood="])
     except getopt.GetoptError:
         usage()
         return 2
@@ -197,6 +203,11 @@ def main():
         if o in ("-h", "--help"):
             usage()
             return 0
+        if o == "--likelihood":
+            if a == "multinomial":
+                options["likelihood"] = 1
+            if a == "binomial":
+                options["likelihood"] = 2
     if len(tail) != 1:
         usage()
         return 1

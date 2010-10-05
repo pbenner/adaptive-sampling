@@ -116,6 +116,20 @@ int minM(binProblem *bp)
 }
 
 static
+void eic(binProblem *bp, mpf_t *a, unsigned int k, unsigned int kk, mpz_t tmp1, mpz_t tmp2, mpf_t tmp3, mpf_t tmp4)
+{
+        unsigned int n;
+        n = getCount(bp, kk, k);
+        mpz_fac_ui(tmp1, n);
+        mpf_set_ui(tmp3, k-kk);
+        mpf_pow_ui(tmp4, tmp3, n);
+        mpf_set_z (tmp3, tmp1);
+        mpf_div(tmp4, tmp3, tmp4);
+        mpf_mul(tmp3, a[kk],tmp4);
+        mpf_add(a[k], a[k], tmp3);
+}
+
+static
 void evidences(binProblem *bp, mpf_t *ev)
 {
         unsigned int k, kk, n, m, lb;
@@ -149,14 +163,7 @@ void evidences(binProblem *bp, mpf_t *ev)
                 for (k = bp->T-1; k >= lb; k--) {
                         mpf_set_ui(a[k], 0);
                         for (kk = m-1; kk <= k-1; kk++) {
-                                n = getCount(bp, kk, k);
-                                mpz_fac_ui(tmp1, n);
-                                mpf_set_ui(tmp3, k-kk);
-                                mpf_pow_ui(tmp4, tmp3, n);
-                                mpf_set_z (tmp3, tmp1);
-                                mpf_div(tmp4, tmp3, tmp4);
-                                mpf_mul(tmp3, a[kk],tmp4);
-                                mpf_add(a[k], a[k], tmp3);
+                                eic(bp, a, k, kk, tmp1, tmp2, tmp3, tmp4);
                         }
                 }
                 mpz_fac_ui(tmp1, bp->T-1-m);

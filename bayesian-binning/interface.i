@@ -5,13 +5,15 @@
 
 %typemap(in) Options * {
     $1 = (Options *)malloc(sizeof(Options));
-    PyObject *verbose = PyDict_GetItemString($input, "verbose");
+    PyObject *verbose    = PyDict_GetItemString($input, "verbose");
+    PyObject *likelihood = PyDict_GetItemString($input, "likelihood");
     if (verbose == Py_True) {
        $1->verbose = 1;
     }
     else {
        $1->verbose = 0;
     }
+    $1->likelihood = PyInt_AsLong(likelihood);
 }
 
 %typemap(freearg) Options * {
