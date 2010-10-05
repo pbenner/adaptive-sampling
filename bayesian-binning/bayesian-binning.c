@@ -37,14 +37,20 @@
 #include "datatypes.h"
 
 typedef struct {
-        int T; // number of timesteps
+        // number of timesteps
+        int T;
         unsigned int trials;
         gsl_vector *counts;
         gsl_vector *prior;
+        // type of the likelihood
+        int likelihood;
         // hyperparameters
         double gamma;
         double sigma;
 } binProblem;
+
+mpz_t tmp1, tmp2;
+mpf_t tmp3, tmp4;
 
 static
 mpf_t * allocMPFArray(size_t size)
@@ -104,6 +110,68 @@ unsigned int getCount(binProblem *bp, size_t ks, size_t ke)
 }
 
 static
+mpf_t * betaInv(unsigned int p, unsigned int q)
+{
+        mpz_fac_ui(tmp1, p-1);
+        mpz_fac_ui(tmp2, q-1);
+        mpz_mul(tmp1, tmp1, tmp2);
+        mpz_fac_ui(tmp2, p+q-1);
+        
+        mpf_set_z(tmp3, tmp1);
+        mpf_set_z(tmp4, tmp2);
+        mpf_div(tmp4, tmp3, tmp4);
+
+        return &tmp4;
+}
+
+static
+void eic(binProblem *bp, mpf_t *a, unsigned int k, unsigned int kk)
+{
+        // multinomial
+        if (bp->likelihood == 1) {
+                unsigned int n;
+                n = getCount(bp, kk, k);
+                mpz_fac_ui(tmp1, n);
+                mpf_set_ui(tmp3, k-kk);
+                mpf_pow_ui(tmp4, tmp3, n);
+                mpf_set_z (tmp3, tmp1);
+                mpf_div(tmp4, tmp3, tmp4);
+                mpf_mul(tmp3, a[kk],tmp4);
+                mpf_add(a[k], a[k], tmp3);
+        }
+        // binomial
+        if (bp->likelihood == 2) {
+                unsigned int s = spiked(bp, kk, k);
+                unsigned int g = gaps  (bp, kk, k);
+                betaInv();
+        }
+}
+
+static
+mpf_t * prior(binProblem *bp, unsigned int N, unsigned int m)
+{
+        // multinomial
+        if (bp->likelihood == 1) {
+                mpz_fac_ui(tmp1, bp->T-1-m);
+                mpz_fac_ui(tmp2, m);
+                mpz_mul(tmp2, tmp2, tmp2);
+                mpz_mul(tmp2, tmp1, tmp2);
+                mpf_set_z (tmp3, tmp2);
+                mpz_fac_ui(tmp1, bp->T-1);
+                mpz_fac_ui(tmp2, N+m);
+                mpz_mul(tmp2, tmp1, tmp2);
+                mpf_set_z (tmp4, tmp2);
+                mpf_div(tmp4, tmp3, tmp4);
+        }
+        // binomial
+        if (bp->likelihood == 2) {
+
+        }
+
+        return &tmp4;
+}
+
+static
 int minM(binProblem *bp)
 {
         int i;
@@ -116,28 +184,12 @@ int minM(binProblem *bp)
 }
 
 static
-void eic(binProblem *bp, mpf_t *a, unsigned int k, unsigned int kk, mpz_t tmp1, mpz_t tmp2, mpf_t tmp3, mpf_t tmp4)
-{
-        unsigned int n;
-        n = getCount(bp, kk, k);
-        mpz_fac_ui(tmp1, n);
-        mpf_set_ui(tmp3, k-kk);
-        mpf_pow_ui(tmp4, tmp3, n);
-        mpf_set_z (tmp3, tmp1);
-        mpf_div(tmp4, tmp3, tmp4);
-        mpf_mul(tmp3, a[kk],tmp4);
-        mpf_add(a[k], a[k], tmp3);
-}
-
-static
 void evidences(binProblem *bp, mpf_t *ev)
 {
         unsigned int k, kk, n, m, lb;
         unsigned int M = minM(bp);
         unsigned int N = getCount(bp, -1, bp->T-1);
         mpf_t *a = allocMPFArray(bp->T);
-        mpz_t tmp1, tmp2;
-        mpf_t tmp3, tmp4;
 
         mpz_init(tmp1);
         mpz_init(tmp2);
@@ -163,20 +215,10 @@ void evidences(binProblem *bp, mpf_t *ev)
                 for (k = bp->T-1; k >= lb; k--) {
                         mpf_set_ui(a[k], 0);
                         for (kk = m-1; kk <= k-1; kk++) {
-                                eic(bp, a, k, kk, tmp1, tmp2, tmp3, tmp4);
+                                eic(bp, a, k, kk);
                         }
                 }
-                mpz_fac_ui(tmp1, bp->T-1-m);
-                mpz_fac_ui(tmp2, m);
-                mpz_mul(tmp2, tmp2, tmp2);
-                mpz_mul(tmp2, tmp1, tmp2);
-                mpf_set_z (tmp3, tmp2);
-                mpz_fac_ui(tmp1, bp->T-1);
-                mpz_fac_ui(tmp2, N+m);
-                mpz_mul(tmp2, tmp1, tmp2);
-                mpf_set_z (tmp4, tmp2);
-                mpf_div(tmp4, tmp3, tmp4);
-                mpf_mul(ev[m], a[bp->T-1], tmp4);
+                mpf_mul(ev[m], a[bp->T-1], *prior(bp, N, m));
         }
 
         mpz_clear(tmp1);
@@ -278,12 +320,13 @@ gsl_matrix * bin(
         binProblem bp;
         verbose = options->verbose;
 
-        bp.trials = trials;
-        bp.counts = counts;
-        bp.prior  = prior;
-        bp.T      = counts->size;
-        bp.gamma  = 32;
-        bp.sigma  = 1;
+        bp.trials     = trials;
+        bp.counts     = counts;
+        bp.prior      = prior;
+        bp.T          = counts->size;
+        bp.gamma      = 1;
+        bp.sigma      = 1;
+        bp.likelihood = options->likelihood;
 
         pdensity(&bp, pdf, var, mpost);
         for (i = 0; i<=bp.T-1; i++) {
