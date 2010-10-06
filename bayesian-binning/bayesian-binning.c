@@ -180,7 +180,7 @@ mpf_t * prior(binProblem *bp, unsigned int N, unsigned int m)
         }
         // binomial
         if (bp->likelihood == 2) {
-                mpf_mul_ui(tmp4, *beta(bp->sigma, bp->gamma), m+1);
+                mpf_pow_ui(tmp4, *beta(bp->sigma, bp->gamma), m+1);
                 mpz_fac_ui(tmp1, m);          // tmp1 = M!
                 mpz_fac_ui(tmp2, bp->T-1-m);  // tmp2 = (K-M-1)!
                 mpz_mul(tmp2, tmp1, tmp2);    // tmp2 = (K-M-1)!M!
@@ -219,6 +219,8 @@ void evidences(binProblem *bp, mpf_t *ev)
         mpz_init(tmp2);
         mpf_init(tmp3);
         mpf_init(tmp4);
+
+//        gmp_printf("%Fe\n", *prior(bp, 10, 4));
 
         for (k = 0; k <= bp->T-1; k++) {
                 mpf_set(a[k], *eic(bp, k, -1));
@@ -342,8 +344,8 @@ gsl_matrix * bin(
         bp.counts     = counts;
         bp.prior      = prior;
         bp.T          = counts->size;
-        bp.gamma      = 1;
-        bp.sigma      = 1;
+        bp.sigma      = 35;
+        bp.gamma      = 45;
         bp.likelihood = options->likelihood;
 
         pdensity(&bp, pdf, var, mpost);
