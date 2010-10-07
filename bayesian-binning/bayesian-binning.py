@@ -149,8 +149,10 @@ def timingsToCounts(timings, binsize):
 
 def computeFailures(successes, trials):
     N        = len(successes)
-    failures = np.repeat(trials, N)
-    return failures - successes
+    failures = np.repeat(trials, N) - successes
+    if any([ a<0 for a in failures]):
+        raise ValueError("number of trials is smaller than some counts")
+    return failures
 
 def readMPrior(models_str, N):
     models = []
