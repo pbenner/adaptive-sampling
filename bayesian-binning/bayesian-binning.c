@@ -47,6 +47,9 @@ typedef struct {
         // hyperparameters
         double gamma;
         double sigma;
+        // internal data
+        gsl_matrix *success_m;
+        gsl_matrix *failure_m;
 } binProblem;
 
 mpz_t tmp1, tmp2;
@@ -56,7 +59,7 @@ static
 mpf_t * allocMPFArray(size_t size)
 {
         size_t i;
-         mpf_t *a = (mpf_t *)malloc((size+1)*sizeof(mpf_t));
+        mpf_t *a = (mpf_t *)malloc((size+1)*sizeof(mpf_t));
 
         for (i = 0; i<size; i++) {
                 mpf_init(a[i]);
@@ -77,14 +80,37 @@ void freeMPFArray(mpf_t *a, size_t size)
 }
 
 static
-unsigned int successes(binProblem *bp, size_t ks, size_t ke)
+unsigned int computeSuccesses(binProblem *bp)
 {
-        unsigned int s = 0, i;
+        size_t ks, ke, i;
+        unsigned int s, f;
 
-        for (i = ks+1; i <= ke; i++) {
-                s += (unsigned int)gsl_vector_get(bp->successes, i);
+        for (ks = 0; ks < bp->T; ks++) {
+                for (ke = ks; ke < bp->T; ke++) {
+                        s = 0; f = 0;
+                        for (i = ks; i <= ke; i++) {
+                                s += (unsigned int)gsl_vector_get(bp->successes, i);
+                                f += (unsigned int)gsl_vector_get(bp->failures,  i);
+                        }
+                        gsl_matrix_set(bp->success_m, ks, ke, s);
+                        gsl_matrix_set(bp->failure_m, ks, ke, f);
+                }
         }
         return s;
+}
+
+static
+unsigned int successes(binProblem *bp, size_t ks, size_t ke)
+{
+/*         unsigned int s = 0, i; */
+
+/*         for (i = ks+1; i <= ke; i++) { */
+/*                 s += (unsigned int)gsl_vector_get(bp->successes, i); */
+/*         } */
+/*         return s; */
+        printf("ks+1=%d\n", ks+1);
+        fflush(stdout);
+        return gsl_matrix_get(bp->success_m, ks+1, ke);
 }
 
 static
@@ -326,7 +352,8 @@ gsl_matrix * bin(
         double mpost[N];
         unsigned int i;
         binProblem bp;
-        verbose = options->verbose;
+
+        verbose       = options->verbose;
 
         bp.successes  = successes;
         bp.failures   = failures;
@@ -335,14 +362,21 @@ gsl_matrix * bin(
         bp.sigma      = options->sigma;
         bp.gamma      = options->gamma;
         bp.likelihood = options->likelihood;
+        bp.success_m  = gsl_matrix_alloc(N, N);
+        bp.failure_m  = gsl_matrix_alloc(N, N);
+
+        computeSuccesses(&bp);
 
         pdensity(&bp, pdf, var, mpost);
         for (i = 0; i<=bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
-                notice(NONE, "pdf[%d]=%f", i, pdf[i])
+                notice(NONE, "pdf[%d]=%f", i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
                 gsl_matrix_set(m, 2, i, mpost[i]);
         }
+
+        gsl_matrix_free(bp.success_m);
+        gsl_matrix_free(bp.failure_m);
 
         return m;
 }
