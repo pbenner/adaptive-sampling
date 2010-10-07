@@ -104,10 +104,33 @@ def plotbin(ax, x, exp, var):
 
 def bin(successes, failures, mprior):
     """Call the binning library."""
-    successes_i = map(int, successes)
-    failures_i  = map(int, failures)
-    mprior_i    = map(float, mprior)
-    return interface.binning(successes_i, failures_i, mprior_i, options)
+    if options['result']:
+        config = ConfigParser.RawConfigParser()
+        config.read(options['result'])
+        pdf_str   = config.get('Result', 'pdf')
+        var_str   = config.get('Result', 'var')
+        mpost_str = config.get('Result', 'mpost')
+        pdf       = map(float, pdf_str.split(' '))
+        var       = map(float, var_str.split(' '))
+        mpost     = map(float, mpost_str.split(' '))
+        return [pdf, var, mpost]
+    else:
+        successes_i = map(int, successes)
+        failures_i  = map(int, failures)
+        mprior_i    = map(float, mprior)
+        return interface.binning(successes_i, failures_i, mprior_i, options)
+
+# save result
+# ------------------------------------------------------------------------------
+
+def saveResult(result):
+    config = ConfigParser.ConfigParser()
+    config.add_section('Result')
+    config.set('Result', 'pdf', " ".join(map(str, result[0])))
+    config.set('Result', 'var', " ".join(map(str, result[1])))
+    config.set('Result', 'mpost', " ".join(map(str, result[2])))
+    with open(options['save'], 'wb') as configfile:
+        config.write(configfile)
 
 # parse config file
 # ------------------------------------------------------------------------------
@@ -169,13 +192,16 @@ def parseConfig(file):
         if config.has_option('Counts', 'mprior'):
             prior   = readMPrior(config.get('Counts', 'mprior'), N)
         result      = bin(successes, failures, prior)
-        fig1 = figure()
-        ax1  = fig1.add_subplot(1,1,1)
-        plotbin(ax1, None, result[0], result[1])
-        fig2 = figure()
-        ax2  = fig2.add_subplot(1,1,1)
-        plotmodelpost(ax2, result[2])
-        show()
+        if options['save']:
+            saveResult(result)
+        else:
+            fig1 = figure()
+            ax1  = fig1.add_subplot(1,1,1)
+            plotbin(ax1, None, result[0], result[1])
+            fig2 = figure()
+            ax2  = fig2.add_subplot(1,1,1)
+            plotmodelpost(ax2, result[2])
+            show()
     if config.has_section('Trials'):
         readOptions(config, 'Counts')
         binsize     = config.getint('Trials', 'binsize')
@@ -193,15 +219,18 @@ def parseConfig(file):
         if config.has_option('Trials', 'mprior'):
             prior    = readMPrior(config.get('Trials', 'mprior'), N)
         result       = bin(successes, failures, prior)
-        fig1 = figure()
-        ax1  = fig1.add_subplot(2,1,1)
-        ax2  = fig1.add_subplot(2,1,2)
-        plotspikes(ax1, x, timings)
-        plotbin(ax2, x, result[0], result[1])
-        fig2 = figure()
-        ax3  = fig2.add_subplot(1,1,1)
-        plotmodelpost(ax3, result[2])
-        show()
+        if options['save']:
+            saveResult(result)
+        else:
+            fig1 = figure()
+            ax1  = fig1.add_subplot(2,1,1)
+            ax2  = fig1.add_subplot(2,1,2)
+            plotspikes(ax1, x, timings)
+            plotbin(ax2, x, result[0], result[1])
+            fig2 = figure()
+            ax3  = fig2.add_subplot(1,1,1)
+            plotmodelpost(ax3, result[2])
+            show()
 
 # main
 # ------------------------------------------------------------------------------
@@ -210,12 +239,15 @@ options = {
     'verbose'    : False,
     'likelihood' : 1,
     'sigma'      : 1,
-    'gamma'      : 1 }
+    'gamma'      : 1,
+    'result'     : None,
+    'save'       : None
+    }
 
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma="]
+        longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma=", "result=", "save="]
         opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:", longopts)
     except getopt.GetoptError:
         usage()
@@ -237,6 +269,10 @@ def main():
             options["sigma"] = int(a)
         if o in ("-g", "--gamma"):
             options["gamma"] = int(a)
+        if o == "--result":
+            options["result"] = a
+        if o == "--save":
+            options["save"] = a
     if len(tail) != 1:
         usage()
         return 1

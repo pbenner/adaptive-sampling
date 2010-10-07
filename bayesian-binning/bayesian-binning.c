@@ -276,6 +276,7 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         mpf_init(tmp2);
 
         // compute evidence
+        computeMPrior(bp);
         evidences(bp, ev1);
         // compute model posteriors
         mpf_set_ui(sum1, 0);
@@ -298,10 +299,12 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
                 // expectation
                 bp->add_success[0] = i;
                 bp->add_success[1] = 1;
+                computeMPrior(bp);
                 evidences(bp, ev2);
 
                 // variance
                 bp->add_success[1] = 2;
+                computeMPrior(bp);
                 evidences(bp, ev3);
 
                 mpf_set_ui(sum2, 0);
@@ -366,9 +369,6 @@ gsl_matrix * bin(
         mpf_init(tmp4);
 
         computeSuccesses(&bp);
-        computeMPrior(&bp);
-
-        printf("spikes: %d\n", successes(&bp, -1, bp.T-1));
 
         pdensity(&bp, pdf, var, mpost);
         for (i = 0; i <= bp.T-1; i++) {
