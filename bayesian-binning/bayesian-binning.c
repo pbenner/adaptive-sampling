@@ -226,7 +226,6 @@ void evidences(binProblem *bp, mpf_t *ev)
                         }
                 }
                 mpf_mul(ev[m], a[bp->T-1], *prior(bp, m));
-//                gmp_printf("ev[%d]=%Fe\n", m, ev[m]);
         }
 
         mpz_clear(tmp1);
@@ -333,8 +332,8 @@ gsl_matrix * bin(
         bp.failures   = failures;
         bp.prior      = prior;
         bp.T          = successes->size;
-        bp.sigma      = 100;
-        bp.gamma      = 2;
+        bp.sigma      = options->sigma;
+        bp.gamma      = options->gamma;
         bp.likelihood = options->likelihood;
 
         pdensity(&bp, pdf, var, mpost);

@@ -7,6 +7,8 @@
     $1 = (Options *)malloc(sizeof(Options));
     PyObject *verbose    = PyDict_GetItemString($input, "verbose");
     PyObject *likelihood = PyDict_GetItemString($input, "likelihood");
+    PyObject *sigma      = PyDict_GetItemString($input, "sigma");
+    PyObject *gamma      = PyDict_GetItemString($input, "gamma");
     if (verbose == Py_True) {
        $1->verbose = 1;
     }
@@ -14,6 +16,8 @@
        $1->verbose = 0;
     }
     $1->likelihood = PyInt_AsLong(likelihood);
+    $1->sigma      = PyInt_AsLong(sigma);
+    $1->gamma      = PyInt_AsLong(gamma);
 }
 
 %typemap(freearg) Options * {

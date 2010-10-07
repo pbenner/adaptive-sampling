@@ -42,6 +42,8 @@ def usage():
     print
     print "Options:"
     print "       --likelihood   - multinomial, binomial"
+    print "   -s, --sigma        - sigma hyperparameter"
+    print "   -g, --gamma        - gamma hpyerparameter"
     print
     print "   -h, --help         - print help"
     print "   -v, --verbose      - be verbose"
@@ -192,12 +194,15 @@ def parseConfig(file):
 
 options = {
     'verbose'    : False,
-    'likelihood' : 1}
+    'likelihood' : 1,
+    'sigma'      : 1,
+    'gamma'      : 1 }
 
 def main():
     global options
     try:
-        opts, tail = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose", "likelihood="])
+        longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma="]
+        opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -214,6 +219,10 @@ def main():
                 options["likelihood"] = 1
             if a == "binomial":
                 options["likelihood"] = 2
+        if o in ("-s", "--sigma"):
+            options["sigma"] = int(a)
+        if o in ("-g", "--gamma"):
+            options["gamma"] = int(a)
     if len(tail) != 1:
         usage()
         return 1
