@@ -139,11 +139,24 @@ def readMPrior(models_str, N):
         mprior[model-1] = 1.0/num_models
     return mprior
 
+def readOptions(config, section):
+    if config.has_option(section, 'likelihood'):
+        likelihood_str = config.get(section, 'likelihood')
+        if likelihood_str == "multinomial":
+            options["likelihood"] = 1
+        if likelihood_str == "binomial":
+            options["likelihood"] = 2
+    if config.has_option(section, 'sigma'):
+        options["sigma"] = int(config.get(section, 'sigma'))
+    if config.has_option(section, 'gamma'):
+        options["gamma"] = int(config.get(section, 'gamma'))
+
 def parseConfig(file):
     config = ConfigParser.RawConfigParser()
     config.read(file)
 
     if config.has_section('Counts'):
+        readOptions(config, 'Counts')
         trials      = config.getint('Counts', 'trials')
         counts_str  = config.get   ('Counts', 'counts')
         successes   = []
@@ -164,6 +177,7 @@ def parseConfig(file):
         plotmodelpost(ax2, result[2])
         show()
     if config.has_section('Trials'):
+        readOptions(config, 'Counts')
         binsize     = config.getint('Trials', 'binsize')
         timings_str = config.get   ('Trials', 'timings')
         timings     = []
