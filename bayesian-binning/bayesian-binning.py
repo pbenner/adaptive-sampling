@@ -129,8 +129,8 @@ def saveResult(result):
     config.set('Result', 'pdf', " ".join(map(str, result[0])))
     config.set('Result', 'var', " ".join(map(str, result[1])))
     config.set('Result', 'mpost', " ".join(map(str, result[2])))
-    with open(options['save'], 'wb') as configfile:
-        config.write(configfile)
+    configfile = open(options['save'], 'wb')
+    config.write(configfile)
 
 # parse config file
 # ------------------------------------------------------------------------------
