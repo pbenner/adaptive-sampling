@@ -93,8 +93,8 @@ def plotbin(ax, x, exp, var):
     if x==None:
         x = np.arange(0, N, 1)
     ax.set_xlim(x[0],x[-1])
-    ax.plot(x, [a + b for a, b in zip(exp, var)], 'k--')
-    ax.plot(x, [a - b for a, b in zip(exp, var)], 'k--')
+    ax.plot(x, [min(1,a + b) for a, b in zip(exp, var)], 'k--')
+    ax.plot(x, [max(0,a - b) for a, b in zip(exp, var)], 'k--')
     ax.plot(x, exp, 'r')
     ax.set_xlabel('bin',  font)
     ax.set_ylabel('P(x)', font)
