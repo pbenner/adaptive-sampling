@@ -100,12 +100,12 @@ def plotbin(ax, x, exp, var):
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(counts, trials, mprior):
+def bin(successes, failures, mprior):
     """Call the binning library."""
-    counts_i = map(int, counts)
-    trials_i = int(trials)
-    mprior_i = map(float, mprior)
-    return interface.binning(counts_i, trials_i, mprior_i, options)
+    successes_i = map(int, successes)
+    failures_i  = map(int, failures)
+    mprior_i    = map(float, mprior)
+    return interface.binning(successes_i, failures_i, mprior_i, options)
 
 # parse config file
 # ------------------------------------------------------------------------------
@@ -121,6 +121,11 @@ def timingsToCounts(timings, binsize):
             n = int(math.ceil(float(t-MIN)/binsize))
             counts[n] += 1
     return x, counts
+
+def computeFailures(successes, trials):
+    N        = len(successes)
+    failures = np.repeat(trials, N)
+    return failures - successes
 
 def readMPrior(models_str, N):
     models = []
@@ -139,16 +144,16 @@ def parseConfig(file):
     if config.has_section('Counts'):
         trials      = config.getint('Counts', 'trials')
         counts_str  = config.get   ('Counts', 'counts')
-        counts      = []
-
+        successes   = []
         for value in counts_str.split(' '):
-            counts.append(int(value))
+            successes.append(int(value))
+        failures    = computeFailures(successes, trials)
 
-        N           = len(counts)
+        N           = len(successes)
         prior       = list(np.repeat(1, N))
         if config.has_option('Counts', 'mprior'):
             prior   = readMPrior(config.get('Counts', 'mprior'), N)
-        result      = bin(counts, trials, prior)
+        result      = bin(successes, failures, prior)
         fig1 = figure()
         ax1  = fig1.add_subplot(1,1,1)
         plotbin(ax1, None, result[0], result[1])
@@ -164,13 +169,14 @@ def parseConfig(file):
             if line != '':
                 timings.append([int(a) for a in line.split(' ')])
 
-        x, counts   = timingsToCounts(timings, binsize)
-        trials      = len(timings)
-        N           = len(counts)
-        prior       = list(np.repeat(1, N))
+        x, successes = timingsToCounts(timings, binsize)
+        trials       = len(timings)
+        failures     = computeFailures(successes, trials)
+        N            = len(successes)
+        prior        = list(np.repeat(1, N))
         if config.has_option('Trials', 'mprior'):
-            prior   = readMPrior(config.get('Trials', 'mprior'), N)
-        result      = bin(counts, trials, prior)
+            prior    = readMPrior(config.get('Trials', 'mprior'), N)
+        result       = bin(successes, failures, prior)
         fig1 = figure()
         ax1  = fig1.add_subplot(2,1,1)
         ax2  = fig1.add_subplot(2,1,2)

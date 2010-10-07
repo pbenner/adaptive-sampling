@@ -39,8 +39,8 @@
 typedef struct {
         // number of timesteps
         int T;
-        unsigned int trials;
-        gsl_vector *counts;
+        gsl_vector *successes;
+        gsl_vector *failures;
         gsl_vector *prior;
         // type of the likelihood
         int likelihood;
@@ -77,36 +77,25 @@ void freeMPFArray(mpf_t *a, size_t size)
 }
 
 static
-unsigned int spikes(binProblem *bp, size_t ks, size_t ke)
+unsigned int successes(binProblem *bp, size_t ks, size_t ke)
 {
-        unsigned int spikes = 0, i;
+        unsigned int s = 0, i;
 
         for (i = ks+1; i <= ke; i++) {
-                spikes += (unsigned int)gsl_vector_get(bp->counts, i);
+                s += (unsigned int)gsl_vector_get(bp->successes, i);
         }
-        return spikes;
+        return s;
 }
 
 static
-unsigned int gaps(binProblem *bp, size_t ks, size_t ke)
+unsigned int failures(binProblem *bp, size_t ks, size_t ke)
 {
-        unsigned int gaps = 0, i;
+        unsigned int f = 0, i;
 
         for (i = ks+1; i <= ke; i++) {
-                gaps += bp->trials - (unsigned int)gsl_vector_get(bp->counts, i);
+                f += (unsigned int)gsl_vector_get(bp->failures, i);
         }
-        return gaps;
-}
-
-static
-unsigned int getCount(binProblem *bp, size_t ks, size_t ke)
-{
-        unsigned int spikes = 0, i;
-
-        for (i = ks+1; i <= ke; i++) {
-                spikes += (unsigned int)gsl_vector_get(bp->counts, i);
-        }
-        return spikes;
+        return f;
 }
 
 static
@@ -141,12 +130,12 @@ mpf_t * betaInv(unsigned int p, unsigned int q)
 
 
 static
-mpf_t * eic(binProblem *bp, unsigned int k, unsigned int kk)
+mpf_t * eic(binProblem *bp, unsigned int kk, unsigned int k)
 {
         // multinomial
         if (bp->likelihood == 1) {
                 unsigned int n;
-                n = getCount(bp, kk, k);
+                n = successes(bp, kk, k);
                 mpz_fac_ui(tmp1, n);
                 mpf_set_ui(tmp3, k-kk);
                 mpf_pow_ui(tmp4, tmp3, n);
@@ -155,18 +144,19 @@ mpf_t * eic(binProblem *bp, unsigned int k, unsigned int kk)
         }
         // binomial
         if (bp->likelihood == 2) {
-                unsigned int s = spikes(bp, kk, k);
-                unsigned int g = gaps  (bp, kk, k);
-                mpf_set(tmp4, *betaInv(s+bp->sigma, g+bp->gamma));
+                unsigned int s = successes(bp, kk, k);
+                unsigned int f = failures (bp, kk, k);
+                mpf_set(tmp4, *betaInv(s+bp->sigma, f+bp->gamma));
         }
         return &tmp4;
 }
 
 static
-mpf_t * prior(binProblem *bp, unsigned int N, unsigned int m)
+mpf_t * prior(binProblem *bp, unsigned int m)
 {
         // multinomial
         if (bp->likelihood == 1) {
+                unsigned int N = successes(bp, -1, bp->T-1);
                 mpz_fac_ui(tmp1, bp->T-1-m);
                 mpz_fac_ui(tmp2, m);
                 mpz_mul(tmp2, tmp2, tmp2);
@@ -212,7 +202,6 @@ void evidences(binProblem *bp, mpf_t *ev)
 {
         unsigned int k, kk, m, lb;
         unsigned int M = minM(bp);
-        unsigned int N = getCount(bp, -1, bp->T-1);
         mpf_t *a = allocMPFArray(bp->T);
 
         mpz_init(tmp1);
@@ -220,12 +209,10 @@ void evidences(binProblem *bp, mpf_t *ev)
         mpf_init(tmp3);
         mpf_init(tmp4);
 
-//        gmp_printf("%Fe\n", *prior(bp, 10, 4));
-
         for (k = 0; k <= bp->T-1; k++) {
-                mpf_set(a[k], *eic(bp, k, -1));
+                mpf_set(a[k], *eic(bp, -1, k));
         }
-        mpf_mul(ev[0], a[bp->T-1], *prior(bp, N, 0));
+        mpf_mul(ev[0], a[bp->T-1], *prior(bp, 0));
 
         for (m = 1; m <= M; m++) {
                 if (m==M) { lb = bp->T-1; }
@@ -234,11 +221,12 @@ void evidences(binProblem *bp, mpf_t *ev)
                 for (k = bp->T-1; k >= lb; k--) {
                         mpf_set_ui(a[k], 0);
                         for (kk = m-1; kk <= k-1; kk++) {
-                                mpf_mul(tmp3, a[kk], *eic(bp, k, kk));
+                                mpf_mul(tmp3, a[kk], *eic(bp, kk, k));
                                 mpf_add(a[k], a[k],  tmp3);
                         }
                 }
-                mpf_mul(ev[m], a[bp->T-1], *prior(bp, N, m));
+                mpf_mul(ev[m], a[bp->T-1], *prior(bp, m));
+//                gmp_printf("ev[%d]=%Fe\n", m, ev[m]);
         }
 
         mpz_clear(tmp1);
@@ -286,18 +274,18 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
                 notice(NONE, "%.1f%%", (float)100*i/bp->T);
                 // expectation
                 gsl_vector_set(
-                        bp->counts, i,
-                        gsl_vector_get(bp->counts, i)+1);
+                        bp->successes, i,
+                        gsl_vector_get(bp->successes, i)+1);
                 evidences(bp, ev2);
                 // variance
                 gsl_vector_set(
-                        bp->counts, i,
-                        gsl_vector_get(bp->counts, i)+1);
+                        bp->successes, i,
+                        gsl_vector_get(bp->successes, i)+1);
                 evidences(bp, ev3);
                 // reset data
                 gsl_vector_set(
-                        bp->counts, i,
-                        gsl_vector_get(bp->counts, i)-2);
+                        bp->successes, i,
+                        gsl_vector_get(bp->successes, i)-2);
 
                 mpf_set_ui(sum2, 0);
                 mpf_set_ui(sum3, 0);
@@ -327,30 +315,32 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
 }
 
 gsl_matrix * bin(
-        gsl_vector *counts,
-        unsigned int trials,
+        gsl_vector *successes,
+        gsl_vector *failures,
         gsl_vector *prior,
         Options *options)
 {
-        gsl_matrix *m = gsl_matrix_alloc(3, counts->size);
-        double pdf[counts->size];
-        double var[counts->size];
-        double mpost[counts->size];
+        size_t N = successes->size;
+        gsl_matrix *m = gsl_matrix_alloc(3, N);
+        double pdf[N];
+        double var[N];
+        double mpost[N];
         unsigned int i;
         binProblem bp;
         verbose = options->verbose;
 
-        bp.trials     = trials;
-        bp.counts     = counts;
+        bp.successes  = successes;
+        bp.failures   = failures;
         bp.prior      = prior;
-        bp.T          = counts->size;
-        bp.sigma      = 35;
-        bp.gamma      = 45;
+        bp.T          = successes->size;
+        bp.sigma      = 100;
+        bp.gamma      = 2;
         bp.likelihood = options->likelihood;
 
         pdensity(&bp, pdf, var, mpost);
         for (i = 0; i<=bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
+                notice(NONE, "pdf[%d]=%f", i, pdf[i])
                 gsl_matrix_set(m, 1, i, var[i]);
                 gsl_matrix_set(m, 2, i, mpost[i]);
         }

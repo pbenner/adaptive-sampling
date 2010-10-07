@@ -10,5 +10,5 @@ extern void freeMatrix(Matrix *m);
 extern Vector * allocVector(int size);
 extern Matrix * allocMatrix(int rows, int columns);
 
-extern Matrix * binning(Vector *counts, unsigned int trials, Vector *prior, Options *options);
+extern Matrix * binning(Vector *successes, Vector *failures, Vector *prior, Options *options);
 extern Matrix * test(Matrix *v);
