@@ -82,7 +82,7 @@ void freeMPFArray(mpf_t *a, size_t size)
 }
 
 static
-unsigned int successes(binProblem *bp, size_t ks, size_t ke)
+unsigned int successes(binProblem *bp, int ks, int ke)
 {
         if (ks+1 <= bp->add_success[0] && bp->add_success[0] <= ke) {
                 return gsl_matrix_get(bp->success_m, ks+1, ke) +
@@ -98,7 +98,7 @@ unsigned int successes(binProblem *bp, size_t ks, size_t ke)
 
 
 static
-unsigned int failures(binProblem *bp, size_t ks, size_t ke)
+unsigned int failures(binProblem *bp, int ks, int ke)
 {
         if (ks+1 <= ke) {
                 return gsl_matrix_get(bp->failure_m, ks+1, ke);
@@ -141,7 +141,7 @@ mpf_t * betaInv(unsigned int p, unsigned int q)
 static
 unsigned int computeSuccesses(binProblem *bp)
 {
-        size_t ks, ke, i;
+        int ks, ke, i;
         unsigned int s, f;
 
         for (ks = 0; ks < bp->T; ks++) {
@@ -196,7 +196,7 @@ void computeMPrior(binProblem *bp)
 }
 
 static
-mpf_t * iec(binProblem *bp, unsigned int kk, unsigned int k)
+mpf_t * iec(binProblem *bp, int kk, int k)
 {
         // multinomial
         if (bp->likelihood == 1) {
@@ -232,9 +232,10 @@ int minM(binProblem *bp)
 static
 void evidences(binProblem *bp, mpf_t *ev)
 {
-        unsigned int k, kk, m, lb;
+        unsigned int m, lb;
         unsigned int M = minM(bp);
         mpf_t *a = allocMPFArray(bp->T);
+        int k, kk;
 
         for (k = 0; k <= bp->T-1; k++) {
                 mpf_set(a[k], *iec(bp, -1, k));
@@ -366,6 +367,8 @@ gsl_matrix * bin(
 
         computeSuccesses(&bp);
         computeMPrior(&bp);
+
+        printf("spikes: %d\n", successes(&bp, -1, bp.T-1));
 
         pdensity(&bp, pdf, var, mpost);
         for (i = 0; i <= bp.T-1; i++) {
