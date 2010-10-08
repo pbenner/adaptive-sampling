@@ -197,15 +197,14 @@ def parseConfig(file):
         if options['save']:
             saveResult(result)
         else:
-            fig1 = figure()
-            ax1  = fig1.add_subplot(1,1,1)
+            fig = figure()
+            ax1  = fig.add_subplot(2,1,1)
+            ax2  = fig.add_subplot(2,1,2)
             plotbin(ax1, None, result[0], result[1])
-            fig2 = figure()
-            ax2  = fig2.add_subplot(1,1,1)
             plotmodelpost(ax2, result[2])
             show()
     if config.has_section('Trials'):
-        readOptions(config, 'Counts')
+        readOptions(config, 'Trials')
         binsize     = config.getint('Trials', 'binsize')
         timings_str = config.get   ('Trials', 'timings')
         timings     = []
@@ -224,13 +223,12 @@ def parseConfig(file):
         if options['save']:
             saveResult(result)
         else:
-            fig1 = figure()
-            ax1  = fig1.add_subplot(2,1,1)
-            ax2  = fig1.add_subplot(2,1,2)
+            fig = figure()
+            ax1 = fig.add_subplot(3,1,1)
+            ax2 = fig.add_subplot(3,1,2)
+            ax3 = fig.add_subplot(3,1,3)
             plotspikes(ax1, x, timings)
-            plotbin(ax2, x, result[0], result[1])
-            fig2 = figure()
-            ax3  = fig2.add_subplot(1,1,1)
+            plotbin   (ax2, x, result[0], result[1])
             plotmodelpost(ax3, result[2])
             show()
 
