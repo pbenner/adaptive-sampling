@@ -38,7 +38,7 @@
 
 typedef struct {
         // number of timesteps
-        int T;
+        unsigned int T;
         gsl_vector *successes;
         gsl_vector *failures;
         gsl_vector *prior;
@@ -236,7 +236,6 @@ void evidences(binProblem *bp, mpf_t *ev)
         unsigned int M = minM(bp);
         mpf_t *a = allocMPFArray(bp->T);
         int k, kk;
-
         for (k = 0; k <= bp->T-1; k++) {
                 mpf_set(a[k], *iec(bp, -1, k));
         }
@@ -282,14 +281,19 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         mpf_set_ui(sum1, 0);
         for (j=0; j<bp->T; j++) {
                 mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
-                mpf_mul(tmp1, ev1[j], tmp2);
-                mpf_add(sum1, sum1, tmp1);
+                mpf_mul(tmp1, ev1[j], tmp2); // tmp1 = P(D|m)P(m)
+                mpf_add(sum1, sum1, tmp1);   // sum1 = Sum_{m \in M} P(D|m)P(m)
         }
         for (j=0; j<bp->T; j++) {
-                mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
-                mpf_mul(tmp1, ev1[j], tmp2);
-                mpf_div(tmp1, tmp1, sum1);
-                mpost[j] = mpf_get_d(tmp1);
+                if (gsl_vector_get(bp->prior, j) > 0) {
+                        mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
+                        mpf_mul(tmp1, ev1[j], tmp2);
+                        mpf_div(tmp1, tmp1, sum1);
+                        mpost[j] = mpf_get_d(tmp1);
+                }
+                else {
+                        mpost[j] = 0;
+                }
         }
         // for each timestep compute expectation and variance
         // from the model average
@@ -318,9 +322,12 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
                                 mpf_add(sum3, sum3, tmp1);
                         }
                 }
-                mpf_div(tmp1, sum2, sum1);
-                mpf_div(tmp2, sum3, sum1);
+                mpf_div(tmp1, sum2, sum1); // tmp1 = P(D' |M)/P(D|M)
+                mpf_div(tmp2, sum3, sum1); // tmp2 = P(D''|M)/P(D|M)
                 pdf[i] = mpf_get_d(tmp1);
+
+                mpf_pow_ui(tmp1, tmp1, 2); // tmp1 = (P(D' |M)/P(D|M))^2
+                mpf_sub(tmp2, tmp2, tmp1); // tmp2 =  P(D''|M)/P(D|M) - (P(D' |M)/P(D|M))^2
                 var[i] = mpf_get_d(tmp2);
         }
 
@@ -340,11 +347,11 @@ gsl_matrix * bin(
         gsl_vector *prior,
         Options *options)
 {
-        size_t N = successes_v->size;
-        gsl_matrix *m = gsl_matrix_alloc(3, N);
-        double pdf[N];
-        double var[N];
-        double mpost[N];
+        size_t K = successes_v->size;
+        gsl_matrix *m = gsl_matrix_alloc(3, K);
+        double pdf[K];
+        double var[K];
+        double mpost[K];
         unsigned int i;
         binProblem bp;
 
@@ -357,9 +364,9 @@ gsl_matrix * bin(
         bp.sigma      = options->sigma;
         bp.gamma      = options->gamma;
         bp.likelihood = options->likelihood;
-        bp.mprior     = allocMPFArray(N);
-        bp.success_m  = gsl_matrix_alloc(N, N);
-        bp.failure_m  = gsl_matrix_alloc(N, N);
+        bp.mprior     = allocMPFArray(K);
+        bp.success_m  = gsl_matrix_alloc(K, K);
+        bp.failure_m  = gsl_matrix_alloc(K, K);
         bp.add_success[0] = 0; // number of the bin
         bp.add_success[1] = 0; // how many successes
 
@@ -373,9 +380,9 @@ gsl_matrix * bin(
         pdensity(&bp, pdf, var, mpost);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
-                notice(NONE, "pdf[%d]=%f", i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
                 gsl_matrix_set(m, 2, i, mpost[i]);
+                notice(NONE, "pdf[%03d]=%f var[%03d]=%f", i, pdf[i], i, var[i]);
         }
 
         mpz_clear(tmp1);
@@ -383,7 +390,7 @@ gsl_matrix * bin(
         mpf_clear(tmp3);
         mpf_clear(tmp4);
 
-        freeMPFArray(bp.mprior, N);
+        freeMPFArray(bp.mprior, K);
         gsl_matrix_free(bp.success_m);
         gsl_matrix_free(bp.failure_m);
 
