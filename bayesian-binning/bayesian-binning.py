@@ -41,12 +41,15 @@ def usage():
     print "bayesian-binning.py [option]... FILE "
     print
     print "Options:"
-    print "       --likelihood   - multinomial, binomial"
-    print "   -s, --sigma        - sigma hyperparameter"
-    print "   -g, --gamma        - gamma hpyerparameter"
+    print "       --likelihood=LIKELIHOOD - multinomial, binomial"
+    print "   -s, --sigma=SIGMA           - sigma hyperparameter"
+    print "   -g, --gamma=GAMMA           - gamma hpyerparameter"
     print
-    print "   -h, --help         - print help"
-    print "   -v, --verbose      - be verbose"
+    print "       --load                  - load result from file"
+    print "       --save                  - save result to file"
+    print
+    print "   -h, --help                  - print help"
+    print "   -v, --verbose               - be verbose"
     print
 
 # plotting
@@ -104,9 +107,9 @@ def plotbin(ax, x, exp, var):
 
 def bin(successes, failures, mprior):
     """Call the binning library."""
-    if options['result']:
+    if options['load']:
         config = ConfigParser.RawConfigParser()
-        config.read(options['result'])
+        config.read(options['load'])
         pdf_str   = config.get('Result', 'pdf')
         var_str   = config.get('Result', 'var')
         mpost_str = config.get('Result', 'mpost')
@@ -240,14 +243,14 @@ options = {
     'likelihood' : 1,
     'sigma'      : 1,
     'gamma'      : 1,
-    'result'     : None,
+    'load'       : None,
     'save'       : None
     }
 
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma=", "result=", "save="]
+        longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma=", "load=", "save="]
         opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:", longopts)
     except getopt.GetoptError:
         usage()
@@ -269,8 +272,8 @@ def main():
             options["sigma"] = int(a)
         if o in ("-g", "--gamma"):
             options["gamma"] = int(a)
-        if o == "--result":
-            options["result"] = a
+        if o == "--load":
+            options["load"] = a
         if o == "--save":
             options["save"] = a
     if len(tail) != 1:
