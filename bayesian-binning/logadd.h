@@ -20,6 +20,8 @@
 
 #include <math.h>
 
+/* Log Sum of Exponentials Algorithm */
+
 inline
 double logadd(double a, double b)
 {
@@ -30,6 +32,7 @@ double logadd(double a, double b)
                 a = b;
                 b = tmp;
         }
+
         return a + log1p(exp(b-a));
 }
 

@@ -38,15 +38,15 @@
 typedef struct {
         // number of timesteps
         unsigned int T;
-        gsl_vector *successes;
-        gsl_vector *failures;
-        gsl_vector *prior;
-        double     *mprior_log;
+        gsl_vector  *successes;
+        gsl_vector  *failures;
+        gsl_vector  *prior;
+        long double *mprior_log;
         // type of the likelihood
         int likelihood;
         // hyperparameters
-        double gamma;
-        double sigma;
+        long double gamma;
+        long double sigma;
         // internal data
         gsl_matrix *success_m;
         gsl_matrix *failure_m;
@@ -81,13 +81,13 @@ unsigned int failures(binProblem *bp, int ks, int ke)
 }
 
 static
-double beta_log(unsigned int p, unsigned int q)
+long double beta_log(unsigned int p, unsigned int q)
 {
         return gsl_sf_lngamma(p+q) - gsl_sf_lngamma(p) - gsl_sf_lngamma(q);
 }
 
 static
-double betaInv_log(unsigned int p, unsigned int q)
+long double betaInv_log(unsigned int p, unsigned int q)
 {
          return gsl_sf_lngamma(p) + gsl_sf_lngamma(q) - gsl_sf_lngamma(p+q);
 }
@@ -135,12 +135,12 @@ void computeMPrior_log(binProblem *bp)
 }
 
 static
-double iec_log(binProblem *bp, int kk, int k)
+long double iec_log(binProblem *bp, int kk, int k)
 {
         // multinomial
         if (bp->likelihood == 1) {
                 unsigned int n = successes(bp, kk, k);
-                return gsl_sf_lnfact(n) - n*log(k-kk);
+                return gsl_sf_lnfact(n) - n*logl(k-kk);
         }
         // binomial
         if (bp->likelihood == 2) {
@@ -164,11 +164,11 @@ int minM(binProblem *bp)
 }
 
 static
-void evidences_log(binProblem *bp, double *ev_log)
+void evidences_log(binProblem *bp, long double *ev_log)
 {
         unsigned int m, lb;
         unsigned int M = minM(bp);
-        double a_log[bp->T];
+        long double a_log[bp->T];
         int k, kk;
         for (k = 0; k <= bp->T-1; k++) {
                 a_log[k] = iec_log(bp, -1, k);
@@ -193,10 +193,10 @@ void evidences_log(binProblem *bp, double *ev_log)
 }
 
 static
-void pdensity_log(binProblem *bp, double *pdf, double *var, double *mpost)
+void pdensity_log(binProblem *bp, long double *pdf, long double *var, long double *mpost)
 {
-        double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
-        double sum1, sum2, sum3;
+        long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
+        long double sum1, sum2, sum3;
         unsigned int i, j;
 
         // compute evidence
@@ -205,13 +205,15 @@ void pdensity_log(binProblem *bp, double *pdf, double *var, double *mpost)
         // compute model posteriors
         sum1 = -HUGE_VAL;
         for (j=0; j<bp->T; j++) {
-                double prior = gsl_vector_get(bp->prior, j);
-                sum1 = logadd(sum1, ev1_log[j] + log(prior));
+                if (gsl_vector_get(bp->prior, j) > 0) {
+                        long double prior = gsl_vector_get(bp->prior, j);
+                        sum1 = logadd(sum1, ev1_log[j] + logl(prior));
+                }
         }
         for (j=0; j<bp->T; j++) {
                 if (gsl_vector_get(bp->prior, j) > 0) {
-                        double prior = gsl_vector_get(bp->prior, j);
-                        mpost[j] = exp(ev1_log[j] + log(prior) - sum1);
+                        long double prior = gsl_vector_get(bp->prior, j);
+                        mpost[j] = expl(ev1_log[j] + logl(prior) - sum1);
                 }
                 else {
                         mpost[j] = 0;
@@ -237,15 +239,15 @@ void pdensity_log(binProblem *bp, double *pdf, double *var, double *mpost)
                 sum3 = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
                         if (gsl_vector_get(bp->prior, j) > 0) {
-                                double prior = gsl_vector_get(bp->prior, j);
-                                sum2 = logadd(sum2, ev2_log[j] + log(prior));
-                                sum3 = logadd(sum3, ev3_log[j] + log(prior));
+                                long double prior = gsl_vector_get(bp->prior, j);
+                                sum2 = logadd(sum2, ev2_log[j] + logl(prior));
+                                sum3 = logadd(sum3, ev3_log[j] + logl(prior));
                         }
                 }
                 // P(D' |M)/P(D|M)
-                pdf[i] = exp(sum2 - sum1);
+                pdf[i] = expl(sum2 - sum1);
                 // P(D''|M)/P(D|M) - (P(D' |M)/P(D|M))^2
-                var[i] = exp(sum3 - sum1) - exp(2*(sum2 - sum1));
+                var[i] = expl(sum3 - sum1) - expl(sum2 - sum1)*expl(sum2 - sum1);
         }
 }
 
@@ -257,12 +259,12 @@ gsl_matrix * bin_log(
 {
         size_t K = successes_v->size;
         gsl_matrix *m = gsl_matrix_alloc(3, K);
-        double pdf[K];
-        double var[K];
-        double mpost[K];
+        long double pdf[K];
+        long double var[K];
+        long double mpost[K];
+        long double mprior_log[K];
         unsigned int i;
         binProblem bp;
-        double mprior_log[K];
 
         verbose       = options->verbose;
 
@@ -286,7 +288,7 @@ gsl_matrix * bin_log(
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
                 gsl_matrix_set(m, 2, i, mpost[i]);
-                notice(NONE, "pdf[%03d]=%f var[%03d]=%f", i, pdf[i], i, var[i]);
+                notice(NONE, "pdf[%03d]=%Lf var[%03d]=%Lf", i, pdf[i], i, var[i]);
         }
 
         gsl_matrix_free(bp.success_m);
