@@ -23,17 +23,15 @@
 /* Log Sum of Exponentials Algorithm */
 
 inline
-double logadd(double a, double b)
+long double logadd(long double a, long double b)
 {
-        double tmp;
+        long double tmp;
 
         if (a<b) {
-                tmp = a;
-                a = b;
-                b = tmp;
+                tmp = a; a = b; b = tmp;
         }
 
-        return a + log1p(exp(b-a));
+        return a + log1pl(exp(b-a));
 }
 
 #endif /* _LOGADD_H_ */
