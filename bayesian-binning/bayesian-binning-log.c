@@ -186,15 +186,18 @@ void evidences_log(binProblem *bp, double *ev_log)
                         }
                 }
                 ev_log[m] = a_log[bp->T-1] + bp->mprior_log[m];
+                if (isnan(ev_log[m])) {
+                        err(NONE, "Machine precision has been exceeded. Terminating.");
+                }
         }
 }
 
 static
 void pdensity_log(binProblem *bp, double *pdf, double *var, double *mpost)
 {
-        unsigned int i, j;
         double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
         double sum1, sum2, sum3;
+        unsigned int i, j;
 
         // compute evidence
         computeMPrior_log(bp);
