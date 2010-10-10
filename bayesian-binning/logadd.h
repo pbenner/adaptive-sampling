@@ -31,7 +31,7 @@ long double logadd(long double a, long double b)
                 tmp = a; a = b; b = tmp;
         }
 
-        return a + log1pl(exp(b-a));
+        return a + log1pl(expl(b-a));
 }
 
 #endif /* _LOGADD_H_ */
