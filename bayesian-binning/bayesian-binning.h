@@ -21,4 +21,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-extern gsl_matrix * bin(gsl_vector *s, gsl_vector *f, gsl_vector *prior, Options *options);
+#ifdef HAVE_LIBGMP
+extern gsl_matrix * bin_gmp(gsl_vector *s, gsl_vector *f, gsl_vector *prior, Options *options);
+#endif /* HAVE_LIBGMP */
+extern gsl_matrix * bin_log(gsl_vector *s, gsl_vector *f, gsl_vector *prior, Options *options);

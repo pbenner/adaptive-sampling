@@ -341,7 +341,7 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
         freeMPFArray(ev3, bp->T+1);
 }
 
-gsl_matrix * bin(
+gsl_matrix * bin_log(
         gsl_vector *successes_v,
         gsl_vector *failures_v,
         gsl_vector *prior,

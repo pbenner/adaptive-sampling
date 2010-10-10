@@ -16,6 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import sys
 import getopt
 import os
 import interface
@@ -44,6 +45,8 @@ def usage():
     print "       --likelihood=LIKELIHOOD - multinomial, binomial"
     print "   -s, --sigma=SIGMA           - sigma hyperparameter"
     print "   -g, --gamma=GAMMA           - gamma hpyerparameter"
+    print
+    print "   -m                          - use GNU multiple precision library"
     print
     print "       --load                  - load result from file"
     print "       --save                  - save result to file"
@@ -240,6 +243,7 @@ def parseConfig(file):
 
 options = {
     'verbose'    : False,
+    'gmp'        : False,
     'likelihood' : 1,
     'sigma'      : 1,
     'gamma'      : 1,
@@ -251,18 +255,21 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma=", "load=", "save="]
-        opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:m", longopts)
     except getopt.GetoptError:
         usage()
         return 2
     output = None
     for o, a in opts:
         if o in ("-v", "--verbose"):
-            print "verbose mode turned on"
+            sys.stderr.write("Verbose mode turned on.\n")
             options["verbose"] = True
         if o in ("-h", "--help"):
             usage()
             return 0
+        if o == "-m":
+            sys.stderr.write("Using GNU multiple precision library.\n")
+            options["gmp"] = True
         if o == "--likelihood":
             if a == "multinomial":
                 options["likelihood"] = 1

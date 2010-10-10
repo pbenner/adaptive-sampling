@@ -7,7 +7,11 @@ INCLUDES = -I$(top_srcdir)/include
 
 ## bayesian-binning library
 noinst_LTLIBRARIES  = libbayesian-binning.la
-libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h
+if WITH_GMP
+libbayesian_binning_la_SOURCES = bayesian-binning-gmp.c bayesian-binning-log.c bayesian-binning.h
+else
+libbayesian_binning_la_SOURCES = bayesian-binning-log.c bayesian-binning.h
+endif
 libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
 
 ## main program
@@ -30,7 +34,11 @@ _interface_la_LIBADD     = libbayesian-binning.la
 interface_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) $(AX_SWIG_PYTHON_OPT) -o $@ $<
 
+all-local:
+	$(LN_S) .libs/_interface.so _interface.so
+
 clean-local:
+	$(RM) _interface.so
 	$(RM) interface_wrap.c interface.py interface.pyc
 
 ## manuals

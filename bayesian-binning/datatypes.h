@@ -12,6 +12,7 @@ typedef struct matrix {
 
 typedef struct options {
         int verbose;
+        int gmp;
         int likelihood;
         unsigned int sigma;
         unsigned int gamma;

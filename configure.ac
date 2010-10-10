@@ -17,18 +17,21 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 AC_INIT([Bayesian-Toolbox], [1.0], [philipp.benner@mis.mpg.de])
+AC_CONFIG_AUX_DIR(auxtools)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AC_CONFIG_SRCDIR(bayesian-binning/bayesian-binning.c)
+AC_CONFIG_SRCDIR(bayesian-binning/bayesian-binning-gmp.c)
 AM_INIT_AUTOMAKE([gnu dist-bzip2])
 AC_PROG_LIBTOOL
+LT_INIT
 AC_PROG_CC
 AC_PROG_CXX
 AC_ISC_POSIX
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
+AC_PROG_LN_S
 
 # ------------------] GENERAL PACKAGE INFO [
 
@@ -86,7 +89,8 @@ AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
   AC_MSG_ERROR([this library is required]))
 
 AC_CHECK_LIB([gmp], [__gmpz_init],,
-  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/])])
+  [AC_MSG_WARN([GNU MP not found, see http://gmplib.org/])])
+AM_CONDITIONAL(WITH_GMP, test "x$ac_cv_lib_gmp___gmpz_init" = x""yes)
 
 # ------------------] GETOPT_LONG [
 
