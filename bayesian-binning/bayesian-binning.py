@@ -47,6 +47,7 @@ def usage():
     print "   -g, --gamma=GAMMA           - gamma hpyerparameter"
     print
     print "   -m                          - use GNU multiple precision library"
+    print "       --compare               - compare log scale with gmp library"
     print
     print "       --load                  - load result from file"
     print "       --save                  - save result to file"
@@ -120,6 +121,16 @@ def bin(successes, failures, mprior):
         var       = map(float, var_str.split(' '))
         mpost     = map(float, mpost_str.split(' '))
         return [pdf, var, mpost]
+    elif options["compare"]:
+        successes_i = map(int, successes)
+        failures_i  = map(int, failures)
+        mprior_i    = map(float, mprior)
+        options["gmp"] = False
+        result1 = interface.binning(successes_i, failures_i, mprior_i, options)
+        options["gmp"] = True
+        result2 = interface.binning(successes_i, failures_i, mprior_i, options)
+        print [abs(a - b) for a, b in zip(result1[0], result2[0])]
+        exit(0)
     else:
         successes_i = map(int, successes)
         failures_i  = map(int, failures)
@@ -244,6 +255,7 @@ def parseConfig(file):
 options = {
     'verbose'    : False,
     'gmp'        : False,
+    'compare'    : False,
     'likelihood' : 1,
     'sigma'      : 1,
     'gamma'      : 1,
@@ -254,7 +266,7 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "likelihood=", "sigma=", "gamma=", "load=", "save="]
+        longopts   = ["help", "verbose", "compare", "likelihood=", "sigma=", "gamma=", "load=", "save="]
         opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:m", longopts)
     except getopt.GetoptError:
         usage()
@@ -270,6 +282,9 @@ def main():
         if o == "-m":
             sys.stderr.write("Using GNU multiple precision library.\n")
             options["gmp"] = True
+        if o == "--compare":
+            sys.stderr.write("Comparing log scale with GNU multiple precision library.\n")
+            options["compare"] = True
         if o == "--likelihood":
             if a == "multinomial":
                 options["likelihood"] = 1
