@@ -34,7 +34,9 @@ _interface_la_LIBADD     = libbayesian-binning.la
 interface_wrap.c: $(SWIG_SOURCES)
 	$(SWIG) $(AX_SWIG_PYTHON_OPT) -o $@ $<
 
-all-local:
+all-local: _interface.so
+
+_interface.so:
 	$(LN_S) .libs/_interface.so _interface.so
 
 clean-local:

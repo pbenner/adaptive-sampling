@@ -32,9 +32,8 @@
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_exp.h>
 
-#include <gmp.h>
-
 #include "datatypes.h"
+#include "logadd.h"
 
 typedef struct {
         // number of timesteps
@@ -42,7 +41,7 @@ typedef struct {
         gsl_vector *successes;
         gsl_vector *failures;
         gsl_vector *prior;
-        mpf_t      *mprior;
+        double     *mprior_log;
         // type of the likelihood
         int likelihood;
         // hyperparameters
@@ -53,33 +52,6 @@ typedef struct {
         gsl_matrix *failure_m;
         unsigned int add_success[2];
 } binProblem;
-
-mpz_t tmp1, tmp2;
-mpf_t tmp3, tmp4;
-
-static
-mpf_t * allocMPFArray(size_t size)
-{
-        size_t i;
-        mpf_t *a = (mpf_t *)malloc((size+1)*sizeof(mpf_t));
-
-        for (i = 0; i<size; i++) {
-                mpf_init(a[i]);
-        }
-
-        return a;
-}
-
-static
-void freeMPFArray(mpf_t *a, size_t size)
-{
-        size_t i;
-
-        for (i = 0; i<size; i++) {
-                mpf_clear(a[i]);
-        }
-        free(a);
-}
 
 static
 unsigned int successes(binProblem *bp, int ks, int ke)
@@ -109,33 +81,15 @@ unsigned int failures(binProblem *bp, int ks, int ke)
 }
 
 static
-mpf_t * beta(unsigned int p, unsigned int q)
+double beta_log(unsigned int p, unsigned int q)
 {
-        mpz_fac_ui(tmp1, p-1);     // tmp1 = (p-1)!
-        mpz_fac_ui(tmp2, q-1);     // tmp2 = (q-1)!
-        mpz_mul(tmp1, tmp1, tmp2); // tmp1 = (p-1)!(q-1)!
-        mpz_fac_ui(tmp2, p+q-1);   // tmp2 = (p+q-1)!
-        
-        mpf_set_z(tmp3, tmp1);     // tmp3 = (p-1)!(q-1)!
-        mpf_set_z(tmp4, tmp2);     // tmp4 = (p+q-1)!
-        mpf_div(tmp4, tmp4, tmp3); // tmp4 = (p+q-1)! / (p-1)!(q-1)!
-
-        return &tmp4;
+        return gsl_sf_lngamma(p+q) - gsl_sf_lngamma(p) - gsl_sf_lngamma(q);
 }
 
 static
-mpf_t * betaInv(unsigned int p, unsigned int q)
+double betaInv_log(unsigned int p, unsigned int q)
 {
-        mpz_fac_ui(tmp1, p-1);     // tmp1 = (p-1)!
-        mpz_fac_ui(tmp2, q-1);     // tmp2 = (q-1)!
-        mpz_mul(tmp1, tmp1, tmp2); // tmp1 = (p-1)!(q-1)!
-        mpz_fac_ui(tmp2, p+q-1);   // tmp2 = (p+q-1)!
-        
-        mpf_set_z(tmp3, tmp1);     // tmp3 = (p-1)!(q-1)!
-        mpf_set_z(tmp4, tmp2);     // tmp4 = (p+q-1)!
-        mpf_div(tmp4, tmp3, tmp4); // tmp4 = (p-1)!(q-1)! / (p+q-1)!
-
-        return &tmp4;
+         return gsl_sf_lngamma(p) + gsl_sf_lngamma(q) - gsl_sf_lngamma(p+q);
 }
 
 static
@@ -159,62 +113,42 @@ unsigned int computeSuccesses(binProblem *bp)
 }
 
 static
-void computeMPrior(binProblem *bp)
+void computeMPrior_log(binProblem *bp)
 {
         unsigned int m;
         // multinomial
         if (bp->likelihood == 1) {
                 for (m = 0; m < bp->T; m++) {
                         unsigned int N = successes(bp, -1, bp->T-1);
-                        mpz_fac_ui(tmp1, bp->T-1-m);
-                        mpz_fac_ui(tmp2, m);
-                        mpz_mul(tmp2, tmp2, tmp2);
-                        mpz_mul(tmp2, tmp1, tmp2);
-                        mpf_set_z (tmp3, tmp2);
-                        mpz_fac_ui(tmp1, bp->T-1);
-                        mpz_fac_ui(tmp2, N+m);
-                        mpz_mul(tmp2, tmp1, tmp2);
-                        mpf_set_z (tmp4, tmp2);
-                        mpf_div(bp->mprior[m], tmp3, tmp4);
+
+                        bp->mprior_log[m] = gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m)
+                                - gsl_sf_lnfact(bp->T-1) - gsl_sf_lnfact(N+m);
                 }
         }
         // binomial
         if (bp->likelihood == 2) {
                 for (m = 0; m < bp->T; m++) {
-                        mpf_pow_ui(tmp4, *beta(bp->sigma, bp->gamma), m+1);
-                        mpz_fac_ui(tmp1, m);          // tmp1 = M!
-                        mpz_fac_ui(tmp2, bp->T-1-m);  // tmp2 = (K-M-1)!
-                        mpz_mul(tmp2, tmp1, tmp2);    // tmp2 = (K-M-1)!M!
-                        mpf_set_z(tmp3, tmp2);        // tmp3 = (K-M-1)!M!
-                        mpf_mul(tmp3, tmp3, tmp4);    // tmp3 = (K-M-1)!M!Beta
-
-                        mpz_fac_ui(tmp1, bp->T-1);    // tmp1 = (K-1)!
-                        mpf_set_z(tmp4, tmp1);        // tmp4 = (K-1)!
-                        mpf_div(bp->mprior[m], tmp3, tmp4);
+                        bp->mprior_log[m] = (m+1)*beta_log(bp->sigma, bp->gamma)
+                                - gsl_sf_lnchoose(bp->T-1, m);
                 }
         }
 }
 
 static
-mpf_t * iec(binProblem *bp, int kk, int k)
+double iec_log(binProblem *bp, int kk, int k)
 {
         // multinomial
         if (bp->likelihood == 1) {
-                unsigned int n;
-                n = successes(bp, kk, k);
-                mpz_fac_ui(tmp1, n);
-                mpf_set_ui(tmp3, k-kk);
-                mpf_pow_ui(tmp4, tmp3, n);
-                mpf_set_z (tmp3, tmp1);
-                mpf_div(tmp4, tmp3, tmp4);
+                unsigned int n = successes(bp, kk, k);
+                return gsl_sf_lnfact(n) - n*log(k-kk);
         }
         // binomial
         if (bp->likelihood == 2) {
                 unsigned int s = successes(bp, kk, k);
                 unsigned int f = failures (bp, kk, k);
-                mpf_set(tmp4, *betaInv(s+bp->sigma, f+bp->gamma));
+                return betaInv_log(s+bp->sigma, f+bp->gamma);
         }
-        return &tmp4;
+        err(NONE, "Unknown likelihood function.");
 }
 
 static
@@ -230,66 +164,51 @@ int minM(binProblem *bp)
 }
 
 static
-void evidences(binProblem *bp, mpf_t *ev)
+void evidences_log(binProblem *bp, double *ev_log)
 {
         unsigned int m, lb;
         unsigned int M = minM(bp);
-        mpf_t *a = allocMPFArray(bp->T);
+        double a_log[bp->T];
         int k, kk;
         for (k = 0; k <= bp->T-1; k++) {
-                mpf_set(a[k], *iec(bp, -1, k));
+                a_log[k] = iec_log(bp, -1, k);
         }
-        mpf_mul(ev[0], a[bp->T-1], bp->mprior[0]);
+        ev_log[0] = a_log[bp->T-1] + bp->mprior_log[0];
 
         for (m = 1; m <= M; m++) {
                 if (m==M) { lb = bp->T-1; }
                 else      { lb = m; }
 
                 for (k = bp->T-1; k >= lb; k--) {
-                        mpf_set_ui(a[k], 0);
+                        a_log[k] = -HUGE_VAL;
                         for (kk = m-1; kk <= k-1; kk++) {
-                                mpf_mul(tmp3, a[kk], *iec(bp, kk, k));
-                                mpf_add(a[k], a[k],  tmp3);
+                                a_log[k] = logadd(a_log[k], a_log[kk] + iec_log(bp, kk, k));
                         }
                 }
-                mpf_mul(ev[m], a[bp->T-1], bp->mprior[m]);
+                ev_log[m] = a_log[bp->T-1] + bp->mprior_log[m];
         }
-
-        freeMPFArray(a, bp->T);
 }
 
 static
-void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
+void pdensity_log(binProblem *bp, double *pdf, double *var, double *mpost)
 {
         unsigned int i, j;
-        mpf_t *ev1 = allocMPFArray(bp->T+1);
-        mpf_t *ev2 = allocMPFArray(bp->T+1);
-        mpf_t *ev3 = allocMPFArray(bp->T+1);
-        mpf_t sum1, sum2, sum3;
-        mpf_t tmp1, tmp2;
-
-        mpf_init(sum1);
-        mpf_init(sum2);
-        mpf_init(sum3);
-        mpf_init(tmp1);
-        mpf_init(tmp2);
+        double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
+        double sum1, sum2, sum3;
 
         // compute evidence
-        computeMPrior(bp);
-        evidences(bp, ev1);
+        computeMPrior_log(bp);
+        evidences_log(bp, ev1_log);
         // compute model posteriors
-        mpf_set_ui(sum1, 0);
+        sum1 = -HUGE_VAL;
         for (j=0; j<bp->T; j++) {
-                mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
-                mpf_mul(tmp1, ev1[j], tmp2); // tmp1 = P(D|m)P(m)
-                mpf_add(sum1, sum1, tmp1);   // sum1 = Sum_{m \in M} P(D|m)P(m)
+                double prior = gsl_vector_get(bp->prior, j);
+                sum1 = logadd(sum1, ev1_log[j] + log(prior));
         }
         for (j=0; j<bp->T; j++) {
                 if (gsl_vector_get(bp->prior, j) > 0) {
-                        mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
-                        mpf_mul(tmp1, ev1[j], tmp2);
-                        mpf_div(tmp1, tmp1, sum1);
-                        mpost[j] = mpf_get_d(tmp1);
+                        double prior = gsl_vector_get(bp->prior, j);
+                        mpost[j] = exp(ev1_log[j] + log(prior) - sum1);
                 }
                 else {
                         mpost[j] = 0;
@@ -303,42 +222,28 @@ void pdensity(binProblem *bp, double *pdf, double *var, double *mpost)
                 // expectation
                 bp->add_success[0] = i;
                 bp->add_success[1] = 1;
-                computeMPrior(bp);
-                evidences(bp, ev2);
+                computeMPrior_log(bp);
+                evidences_log(bp, ev2_log);
 
                 // variance
                 bp->add_success[1] = 2;
-                computeMPrior(bp);
-                evidences(bp, ev3);
+                computeMPrior_log(bp);
+                evidences_log(bp, ev3_log);
 
-                mpf_set_ui(sum2, 0);
-                mpf_set_ui(sum3, 0);
+                sum2 = -HUGE_VAL;
+                sum3 = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
                         if (gsl_vector_get(bp->prior, j) > 0) {
-                                mpf_set_d(tmp2, gsl_vector_get(bp->prior, j));
-                                mpf_mul(tmp1, ev2[j], tmp2); // mult. with prior
-                                mpf_add(sum2, sum2, tmp1);
-                                mpf_mul(tmp1, ev3[j], tmp2); // mult. with prior
-                                mpf_add(sum3, sum3, tmp1);
+                                double prior = gsl_vector_get(bp->prior, j);
+                                sum2 = logadd(sum2, ev2_log[j] + log(prior));
+                                sum3 = logadd(sum3, ev3_log[j] + log(prior));
                         }
                 }
-                mpf_div(tmp1, sum2, sum1); // tmp1 = P(D' |M)/P(D|M)
-                mpf_div(tmp2, sum3, sum1); // tmp2 = P(D''|M)/P(D|M)
-                pdf[i] = mpf_get_d(tmp1);
-
-                mpf_pow_ui(tmp1, tmp1, 2); // tmp1 = (P(D' |M)/P(D|M))^2
-                mpf_sub(tmp2, tmp2, tmp1); // tmp2 =  P(D''|M)/P(D|M) - (P(D' |M)/P(D|M))^2
-                var[i] = mpf_get_d(tmp2);
+                // P(D' |M)/P(D|M)
+                pdf[i] = exp(sum2 - sum1);
+                // P(D''|M)/P(D|M) - (P(D' |M)/P(D|M))^2
+                var[i] = exp(sum3 - sum1) - exp(2*(sum2 - sum1));
         }
-
-        mpf_clear(sum1);
-        mpf_clear(sum2);
-        mpf_clear(sum3);
-        mpf_clear(tmp1);
-        mpf_clear(tmp2);
-        freeMPFArray(ev1, bp->T+1);
-        freeMPFArray(ev2, bp->T+1);
-        freeMPFArray(ev3, bp->T+1);
 }
 
 gsl_matrix * bin_log(
@@ -354,6 +259,7 @@ gsl_matrix * bin_log(
         double mpost[K];
         unsigned int i;
         binProblem bp;
+        double mprior_log[K];
 
         verbose       = options->verbose;
 
@@ -364,20 +270,15 @@ gsl_matrix * bin_log(
         bp.sigma      = options->sigma;
         bp.gamma      = options->gamma;
         bp.likelihood = options->likelihood;
-        bp.mprior     = allocMPFArray(K);
+        bp.mprior_log = mprior_log;
         bp.success_m  = gsl_matrix_alloc(K, K);
         bp.failure_m  = gsl_matrix_alloc(K, K);
         bp.add_success[0] = 0; // number of the bin
         bp.add_success[1] = 0; // how many successes
 
-        mpz_init(tmp1);
-        mpz_init(tmp2);
-        mpf_init(tmp3);
-        mpf_init(tmp4);
-
         computeSuccesses(&bp);
 
-        pdensity(&bp, pdf, var, mpost);
+        pdensity_log(&bp, pdf, var, mpost);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
@@ -385,12 +286,6 @@ gsl_matrix * bin_log(
                 notice(NONE, "pdf[%03d]=%f var[%03d]=%f", i, pdf[i], i, var[i]);
         }
 
-        mpz_clear(tmp1);
-        mpz_clear(tmp2);
-        mpf_clear(tmp3);
-        mpf_clear(tmp4);
-
-        freeMPFArray(bp.mprior, K);
         gsl_matrix_free(bp.success_m);
         gsl_matrix_free(bp.failure_m);
 
