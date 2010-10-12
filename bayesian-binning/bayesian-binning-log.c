@@ -193,10 +193,40 @@ void evidences_log(binProblem *bp, long double *ev_log)
 }
 
 static
-void pdensity_log(binProblem *bp, long double *pdf, long double *var, long double *mpost)
+void bprob_log(binProblem *bp, long double *ev_log, unsigned int pos)
 {
-        long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
-        long double sum1, sum2, sum3;
+        unsigned int m, lb;
+        unsigned int M = minM(bp);
+        long double a_log[bp->T];
+        int k, kk;
+        for (k = 0; k <= bp->T-1; k++) {
+                a_log[k] = 0;
+        }
+        a_log[pos] = iec_log(bp, -1, pos);
+        ev_log[0]  = a_log[bp->T-1] + bp->mprior_log[0];
+
+        for (m = 1; m <= M; m++) {
+                if (m==M) { lb = bp->T-1; }
+                else      { lb = m; }
+
+                for (k = bp->T-1; k >= lb; k--) {
+                        a_log[k] = -HUGE_VAL;
+                        for (kk = m-1; kk <= k-1; kk++) {
+                                a_log[k] = logadd(a_log[k], a_log[kk] + iec_log(bp, kk, k));
+                        }
+                }
+                ev_log[m] = a_log[bp->T-1] + bp->mprior_log[m];
+                if (isnan(ev_log[m])) {
+                        err(NONE, "Machine precision has been exceeded. Terminating.");
+                }
+        }
+}
+
+static
+void pdensity_log(binProblem *bp, long double *pdf, long double *var, long double *bprob, long double *mpost)
+{
+        long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T], ev4_log[bp->T];
+        long double sum1, sum2, sum3, sum_bprob;
         unsigned int i, j;
 
         // compute evidence
@@ -218,6 +248,18 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
                 else {
                         mpost[j] = 0;
                 }
+        }
+        // break probability
+        for (i=0; i<bp->T; i++) {
+                bprob_log(bp, ev4_log, i);
+                sum_bprob = -HUGE_VAL;
+                for (j=0; j<bp->T; j++) {
+                        if (gsl_vector_get(bp->prior, j) > 0) {
+                                long double prior = gsl_vector_get(bp->prior, j);
+                                sum_bprob = logadd(sum_bprob, ev4_log[j] + logl(prior));
+                        }
+                }
+                bprob[i] = expl(sum_bprob - sum1);
         }
         // for each timestep compute expectation and variance
         // from the model average
@@ -258,9 +300,10 @@ gsl_matrix * bin_log(
         Options *options)
 {
         size_t K = successes_v->size;
-        gsl_matrix *m = gsl_matrix_alloc(3, K);
+        gsl_matrix *m = gsl_matrix_alloc(4, K);
         long double pdf[K];
         long double var[K];
+        long double bprob[K];
         long double mpost[K];
         long double mprior_log[K];
         unsigned int i;
@@ -283,11 +326,12 @@ gsl_matrix * bin_log(
 
         computeSuccesses(&bp);
 
-        pdensity_log(&bp, pdf, var, mpost);
+        pdensity_log(&bp, pdf, var, bprob, mpost);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
-                gsl_matrix_set(m, 2, i, mpost[i]);
+                gsl_matrix_set(m, 2, i, bprob[i]);
+                gsl_matrix_set(m, 3, i, mpost[i]);
                 notice(NONE, "pdf[%03d]=%Lf var[%03d]=%Lf", i, pdf[i], i, var[i]);
         }
 

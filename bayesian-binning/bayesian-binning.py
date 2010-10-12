@@ -93,9 +93,8 @@ def plotspikes(ax, x, timings):
     ax.set_ylabel('Trials')
     ax.plot(X, Y, 'k|')
 
-def plotbin(ax, x, exp, var):
+def plotbin(ax, x, exp, var, bprob):
     """Plot the binning result."""
-
     N = len(exp)
     if x==None:
         x = np.arange(0, N, 1)
@@ -105,6 +104,9 @@ def plotbin(ax, x, exp, var):
     ax.plot(x, exp, 'r')
     ax.set_xlabel('bin',  font)
     ax.set_ylabel('P(x)', font)
+    if bprob:
+        twinax = ax.twinx()
+        twinax.plot(x, bprob, 'g')
 
 # binning
 # ------------------------------------------------------------------------------
@@ -120,7 +122,12 @@ def bin(successes, failures, mprior):
         pdf       = map(float, pdf_str.split(' '))
         var       = map(float, var_str.split(' '))
         mpost     = map(float, mpost_str.split(' '))
-        return [pdf, var, mpost]
+        if config.has_option('Result', 'bprob'):
+            bprob_str = config.get('Result', 'bprob')
+            bprob     = map(float, bprob_str.split(' '))
+        else:
+            bprob = []
+        return [pdf, var, bprob, mpost]
     elif options["compare"]:
         successes_i = map(int, successes)
         failures_i  = map(int, failures)
@@ -145,7 +152,8 @@ def saveResult(result):
     config.add_section('Result')
     config.set('Result', 'pdf', " ".join(map(str, result[0])))
     config.set('Result', 'var', " ".join(map(str, result[1])))
-    config.set('Result', 'mpost', " ".join(map(str, result[2])))
+    config.set('Result', 'bprob', " ".join(map(str, result[2])))
+    config.set('Result', 'mpost', " ".join(map(str, result[3])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
 
@@ -217,8 +225,8 @@ def parseConfig(file):
             fig = figure()
             ax1  = fig.add_subplot(2,1,1)
             ax2  = fig.add_subplot(2,1,2)
-            plotbin(ax1, None, result[0], result[1])
-            plotmodelpost(ax2, result[2])
+            plotbin(ax1, None, result[0], result[1], result[2])
+            plotmodelpost(ax2, result[3])
             show()
     if config.has_section('Trials'):
         readOptions(config, 'Trials')
@@ -245,8 +253,8 @@ def parseConfig(file):
             ax2 = fig.add_subplot(3,1,2)
             ax3 = fig.add_subplot(3,1,3)
             plotspikes(ax1, x, timings)
-            plotbin   (ax2, x, result[0], result[1])
-            plotmodelpost(ax3, result[2])
+            plotbin   (ax2, x, result[0], result[1], result[2])
+            plotmodelpost(ax3, result[3])
             show()
 
 # main
