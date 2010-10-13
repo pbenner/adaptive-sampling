@@ -219,6 +219,8 @@ def parseConfig(file):
         if config.has_option('Counts', 'mprior'):
             prior   = readMPrior(config.get('Counts', 'mprior'), N)
         result      = bin(successes, failures, prior)
+        print result[2]
+        print sum(result[2])
         if options['save']:
             saveResult(result)
         else:
@@ -245,6 +247,8 @@ def parseConfig(file):
         if config.has_option('Trials', 'mprior'):
             prior    = readMPrior(config.get('Trials', 'mprior'), N)
         result       = bin(successes, failures, prior)
+        print result[2]
+        print sum(result[2])
         if options['save']:
             saveResult(result)
         else:
