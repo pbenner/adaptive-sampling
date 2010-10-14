@@ -41,7 +41,7 @@ void successor(long double **ak, size_t L)
         size_t i, j;
 
         for (i = 0; i < L; i++) {
-                for (j = 0; j < L; j++) {
+                for (j = i; j < L; j++) {
                         if (i < L-1 && j < L-1) {
                                 ak[i][j] = ak[i+1][j+1];
                         }
@@ -62,15 +62,15 @@ void logproduct(long double **result, long double **ak, size_t L)
         size_t i, j, k;
 
         for (i = 0; i < L; i++) {
-                for (j = 0; j < L; j++) {
+                for (j = i; j < L; j++) {
                         tmp[i][j] = result[i][j];
                 }
         }
 
         for (i = 0; i < L; i++) {
-                for (j = 0; j < L; j++) {
+                for (j = i; j < L; j++) {
                         result[i][j] = -HUGE_VAL;
-                        for (k = 0; k < L; k++) {
+                        for (k = i; k <= j; k++) {
                                 result[i][j] = logadd(result[i][j], tmp[i][k] + ak[k][j]);
                         }
                 }
