@@ -51,7 +51,6 @@ gsl_vector * toGslVector(const Vector *vector)
         return v;
 }
 
-
 Vector * fromGslVector(const gsl_vector * vector)
 {
         int i;

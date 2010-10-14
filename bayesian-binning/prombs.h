@@ -15,26 +15,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _LOGADD_H_
-#define _LOGADD_H_
+#ifndef _PROMBS_H_
+#define _PROMBS_H_
 
-#include <math.h>
+extern void prombs(long double *result, long double (*f)(int, int), size_t L, size_t m);
 
-/* Log Sum of Exponentials Algorithm */
-
-static inline
-long double logadd(long double a, long double b)
-{
-        long double tmp;
-
-        if (a<b) {
-                tmp = a; a = b; b = tmp;
-        }
-        if (b == -HUGE_VAL) {
-                return a;
-        }
-
-        return a + log1pl(expl(b-a));
-}
-
-#endif /* _LOGADD_H_ */
+#endif /* _PROMBS_H_ */

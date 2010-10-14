@@ -53,37 +53,17 @@ typedef struct {
         unsigned int add_success[2];
 } binProblem;
 
+#include "prombs.h"
+
 static
 unsigned int successes(binProblem *bp, int ks, int ke)
 {
-        if (ks+1 <= bp->add_success[0] && bp->add_success[0] <= ke) {
-                return gsl_matrix_get(bp->success_m, ks+1, ke) +
+        if (ks <= bp->add_success[0] && bp->add_success[0] <= ke) {
+                return gsl_matrix_get(bp->success_m, ks, ke) +
                         bp->add_success[1];
         }
-        else if (ks+1 <= ke) {
-                return gsl_matrix_get(bp->success_m, ks+1, ke);
-        }
-        else {
-                return 0;
-        }
-}
-
-static
-unsigned int successes_bprob(binProblem *bp, int ks, int ke, int pos)
-{
-        if (ks+1 <= ke && (ks+1 == pos || ke == pos)) {
-                return gsl_matrix_get(bp->success_m, ks+1, ke);
-        }
-        else {
-                return 0;
-        }
-}
-
-static
-unsigned int failures_bprob(binProblem *bp, int ks, int ke, int pos)
-{
-        if (ks+1 <= ke && (ks+1 == pos || ke == pos)) {
-                return gsl_matrix_get(bp->failure_m, ks+1, ke);
+        else if (ks <= ke) {
+                return gsl_matrix_get(bp->success_m, ks, ke);
         }
         else {
                 return 0;
@@ -93,8 +73,8 @@ unsigned int failures_bprob(binProblem *bp, int ks, int ke, int pos)
 static
 unsigned int failures(binProblem *bp, int ks, int ke)
 {
-        if (ks+1 <= ke) {
-                return gsl_matrix_get(bp->failure_m, ks+1, ke);
+        if (ks <= ke) {
+                return gsl_matrix_get(bp->failure_m, ks, ke);
         }
         else {
                 return 0;
@@ -140,7 +120,7 @@ void computeMPrior_log(binProblem *bp)
         // multinomial
         if (bp->likelihood == 1) {
                 for (m = 0; m < bp->T; m++) {
-                        unsigned int N = successes(bp, -1, bp->T-1);
+                        unsigned int N = successes(bp, 0, bp->T-1);
 
                         bp->mprior_log[m] = gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m)
                                 - gsl_sf_lnfact(bp->T-1) - gsl_sf_lnfact(N+m);
@@ -161,29 +141,12 @@ long double iec_log(binProblem *bp, int kk, int k)
         // multinomial
         if (bp->likelihood == 1) {
                 unsigned int n = successes(bp, kk, k);
-                return gsl_sf_lnfact(n) - n*logl(k-kk);
+                return gsl_sf_lnfact(n) - n*logl(k-kk+1);
         }
         // binomial
         if (bp->likelihood == 2) {
                 unsigned int s = successes(bp, kk, k);
                 unsigned int f = failures (bp, kk, k);
-                return betaInv_log(s+bp->sigma, f+bp->gamma);
-        }
-        err(NONE, "Unknown likelihood function.");
-}
-
-static
-long double iec_bprob_log(binProblem *bp, int kk, int k, int pos)
-{
-        // multinomial
-        if (bp->likelihood == 1) {
-                unsigned int n = successes_bprob(bp, kk, k, pos);
-                return gsl_sf_lnfact(n) - n*logl(k-kk);
-        }
-        // binomial
-        if (bp->likelihood == 2) {
-                unsigned int s = successes_bprob(bp, kk, k, pos);
-                unsigned int f = failures_bprob (bp, kk, k, pos);
                 return betaInv_log(s+bp->sigma, f+bp->gamma);
         }
         err(NONE, "Unknown likelihood function.");
@@ -202,70 +165,20 @@ int minM(binProblem *bp)
 }
 
 static
-void evidences_log(binProblem *bp, long double *ev_log)
+void evidences_log(binProblem *bp, long double *ev_log, int pos)
 {
-        unsigned int m, lb;
-        unsigned int M = minM(bp);
-        long double a_log[bp->T];
-        int k, kk;
-        for (k = 0; k <= bp->T-1; k++) {
-                a_log[k] = iec_log(bp, -1, k);
+        size_t i;
+        long double f(int i, int j)
+        {
+                if (i < pos && pos < j) {
+                        return -HUGE_VAL;
+                }
+                return iec_log(bp, i, j);
         }
-        ev_log[0] = a_log[bp->T-1] + bp->mprior_log[0];
 
-        for (m = 1; m <= M; m++) {
-                if (m==M) { lb = bp->T-1; }
-                else      { lb = m; }
-
-                for (k = bp->T-1; k >= lb; k--) {
-                        a_log[k] = -HUGE_VAL;
-                        for (kk = m-1; kk <= k-1; kk++) {
-                                a_log[k] = logadd(a_log[k], a_log[kk] + iec_log(bp, kk, k));
-                        }
-                }
-                ev_log[m] = a_log[bp->T-1] + bp->mprior_log[m];
-                if (isnan(ev_log[m])) {
-                        err(NONE, "Machine precision has been exceeded. Terminating.");
-                }
-        }
-}
-
-static
-void bprob_log(binProblem *bp, long double *ev_log, unsigned int pos)
-{
-        unsigned int m, lb;
-        unsigned int M = minM(bp);
-        long double a_log[bp->T];
-        int k, kk;
-        for (k = 0; k <= bp->T-1; k++) {
-                a_log[k] = iec_log(bp, -1, k);
-        }
-        ev_log[0] = a_log[bp->T-1] + bp->mprior_log[0];
-
-        for (k = bp->T-1; k >= 1; k--) {
-                if (k == pos) {
-                        a_log[k] = -HUGE_VAL;
-                        for (kk = 0; kk <= k-1; kk++) {
-                                a_log[k] = logadd(a_log[k], a_log[kk] + iec_bprob_log(bp, kk, k, pos));
-                        }
-                }
-                else {
-                        a_log[k] = 0;
-                }
-        }
-        ev_log[1] = a_log[bp->T-1] + bp->mprior_log[1];
-
-        for (m = 2; m <= M; m++) {
-                if (m==M) { lb = bp->T-1; }
-                else      { lb = m; }
-
-                for (k = bp->T-1; k >= lb; k--) {
-                        a_log[k] = -HUGE_VAL;
-                        for (kk = m-1; kk <= k-1; kk++) {
-                                a_log[k] = logadd(a_log[k], a_log[kk] + iec_bprob_log(bp, kk, k, pos));
-                        }
-                }
-                ev_log[m] = a_log[bp->T-1] + bp->mprior_log[m];
+        prombs(ev_log, &f, bp->T, minM(bp));
+        for (i=0; i<bp->T; i++) {
+                ev_log[i] += bp->mprior_log[i];
         }
 }
 
@@ -278,7 +191,7 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
 
         // compute evidence
         computeMPrior_log(bp);
-        evidences_log(bp, ev1_log);
+        evidences_log(bp, ev1_log, -1);
         // compute model posteriors
         sum1 = -HUGE_VAL;
         for (j=0; j<bp->T; j++) {
@@ -298,7 +211,7 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
         }
         // break probability
         for (i=0; i<bp->T; i++) {
-                bprob_log(bp, ev4_log, i);
+                evidences_log(bp, ev4_log, i);
                 sum_bprob = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
                         if (gsl_vector_get(bp->prior, j) > 0) {
@@ -307,7 +220,6 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
                         }
                 }
                 bprob[i] = expl(sum_bprob - sum1);
-//                bprob[i] = expl(ev4_log[2] - ev1_log[2]);
         }
         // for each timestep compute expectation and variance
         // from the model average
@@ -318,12 +230,12 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
                 bp->add_success[0] = i;
                 bp->add_success[1] = 1;
                 computeMPrior_log(bp);
-                evidences_log(bp, ev2_log);
+                evidences_log(bp, ev2_log, -1);
 
                 // variance
                 bp->add_success[1] = 2;
                 computeMPrior_log(bp);
-                evidences_log(bp, ev3_log);
+                evidences_log(bp, ev3_log, -1);
 
                 sum2 = -HUGE_VAL;
                 sum3 = -HUGE_VAL;

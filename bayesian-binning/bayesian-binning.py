@@ -106,7 +106,7 @@ def plotbin(ax, x, exp, var, bprob):
     ax.set_ylabel('P(x)', font)
     if bprob:
         twinax = ax.twinx()
-        twinax.plot(x, bprob, 'g')
+        twinax.plot(x[1:-1], bprob[1:-1], 'g')
 
 # binning
 # ------------------------------------------------------------------------------
@@ -219,8 +219,6 @@ def parseConfig(file):
         if config.has_option('Counts', 'mprior'):
             prior   = readMPrior(config.get('Counts', 'mprior'), N)
         result      = bin(successes, failures, prior)
-        print result[2]
-        print sum(result[2])
         if options['save']:
             saveResult(result)
         else:
@@ -247,8 +245,6 @@ def parseConfig(file):
         if config.has_option('Trials', 'mprior'):
             prior    = readMPrior(config.get('Trials', 'mprior'), N)
         result       = bin(successes, failures, prior)
-        print result[2]
-        print sum(result[2])
         if options['save']:
             saveResult(result)
         else:

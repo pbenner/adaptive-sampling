@@ -11,4 +11,3 @@ extern Vector * allocVector(int size);
 extern Matrix * allocMatrix(int rows, int columns);
 
 extern Matrix * binning(Vector *successes, Vector *failures, Vector *prior, Options *options);
-extern Matrix * test(Matrix *v);

@@ -8,9 +8,9 @@ INCLUDES = -I$(top_srcdir)/include
 ## bayesian-binning library
 noinst_LTLIBRARIES  = libbayesian-binning.la
 if WITH_GMP
-libbayesian_binning_la_SOURCES = bayesian-binning-gmp.c bayesian-binning-log.c bayesian-binning.h
+libbayesian_binning_la_SOURCES = bayesian-binning-gmp.c bayesian-binning-log.c bayesian-binning.h prombs.c prombs.h
 else
-libbayesian_binning_la_SOURCES = bayesian-binning-log.c bayesian-binning.h
+libbayesian_binning_la_SOURCES = bayesian-binning-log.c bayesian-binning.h prombs.c prombs.h
 endif
 libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
 
