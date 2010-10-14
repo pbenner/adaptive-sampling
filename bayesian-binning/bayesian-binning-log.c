@@ -34,6 +34,7 @@
 
 #include "datatypes.h"
 #include "logadd.h"
+#include "prombs.h"
 
 typedef struct {
         // number of timesteps
@@ -52,8 +53,6 @@ typedef struct {
         gsl_matrix *failure_m;
         unsigned int add_success[2];
 } binProblem;
-
-#include "prombs.h"
 
 static
 unsigned int successes(binProblem *bp, int ks, int ke)
