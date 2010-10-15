@@ -14,6 +14,7 @@ typedef struct options {
         int verbose;
         int gmp;
         int likelihood;
+        int bprob;
         unsigned int sigma;
         unsigned int gamma;
 } Options;

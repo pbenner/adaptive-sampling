@@ -7,11 +7,13 @@
     $1 = (Options *)malloc(sizeof(Options));
     PyObject *verbose    = PyDict_GetItemString($input, "verbose");
     PyObject *gmp        = PyDict_GetItemString($input, "gmp");
+    PyObject *bprob      = PyDict_GetItemString($input, "bprob");
     PyObject *likelihood = PyDict_GetItemString($input, "likelihood");
     PyObject *sigma      = PyDict_GetItemString($input, "sigma");
     PyObject *gamma      = PyDict_GetItemString($input, "gamma");
     $1->verbose    = (verbose == Py_True ? 1 : 0);
     $1->gmp        = (gmp     == Py_True ? 1 : 0);
+    $1->bprob      = (bprob   == Py_True ? 1 : 0);
     $1->likelihood = PyInt_AsLong(likelihood);
     $1->sigma      = PyInt_AsLong(sigma);
     $1->gamma      = PyInt_AsLong(gamma);

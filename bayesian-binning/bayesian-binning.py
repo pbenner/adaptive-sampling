@@ -46,6 +46,7 @@ def usage():
     print "       --likelihood=LIKELIHOOD - multinomial, binomial"
     print "   -s, --sigma=SIGMA           - sigma hyperparameter"
     print "   -g, --gamma=GAMMA           - gamma hpyerparameter"
+    print "   -b                          - compute break probabilities"
     print
     print "   -m                          - use GNU multiple precision library"
     print "       --compare               - compare log scale with gmp library"
@@ -279,6 +280,7 @@ options = {
     'verbose'    : False,
     'gmp'        : False,
     'compare'    : False,
+    'bprob'      : False,
     'likelihood' : 1,
     'sigma'      : 1,
     'gamma'      : 1,
@@ -289,8 +291,9 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "compare", "likelihood=", "sigma=", "gamma=", "load=", "save="]
-        opts, tail = getopt.getopt(sys.argv[1:], "hvs:g:m", longopts)
+        longopts   = ["help", "verbose", "compare", "likelihood=",
+                      "sigma=", "gamma=", "load=", "save="]
+        opts, tail = getopt.getopt(sys.argv[1:], "bhvs:g:m", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -302,6 +305,8 @@ def main():
         if o in ("-h", "--help"):
             usage()
             return 0
+        if o == "-b":
+            options["bprob"] = True
         if o == "-m":
             sys.stderr.write("Using GNU multiple precision library.\n")
             options["gmp"] = True

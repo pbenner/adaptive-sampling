@@ -182,7 +182,9 @@ void evidences_log(binProblem *bp, long double *ev_log, int pos)
 }
 
 static
-void pdensity_log(binProblem *bp, long double *pdf, long double *var, long double *bprob, long double *mpost)
+void pdensity_log(
+        binProblem *bp, long double *pdf, long double *var, long double *bprob, long double *mpost,
+        Options *options)
 {
         long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T], ev4_log[bp->T];
         long double sum1, sum2, sum3, sum_bprob;
@@ -209,17 +211,19 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
                 }
         }
         // break probability
-        for (i=0; i<bp->T; i++) {
-                notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
-                evidences_log(bp, ev4_log, i);
-                sum_bprob = -HUGE_VAL;
-                for (j=0; j<bp->T; j++) {
-                        if (gsl_vector_get(bp->prior, j) > 0) {
-                                long double prior = gsl_vector_get(bp->prior, j);
-                                sum_bprob = logadd(sum_bprob, ev4_log[j] + logl(prior));
+        if (options->bprob) {
+                for (i=0; i<bp->T; i++) {
+                        notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
+                        evidences_log(bp, ev4_log, i);
+                        sum_bprob = -HUGE_VAL;
+                        for (j=0; j<bp->T; j++) {
+                                if (gsl_vector_get(bp->prior, j) > 0) {
+                                        long double prior = gsl_vector_get(bp->prior, j);
+                                        sum_bprob = logadd(sum_bprob, ev4_log[j] + logl(prior));
+                                }
                         }
+                        bprob[i] = expl(sum_bprob - sum1);
                 }
-                bprob[i] = expl(sum_bprob - sum1);
         }
         // for each timestep compute expectation and variance
         // from the model average
@@ -286,7 +290,7 @@ gsl_matrix * bin_log(
 
         computeSuccesses(&bp);
 
-        pdensity_log(&bp, pdf, var, bprob, mpost);
+        pdensity_log(&bp, pdf, var, bprob, mpost, options);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
