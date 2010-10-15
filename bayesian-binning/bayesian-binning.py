@@ -23,6 +23,7 @@ import interface
 import ConfigParser
 import numpy as np
 import math
+from itertools import izip
 from matplotlib import *
 from matplotlib.pyplot import *
 import matplotlib.patches as patches
@@ -56,6 +57,11 @@ def usage():
     print "   -v, --verbose               - be verbose"
     print
 
+# tools
+# ------------------------------------------------------------------------------
+
+argmax = lambda array:max(izip(array, xrange(len(array))))
+
 # plotting
 # ------------------------------------------------------------------------------
 font = {'family'     : 'serif',
@@ -78,8 +84,8 @@ def plotmodelpost(ax, modelpost):
     barpath = path.Path.make_compound_path_from_polys(XY)
     patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
     ax.add_patch(patch)
-    ax.set_xlabel('B',  font)
-    ax.set_ylabel('P(B|D)', font)
+    ax.set_xlabel('M',  font)
+    ax.set_ylabel('P(M|D)', font)
 
 def plotspikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -90,10 +96,20 @@ def plotspikes(ax, x, timings):
             X.append(val)
             Y.append(i)
     ax.set_xlim(x[0],x[-1])
-    ax.set_ylabel('Trials')
+    ax.set_ylabel('t')
+    ax.set_ylabel('Trial')
     ax.plot(X, Y, 'k|')
 
-def plotbin(ax, x, exp, var, bprob):
+def plotbinboundaries(ax, x, bprob, modelpost):
+    ax.plot(x[1:-1], bprob[1:-1], 'g')
+    ax.set_ylim(0,1)
+#    nbins = argmax(modelpost)[1]+1
+#    bprob_max = sorted(bprob)[-nbins:]
+#    for b in bprob_max:
+#        i = bprob.index(b)
+#        ax.axvline(x[i])
+
+def plotbin(ax, x, exp, var, bprob, modelpost):
     """Plot the binning result."""
     N = len(exp)
     if x==None:
@@ -102,11 +118,10 @@ def plotbin(ax, x, exp, var, bprob):
     ax.plot(x, [min(1,a + math.sqrt(b)) for a, b in zip(exp, var)], 'k--')
     ax.plot(x, [max(0,a - math.sqrt(b)) for a, b in zip(exp, var)], 'k--')
     ax.plot(x, exp, 'r')
-    ax.set_xlabel('bin',  font)
-    ax.set_ylabel('P(x)', font)
+    ax.set_xlabel('t',  font)
+    ax.set_ylabel('P(Si)', font)
     if bprob:
-        twinax = ax.twinx()
-        twinax.plot(x[1:-1], bprob[1:-1], 'g')
+        plotbinboundaries(ax.twinx(), x, bprob, modelpost)
 
 # binning
 # ------------------------------------------------------------------------------
@@ -225,7 +240,7 @@ def parseConfig(file):
             fig = figure()
             ax1  = fig.add_subplot(2,1,1)
             ax2  = fig.add_subplot(2,1,2)
-            plotbin(ax1, None, result[0], result[1], result[2])
+            plotbin(ax1, None, result[0], result[1], result[2], result[3])
             plotmodelpost(ax2, result[3])
             show()
     if config.has_section('Trials'):
@@ -253,7 +268,7 @@ def parseConfig(file):
             ax2 = fig.add_subplot(3,1,2)
             ax3 = fig.add_subplot(3,1,3)
             plotspikes(ax1, x, timings)
-            plotbin   (ax2, x, result[0], result[1], result[2])
+            plotbin   (ax2, x, result[0], result[1], result[2], result[3])
             plotmodelpost(ax3, result[3])
             show()
 

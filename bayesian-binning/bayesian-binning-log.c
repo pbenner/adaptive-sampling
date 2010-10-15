@@ -210,6 +210,7 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
         }
         // break probability
         for (i=0; i<bp->T; i++) {
+                notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
                 evidences_log(bp, ev4_log, i);
                 sum_bprob = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
@@ -224,7 +225,7 @@ void pdensity_log(binProblem *bp, long double *pdf, long double *var, long doubl
         // from the model average
         notice(NONE, "T: %d", bp->T);
         for (i=0; i<bp->T; i++) {
-                notice(NONE, "%.1f%%", (float)100*i/bp->T);
+                notice(NONE, "exp./var.: %.1f%%", (float)100*i/bp->T);
                 // expectation
                 bp->add_success[0] = i;
                 bp->add_success[1] = 1;

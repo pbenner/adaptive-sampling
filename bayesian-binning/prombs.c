@@ -36,45 +36,30 @@
 #include "logadd.h"
 
 static
-void successor(long double **ak, size_t L)
+void logproduct(long double *result, long double **ak, size_t L, size_t i)
 {
-        size_t i, j;
+        long double tmp[L], elem;
+        size_t j, k;
 
-        for (i = 0; i < L; i++) {
-                for (j = i; j < L; j++) {
-                        if (i < L-1 && j < L-1) {
-                                ak[i][j] = ak[i+1][j+1];
-                        }
-                        else if (i == L-1 && j == L-1) {
-                                ak[i][j] = logl(1);
-                        }
-                        else {
-                                ak[i][j] = -HUGE_VAL;
-                        }
-                }
-        }
-}
-
-static
-void logproduct(long double **result, long double **ak, size_t L)
-{
-        long double tmp[L][L];
-        size_t i, j, k;
-
-        for (i = 0; i < L; i++) {
-                for (j = i; j < L; j++) {
-                        tmp[i][j] = result[i][j];
-                }
+        for (j = 0; j < L; j++) {
+                tmp[j] = result[j];
         }
 
-        for (i = 0; i < L; i++) {
-                for (j = i; j < L; j++) {
-                        result[i][j] = -HUGE_VAL;
-                        for (k = i; k <= j; k++) {
-                                result[i][j] = logadd(result[i][j], tmp[i][k] + ak[k][j]);
+        for (j = i; j < L+i; j++) {
+                result[j-i] = -HUGE_VAL;
+                for (k = i; k <= j; k++) {
+                        if (j < L && k < L) {
+                                elem = ak[k][j];
                         }
+                        else if (k == j) {
+                                elem = logl(1);
+                        }
+                        else  {
+                                elem = -HUGE_VAL;
+                        }
+                        result[j-i] = logadd(result[j-i], tmp[k-i] + elem);
                 }
-        }        
+        }
 }
 
 static
@@ -101,26 +86,27 @@ void freeMatrix(long double **a, size_t L) {
 void prombs(long double *result, long double (*f)(int, int), size_t L, size_t m)
 {
         long double **ak = allocMatrix(L);
-        long double **pr = allocMatrix(L);
+        long double pr[L];
         size_t i, j;
 
         // initialise A^1 = (a^1_ij)_LxL
-        for (i = 0; i < L; i++) {
-                for (j = 0; j < L; j++) {
-                        ak[i][j] = (i <= j ? (*f)(i, j) : -HUGE_VAL);
-                        pr[i][j] = ak[i][j];
+        for (j = 0; j < L; j++) {
+                ak[0][j] = (*f)(0, j);
+                pr[j] = ak[0][j];
+        }
+        for (i = 1; i < L; i++) {
+                for (j = i; j < L; j++) {
+                        ak[i][j] = (*f)(i, j);
                 }
         }
-
+        // compute the products
         for (i = 0; i < m; i++) {
-                successor(ak, L);
-                logproduct(pr, ak, L);
+                logproduct(pr, ak, L, i+1);
         }
-
+        // save result
         for (i = 0; i < L; i++) {
-                result[L-1-i] = pr[0][i];
+                result[L-1-i] = pr[i];
         }
 
         freeMatrix(ak, L);
-        freeMatrix(pr, L);
 }
