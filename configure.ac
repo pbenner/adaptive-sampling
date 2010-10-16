@@ -169,6 +169,16 @@ AC_CHECK_HEADER([error.h],
 AC_CHECK_FUNCS(dprintf)
 AC_CHECK_FUNCS(vsyslog)
 
+# ------------------] GCC OPTIONS [
+#
+
+AX_CFLAGS_GCC_OPTION([-Wall])
+AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
+AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
+AX_CFLAGS_GCC_OPTION([-Wno-trigraphs])
+AX_CFLAGS_GCC_OPTION([-fPIC])
+AX_CFLAGS_GCC_OPTION([-fnested-functions])
+
 # ------------------] SUBDIR CONFIGURATION [
 #
 
