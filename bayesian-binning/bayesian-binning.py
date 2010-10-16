@@ -85,8 +85,8 @@ def plotmodelpost(ax, modelpost):
     barpath = path.Path.make_compound_path_from_polys(XY)
     patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
     ax.add_patch(patch)
-    ax.set_xlabel('M',  font)
-    ax.set_ylabel('P(M|D)', font)
+    ax.set_xlabel(r'$M$',  font)
+    ax.set_ylabel(r'$P(M|D)$', font)
 
 def plotspikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -97,7 +97,7 @@ def plotspikes(ax, x, timings):
             X.append(val)
             Y.append(i)
     ax.set_xlim(x[0],x[-1])
-    ax.set_ylabel('t')
+    ax.set_ylabel(r'$t$')
     ax.set_ylabel('Trial')
     ax.plot(X, Y, 'k|')
 
@@ -120,7 +120,7 @@ def plotbin(ax, x, exp, var, bprob, modelpost):
     ax.plot(x, [max(0,a - math.sqrt(b)) for a, b in zip(exp, var)], 'k--')
     ax.plot(x, exp, 'r')
     ax.set_xlabel('t',  font)
-    ax.set_ylabel('P(Si)', font)
+    ax.set_ylabel(r'$P(S_i|D)$', font)
     if bprob:
         plotbinboundaries(ax.twinx(), x, bprob, modelpost)
 
