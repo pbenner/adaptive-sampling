@@ -132,6 +132,8 @@ def bin(successes, failures, mprior):
     if options['load']:
         config = ConfigParser.RawConfigParser()
         config.read(options['load'])
+        if not config.has_section('Result'):
+            raise IOError("Invalid configuration file.")
         pdf_str   = config.get('Result', 'pdf')
         var_str   = config.get('Result', 'var')
         mpost_str = config.get('Result', 'mpost')
@@ -221,6 +223,8 @@ def parseConfig(file):
     config = ConfigParser.RawConfigParser()
     config.read(file)
 
+    if config.sections() == []:
+        raise IOError("Invalid configuration file.")
     if config.has_section('Counts'):
         readOptions(config, 'Counts')
         trials      = config.getint('Counts', 'trials')
