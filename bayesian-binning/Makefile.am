@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 ## common CFLAGS
-AM_CFLAGS = -Wall -Wwrite-strings -Wstrict-prototypes -Wno-trigraphs -fPIC
+AM_CFLAGS = -Wall -Wwrite-strings -Wstrict-prototypes -Wno-trigraphs -fPIC -fnested-functions
 
 INCLUDES = -I$(top_srcdir)/include
 
