@@ -25,16 +25,20 @@
 static inline
 long double logadd(long double a, long double b)
 {
-        long double tmp;
-
         if (a<b) {
-                tmp = a; a = b; b = tmp;
-        }
-        if (b == -HUGE_VAL) {
-                return a;
-        }
+                if (a == -HUGE_VAL) {
+                        return b;
+                }
 
-        return a + log1pl(expl(b-a));
+                return b + log1pl(expl(a-b));
+        }
+        else {
+                if (b == -HUGE_VAL) {
+                        return a;
+                }
+
+                return a + log1pl(expl(b-a));
+        }
 }
 
 #endif /* _LOGADD_H_ */
