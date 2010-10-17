@@ -187,6 +187,7 @@ fi
 
 AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
+AX_CFLAGS_GCC_OPTION([-Winline])
 AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 AX_CFLAGS_GCC_OPTION([-Wno-trigraphs])
 AX_CFLAGS_GCC_OPTION([-fPIC])
