@@ -25,20 +25,8 @@
 static inline
 long double logadd(long double a, long double b)
 {
-        if (a<b) {
-                if (a == -HUGE_VAL) {
-                        return b;
-                }
-
-                return b + log1pl(expl(a-b));
-        }
-        else {
-                if (b == -HUGE_VAL) {
-                        return a;
-                }
-
-                return a + log1pl(expl(b-a));
-        }
+        if (a < b) return a == -HUGE_VAL ? b : b + log1pl(expl(a-b));
+        else       return b == -HUGE_VAL ? a : a + log1pl(expl(b-a));
 }
 
 #endif /* _LOGADD_H_ */
