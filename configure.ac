@@ -172,6 +172,19 @@ AC_CHECK_FUNCS(vsyslog)
 # ------------------] GCC OPTIONS [
 #
 
+CFLAGS=""
+AC_ARG_ENABLE([debug],
+	[  --enable-debug=[no/yes] turn on debugging [[default=no]]],,
+	enable_debug=$debug_default)
+if test "x$enable_debug" = "xyes"; then
+  AX_CFLAGS_GCC_OPTION([-g])
+  AX_CFLAGS_GCC_OPTION([-ggdb])
+	CFLAGS="$CFLAGS -DDEBUG"
+else
+  AX_CFLAGS_GCC_OPTION([-O3])
+  AX_CFLAGS_GCC_OPTION([-ffast-math])
+fi
+
 AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
 AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
@@ -221,6 +234,6 @@ dnl 	[chmod 755 scripts/interface.pl])
 
 AC_OUTPUT
 
-# Local Variables:
-# tab-width: 2
-# End:
+dnl Local Variables:
+dnl tab-width: 2
+dnl End:
