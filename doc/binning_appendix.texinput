@@ -1,4 +1,11 @@
 % -*- mode: latex -*-
 %
 \section*{Appendix A}
-\includegraphics[width=.9\textwidth]{../data/data8.pdf}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.9\textwidth]{../data/data8.pdf}
+  \caption{
+    Bayesian binning of a spike train with 30 trials.
+  }
+  \label{fig:app:a:1}
+\end{figure}

@@ -28,7 +28,7 @@
 %  headsepline,%%
 %  footsepline,%%
   abstracton,%%
-  smallheadings,%%
+  headings=small,%%
 %  DIV=calc,%% recalculate page spread (Satzspiegel)
   DIV=12,%% divide page into N sections
   BCOR=10mm,%% binding margin (for twoside documents)
@@ -58,6 +58,7 @@
 \usepackage{url}
 \urlstyle{tt}
 %\usepackage{fullpage}
+\usepackage{float}
 \usepackage{wrapfig}
 \usepackage{graphicx}
 \usepackage{tikz}
@@ -71,7 +72,6 @@
 \usepackage{subfigure}
 %\usepackage{microtype}
 \usepackage{setspace}
-\usepackage{float}
 \usepackage[small,bf]{caption}
 \usepackage{appendix}
 \usepackage{enumitem}
@@ -152,7 +152,8 @@
 \usepackage[automark]{scrpage2}
 %\pagestyle{scrplain}
 \pagestyle{scrheadings}
-\ihead[]{\headmark}
+%\ihead[]{\headmark}
+\ihead[]{}
 \chead[]{\FileTitle}
 \ohead[\pagemark]{\pagemark}
 \ifoot[]{}
@@ -297,6 +298,7 @@
 \begin{document}
 %\newpage
 \input{binning_title.texinput}
+\input{binning_abstract.texinput}
 %\pagestyle{scrheadings}
 %\frontmatter
 %\tableofcontents

@@ -1,14 +1,192 @@
 % -*- mode: latex -*-
 %
+\providecommand{\Dir}{\ensuremath{\mathrm{Dir}}}
+\providecommand{\Beta}{\ensuremath{\mathrm{Beta}}}
+
 \section*{Introduction}
 \label{introduction}
-The goal of this chapter is to outline basic notions that we will use
-in following chapters. Section \ref{theory:sec:1} introduces what we
-understand as synchronisation. The structure of phase-locked regions
-in parameter space is presented in secton \ref{theory:sec:2}. On a few
-generic examples, the different kinds of behaviours in systems of $n$
-frequencies are demonstrated. In particular, the role of the coupling
-strength is depicted and how the transition to synchronised behaviour
-occurs. For pulse-couplings, we discuss the kicked-rotator and for
-continuous couplings we investigate the dynamics of the Landau-Stuart
-and the van der Pol oscillator.
+\begin{equation}
+  \begin{split}
+    P(\vec{p},B|D,m_B) &= \frac{P(D,\vec{p},B|m_B)}{P(D|m_B)}\\
+                       &= \frac{P(D|\vec{p},B|m_B)P(\vec{p},B|m_B)}{P(D|m_B)}
+  \end{split}
+\end{equation}
+$\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots, x_L\}$, $\mathcal{Y} =
+\{y_1, y_2, \dots, y_K\}$ (discretized into $L$ intervals of equal size).
+
+\section*{Assumptions and Prior Knowledge}
+Todo: De Finetti, n-exchangeability, from which it follows that the
+likelihood function is given by the multinomial distribution
+\begin{equation}
+  P(D|\vec{p},B|m_B) = \prod_{b\in B}\prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{n^b_y},
+\end{equation}
+where $n^b_y$ denotes the count statistic for event $y$ in bin
+$b$. The conjugate prior for a multinomial likelihood function is
+given by the Dirichlet distribution $\Dir(p^b;\vec{\alpha}^b)$, which
+states the belief that the probabilities of $K$ rival events in bin
+$b$ are $p_y^b$ given that each event has been observed $\alpha^b_y - 1$
+times. Hence
+\begin{equation}
+  P(\vec{p},B|m_B) = \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
+  \prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{\alpha^b_y-1},
+\end{equation}
+
+\begin{equation}
+  \Beta(z_1,z_2,\dots,z_m) =
+  \frac{\prod_{i=1}^{m}\Gamma(z_i)}{\Gamma(\sum_{i=1}^{m}z_i)},~
+  \text{with}~
+  \Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t
+\end{equation}
+
+A noninformative prior is chosen for the multi-bins
+\begin{equation}
+  P(B|m_B) = {L \choose m_B}^{-1}
+\end{equation}
+
+\section*{Evidence}
+\begin{equation}
+  \begin{split}
+    P(D|m_B)
+    &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
+      P(D|B,m_B) P(B|m_B)\\
+  \end{split}
+\end{equation}
+\begin{equation}
+  \begin{split}
+    P(D|B,m_B)
+    &=
+      \int_{\Delta^K}\mathrm{d}p^1
+      \int_{\Delta^K}\mathrm{d}p^2
+      \cdots
+      \int_{\Delta^K}\mathrm{d}p^{m_B}
+      P(D|\vec{p},B,m_B) P(\vec{p}|m_B)\\
+    &=
+      \int_{\Delta^K}\mathrm{d}p^1
+      \int_{\Delta^K}\mathrm{d}p^2
+      \cdots
+      \int_{\Delta^K}\mathrm{d}p^{m_B}
+      \prod_{b\in B}\prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{n^b_y}
+      \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
+      \prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{\alpha^b_y-1}\\
+    &=
+      \int_{\Delta^K}\mathrm{d}p^1
+      \int_{\Delta^K}\mathrm{d}p^2
+      \cdots
+      \int_{\Delta^K}\mathrm{d}p^{m_B}
+      \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
+      \prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{n^b_y+\alpha^b_y-1},
+  \end{split}
+\end{equation}
+where $\Delta^K := \{(p_1,p_2,\dots,p_K)\in\mathbb{R} : \sum_{i=1}^{K}
+p_i = 1 ~ \text{and} ~ p_i \ge 0~\forall i\}$ denotes the
+$K$-dimensional probability simplex. The solution of the Euler
+integral of the first kind is given by the multinomial Beta-function.
+
+\begin{equation}
+  \begin{split}
+    \Beta(\vec{z}) =
+    \underbrace{\int_{\Delta^K}\prod_{z\in\mathcal{Z}}t^{z-1}\mathrm{d}t}_{\text{Euler
+      integral of the first kind}}=
+    \underbrace{\frac{\prod_{z\in\mathcal{Z}}^{m}\Gamma(z)}{\Gamma(\sum_{z\in\mathcal{Z}}z)}}_{\text{multinomial
+      Beta function}}
+  \end{split}
+\end{equation}
+
+Hence
+\begin{equation}
+  \begin{split}
+    P(D|m_B)
+    &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
+    P(B|m_B)
+    \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
+    \frac{\prod_{y\in
+        \mathcal{Y}}\Gamma(n_y^b+\alpha^b_y)}{\Gamma(\sum_{y\in
+        \mathcal{Y}}n_y^b+\alpha^b_y)}\\
+    &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
+    P(B|m_B)
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+  \end{split}
+\end{equation}
+
+\section*{Expectation and Variance}
+\begin{equation}
+  \begin{split}
+    \mathrm{E}[p_y^b|D,m_b] 
+    = P(y_b|D,m_B)
+    = \frac{P(y_b,D|m_B)}{P(D|m_B)}
+    = \frac{P(D'|m_B)}{P(D|m_B)},
+  \end{split}
+\end{equation}
+where $D' = D \cup \{y_b\}$.
+
+\begin{equation}
+  \begin{split}
+    \mathrm{Var}[p_y^b|D,m_b]
+    &= P(y_b,y_b|D,m_B) - P(y_b|D,m_B)^2\\
+    &= \frac{P(D''|m_B)}{P(D|m_B)} - \left(
+    \frac{P(D'|m_B)}{P(D|m_B)} \right)^2
+  \end{split}
+\end{equation}
+
+\section*{Break Probabilities}
+\begin{equation}
+  \begin{split}
+    \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{X})}P(B|D,m_B) &=
+      \frac{\sum_{B\in
+          \mathcal{I}_{m_B}(i)} P(D|B,m_B)P(B|m_B)}{\sum_{B\in
+               \mathcal{P}_{m_B}(X)} P(D|B,m_B)P(B|m_B)}\\
+      &= \frac{\sum_{B\in
+          \mathcal{I}_{m_B}(i)} P(D|B,m_B)P(B|m_B)}{P(D|m_B)},
+  \end{split}
+\end{equation}
+where $\mathcal{I}^i_{m_B}(\mathcal{X}) \subseteq
+\mathcal{P}_{m_B}(\mathcal{X})$ denotes the set of multi-bins that
+have a border at position $i$.
+
+\section*{Model Posterior and Model Average}
+\begin{equation}
+  \begin{split}
+    P(m_B|D)
+    &= \frac{P(D|m_B)P(m_B)}{P(D)}\\
+    &= \frac{P(D|m_B)P(m_B)}{\sum_{m_B\in M}P(D|m_B)P(m_B)},
+  \end{split}
+\end{equation}
+with $M = \{1,2,\dots,L\}$.
+
+\begin{equation}
+  \begin{split}
+    \mathrm{E}[p_y^b|D] 
+    = \frac{\sum_{m_B\in M}P(D'|m_B)}{\sum_{m_B\in M}P(D|m_B)},
+  \end{split}
+\end{equation}
+
+\section*{Entropy}
+The uncertainty about which multi-bin model describes the data best is
+given by the Shannon entropy
+\begin{equation}
+  \begin{split}
+    \mathrm{H}_{MB}
+    &= -\sum_{B\in \mathcal{P}_{m_B}}P(B|D,m_B) \log P(B|D,m_B)\\
+    &= -\sum_{B\in \mathcal{P}_{m_B}}\frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in \mathcal{P}_{m_B}}P(D|B,m_B)P(B|m_B)}
+    \log
+    \frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in \mathcal{P}_{m_B}}P(D|B,m_B)P(B|m_B)}\\
+    &= -\sum_{B\in \mathcal{P}_{m_B}}\frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)P}
+    \log
+    \frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)}\\
+    &=
+    -\frac{1}{P(D|m_B)}
+    \sum_{B\in \mathcal{P}_{m_B}}
+    P(B|m_B)
+    \prod_{b\in
+      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
+    &\quad\quad\quad
+    \sum_{B\in \mathcal{P}_{m_B}}
+    \left[
+      \frac{1}{m_B}
+      \log
+      \frac{P(B|m_B)}{P(D|m_B)} +
+      \log
+      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+      \right]
+  \end{split}
+\end{equation}
