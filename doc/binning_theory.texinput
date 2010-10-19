@@ -1,0 +1,14 @@
+% -*- mode: latex -*-
+%
+\section*{Introduction}
+\label{introduction}
+The goal of this chapter is to outline basic notions that we will use
+in following chapters. Section \ref{theory:sec:1} introduces what we
+understand as synchronisation. The structure of phase-locked regions
+in parameter space is presented in secton \ref{theory:sec:2}. On a few
+generic examples, the different kinds of behaviours in systems of $n$
+frequencies are demonstrated. In particular, the role of the coupling
+strength is depicted and how the transition to synchronised behaviour
+occurs. For pulse-couplings, we discuss the kicked-rotator and for
+continuous couplings we investigate the dynamics of the Landau-Stuart
+and the van der Pol oscillator.
