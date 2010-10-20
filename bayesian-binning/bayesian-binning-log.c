@@ -41,8 +41,8 @@ typedef struct {
         unsigned int T;
         gsl_vector  *successes;
         gsl_vector  *failures;
-        gsl_vector  *prior;
-        long double *mprior_log;
+        gsl_vector  *mprior;     // P(m_B)
+        long double *prior_log;  // P(p,B|m_B)
         // type of the likelihood
         int likelihood;
         // hyperparameters
@@ -113,7 +113,7 @@ unsigned int computeSuccesses(binProblem *bp)
 }
 
 static
-void computeMPrior_log(binProblem *bp)
+void computePrior_log(binProblem *bp)
 {
         unsigned int m;
         // multinomial
@@ -121,19 +121,20 @@ void computeMPrior_log(binProblem *bp)
                 for (m = 0; m < bp->T; m++) {
                         unsigned int N = successes(bp, 0, bp->T-1);
 
-                        bp->mprior_log[m] = gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m)
+                        bp->prior_log[m] = gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m)
                                 - gsl_sf_lnfact(bp->T-1) - gsl_sf_lnfact(N+m);
                 }
         }
         // binomial
         if (bp->likelihood == 2) {
                 for (m = 0; m < bp->T; m++) {
-                        bp->mprior_log[m] = (m+1)*beta_log(bp->sigma, bp->gamma)
+                        bp->prior_log[m] = (m+1)*beta_log(bp->sigma, bp->gamma)
                                 - gsl_sf_lnchoose(bp->T-1, m);
                 }
         }
 }
 
+/* P(D|B,m_B)/P(p|m_B) */
 static
 long double iec_log(binProblem *bp, int kk, int k)
 {
@@ -151,12 +152,13 @@ long double iec_log(binProblem *bp, int kk, int k)
         err(NONE, "Unknown likelihood function.");
 }
 
+/* Find the smallest m_B for which the prior P(m_B) is nonzero. */
 static
 int minM(binProblem *bp)
 {
         int i;
         for (i = bp->T-1; i>0; i--) {
-                if (gsl_vector_get(bp->prior, i) > 0) {
+                if (gsl_vector_get(bp->mprior, i) > 0) {
                         return i;
                 }
         }
@@ -164,66 +166,96 @@ int minM(binProblem *bp)
 }
 
 static
-void evidences_log(binProblem *bp, long double *ev_log, int pos)
+void execPrombs(binProblem *bp, long double *ev_log, int pos)
 {
-        size_t i;
         long double f(int i, int j)
         {
+                // include only those bins that don't cover
+                // position pos, which means, that only multi-bins
+                // are included, that have a break at position
+                // pos
                 if (i < pos && pos < j) {
                         return -HUGE_VAL;
                 }
                 return iec_log(bp, i, j);
         }
 
-        prombs(ev_log, &f, bp->T, minM(bp));
-        for (i=0; i<bp->T; i++) {
-                ev_log[i] += bp->mprior_log[i];
-        }
+        prombs(ev_log, &f, bp->prior_log, bp->T, minM(bp));
 }
 
 static
-void pdensity_log(
-        binProblem *bp, long double *pdf, long double *var, long double *bprob, long double *mpost,
-        Options *options)
+long double computeEvidence(binProblem *bp, long double *ev_log)
 {
-        long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T], ev4_log[bp->T];
-        long double sum1, sum2, sum3, sum_bprob;
-        unsigned int i, j;
+        long double sum;
+        unsigned int j;
 
-        // compute evidence
-        computeMPrior_log(bp);
-        evidences_log(bp, ev1_log, -1);
-        // compute model posteriors
-        sum1 = -HUGE_VAL;
+        execPrombs(bp, ev_log, -1);
+        sum = -HUGE_VAL;
         for (j=0; j<bp->T; j++) {
-                if (gsl_vector_get(bp->prior, j) > 0) {
-                        long double prior = gsl_vector_get(bp->prior, j);
-                        sum1 = logadd(sum1, ev1_log[j] + logl(prior));
+                if (gsl_vector_get(bp->mprior, j) > 0) {
+                        long double mprior = gsl_vector_get(bp->mprior, j);
+                        sum = logadd(sum, ev_log[j] + logl(mprior));
                 }
         }
+        return sum;
+}
+
+static
+void computeModelPosteriors(binProblem *bp, long double *ev_log, long double *mpost, long double P_D)
+{
+        unsigned int j;
+
         for (j=0; j<bp->T; j++) {
-                if (gsl_vector_get(bp->prior, j) > 0) {
-                        long double prior = gsl_vector_get(bp->prior, j);
-                        mpost[j] = expl(ev1_log[j] + logl(prior) - sum1);
+                if (gsl_vector_get(bp->mprior, j) > 0) {
+                        long double mprior = gsl_vector_get(bp->mprior, j);
+                        mpost[j] = expl(ev_log[j] + logl(mprior) - P_D);
                 }
                 else {
                         mpost[j] = 0;
                 }
         }
+}
+
+static
+void computeBreakProbabilities(binProblem *bp, long double *bprob, long double P_D)
+{
+        long double ev_log[bp->T];
+        long double sum;
+        unsigned int i, j;
+
+        for (i=0; i<bp->T; i++) {
+                notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
+                execPrombs(bp, ev_log, i);
+                sum = -HUGE_VAL;
+                for (j=0; j<bp->T; j++) {
+                        if (gsl_vector_get(bp->mprior, j) > 0) {
+                                long double mprior = gsl_vector_get(bp->mprior, j);
+                                sum = logadd(sum, ev_log[j] + logl(mprior));
+                        }
+                }
+                bprob[i] = expl(sum - P_D);
+        }
+}
+
+static
+void computeBinning(
+        binProblem *bp, long double *pdf, long double *var, long double *bprob, long double *mpost,
+        Options *options)
+{
+        long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
+        long double sum1; // P(D) = sum_{m_B \in M} P(D|m_B)P(m_B)
+        long double sum2; // E[p|D]
+        long double sum3; // Var[p|D]
+        unsigned int i, j;
+
+        // compute evidence P(D)
+        computePrior_log(bp);
+        sum1 = computeEvidence(bp, ev1_log);
+        // compute model posteriors P(m_B|D)
+        computeModelPosteriors(bp, ev1_log, mpost, sum1);
         // break probability
         if (options->bprob) {
-                for (i=0; i<bp->T; i++) {
-                        notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
-                        evidences_log(bp, ev4_log, i);
-                        sum_bprob = -HUGE_VAL;
-                        for (j=0; j<bp->T; j++) {
-                                if (gsl_vector_get(bp->prior, j) > 0) {
-                                        long double prior = gsl_vector_get(bp->prior, j);
-                                        sum_bprob = logadd(sum_bprob, ev4_log[j] + logl(prior));
-                                }
-                        }
-                        bprob[i] = expl(sum_bprob - sum1);
-                }
+                computeBreakProbabilities(bp, bprob, sum1);
         }
         // for each timestep compute expectation and variance
         // from the model average
@@ -233,21 +265,21 @@ void pdensity_log(
                 // expectation
                 bp->add_success[0] = i;
                 bp->add_success[1] = 1;
-                computeMPrior_log(bp);
-                evidences_log(bp, ev2_log, -1);
+                computePrior_log(bp);
+                execPrombs(bp, ev2_log, -1);
 
                 // variance
                 bp->add_success[1] = 2;
-                computeMPrior_log(bp);
-                evidences_log(bp, ev3_log, -1);
+                computePrior_log(bp);
+                execPrombs(bp, ev3_log, -1);
 
                 sum2 = -HUGE_VAL;
                 sum3 = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
-                        if (gsl_vector_get(bp->prior, j) > 0) {
-                                long double prior = gsl_vector_get(bp->prior, j);
-                                sum2 = logadd(sum2, ev2_log[j] + logl(prior));
-                                sum3 = logadd(sum3, ev3_log[j] + logl(prior));
+                        if (gsl_vector_get(bp->mprior, j) > 0) {
+                                long double mprior = gsl_vector_get(bp->mprior, j);
+                                sum2 = logadd(sum2, ev2_log[j] + logl(mprior));
+                                sum3 = logadd(sum3, ev3_log[j] + logl(mprior));
                         }
                 }
                 // P(D' |M)/P(D|M)
@@ -260,7 +292,7 @@ void pdensity_log(
 gsl_matrix * bin_log(
         gsl_vector *successes_v,
         gsl_vector *failures_v,
-        gsl_vector *prior,
+        gsl_vector *mprior,
         Options *options)
 {
         size_t K = successes_v->size;
@@ -269,7 +301,7 @@ gsl_matrix * bin_log(
         long double var[K];
         long double bprob[K];
         long double mpost[K];
-        long double mprior_log[K];
+        long double prior_log[K];
         unsigned int i;
         binProblem bp;
 
@@ -277,20 +309,19 @@ gsl_matrix * bin_log(
 
         bp.successes  = successes_v;
         bp.failures   = failures_v;
-        bp.prior      = prior;
+        bp.mprior     = mprior;
         bp.T          = successes_v->size;
         bp.sigma      = options->sigma;
         bp.gamma      = options->gamma;
         bp.likelihood = options->likelihood;
-        bp.mprior_log = mprior_log;
+        bp.prior_log  = prior_log;
         bp.success_m  = gsl_matrix_alloc(K, K);
         bp.failure_m  = gsl_matrix_alloc(K, K);
         bp.add_success[0] = 0; // number of the bin
         bp.add_success[1] = 0; // how many successes
 
         computeSuccesses(&bp);
-
-        pdensity_log(&bp, pdf, var, bprob, mpost, options);
+        computeBinning(&bp, pdf, var, bprob, mpost, options);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);

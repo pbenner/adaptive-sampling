@@ -104,6 +104,7 @@ def plotspikes(ax, x, timings):
 def plotbinboundaries(ax, x, bprob, modelpost):
     ax.plot(x[1:-1], bprob[1:-1], 'g')
     ax.set_ylim(0,1)
+    ax.set_ylabel('P(Break|D)', font)
 #    nbins = argmax(modelpost)[1]+1
 #    bprob_max = sorted(bprob)[-nbins:]
 #    for b in bprob_max:
@@ -243,8 +244,9 @@ def parseConfig(file):
             saveResult(result)
         else:
             fig = figure()
-            ax1  = fig.add_subplot(2,1,1)
-            ax2  = fig.add_subplot(2,1,2)
+            fig.subplots_adjust(hspace=0.35)
+            ax1 = fig.add_subplot(2,1,1)
+            ax2 = fig.add_subplot(2,1,2)
             plotbin(ax1, None, result[0], result[1], result[2], result[3])
             plotmodelpost(ax2, result[3])
             show()
@@ -269,6 +271,7 @@ def parseConfig(file):
             saveResult(result)
         else:
             fig = figure()
+            fig.subplots_adjust(hspace=0.35)
             ax1 = fig.add_subplot(3,1,1)
             ax2 = fig.add_subplot(3,1,2)
             ax3 = fig.add_subplot(3,1,3)

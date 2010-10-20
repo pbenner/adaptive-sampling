@@ -1,19 +1,11 @@
 % -*- mode: latex -*-
 %
 
-% \begin{titlepage}
-%   \begin{center}
-%     {\Large \FileTitle}\\
-%     \vspace{0.5cm}
-%     {\large \FileAuthor}\\
-%     \FileAuthorEmail\\
-%   \end{center}
-% \end{titlepage}
-
 \title{}
 \titlehead{}
 \subject{\FileTitle}
-\author{\FileAuthor\\{\normalsize\FileAuthorEmail}}
+\author{{\normalsize\FileAuthor}\\{\normalsize\FileAuthorEmail}}
 \lowertitleback{}
+\date{{\normalsize \FileDate}}
 \renewcommand*{\titlepagestyle}{empty}
 \maketitle

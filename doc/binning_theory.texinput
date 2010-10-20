@@ -18,17 +18,17 @@ $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots
 Todo: De Finetti, n-exchangeability, from which it follows that the
 likelihood function is given by the multinomial distribution
 \begin{equation}
-  P(D|\vec{p},B|m_B) = \prod_{b\in B}\prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{n^b_y},
+  P(D|\vec{p},B|m_B) = \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y},
 \end{equation}
 where $n^b_y$ denotes the count statistic for event $y$ in bin
 $b$. The conjugate prior for a multinomial likelihood function is
-given by the Dirichlet distribution $\Dir(p^b;\vec{\alpha}^b)$, which
+given by the Dirichlet distribution $\Dir(\vec{p}^b;\vec{\alpha}^b)$, which
 states the belief that the probabilities of $K$ rival events in bin
 $b$ are $p_y^b$ given that each event has been observed $\alpha^b_y - 1$
 times. Hence
 \begin{equation}
   P(\vec{p},B|m_B) = \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
-  \prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{\alpha^b_y-1},
+  \prod_{y\in \mathcal{Y}}(p_y^b)^{\alpha^b_y-1},
 \end{equation}
 
 \begin{equation}
@@ -38,7 +38,14 @@ times. Hence
   \Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t
 \end{equation}
 
-A noninformative prior is chosen for the multi-bins
+For $P(\vec{p},B|m_B)$ a non-informative prior assumption is made, i.e.
+\begin{equation}
+  P(\vec{p},B|m_B) = P(\vec{p}|m_B)P(B|m_B),
+\end{equation}
+which means that the prior knowledge about $\vec{p}$ is independent of
+$B$ and vice versa.
+
+A non-informative prior is chosen for the multi-bins
 \begin{equation}
   P(B|m_B) = {L \choose m_B}^{-1}
 \end{equation}
@@ -55,26 +62,18 @@ A noninformative prior is chosen for the multi-bins
   \begin{split}
     P(D|B,m_B)
     &=
-      \int_{\Delta^K}\mathrm{d}p^1
-      \int_{\Delta^K}\mathrm{d}p^2
-      \cdots
-      \int_{\Delta^K}\mathrm{d}p^{m_B}
+      \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
+          \Delta^K}_{m_B~\text{times}}}\mathrm{d}\vec{p}
       P(D|\vec{p},B,m_B) P(\vec{p}|m_B)\\
     &=
-      \int_{\Delta^K}\mathrm{d}p^1
-      \int_{\Delta^K}\mathrm{d}p^2
-      \cdots
-      \int_{\Delta^K}\mathrm{d}p^{m_B}
-      \prod_{b\in B}\prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{n^b_y}
+      \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
+      \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y}
       \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
-      \prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{\alpha^b_y-1}\\
+      \prod_{y\in \mathcal{Y}}(p_y^b)^{\alpha^b_y-1}\\
     &=
-      \int_{\Delta^K}\mathrm{d}p^1
-      \int_{\Delta^K}\mathrm{d}p^2
-      \cdots
-      \int_{\Delta^K}\mathrm{d}p^{m_B}
+      \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
       \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
-      \prod_{y\in \mathcal{Y}}(\vec{p}_y^b)^{n^b_y+\alpha^b_y-1},
+      \prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y+\alpha^b_y-1},
   \end{split}
 \end{equation}
 where $\Delta^K := \{(p_1,p_2,\dots,p_K)\in\mathbb{R} : \sum_{i=1}^{K}
@@ -117,26 +116,26 @@ Hence
     = \frac{P(D'|m_B)}{P(D|m_B)},
   \end{split}
 \end{equation}
-where $D' = D \cup \{y_b\}$.
 
 \begin{equation}
   \begin{split}
     \mathrm{Var}[p_y^b|D,m_b]
-    &= P(y_b,y_b|D,m_B) - P(y_b|D,m_B)^2\\
+    &= P(y_b,y_b|D,m_B) - (P(y_b|D,m_B))^2\\
     &= \frac{P(D''|m_B)}{P(D|m_B)} - \left(
     \frac{P(D'|m_B)}{P(D|m_B)} \right)^2
   \end{split}
 \end{equation}
+where $D' = D \cup \{y_b\}$.
 
 \section*{Break Probabilities}
 \begin{equation}
   \begin{split}
     \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{X})}P(B|D,m_B) &=
       \frac{\sum_{B\in
-          \mathcal{I}_{m_B}(i)} P(D|B,m_B)P(B|m_B)}{\sum_{B\in
-               \mathcal{P}_{m_B}(X)} P(D|B,m_B)P(B|m_B)}\\
+          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)P(B|m_B)}{\sum_{B\in
+               \mathcal{P}_{m_B}(\mathcal{X})} P(D|B,m_B)P(B|m_B)}\\
       &= \frac{\sum_{B\in
-          \mathcal{I}_{m_B}(i)} P(D|B,m_B)P(B|m_B)}{P(D|m_B)},
+          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)P(B|m_B)}{P(D|m_B)},
   \end{split}
 \end{equation}
 where $\mathcal{I}^i_{m_B}(\mathcal{X}) \subseteq
@@ -151,36 +150,42 @@ have a border at position $i$.
     &= \frac{P(D|m_B)P(m_B)}{\sum_{m_B\in M}P(D|m_B)P(m_B)},
   \end{split}
 \end{equation}
-with $M = \{1,2,\dots,L\}$.
 
 \begin{equation}
   \begin{split}
     \mathrm{E}[p_y^b|D] 
-    = \frac{\sum_{m_B\in M}P(D'|m_B)}{\sum_{m_B\in M}P(D|m_B)},
+    = \frac{\sum_{m_B\in M}P(D'|m_B)P(m_B)}{\sum_{m_B\in M}P(D|m_B)P(m_B)},
   \end{split}
 \end{equation}
+with $M = \{1,2,\dots,L\}$.
+
+\section*{Bayesian Hypothesis Testing}
+Todo
 
 \section*{Entropy}
 The uncertainty about which multi-bin model describes the data best is
 given by the Shannon entropy
 \begin{equation}
   \begin{split}
-    \mathrm{H}_{MB}
-    &= -\sum_{B\in \mathcal{P}_{m_B}}P(B|D,m_B) \log P(B|D,m_B)\\
-    &= -\sum_{B\in \mathcal{P}_{m_B}}\frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in \mathcal{P}_{m_B}}P(D|B,m_B)P(B|m_B)}
+    \mathrm{H}(&\mathcal{P}_{m_B}(\mathcal{X})|D,m_B)\\
+    &= -\sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}P(B|D,m_B) \log P(B|D,m_B)\\
+    &= -\sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
+    \frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in
+        \mathcal{P}_{m_B}(\mathcal{X})}P(D|B,m_B)P(B|m_B)}
     \log
-    \frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in \mathcal{P}_{m_B}}P(D|B,m_B)P(B|m_B)}\\
-    &= -\sum_{B\in \mathcal{P}_{m_B}}\frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)P}
+    \frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in
+        \mathcal{P}_{m_B}(\mathcal{X})}P(D|B,m_B)P(B|m_B)}\\
+    &= -\sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}\frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)}
     \log
     \frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)}\\
     &=
     -\frac{1}{P(D|m_B)}
-    \sum_{B\in \mathcal{P}_{m_B}}
+    \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
     P(B|m_B)
     \prod_{b\in
       B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
-    \sum_{B\in \mathcal{P}_{m_B}}
+    \sum_{b \in B}
     \left[
       \frac{1}{m_B}
       \log
