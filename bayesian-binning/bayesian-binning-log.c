@@ -48,6 +48,7 @@ typedef struct {
         // type of the likelihood
         int likelihood;
         // hyperparameters
+        unsigned int *alpha;
         long double gamma;
         long double sigma;
         // internal data
@@ -66,9 +67,9 @@ static
 unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
 {
         if (bp->add_event.which == event &&
-            ks <= bp->add_success[0] && bp->add_success[0] <= ke) {
+            ks <= bp->add_event.pos && bp->add_event.pos <= ke) {
                 return gsl_matrix_get(bp->counts_m[event], ks, ke) +
-                        bp->add_success[1];
+                        bp->add_event.n;
         }
         else if (ks <= ke) {
                 return gsl_matrix_get(bp->counts_m[event], ks, ke);
@@ -111,10 +112,10 @@ long double mbeta_log(binProblem *bp, unsigned int *p)
         long double sum1, sum2;
 
         sum1 = 0;
-        sum2 = -HUGE_VAL;
+        sum2 = 0;
         for (i = 0; i < bp->events; i++) {
                 sum1 += p[i];
-                sum2  = logadd(sum2, gsl_sf_lngamma(p[i]));
+                sum2 += gsl_sf_lngamma(p[i]);
         }
 
         return gsl_sf_lngamma(sum1) - sum2;
@@ -127,10 +128,10 @@ long double mbetaInv_log(binProblem *bp, unsigned int *p)
         long double sum1, sum2;
 
         sum1 = 0;
-        sum2 = -HUGE_VAL;
+        sum2 = 0;
         for (i = 0; i < bp->events; i++) {
                 sum1 += p[i];
-                sum2  = logadd(sum2, gsl_sf_lngamma(p[i]));
+                sum2 += gsl_sf_lngamma(p[i]);
         }
 
         return sum2 - gsl_sf_lngamma(sum1);
@@ -169,13 +170,40 @@ unsigned int computeSuccesses(binProblem *bp)
 }
 
 static
+void computeCountStatistics(binProblem *bp)
+{
+        int ks, ke, i, j;
+        unsigned int c[bp->events];
+
+        for (ks = 0; ks < bp->T; ks++) {
+                for (ke = ks; ke < bp->T; ke++) {
+                        // set all counts to zero
+                        for (j = 0; j < bp->events; j++) {
+                                c[j] = 0;
+                        }
+                        // count
+                        for (i = ks; i <= ke; i++) {
+                                for (j = 0; j < bp->events; j++) {
+                                        c[j] += gsl_vector_get(bp->counts[j], i);
+                                }
+                        }
+                        // save result
+                        for (j = 0; j < bp->events; j++) {
+                                gsl_matrix_set(bp->counts_m[j], ks, ke, c[j]);
+                        }
+                }
+        }
+}
+
+static
 void computePrior_log(binProblem *bp)
 {
         unsigned int m;
+        long double b;
         // multinomial
         if (bp->likelihood == 1) {
                 for (m = 0; m < bp->T; m++) {
-                        unsigned int N = successes(bp, 0, bp->T-1);
+                        unsigned int N = countStatistic(bp, 0, 0, bp->T-1);
 
                         bp->prior_log[m] = gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m)
                                 - gsl_sf_lnfact(bp->T-1) - gsl_sf_lnfact(N+m);
@@ -183,9 +211,9 @@ void computePrior_log(binProblem *bp)
         }
         // binomial
         if (bp->likelihood == 2) {
+                b = mbeta_log(bp, bp->alpha);
                 for (m = 0; m < bp->T; m++) {
-                        bp->prior_log[m] = (m+1)*beta_log(bp->sigma, bp->gamma)
-                                - gsl_sf_lnchoose(bp->T-1, m);
+                        bp->prior_log[m] = (m+1)*b - gsl_sf_lnchoose(bp->T-1, m);
                 }
         }
 }
@@ -194,16 +222,19 @@ void computePrior_log(binProblem *bp)
 static
 long double iec_log(binProblem *bp, int kk, int k)
 {
+        unsigned int i;
         // multinomial
         if (bp->likelihood == 1) {
-                unsigned int n = successes(bp, kk, k);
+                unsigned int n = countStatistic(bp, 0, kk, k);
                 return gsl_sf_lnfact(n) - n*logl(k-kk+1);
         }
         // binomial
         if (bp->likelihood == 2) {
-                unsigned int s = successes(bp, kk, k);
-                unsigned int f = failures (bp, kk, k);
-                return betaInv_log(s+bp->sigma, f+bp->gamma);
+                unsigned int c[bp->events];
+                for (i = 0; i < bp->events; i++) {
+                        c[i] = countStatistic(bp, i, kk, k)+bp->alpha[i];
+                }
+                return mbetaInv_log(bp, c);
         }
         err(NONE, "Unknown likelihood function.");
 }
@@ -321,11 +352,14 @@ void computeBinning(
                 // expectation
                 bp->add_success[0] = i;
                 bp->add_success[1] = 1;
+                bp->add_event.pos = i;
+                bp->add_event.n   = 1;
                 computePrior_log(bp);
                 execPrombs(bp, ev2_log, -1);
 
                 // variance
                 bp->add_success[1] = 2;
+                bp->add_event.n = 2;
                 computePrior_log(bp);
                 execPrombs(bp, ev3_log, -1);
 
@@ -379,12 +413,19 @@ gsl_matrix * bin_log(
         bp.add_event.n     = 0;
         bp.add_event.which = 0;
         bp.events     = 2;
-        bp.counts_m   = (gsl_matrix **)malloc(2*sizeof(gsl_matrix *));
+        bp.alpha      = (unsigned int *)malloc(bp.events*sizeof(unsigned int));
+        bp.alpha[0]   = (unsigned int)options->sigma;
+        bp.alpha[1]   = (unsigned int)options->gamma;
+        bp.counts_m   = (gsl_matrix **)malloc(bp.events*sizeof(gsl_matrix *));
+        bp.counts     = (gsl_vector **)malloc(bp.events*sizeof(gsl_vector *));
+        bp.counts[0]  = successes_v;
+        bp.counts[1]  = failures_v;
         for (i = 0; i < bp.events; i++) {
                 bp.counts_m[i] = gsl_matrix_alloc(K, K);
         }
 
         computeSuccesses(&bp);
+        computeCountStatistics(&bp);
         computeBinning(&bp, pdf, var, bprob, mpost, options);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
@@ -399,6 +440,8 @@ gsl_matrix * bin_log(
         for (i = 0; i < bp.events; i++) {
                 gsl_matrix_free(bp.counts_m[i]);
         }
+        free(bp.alpha);
+        free(bp.counts);
         free(bp.counts_m);
 
         return m;
