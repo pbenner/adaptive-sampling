@@ -15,6 +15,4 @@ typedef struct options {
         int gmp;
         int likelihood;
         int bprob;
-        unsigned int sigma;
-        unsigned int gamma;
 } Options;

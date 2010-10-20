@@ -161,7 +161,8 @@ def bin(successes, failures, mprior):
         successes_i = map(int, successes)
         failures_i  = map(int, failures)
         mprior_i    = map(float, mprior)
-        return interface.binning(successes_i, failures_i, mprior_i, options)
+        alpha_i     = map(int, [options['sigma'], options['gamma']])
+        return interface.binning([successes_i, failures_i], alpha_i, mprior_i, options)
 
 # save result
 # ------------------------------------------------------------------------------

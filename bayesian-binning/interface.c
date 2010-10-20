@@ -91,30 +91,18 @@ Matrix * fromGslMatrix(const gsl_matrix * matrix)
         return m;
 }
 
-Matrix * binning(Vector *successes, Vector *failures, Vector *prior, Options *options)
+Matrix * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *options)
 {
-        gsl_vector *tmp1 = toGslVector(successes);
-        gsl_vector *tmp2 = toGslVector(failures);
+        gsl_matrix *tmp1 = toGslMatrix(counts);
+        gsl_vector *tmp2 = toGslVector(alpha);
         gsl_vector *tmp3 = toGslVector(prior);
         gsl_matrix *tmp4;
         Matrix *m;
 
-#ifdef HAVE_LIBGMP
-        if (options->gmp) {
-                 tmp4 = bin_gmp(tmp1, tmp2, tmp3, options);
-        }
-        else {
-                 tmp4 = bin_log(tmp1, tmp2, tmp3, options);
-        }
-#else
-        if (options->gmp) {
-                warn(NONE, "Multiprecision is not supported, using log scale...");
-        }
         tmp4 = bin_log(tmp1, tmp2, tmp3, options);
-#endif /* HAVE_LIBGMP */
-        m = fromGslMatrix(tmp4);
+        m    = fromGslMatrix(tmp4);
 
-        gsl_vector_free(tmp1);
+        gsl_matrix_free(tmp1);
         gsl_vector_free(tmp2);
         gsl_vector_free(tmp3);
         gsl_matrix_free(tmp4);

@@ -40,22 +40,15 @@ typedef struct {
         // number of timesteps
         unsigned int T;
         unsigned int events;
-        gsl_vector **counts;
-        gsl_vector  *successes;
-        gsl_vector  *failures;
+        gsl_matrix  *counts;
         gsl_vector  *mprior;     // P(m_B)
         long double *prior_log;  // P(p,B|m_B)
         // type of the likelihood
         int likelihood;
         // hyperparameters
         unsigned int *alpha;
-        long double gamma;
-        long double sigma;
         // internal data
         gsl_matrix **counts_m;
-        gsl_matrix *success_m;
-        gsl_matrix *failure_m;
-        unsigned int add_success[2];
         struct {
                 int pos;
                 int n;
@@ -79,31 +72,6 @@ unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
         }
 }
 
-static
-unsigned int successes(binProblem *bp, int ks, int ke)
-{
-        if (ks <= bp->add_success[0] && bp->add_success[0] <= ke) {
-                return gsl_matrix_get(bp->success_m, ks, ke) +
-                        bp->add_success[1];
-        }
-        else if (ks <= ke) {
-                return gsl_matrix_get(bp->success_m, ks, ke);
-        }
-        else {
-                return 0;
-        }
-}
-
-static
-unsigned int failures(binProblem *bp, int ks, int ke)
-{
-        if (ks <= ke) {
-                return gsl_matrix_get(bp->failure_m, ks, ke);
-        }
-        else {
-                return 0;
-        }
-}
 
 static
 long double mbeta_log(binProblem *bp, unsigned int *p)
@@ -138,38 +106,6 @@ long double mbetaInv_log(binProblem *bp, unsigned int *p)
 }
 
 static
-long double beta_log(unsigned int p, unsigned int q)
-{
-        return gsl_sf_lngamma(p+q) - gsl_sf_lngamma(p) - gsl_sf_lngamma(q);
-}
-
-static
-long double betaInv_log(unsigned int p, unsigned int q)
-{
-         return gsl_sf_lngamma(p) + gsl_sf_lngamma(q) - gsl_sf_lngamma(p+q);
-}
-
-static
-unsigned int computeSuccesses(binProblem *bp)
-{
-        int ks, ke, i;
-        unsigned int s, f;
-
-        for (ks = 0; ks < bp->T; ks++) {
-                for (ke = ks; ke < bp->T; ke++) {
-                        s = 0; f = 0;
-                        for (i = ks; i <= ke; i++) {
-                                s += (unsigned int)gsl_vector_get(bp->successes, i);
-                                f += (unsigned int)gsl_vector_get(bp->failures,  i);
-                        }
-                        gsl_matrix_set(bp->success_m, ks, ke, s);
-                        gsl_matrix_set(bp->failure_m, ks, ke, f);
-                }
-        }
-        return s;
-}
-
-static
 void computeCountStatistics(binProblem *bp)
 {
         int ks, ke, i, j;
@@ -184,7 +120,7 @@ void computeCountStatistics(binProblem *bp)
                         // count
                         for (i = ks; i <= ke; i++) {
                                 for (j = 0; j < bp->events; j++) {
-                                        c[j] += gsl_vector_get(bp->counts[j], i);
+                                        c[j] += gsl_matrix_get(bp->counts, j, i);
                                 }
                         }
                         // save result
@@ -350,15 +286,12 @@ void computeBinning(
         for (i=0; i<bp->T; i++) {
                 notice(NONE, "exp./var.: %.1f%%", (float)100*i/bp->T);
                 // expectation
-                bp->add_success[0] = i;
-                bp->add_success[1] = 1;
                 bp->add_event.pos = i;
                 bp->add_event.n   = 1;
                 computePrior_log(bp);
                 execPrombs(bp, ev2_log, -1);
 
                 // variance
-                bp->add_success[1] = 2;
                 bp->add_event.n = 2;
                 computePrior_log(bp);
                 execPrombs(bp, ev3_log, -1);
@@ -380,12 +313,12 @@ void computeBinning(
 }
 
 gsl_matrix * bin_log(
-        gsl_vector *successes_v,
-        gsl_vector *failures_v,
+        gsl_matrix *counts,
+        gsl_vector *alpha,
         gsl_vector *mprior,
         Options *options)
 {
-        size_t K = successes_v->size;
+        size_t K = counts->size2;
         gsl_matrix *m = gsl_matrix_alloc(4, K);
         long double pdf[K];
         long double var[K];
@@ -397,34 +330,22 @@ gsl_matrix * bin_log(
 
         verbose       = options->verbose;
 
-        bp.successes  = successes_v;
-        bp.failures   = failures_v;
         bp.mprior     = mprior;
-        bp.T          = successes_v->size;
-        bp.sigma      = options->sigma;
-        bp.gamma      = options->gamma;
+        bp.T          = K;
         bp.likelihood = options->likelihood;
         bp.prior_log  = prior_log;
-        bp.success_m  = gsl_matrix_alloc(K, K);
-        bp.failure_m  = gsl_matrix_alloc(K, K);
-        bp.add_success[0] = 0; // number of the bin
-        bp.add_success[1] = 0; // how many successes
         bp.add_event.pos   = 0;
         bp.add_event.n     = 0;
         bp.add_event.which = 0;
         bp.events     = 2;
+        bp.counts     = counts;
         bp.alpha      = (unsigned int *)malloc(bp.events*sizeof(unsigned int));
-        bp.alpha[0]   = (unsigned int)options->sigma;
-        bp.alpha[1]   = (unsigned int)options->gamma;
-        bp.counts_m   = (gsl_matrix **)malloc(bp.events*sizeof(gsl_matrix *));
-        bp.counts     = (gsl_vector **)malloc(bp.events*sizeof(gsl_vector *));
-        bp.counts[0]  = successes_v;
-        bp.counts[1]  = failures_v;
+        bp.counts_m   = (gsl_matrix  **)malloc(bp.events*sizeof(gsl_matrix *));
         for (i = 0; i < bp.events; i++) {
                 bp.counts_m[i] = gsl_matrix_alloc(K, K);
+                bp.alpha[i]    = gsl_vector_get(alpha, i);
         }
 
-        computeSuccesses(&bp);
         computeCountStatistics(&bp);
         computeBinning(&bp, pdf, var, bprob, mpost, options);
         for (i = 0; i <= bp.T-1; i++) {
@@ -435,13 +356,10 @@ gsl_matrix * bin_log(
                 notice(NONE, "pdf[%03d]=%Lf var[%03d]=%Lf", i, pdf[i], i, var[i]);
         }
 
-        gsl_matrix_free(bp.success_m);
-        gsl_matrix_free(bp.failure_m);
         for (i = 0; i < bp.events; i++) {
                 gsl_matrix_free(bp.counts_m[i]);
         }
         free(bp.alpha);
-        free(bp.counts);
         free(bp.counts_m);
 
         return m;

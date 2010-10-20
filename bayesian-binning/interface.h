@@ -15,4 +15,4 @@ extern Matrix * fromGslMatrix(const gsl_matrix * matrix);
 extern gsl_vector * toGslVector(const Vector *vector);
 extern gsl_matrix * toGslMatrix(const Matrix *matrix);
 
-extern Matrix * binning(Vector *successes, Vector *failures, Vector *prior, Options *options);
+extern Matrix * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *options);
