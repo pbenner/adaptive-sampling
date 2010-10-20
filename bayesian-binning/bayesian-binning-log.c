@@ -39,6 +39,8 @@
 typedef struct {
         // number of timesteps
         unsigned int T;
+        unsigned int events;
+        gsl_vector **counts;
         gsl_vector  *successes;
         gsl_vector  *failures;
         gsl_vector  *mprior;     // P(m_B)
@@ -49,10 +51,32 @@ typedef struct {
         long double gamma;
         long double sigma;
         // internal data
+        gsl_matrix **counts_m;
         gsl_matrix *success_m;
         gsl_matrix *failure_m;
         unsigned int add_success[2];
+        struct {
+                int pos;
+                int n;
+                int which;
+        } add_event;
 } binProblem;
+
+static
+unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
+{
+        if (bp->add_event.which == event &&
+            ks <= bp->add_success[0] && bp->add_success[0] <= ke) {
+                return gsl_matrix_get(bp->counts_m[event], ks, ke) +
+                        bp->add_success[1];
+        }
+        else if (ks <= ke) {
+                return gsl_matrix_get(bp->counts_m[event], ks, ke);
+        }
+        else {
+                return 0;
+        }
+}
 
 static
 unsigned int successes(binProblem *bp, int ks, int ke)
@@ -78,6 +102,38 @@ unsigned int failures(binProblem *bp, int ks, int ke)
         else {
                 return 0;
         }
+}
+
+static
+long double mbeta_log(binProblem *bp, unsigned int *p)
+{
+        unsigned int i;
+        long double sum1, sum2;
+
+        sum1 = 0;
+        sum2 = -HUGE_VAL;
+        for (i = 0; i < bp->events; i++) {
+                sum1 += p[i];
+                sum2  = logadd(sum2, gsl_sf_lngamma(p[i]));
+        }
+
+        return gsl_sf_lngamma(sum1) - sum2;
+}
+
+static
+long double mbetaInv_log(binProblem *bp, unsigned int *p)
+{
+        unsigned int i;
+        long double sum1, sum2;
+
+        sum1 = 0;
+        sum2 = -HUGE_VAL;
+        for (i = 0; i < bp->events; i++) {
+                sum1 += p[i];
+                sum2  = logadd(sum2, gsl_sf_lngamma(p[i]));
+        }
+
+        return sum2 - gsl_sf_lngamma(sum1);
 }
 
 static
@@ -319,6 +375,14 @@ gsl_matrix * bin_log(
         bp.failure_m  = gsl_matrix_alloc(K, K);
         bp.add_success[0] = 0; // number of the bin
         bp.add_success[1] = 0; // how many successes
+        bp.add_event.pos   = 0;
+        bp.add_event.n     = 0;
+        bp.add_event.which = 0;
+        bp.events     = 2;
+        bp.counts_m   = (gsl_matrix **)malloc(2*sizeof(gsl_matrix *));
+        for (i = 0; i < bp.events; i++) {
+                bp.counts_m[i] = gsl_matrix_alloc(K, K);
+        }
 
         computeSuccesses(&bp);
         computeBinning(&bp, pdf, var, bprob, mpost, options);
@@ -332,6 +396,10 @@ gsl_matrix * bin_log(
 
         gsl_matrix_free(bp.success_m);
         gsl_matrix_free(bp.failure_m);
+        for (i = 0; i < bp.events; i++) {
+                gsl_matrix_free(bp.counts_m[i]);
+        }
+        free(bp.counts_m);
 
         return m;
 }
