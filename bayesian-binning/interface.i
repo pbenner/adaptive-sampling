@@ -9,10 +9,12 @@
     PyObject *gmp        = PyDict_GetItemString($input, "gmp");
     PyObject *bprob      = PyDict_GetItemString($input, "bprob");
     PyObject *likelihood = PyDict_GetItemString($input, "likelihood");
+    PyObject *which      = PyDict_GetItemString($input, "which");
     $1->verbose    = (verbose == Py_True ? 1 : 0);
     $1->gmp        = (gmp     == Py_True ? 1 : 0);
     $1->bprob      = (bprob   == Py_True ? 1 : 0);
     $1->likelihood = PyInt_AsLong(likelihood);
+    $1->which      = PyInt_AsLong(which);
 }
 
 %typemap(freearg) Options * {

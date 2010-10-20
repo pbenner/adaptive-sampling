@@ -336,8 +336,8 @@ gsl_matrix * bin_log(
         bp.prior_log  = prior_log;
         bp.add_event.pos   = 0;
         bp.add_event.n     = 0;
-        bp.add_event.which = 0;
-        bp.events     = 2;
+        bp.add_event.which = options->which;
+        bp.events     = counts->size1;
         bp.counts     = counts;
         bp.alpha      = (unsigned int *)malloc(bp.events*sizeof(unsigned int));
         bp.counts_m   = (gsl_matrix  **)malloc(bp.events*sizeof(gsl_matrix *));

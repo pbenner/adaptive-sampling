@@ -15,4 +15,5 @@ typedef struct options {
         int gmp;
         int likelihood;
         int bprob;
+        int which;
 } Options;

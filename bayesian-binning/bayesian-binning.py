@@ -43,13 +43,9 @@ def usage():
     print "bayesian-binning.py [option]... FILE "
     print
     print "Options:"
-    print "       --likelihood=LIKELIHOOD - multinomial, binomial"
-    print "   -s, --sigma=SIGMA           - sigma hyperparameter"
-    print "   -g, --gamma=GAMMA           - gamma hpyerparameter"
     print "   -b                          - compute break probabilities"
-    print
-    print "   -m                          - use GNU multiple precision library"
-    print "       --compare               - compare log scale with gmp library"
+    print "       --likelihood=LIKELIHOOD - multinomial, binomial"
+    print "       --which=EVENT           - for which event to compute the binning"
     print
     print "       --load                  - load result from file"
     print "       --save                  - save result to file"
@@ -128,7 +124,7 @@ def plotbin(ax, x, exp, var, bprob, modelpost):
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(successes, failures, mprior):
+def bin(counts, alpha, mprior):
     """Call the binning library."""
     if options['load']:
         config = ConfigParser.RawConfigParser()
@@ -147,22 +143,11 @@ def bin(successes, failures, mprior):
         else:
             bprob = []
         return [pdf, var, bprob, mpost]
-    elif options["compare"]:
-        successes_i = map(int, successes)
-        failures_i  = map(int, failures)
-        mprior_i    = map(float, mprior)
-        options["gmp"] = False
-        result1 = interface.binning(successes_i, failures_i, mprior_i, options)
-        options["gmp"] = True
-        result2 = interface.binning(successes_i, failures_i, mprior_i, options)
-        print [abs(a - b) for a, b in zip(result1[0], result2[0])]
-        exit(0)
     else:
-        successes_i = map(int, successes)
-        failures_i  = map(int, failures)
-        mprior_i    = map(float, mprior)
-        alpha_i     = map(int, [options['sigma'], options['gamma']])
-        return interface.binning([successes_i, failures_i], alpha_i, mprior_i, options)
+        counts_i = [ map(int, row) for row in counts ]
+        mprior_i =   map(float, mprior)
+        alpha_i  =   map(int, alpha)
+        return interface.binning(counts_i, alpha_i, mprior_i, options)
 
 # save result
 # ------------------------------------------------------------------------------
@@ -196,7 +181,7 @@ def computeFailures(successes, trials):
     N        = len(successes)
     failures = np.repeat(trials, N) - successes
     if any([ a<0 for a in failures]):
-        raise ValueError("number of trials is smaller than some counts")
+        raise ValueError("Number of trials is smaller than some counts.")
     return failures
 
 def readMPrior(models_str, N):
@@ -216,10 +201,20 @@ def readOptions(config, section):
             options["likelihood"] = 1
         if likelihood_str == "binomial":
             options["likelihood"] = 2
-    if config.has_option(section, 'sigma'):
-        options["sigma"] = int(config.get(section, 'sigma'))
-    if config.has_option(section, 'gamma'):
-        options["gamma"] = int(config.get(section, 'gamma'))
+
+def readAlpha(config, section, n):
+    alpha = []
+    if config.has_option(section, 'alpha'):
+        alpha_str  = config.get   (section, 'alpha')
+        for str in alpha_str.split(' '):
+            alpha.append(int(str))
+        if len(alpha) < n:
+            raise ValueError("Not enough alpha parameters.")
+        if len(alpha) > n:
+            raise ValueError("Too many alpha parameters.")
+    else:
+        alpha = list(np.repeat(1, n))
+    return alpha
 
 def parseConfig(file):
     config = ConfigParser.RawConfigParser()
@@ -229,18 +224,17 @@ def parseConfig(file):
         raise IOError("Invalid configuration file.")
     if config.has_section('Counts'):
         readOptions(config, 'Counts')
-        trials      = config.getint('Counts', 'trials')
         counts_str  = config.get   ('Counts', 'counts')
-        successes   = []
-        for value in counts_str.split(' '):
-            successes.append(int(value))
-        failures    = computeFailures(successes, trials)
-
-        N           = len(successes)
+        counts      = []
+        for line in counts_str.split('\n'):
+            if line != '':
+                counts.append([int(a) for a in line.split(' ')])
+        N           = len(counts[0])
         prior       = list(np.repeat(1, N))
+        alpha       = readAlpha(config, 'Counts', len(counts))
         if config.has_option('Counts', 'mprior'):
             prior   = readMPrior(config.get('Counts', 'mprior'), N)
-        result      = bin(successes, failures, prior)
+        result      = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
@@ -263,11 +257,13 @@ def parseConfig(file):
         x, successes = timingsToCounts(timings, binsize)
         trials       = len(timings)
         failures     = computeFailures(successes, trials)
+        counts       = [successes, failures]
         N            = len(successes)
         prior        = list(np.repeat(1, N))
+        alpha        = readAlpha(config, 'Trials', 2)
         if config.has_option('Trials', 'mprior'):
             prior    = readMPrior(config.get('Trials', 'mprior'), N)
-        result       = bin(successes, failures, prior)
+        result       = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
@@ -286,22 +282,19 @@ def parseConfig(file):
 
 options = {
     'verbose'    : False,
-    'gmp'        : False,
     'compare'    : False,
     'bprob'      : False,
     'likelihood' : 1,
-    'sigma'      : 1,
-    'gamma'      : 1,
     'load'       : None,
-    'save'       : None
+    'save'       : None,
+    'which'      : 0
     }
 
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "compare", "likelihood=",
-                      "sigma=", "gamma=", "load=", "save="]
-        opts, tail = getopt.getopt(sys.argv[1:], "bhvs:g:m", longopts)
+        longopts   = ["help", "verbose", "likelihood=", "load=", "save=", "which="]
+        opts, tail = getopt.getopt(sys.argv[1:], "bhv", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -315,25 +308,17 @@ def main():
             return 0
         if o == "-b":
             options["bprob"] = True
-        if o == "-m":
-            sys.stderr.write("Using GNU multiple precision library.\n")
-            options["gmp"] = True
-        if o == "--compare":
-            sys.stderr.write("Comparing log scale with GNU multiple precision library.\n")
-            options["compare"] = True
         if o == "--likelihood":
             if a == "multinomial":
                 options["likelihood"] = 1
             if a == "binomial":
                 options["likelihood"] = 2
-        if o in ("-s", "--sigma"):
-            options["sigma"] = int(a)
-        if o in ("-g", "--gamma"):
-            options["gamma"] = int(a)
         if o == "--load":
             options["load"] = a
         if o == "--save":
             options["save"] = a
+        if o == "--which":
+            options["which"] = int(a)
     if len(tail) != 1:
         usage()
         return 1
