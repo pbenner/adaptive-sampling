@@ -229,7 +229,7 @@ void computeEntropy(binProblem *bp, long double *result, long double evidence)
                 g[i] = logl(bp->prior_log[i] - evidence) + bp->prior_log[i];
         }
         prombs(result1, g, &f, bp->T, bp->T-1);
-        prombsExt(result2, bp->prior_log, &f, &h, 0.0001, bp->T, bp->T-1);
+        prombsExt(result2, bp->prior_log, &f, &h, bp->epsilon, bp->T, bp->T-1);
 
         for (i = 0; i < bp->T; i++) {
                 result[i] = expl(logsub(result2[i], result1[i]) - evidence);

@@ -167,30 +167,79 @@ The uncertainty about which multi-bin model describes the data best is
 given by the Shannon entropy
 \begin{equation}
   \begin{split}
-    \mathrm{H}(&\mathcal{P}_{m_B}(\mathcal{X})|D,m_B)\\
-    &= -\sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}P(B|D,m_B) \log P(B|D,m_B)\\
-    &= -\sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-    \frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in
-        \mathcal{P}_{m_B}(\mathcal{X})}P(D|B,m_B)P(B|m_B)}
+    \mathrm{H}(&\mathcal{P}(\mathcal{X})|D)\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}P(B|D) \log P(B|D)\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(D|B)P(B)}{P(D)}
     \log
-    \frac{P(D|B,m_B)P(B|m_B)}{\sum_{B\in
-        \mathcal{P}_{m_B}(\mathcal{X})}P(D|B,m_B)P(B|m_B)}\\
-    &= -\sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}\frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)}
+    \frac{P(D|B)P(B)}{P(D)}\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}
+    \frac{P(D|BP(B)}{\sum_{B\in
+        \mathcal{P}(\mathcal{X})}P(D|B)P(B)}
     \log
-    \frac{P(D|B,m_B)P(B|m_B)}{P(D|m_B)}\\
+    \frac{P(D|B)P(B)}{\sum_{B\in
+        \mathcal{P}(\mathcal{X})}P(D|B)P(B)}\\
     &=
-    -\frac{1}{P(D|m_B)}
-    \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-    P(B|m_B)
+    -\frac{1}{P(D)}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    P(B)
     \prod_{b\in
       B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
     \left[
       \log
-      \frac{P(B|m_B)}{P(D|m_B)} +
+      \frac{P(B)}{P(D)} +
       \sum_{b \in B}
       \log
       \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
-    \right]
+    \right]\\
+    &=
+    \frac{1}{P(D)}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    P(B)
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \sum_{b \in B}
+    \left[-\log
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\right]\\
+    &-
+    \frac{1}{P(D)}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    \log
+    \frac{P(B)}{P(D)}
+    P(B)
+    \prod_{b\in B}
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+  \end{split}
+\end{equation}
+
+\section*{Implementation}
+\begin{equation}
+  \begin{split}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    g_{m_B}
+    \prod_{b\in B}
+    f(b)
+  \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    g_{m_B}
+    \prod_{b\in B}
+    f(b)
+    \sum_{b \in B}
+    h(h)
+  \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}
+    \lim\limits_{\epsilon \rightarrow \infty}
+    \frac{\exp[\epsilon\sum_i h_i]-1}{\epsilon}
+    =
+    \frac{\mathrm{d}}{\mathrm{d}\epsilon}
+    \exp[\epsilon\sum_i h_i]\bigg|_{\epsilon=0}
+    =
+    \sum_ih_i
   \end{split}
 \end{equation}

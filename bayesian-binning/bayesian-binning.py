@@ -290,12 +290,14 @@ def parseConfig(file):
         else:
             fig = figure()
             fig.subplots_adjust(hspace=0.35)
-            ax1 = fig.add_subplot(3,1,1)
-            ax2 = fig.add_subplot(3,1,2)
-            ax3 = fig.add_subplot(3,1,3)
+            ax1 = fig.add_subplot(4,1,1)
+            ax2 = fig.add_subplot(4,1,2)
+            ax3 = fig.add_subplot(4,1,3)
+            ax4 = fig.add_subplot(4,1,4)
             plotspikes(ax1, x, timings)
             plotbin   (ax2, x, result[0], result[1], result[2], result[3])
             plotmodelpost(ax3, result[3])
+            plotentropy(ax4, result[4])
             show()
 
 # main
