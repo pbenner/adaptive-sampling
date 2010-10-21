@@ -203,7 +203,7 @@ void execPrombs(binProblem *bp, long double *ev_log, int pos)
                 return iec_log(bp, i, j);
         }
 
-        prombs(ev_log, &f, bp->prior_log, bp->T, minM(bp));
+        prombs(ev_log, bp->prior_log, &f, bp->T, minM(bp));
 }
 
 static

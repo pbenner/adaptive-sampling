@@ -18,6 +18,12 @@
 #ifndef _PROMBS_H_
 #define _PROMBS_H_
 
-extern void prombs(long double *result, long double (*f)(int, int), long double *g, size_t L, size_t m);
+extern void prombs(long double *result, long double *g, long double (*f)(int, int), size_t L, size_t m);
+extern void prombsExt(
+        long double *result,
+        long double *g,
+        long double (*f)(int, int),
+        long double (*h)(int, int, int),
+        size_t L, size_t m);
 
 #endif /* _PROMBS_H_ */

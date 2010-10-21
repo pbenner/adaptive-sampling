@@ -72,7 +72,7 @@ void freeMatrix(long double **a, size_t L) {
         free(a);
 }
 
-void prombs(long double *result, long double (*f)(int, int), long double *g, size_t L, size_t m)
+void prombs(long double *result, long double *g, long double (*f)(int, int), size_t L, size_t m)
 {
         long double **ak = allocMatrix(L);
         long double pr[L];
@@ -98,4 +98,16 @@ void prombs(long double *result, long double (*f)(int, int), long double *g, siz
         }
 
         freeMatrix(ak, L);
+}
+
+void prombsExt(
+        long double *result,
+        long double *g,
+        long double (*f)(int, int),
+        long double (*h)(int, int, int),
+        size_t L, size_t m)
+{
+        long double tmp[L];
+
+
 }
