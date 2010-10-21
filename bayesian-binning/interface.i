@@ -6,6 +6,7 @@
 %typemap(in) Options * {
     $1 = (Options *)malloc(sizeof(Options));
     PyObject *verbose    = PyDict_GetItemString($input, "verbose");
+    PyObject *epsilon    = PyDict_GetItemString($input, "epsilon");
     PyObject *gmp        = PyDict_GetItemString($input, "gmp");
     PyObject *bprob      = PyDict_GetItemString($input, "bprob");
     PyObject *likelihood = PyDict_GetItemString($input, "likelihood");
@@ -15,6 +16,7 @@
     $1->bprob      = (bprob   == Py_True ? 1 : 0);
     $1->likelihood = PyInt_AsLong(likelihood);
     $1->which      = PyInt_AsLong(which);
+    $1->epsilon    = PyFloat_AsDouble(epsilon);
 }
 
 %typemap(freearg) Options * {

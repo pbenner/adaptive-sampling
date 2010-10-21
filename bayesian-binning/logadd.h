@@ -29,4 +29,10 @@ long double logadd(long double a, long double b)
         else       return b == -HUGE_VAL ? a : a + log1pl(expl(b-a));
 }
 
+static inline
+long double logsub(long double a, long double b)
+{
+        return b == -HUGE_VAL ? a : a + logl(1-expl(b-a));
+}
+
 #endif /* _LOGADD_H_ */

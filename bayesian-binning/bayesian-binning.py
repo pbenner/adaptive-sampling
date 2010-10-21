@@ -46,6 +46,7 @@ def usage():
     print "   -b                          - compute break probabilities"
     print "       --likelihood=LIKELIHOOD - multinomial, binomial"
     print "       --which=EVENT           - for which event to compute the binning"
+    print "       --epsilon=EPSILON       - epsilon for entropy estimations"
     print
     print "       --load                  - load result from file"
     print "       --save                  - save result to file"
@@ -81,8 +82,26 @@ def plotmodelpost(ax, modelpost):
     barpath = path.Path.make_compound_path_from_polys(XY)
     patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
     ax.add_patch(patch)
-    ax.set_xlabel(r'$M$',  font)
-    ax.set_ylabel(r'$P(M|D)$', font)
+    ax.set_xlabel(r'$m_B$',  font)
+    ax.set_ylabel(r'$P(m_B|D)$', font)
+
+def plotentropy(ax, entropy):
+    N = len(entropy)
+    x = np.arange(0, N+1, 1)
+    entropy.insert(0, 0)
+    ax.step(x, entropy, 'r--', where='mid', linewidth=1)
+    ax.grid(True)
+
+    left    = np.array(x[:-1]) + 0.5
+    right   = np.array(x[1:])  + 0.5
+    bottom  = np.zeros(len(left))
+    top     = bottom + entropy[1:]
+    XY      = np.array([[left,left,right,right], [bottom,top,top,bottom]]).T
+    barpath = path.Path.make_compound_path_from_polys(XY)
+    patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
+    ax.add_patch(patch)
+    ax.set_xlabel(r'$m_B$',  font)
+    ax.set_ylabel(r'$H(\mathcal{P}(\mathcal{X})|D,m_B)$', font)
 
 def plotspikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -118,7 +137,7 @@ def plotbin(ax, x, exp, var, bprob, modelpost):
     ax.plot(x, exp, 'r')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|D)$', font)
-    if bprob:
+    if bprob and options['bprob']:
         plotbinboundaries(ax.twinx(), x, bprob, modelpost)
 
 # binning
@@ -240,10 +259,12 @@ def parseConfig(file):
         else:
             fig = figure()
             fig.subplots_adjust(hspace=0.35)
-            ax1 = fig.add_subplot(2,1,1)
-            ax2 = fig.add_subplot(2,1,2)
+            ax1 = fig.add_subplot(3,1,1)
+            ax2 = fig.add_subplot(3,1,2)
+            ax3 = fig.add_subplot(3,1,3)
             plotbin(ax1, None, result[0], result[1], result[2], result[3])
             plotmodelpost(ax2, result[3])
+            plotentropy(ax3, result[4])
             show()
     if config.has_section('Trials'):
         readOptions(config, 'Trials')
@@ -281,6 +302,7 @@ def parseConfig(file):
 # ------------------------------------------------------------------------------
 
 options = {
+    'epsilon'    : 0.0001,
     'verbose'    : False,
     'compare'    : False,
     'bprob'      : False,
@@ -293,7 +315,8 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "likelihood=", "load=", "save=", "which="]
+        longopts   = ["help", "verbose", "likelihood=", "load=",
+                      "save=", "which=", "epsilon="]
         opts, tail = getopt.getopt(sys.argv[1:], "bhv", longopts)
     except getopt.GetoptError:
         usage()
@@ -319,6 +342,8 @@ def main():
             options["save"] = a
         if o == "--which":
             options["which"] = int(a)
+        if o == "--epsilon":
+            options["epsilon"] = float(a)
     if len(tail) != 1:
         usage()
         return 1

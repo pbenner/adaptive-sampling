@@ -23,7 +23,8 @@ extern void prombsExt(
         long double *result,
         long double *g,
         long double (*f)(int, int),
-        long double (*h)(int, int, int),
+        long double (*h)(int, int),
+        long double epsilon,
         size_t L, size_t m);
 
 #endif /* _PROMBS_H_ */

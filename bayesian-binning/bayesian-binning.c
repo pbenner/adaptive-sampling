@@ -37,6 +37,8 @@
 #include "prombs.h"
 
 typedef struct {
+        // precision for entropy estimates
+        long double epsilon;
         // number of timesteps
         unsigned int T;
         unsigned int events;
@@ -207,6 +209,34 @@ void execPrombs(binProblem *bp, long double *ev_log, int pos)
 }
 
 static
+void computeEntropy(binProblem *bp, long double *result, long double evidence)
+{
+        size_t i;
+        long double result1[bp->T];
+        long double result2[bp->T];
+        long double g[bp->T];
+        long double f(int i, int j)
+        {
+                return iec_log(bp, i, j);
+        }
+        long double h(int i, int j)
+        {
+                // - Log[f(b)]
+                return -iec_log(bp, i, j);
+        }
+
+        for (i = 0; i < bp->T; i++) {
+                g[i] = logl(bp->prior_log[i] - evidence) + bp->prior_log[i];
+        }
+        prombs(result1, g, &f, bp->T, bp->T-1);
+        prombsExt(result2, bp->prior_log, &f, &h, 0.0001, bp->T, bp->T-1);
+
+        for (i = 0; i < bp->T; i++) {
+                result[i] = expl(logsub(result2[i], result1[i]) - evidence);
+        }
+}
+
+static
 long double computeEvidence(binProblem *bp, long double *ev_log)
 {
         long double sum;
@@ -262,7 +292,12 @@ void computeBreakProbabilities(binProblem *bp, long double *bprob, long double P
 
 static
 void computeBinning(
-        binProblem *bp, long double *pdf, long double *var, long double *bprob, long double *mpost,
+        binProblem *bp,
+        long double *pdf,
+        long double *var,
+        long double *bprob,
+        long double *mpost,
+        long double *entropy,
         Options *options)
 {
         long double ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
@@ -280,6 +315,8 @@ void computeBinning(
         if (options->bprob) {
                 computeBreakProbabilities(bp, bprob, sum1);
         }
+        // compute the multibin entropy
+        computeEntropy(bp, entropy, sum1);
         // for each timestep compute expectation and variance
         // from the model average
         notice(NONE, "T: %d", bp->T);
@@ -319,17 +356,19 @@ gsl_matrix * bin_log(
         Options *options)
 {
         size_t K = counts->size2;
-        gsl_matrix *m = gsl_matrix_alloc(4, K);
+        gsl_matrix *m = gsl_matrix_alloc(5, K);
         long double pdf[K];
         long double var[K];
         long double bprob[K];
         long double mpost[K];
+        long double entropy[K];
         long double prior_log[K];
         unsigned int i;
         binProblem bp;
 
         verbose       = options->verbose;
 
+        bp.epsilon    = options->epsilon;
         bp.mprior     = mprior;
         bp.T          = K;
         bp.likelihood = options->likelihood;
@@ -345,14 +384,14 @@ gsl_matrix * bin_log(
                 bp.counts_m[i] = gsl_matrix_alloc(K, K);
                 bp.alpha[i]    = gsl_vector_get(alpha, i);
         }
-
         computeCountStatistics(&bp);
-        computeBinning(&bp, pdf, var, bprob, mpost, options);
+        computeBinning(&bp, pdf, var, bprob, mpost, entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
                 gsl_matrix_set(m, 2, i, bprob[i]);
                 gsl_matrix_set(m, 3, i, mpost[i]);
+                gsl_matrix_set(m, 4, i, entropy[i]);
                 notice(NONE, "pdf[%03d]=%Lf var[%03d]=%Lf", i, pdf[i], i, var[i]);
         }
 

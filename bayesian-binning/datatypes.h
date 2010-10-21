@@ -11,6 +11,7 @@ typedef struct matrix {
 } Matrix;
 
 typedef struct options {
+        long double epsilon;
         int verbose;
         int gmp;
         int likelihood;

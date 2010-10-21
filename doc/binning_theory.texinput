@@ -185,13 +185,12 @@ given by the Shannon entropy
     \prod_{b\in
       B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
-    \sum_{b \in B}
     \left[
-      \frac{1}{m_B}
       \log
       \frac{P(B|m_B)}{P(D|m_B)} +
+      \sum_{b \in B}
       \log
       \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
-      \right]
+    \right]
   \end{split}
 \end{equation}

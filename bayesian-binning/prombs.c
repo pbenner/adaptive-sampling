@@ -104,10 +104,19 @@ void prombsExt(
         long double *result,
         long double *g,
         long double (*f)(int, int),
-        long double (*h)(int, int, int),
+        long double (*h)(int, int),
+        long double epsilon,
         size_t L, size_t m)
 {
+        long double fprime(int i, int j) {
+                return (*f)(i, j) + epsilon*(*h)(i, j);
+        }
+        size_t i;
         long double tmp[L];
+        prombs(result, g, &fprime, L, m);
+        prombs(tmp, g, f, L, m);
 
-
+        for (i = 0; i < L; i++) {
+                result[i] = logsub(result[i], tmp[i]) - logl(epsilon);
+        }
 }
