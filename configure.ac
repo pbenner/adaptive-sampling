@@ -22,7 +22,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AC_CONFIG_SRCDIR(bayesian-binning/bayesian-binning-gmp.c)
+AC_CONFIG_SRCDIR(bayesian-binning/bayesian-binning.c)
 AM_INIT_AUTOMAKE([gnu dist-bzip2])
 AC_PROG_LIBTOOL
 LT_INIT
@@ -220,18 +220,10 @@ AC_CONFIG_HEADER([config.h:config.h.in])
 AC_CONFIG_FILES([
 	Makefile
 	version.h
+	libprombs/Makefile
 	libexception/Makefile
 	bayesian-binning/Makefile
  	])
-
-dnl AC_CONFIG_FILES([updatedd-wrapper/create-config],
-dnl 	[chmod 755 updatedd-wrapper/create-config])
-dnl AC_CONFIG_FILES([updatedd-wrapper/updatedd-wrapper],
-dnl 	[chmod 755 updatedd-wrapper/updatedd-wrapper])
-dnl AC_CONFIG_FILES([scripts/ipserv.pl],
-dnl 	[chmod 755 scripts/ipserv.pl])
-dnl AC_CONFIG_FILES([scripts/interface.pl],
-dnl 	[chmod 755 scripts/interface.pl])
 
 AC_OUTPUT
 

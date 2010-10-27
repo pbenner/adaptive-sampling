@@ -21,8 +21,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "datatypes.h"
-#include "logadd.h"
+#include <logarithmetic.h>
 
 static
 void logproduct(long double *result, long double **ak, size_t L, size_t i)

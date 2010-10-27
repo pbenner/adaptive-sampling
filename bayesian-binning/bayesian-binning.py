@@ -304,7 +304,7 @@ def parseConfig(file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'epsilon'    : 0.0001,
+    'epsilon'    : 0.00001,
     'verbose'    : False,
     'compare'    : False,
     'bprob'      : False,

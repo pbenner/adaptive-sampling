@@ -4,14 +4,17 @@ INCLUDES = -I$(top_srcdir)/include
 
 ## bayesian-binning library
 noinst_LTLIBRARIES  = libbayesian-binning.la
-libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h prombs.c prombs.h
+libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h
 libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
+libbayesian_binning_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 
 ## main program
 bin_PROGRAMS = bayesian-binning
 bayesian_binning_SOURCES = main.c
-bayesian_binning_LDADD   = $(LIBOBJS) $(top_builddir)/libexception/libexception.la libbayesian-binning.la
-bayesian_binning_CFLAGS  = -DLIBPATH="\"$(pkglibdir)\""
+bayesian_binning_LDADD   = $(LIBOBJS)
+bayesian_binning_LDADD  += libbayesian-binning.la
+bayesian_binning_LDADD  += $(top_builddir)/libexception/libexception.la
+bayesian_binning_LDADD  += $(top_builddir)/libprombs/libprombs.la
 
 ## swig
 BUILT_SOURCES    = interface_wrap.c

@@ -22,6 +22,7 @@
 #include <math.h>
 
 #include <exception.h>
+#include <logarithmetic.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -33,7 +34,6 @@
 #include <gsl/gsl_sf_exp.h>
 
 #include "datatypes.h"
-#include "logadd.h"
 #include "prombs.h"
 
 typedef struct {
@@ -212,7 +212,10 @@ static
 void computeEntropy(binProblem *bp, long double *result, long double evidence)
 {
         size_t i;
-        long double result1[bp->T];
+        long double resulta[bp->T];
+        long double resultb[bp->T];
+        long double epsilona = bp->epsilon;
+        long double epsilonb = bp->epsilon*2;
         long double result2[bp->T];
         long double g[bp->T];
         long double f(int i, int j)
@@ -228,11 +231,14 @@ void computeEntropy(binProblem *bp, long double *result, long double evidence)
         for (i = 0; i < bp->T; i++) {
                 g[i] = logl(bp->prior_log[i] - evidence) + bp->prior_log[i];
         }
-        prombs(result1, g, &f, bp->T, bp->T-1);
-        prombsExt(result2, bp->prior_log, &f, &h, bp->epsilon, bp->T, bp->T-1);
+        prombsExt(resulta, bp->prior_log, &f, &h, epsilona, bp->T, bp->T-1);
+        prombsExt(resultb, bp->prior_log, &f, &h, epsilonb, bp->T, bp->T-1);
+        prombs(result2, g, &f, bp->T, bp->T-1);
 
         for (i = 0; i < bp->T; i++) {
-                result[i] = expl(logsub(result2[i], result1[i]) - evidence);
+                long double pa = expl(logsub(resulta[i], result2[i]) - evidence);
+                long double pb = expl(logsub(resultb[i], result2[i]) - evidence);
+                result[i] = pa - (pb-pa)/(epsilonb-epsilona)*epsilona;
         }
 }
 
