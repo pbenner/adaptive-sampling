@@ -232,7 +232,7 @@ given by the Shannon entropy
     \prod_{b\in B}
     f(b)
     \sum_{b \in B}
-    h(h)
+    h(b)
   \end{split}
 \end{equation}
 
