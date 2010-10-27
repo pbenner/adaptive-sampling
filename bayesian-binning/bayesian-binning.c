@@ -23,6 +23,7 @@
 
 #include <exception.h>
 #include <logarithmetic.h>
+#include <prombs.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -34,7 +35,6 @@
 #include <gsl/gsl_sf_exp.h>
 
 #include "datatypes.h"
-#include "prombs.h"
 
 typedef struct {
         // precision for entropy estimates
