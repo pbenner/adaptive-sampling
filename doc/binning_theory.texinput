@@ -18,7 +18,7 @@ $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots
 Todo: De Finetti, n-exchangeability, from which it follows that the
 likelihood function is given by the multinomial distribution
 \begin{equation}
-  P(D|\vec{p},B|m_B) = \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y},
+  P(D|\vec{p},B,m_B) = \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y},
 \end{equation}
 where $n^b_y$ denotes the count statistic for event $y$ in bin
 $b$. The conjugate prior for a multinomial likelihood function is
@@ -160,7 +160,12 @@ have a border at position $i$.
 with $M = \{1,2,\dots,L\}$.
 
 \section*{Bayesian Hypothesis Testing}
-Todo
+Bayes factor
+\begin{equation}
+  \begin{split}
+    K = \frac{P(D|m_1)}{P(D|m_2)}
+  \end{split}
+\end{equation}
 
 \section*{Entropy}
 The uncertainty about which multi-bin model describes the data best is
