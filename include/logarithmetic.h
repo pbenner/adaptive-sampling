@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _LOGADD_H_
-#define _LOGADD_H_
+#ifndef _LOGARITHMETIC_H_
+#define _LOGARITHMETIC_H_
 
 #include <math.h>
 
@@ -35,4 +35,4 @@ long double logsub(long double a, long double b)
         return b == -HUGE_VAL ? a : a + logl(1-expl(b-a));
 }
 
-#endif /* _LOGADD_H_ */
+#endif /* _LOGARITHMETIC_H_ */
