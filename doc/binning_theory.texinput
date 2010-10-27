@@ -8,7 +8,7 @@
 \begin{equation}
   \begin{split}
     P(\vec{p},B|D,m_B) &= \frac{P(D,\vec{p},B|m_B)}{P(D|m_B)}\\
-                       &= \frac{P(D|\vec{p},B|m_B)P(\vec{p},B|m_B)}{P(D|m_B)}
+                       &= \frac{P(D|\vec{p},B|m_B)\pi(\vec{p},B|m_B)}{P(D|m_B)}
   \end{split}
 \end{equation}
 $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots, x_L\}$, $\mathcal{Y} =
@@ -38,16 +38,16 @@ times. Hence
   \Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t
 \end{equation}
 
-For $P(\vec{p},B|m_B)$ a non-informative prior assumption is made, i.e.
+For $\pi(\vec{p},B|m_B)$ a non-informative prior assumption is made, i.e.
 \begin{equation}
-  P(\vec{p},B|m_B) = P(\vec{p}|m_B)P(B|m_B),
+  \pi(\vec{p},B|m_B) = \pi(\vec{p}|m_B)P(B|m_B),
 \end{equation}
 which means that the prior knowledge about $\vec{p}$ is independent of
 $B$ and vice versa.
 
 A non-informative prior is chosen for the multi-bins
 \begin{equation}
-  P(B|m_B) = {L \choose m_B}^{-1}
+  \pi(B|m_B) = {L \choose m_B}^{-1}
 \end{equation}
 
 \section*{Evidence}
@@ -55,7 +55,7 @@ A non-informative prior is chosen for the multi-bins
   \begin{split}
     P(D|m_B)
     &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-      P(D|B,m_B) P(B|m_B)\\
+      P(D|B,m_B) \pi(B|m_B)\\
   \end{split}
 \end{equation}
 \begin{equation}
@@ -64,7 +64,7 @@ A non-informative prior is chosen for the multi-bins
     &=
       \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
           \Delta^K}_{m_B~\text{times}}}\mathrm{d}\vec{p}
-      P(D|\vec{p},B,m_B) P(\vec{p}|m_B)\\
+      P(D|\vec{p},B,m_B) \pi(\vec{p}|m_B)\\
     &=
       \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
       \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y}
@@ -96,13 +96,13 @@ Hence
   \begin{split}
     P(D|m_B)
     &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-    P(B|m_B)
+    \pi(B|m_B)
     \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
     \frac{\prod_{y\in
         \mathcal{Y}}\Gamma(n_y^b+\alpha^b_y)}{\Gamma(\sum_{y\in
         \mathcal{Y}}n_y^b+\alpha^b_y)}\\
     &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-    P(B|m_B)
+    \pi(B|m_B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
@@ -132,10 +132,10 @@ where $D' = D \cup \{y_b\}$.
   \begin{split}
     \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{X})}P(B|D,m_B) &=
       \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)P(B|m_B)}{\sum_{B\in
-               \mathcal{P}_{m_B}(\mathcal{X})} P(D|B,m_B)P(B|m_B)}\\
+          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)\pi(B|m_B)}{\sum_{B\in
+               \mathcal{P}_{m_B}(\mathcal{X})} P(D|B,m_B)\pi(B|m_B)}\\
       &= \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)P(B|m_B)}{P(D|m_B)},
+          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)\pi(B|m_B)}{P(D|m_B)},
   \end{split}
 \end{equation}
 where $\mathcal{I}^i_{m_B}(\mathcal{X}) \subseteq
@@ -146,15 +146,15 @@ have a border at position $i$.
 \begin{equation}
   \begin{split}
     P(m_B|D)
-    &= \frac{P(D|m_B)P(m_B)}{P(D)}\\
-    &= \frac{P(D|m_B)P(m_B)}{\sum_{m_B\in M}P(D|m_B)P(m_B)},
+    &= \frac{P(D|m_B)\pi(m_B)}{P(D)}\\
+    &= \frac{P(D|m_B)\pi(m_B)}{\sum_{m_B\in M}P(D|m_B)\pi(m_B)},
   \end{split}
 \end{equation}
 
 \begin{equation}
   \begin{split}
     \mathrm{E}[p_y^b|D] 
-    = \frac{\sum_{m_B\in M}P(D'|m_B)P(m_B)}{\sum_{m_B\in M}P(D|m_B)P(m_B)},
+    = \frac{\sum_{m_B\in M}P(D'|m_B)\pi(m_B)}{\sum_{m_B\in M}P(D|m_B)\pi(m_B)},
   \end{split}
 \end{equation}
 with $M = \{1,2,\dots,L\}$.
@@ -174,25 +174,25 @@ given by the Shannon entropy
   \begin{split}
     \mathrm{H}(&\mathcal{P}(\mathcal{X})|D)\\
     &= -\sum_{B\in \mathcal{P}(\mathcal{X})}P(B|D) \log P(B|D)\\
-    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(D|B)P(B)}{P(D)}
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(D|B)\pi(B)}{P(D)}
     \log
-    \frac{P(D|B)P(B)}{P(D)}\\
+    \frac{P(D|B)\pi(B)}{P(D)}\\
     &= -\sum_{B\in \mathcal{P}(\mathcal{X})}
-    \frac{P(D|BP(B)}{\sum_{B\in
-        \mathcal{P}(\mathcal{X})}P(D|B)P(B)}
+    \frac{P(D|B)\pi(B)}{\sum_{B\in
+        \mathcal{P}(\mathcal{X})}P(D|B)\pi(B)}
     \log
-    \frac{P(D|B)P(B)}{\sum_{B\in
-        \mathcal{P}(\mathcal{X})}P(D|B)P(B)}\\
+    \frac{P(D|B)\pi(B)}{\sum_{B\in
+        \mathcal{P}(\mathcal{X})}P(D|B)\pi(B)}\\
     &=
     -\frac{1}{P(D)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
-    P(B)
+    \pi(B)
     \prod_{b\in
       B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
     \left[
       \log
-      \frac{P(B)}{P(D)} +
+      \frac{\pi(B)}{P(D)} +
       \sum_{b \in B}
       \log
       \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
@@ -200,7 +200,7 @@ given by the Shannon entropy
     &=
     \frac{1}{P(D)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
-    P(B)
+    \pi(B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
     \sum_{b \in B}
     \left[-\log
@@ -208,9 +208,8 @@ given by the Shannon entropy
     &-
     \frac{1}{P(D)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
-    \log
-    \frac{P(B)}{P(D)}
-    P(B)
+    \pi(B)
+    \log\frac{\pi(B)}{P(D)}
     \prod_{b\in B}
     \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
