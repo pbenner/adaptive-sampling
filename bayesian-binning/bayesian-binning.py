@@ -150,18 +150,20 @@ def bin(counts, alpha, mprior):
         config.read(options['load'])
         if not config.has_section('Result'):
             raise IOError("Invalid configuration file.")
-        pdf_str   = config.get('Result', 'pdf')
-        var_str   = config.get('Result', 'var')
-        mpost_str = config.get('Result', 'mpost')
-        pdf       = map(float, pdf_str.split(' '))
-        var       = map(float, var_str.split(' '))
-        mpost     = map(float, mpost_str.split(' '))
+        pdf_str     = config.get('Result', 'pdf')
+        var_str     = config.get('Result', 'var')
+        mpost_str   = config.get('Result', 'mpost')
+        entropy_str = config.get('Result', 'entropy')
+        pdf         = map(float, pdf_str.split(' '))
+        var         = map(float, var_str.split(' '))
+        mpost       = map(float, mpost_str.split(' '))
+        entropy     = map(float, entropy_str.split(' '))
         if config.has_option('Result', 'bprob'):
             bprob_str = config.get('Result', 'bprob')
             bprob     = map(float, bprob_str.split(' '))
         else:
             bprob = []
-        return [pdf, var, bprob, mpost]
+        return [pdf, var, bprob, mpost, entropy]
     else:
         counts_i = [ map(int, row) for row in counts ]
         mprior_i =   map(float, mprior)
@@ -174,10 +176,11 @@ def bin(counts, alpha, mprior):
 def saveResult(result):
     config = ConfigParser.ConfigParser()
     config.add_section('Result')
-    config.set('Result', 'pdf', " ".join(map(str, result[0])))
-    config.set('Result', 'var', " ".join(map(str, result[1])))
-    config.set('Result', 'bprob', " ".join(map(str, result[2])))
-    config.set('Result', 'mpost', " ".join(map(str, result[3])))
+    config.set('Result', 'pdf',     " ".join(map(str, result[0])))
+    config.set('Result', 'var',     " ".join(map(str, result[1])))
+    config.set('Result', 'bprob',   " ".join(map(str, result[2])))
+    config.set('Result', 'mpost',   " ".join(map(str, result[3])))
+    config.set('Result', 'entropy', " ".join(map(str, result[4])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
 
