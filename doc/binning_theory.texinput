@@ -40,7 +40,7 @@ times. Hence
 
 For $\pi(\vec{p},B|m_B)$ a non-informative prior assumption is made, i.e.
 \begin{equation}
-  \pi(\vec{p},B|m_B) = \pi(\vec{p}|m_B)P(B|m_B),
+  \pi(\vec{p},B|m_B) = \pi(\vec{p}|m_B)\pi(B|m_B),
 \end{equation}
 which means that the prior knowledge about $\vec{p}$ is independent of
 $B$ and vice versa.
