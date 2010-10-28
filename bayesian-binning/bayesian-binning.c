@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <math.h>
 
 #include <exception.h>
@@ -371,6 +372,13 @@ gsl_matrix * bin_log(
         long double prior_log[K];
         unsigned int i;
         binProblem bp;
+
+        bzero(pdf,       K*sizeof(long double));
+        bzero(var,       K*sizeof(long double));
+        bzero(bprob,     K*sizeof(long double));
+        bzero(mpost,     K*sizeof(long double));
+        bzero(entropy,   K*sizeof(long double));
+        bzero(prior_log, K*sizeof(long double));
 
         verbose       = options->verbose;
 

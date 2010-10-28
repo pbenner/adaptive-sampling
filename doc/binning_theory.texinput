@@ -8,7 +8,7 @@
 \begin{equation}
   \begin{split}
     P(\vec{p},B|D,m_B) &= \frac{P(D,\vec{p},B|m_B)}{P(D|m_B)}\\
-                       &= \frac{P(D|\vec{p},B|m_B)\pi(\vec{p},B|m_B)}{P(D|m_B)}
+                       &= \frac{P(D|\vec{p},B,m_B)\pi(\vec{p},B|m_B)}{P(D|m_B)}
   \end{split}
 \end{equation}
 $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots, x_L\}$, $\mathcal{Y} =
@@ -232,7 +232,7 @@ given by the Shannon entropy
     \prod_{b\in B}
     f(b)
     \sum_{b \in B}
-    h(h)
+    h(b)
   \end{split}
 \end{equation}
 
