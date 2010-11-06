@@ -258,10 +258,10 @@ of $p^b_y$ in bin $b$ are given by
     P(\vec{p}^b|D,m_T)
     &= \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_T)}{P(D|m_T)}\\
     &=
-    \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_t)}{
+    \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_T)}{
       \int_{\Delta^K}
       P(D|\vec{p}^b,m_T)
-      P(\vec{p}^b|m_T)
+      \pi(\vec{p}^b|m_T)
       \mathrm{d}\vec{p}^b}\\
     &=
     \Dir(\vec{p}^b; \vec{n}^b+\vec{\alpha}^b),
@@ -272,13 +272,23 @@ the expectation for $\vec{p}^b \sim \Dir(\vec{p}^b;
 \vec{n}^b+\vec{\alpha}^b)$ is given by
 \begin{equation}
   \begin{split}
-    \mathrm{E}[p^b_y|D,m_T]
-    &= \frac{p^b_y + \alpha^b_y}{\sum_{y \in \mathcal{Y}} n^b_y + \alpha^b_y}\\
-    &= \frac{p^b_y + \alpha^b_y}{m_T + \sum_{y \in \mathcal{Y}} \alpha^b_y},
+    \hat{p}^b_y = \mathrm{E}[p^b_y|D,m_T]
+    &= \frac{n^b_y + \alpha^b_y}{\sum_{y \in \mathcal{Y}} n^b_y + \alpha^b_y}\\
+    &= \frac{n^b_y + \alpha^b_y}{m_T + \sum_{y^* \in \mathcal{Y}} \alpha^b_{y^*}},
   \end{split}
 \end{equation}
-which is also known as the \textit{extended Bayes-Laplace rule} or
-\textit{Laplace's rule of succession} and is often used whenever one
-has to deal with small sample sizes. This estimate is equal to the
-frequentist's estimate, i.e. $\mathrm{E}[p^b_y|D,m_T] =
-\frac{n^b_y}{m_T}$, if $\alpha^b_y = 0 ~ \forall y \in \mathcal{Y}$.
+which is also known as the \textit{extended Bayes-Laplace rule} and is
+often used whenever only a small number of observations is
+available. This estimate is equal to the frequentist's estimate,
+i.e. $\mathrm{E}[p^b_y|D,m_T] = \frac{n^b_y}{m_T}$, if $\alpha^b_y = 0
+~ \forall y \in \mathcal{Y}$. For $\alpha^b_y = 1 ~ \forall y \in
+\mathcal{Y}$ we get \textit{Laplace's rule of succession}, which
+prevents that prior probabilities of zero or one are used. In Bayesian
+statistics a probability of zero or one should only be used for
+logical statements, called \textit{Cromwell's rule}.
+
+\section*{Todo}
+\begin{itemize}
+\item comparison of NSB method with binning to estimate entropies
+\item numerically compute iso-entropic lines on the probability simplex
+\end{itemize}
