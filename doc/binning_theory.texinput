@@ -12,20 +12,22 @@
   \end{split}
 \end{equation}
 $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots, x_L\}$, $\mathcal{Y} =
-\{y_1, y_2, \dots, y_K\}$ (discretized into $L$ intervals of equal size).
+\{y_1, y_2, \dots, y_K\}$ (discretized into $L$ intervals of equal
+size) and $m_T$ is the number of trials.
 
 \section*{Assumptions and Prior Knowledge}
 Todo: De Finetti, n-exchangeability, from which it follows that the
-likelihood function is given by the multinomial distribution
+likelihood function is given by the multinomial likelihood
 \begin{equation}
-  P(D|\vec{p},B,m_B) = \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y},
+  P(D|\vec{p},B,m_B) = \prod_{b\in B} \prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y},
 \end{equation}
 where $n^b_y$ denotes the count statistic for event $y$ in bin
 $b$. The conjugate prior for a multinomial likelihood function is
 given by the Dirichlet distribution $\Dir(\vec{p}^b;\vec{\alpha}^b)$, which
 states the belief that the probabilities of $K$ rival events in bin
 $b$ are $p_y^b$ given that each event has been observed $\alpha^b_y - 1$
-times. Hence
+times. The choice of this prior can be justified by \textit{Johnson's
+  sufficiency postulate}. Hence
 \begin{equation}
   P(\vec{p},B|m_B) = \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
   \prod_{y\in \mathcal{Y}}(p_y^b)^{\alpha^b_y-1},
@@ -86,7 +88,7 @@ integral of the first kind is given by the multinomial Beta-function.
     \Beta(\vec{z}) =
     \underbrace{\int_{\Delta^K}\prod_{z\in\mathcal{Z}}t^{z-1}\mathrm{d}t}_{\text{Euler
       integral of the first kind}}=
-    \underbrace{\frac{\prod_{z\in\mathcal{Z}}^{m}\Gamma(z)}{\Gamma(\sum_{z\in\mathcal{Z}}z)}}_{\text{multinomial
+    \underbrace{\frac{\prod_{z\in\mathcal{Z}}\Gamma(z)}{\Gamma(\sum_{z\in\mathcal{Z}}z)}}_{\text{multinomial
       Beta function}}
   \end{split}
 \end{equation}
@@ -247,3 +249,46 @@ given by the Shannon entropy
     \sum_ih_i
   \end{split}
 \end{equation}
+
+\section*{Estimation of Multinomial Probabilities}
+If $m_T$ is the number of trials, then the estimated probabilities
+of $p^b_y$ in bin $b$ are given by
+\begin{equation}
+  \begin{split}
+    P(\vec{p}^b|D,m_T)
+    &= \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_T)}{P(D|m_T)}\\
+    &=
+    \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_T)}{
+      \int_{\Delta^K}
+      P(D|\vec{p}^b,m_T)
+      \pi(\vec{p}^b|m_T)
+      \mathrm{d}\vec{p}^b}\\
+    &=
+    \Dir(\vec{p}^b; \vec{n}^b+\vec{\alpha}^b),
+  \end{split}
+\end{equation}
+where $\pi(\vec{p}^b|m_T) = \Dir(\vec{p}^b; \vec{\alpha}^b)$. Hence
+the expectation for $\vec{p}^b \sim \Dir(\vec{p}^b;
+\vec{n}^b+\vec{\alpha}^b)$ is given by
+\begin{equation}
+  \begin{split}
+    \hat{p}^b_y = \mathrm{E}[p^b_y|D,m_T]
+    &= \frac{n^b_y + \alpha^b_y}{\sum_{y \in \mathcal{Y}} n^b_y + \alpha^b_y}\\
+    &= \frac{n^b_y + \alpha^b_y}{m_T + \sum_{y^* \in \mathcal{Y}} \alpha^b_{y^*}},
+  \end{split}
+\end{equation}
+which is also known as the \textit{extended Bayes-Laplace rule} and is
+often used whenever only a small number of observations is
+available. This estimate is equal to the frequentist's estimate,
+i.e. $\mathrm{E}[p^b_y|D,m_T] = \frac{n^b_y}{m_T}$, if $\alpha^b_y = 0
+~ \forall y \in \mathcal{Y}$. For $\alpha^b_y = 1 ~ \forall y \in
+\mathcal{Y}$ we get \textit{Laplace's rule of succession}, which
+prevents that prior probabilities of zero or one are used. In Bayesian
+statistics a probability of zero or one should only be used for
+logical statements, called \textit{Cromwell's rule}.
+
+\section*{Todo}
+\begin{itemize}
+\item comparison of NSB method with binning to estimate entropies
+\item numerically compute iso-entropic lines on the probability simplex
+\end{itemize}

@@ -4,4 +4,4 @@
 include_HEADERS = 
 
 ## include headers in distribution
-EXTRA_DIST = gnugetopt.h exception.h
+EXTRA_DIST = gnugetopt.h exception.h logarithmetic.h prombs.h

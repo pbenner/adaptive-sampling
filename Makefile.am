@@ -2,4 +2,4 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libexception libprombs bayesian-binning
+SUBDIRS = libexception libprombs bayesian-binning include
