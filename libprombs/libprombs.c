@@ -21,12 +21,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <logarithmetic.h>
+#include <bayes_datatypes.h>
+#include <bayes_logarithmetic.h>
 
 static
-void logproduct(long double *result, long double **ak, size_t L, size_t i)
+void logproduct(prob_t *result, prob_t **ak, size_t L, size_t i)
 {
-        long double tmp[L], elem;
+        prob_t tmp[L], elem;
         size_t j, k;
 
         for (j = 0; j < L; j++) {
@@ -51,18 +52,18 @@ void logproduct(long double *result, long double **ak, size_t L, size_t i)
 }
 
 static
-long double ** allocMatrix(size_t L) {
-        long double **a = (long double **)malloc(sizeof(long double *) * L);
+prob_t ** allocMatrix(size_t L) {
+        prob_t **a = (prob_t **)malloc(sizeof(prob_t *) * L);
         int i;
 
         for (i = 0; i < L; i++) {
-                a[i] = (long double *)malloc(sizeof(long double) * L);
+                a[i] = (prob_t *)malloc(sizeof(prob_t) * L);
         }
         return a;
 }
 
 static
-void freeMatrix(long double **a, size_t L) {
+void freeMatrix(prob_t **a, size_t L) {
         int i;
 
         for (i = 0; i < L; i++) {
@@ -71,10 +72,10 @@ void freeMatrix(long double **a, size_t L) {
         free(a);
 }
 
-void prombs(long double *result, long double *g, long double (*f)(int, int), size_t L, size_t m)
+void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m)
 {
-        long double **ak = allocMatrix(L);
-        long double pr[L];
+        prob_t **ak = allocMatrix(L);
+        prob_t pr[L];
         size_t i, j;
 
         // initialise A^1 = (a^1_ij)_LxL
@@ -100,18 +101,18 @@ void prombs(long double *result, long double *g, long double (*f)(int, int), siz
 }
 
 void prombsExt(
-        long double *result,
-        long double *g,
-        long double (*f)(int, int),
-        long double (*h)(int, int),
-        long double epsilon,
+        prob_t *result,
+        prob_t *g,
+        prob_t (*f)(int, int),
+        prob_t (*h)(int, int),
+        prob_t epsilon,
         size_t L, size_t m)
 {
-        long double fprime(int i, int j) {
+        prob_t fprime(int i, int j) {
                 return (*f)(i, j) + epsilon*(*h)(i, j);
         }
         size_t i;
-        long double tmp[L];
+        prob_t tmp[L];
         prombs(result, g, &fprime, L, m);
         prombs(tmp, g, f, L, m);
 

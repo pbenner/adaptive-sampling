@@ -24,13 +24,14 @@
 #include <sys/types.h>
 #include <dirent.h>
 #define SYSLOG
-#include <exception.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <version.h>
 #include <limits.h> /* PATH_MAX */
 
-#include "datatypes.h"
+#include <bayes_exception.h>
+#include <bayes_datatypes.h>
+
 #include "bayesian-binning.h"
 
 void

@@ -1,3 +1,4 @@
+/* include/prombs.h.  Generated from prombs.h.in by configure.  */
 /* Copyright (C) 2010 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +19,15 @@
 #ifndef _PROMBS_H_
 #define _PROMBS_H_
 
-extern void prombs(long double *result, long double *g, long double (*f)(int, int), size_t L, size_t m);
+#include <bayes_datatypes.h>
+
+extern void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m);
 extern void prombsExt(
-        long double *result,
-        long double *g,
-        long double (*f)(int, int),
-        long double (*h)(int, int),
-        long double epsilon,
+        prob_t *result,
+        prob_t *g,
+        prob_t (*f)(int, int),
+        prob_t (*h)(int, int),
+        prob_t epsilon,
         size_t L, size_t m);
 
 #endif /* _PROMBS_H_ */

@@ -3,7 +3,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-#include "datatypes.h"
+#include <bayes_datatypes.h>
 
 extern void freeVector(Vector *v);
 extern void freeMatrix(Matrix *m);

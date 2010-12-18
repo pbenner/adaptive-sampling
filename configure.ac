@@ -33,14 +33,18 @@ AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AC_PROG_LN_S
 
-# ------------------] GENERAL PACKAGE INFO [
+dnl ,---------------------------- 
+dnl | GENERAL PACKAGE INFO
+dnl `----------------------------
 
 AC_SUBST([PACKAGE_SUMMARY], ["template project"])
 AC_SUBST([PACKAGE_URL], ["http://www.homepage.ch"])
 AC_SUBST([PACKAGE_LICENSE], ["GPL"])
 AC_SUBST([PACKAGE_DESCRIPTION], ["This is a template project using autoconf, automake and autoheader."])
 
-# ------------------] MACRO DEFINITIONS [
+dnl ,---------------------------- 
+dnl | MACRO DEFINITIONS
+dnl `----------------------------
 
 AC_DEFUN([AC_MY_ARG_WITH],
 	[# create help entry and conditionals
@@ -57,8 +61,9 @@ AC_DEFUN([AC_NEW_SUBDIR],
         [AC_MY_ARG_WITH([$1], [$3])
 	AM_CONDITIONAL([COND_$2], [test "$ac_cv_use_$1" = yes])])
 
-# ------------------] LIBRARIES [
-
+dnl ,---------------------------- 
+dnl | LIBRARIES
+dnl `----------------------------
 
 dnl HP-UX provides a library called libhplx which provides linux apis.
 AC_ARG_VAR(HPLX_LIBRARY_PATH, [Path to the hplx library directory (only for hp-ux systems).])
@@ -92,7 +97,9 @@ AC_CHECK_LIB([gmp], [__gmpz_init],,
   [AC_MSG_WARN([GNU MP not found, see http://gmplib.org/])])
 AM_CONDITIONAL(WITH_GMP, test "x$ac_cv_lib_gmp___gmpz_init" = x""yes)
 
-# ------------------] GETOPT_LONG [
+dnl ,---------------------------- 
+dnl | GETOPT_LONG
+dnl `----------------------------
 
 AC_DEFUN([FUNC_GETOPT_LONG],
 	[AC_PREREQ(2.49)dnl
@@ -110,8 +117,9 @@ AC_DEFUN([FUNC_GETOPT_LONG],
 
 FUNC_GETOPT_LONG
 
-# ------------------] DEFINES [
-#
+dnl ,---------------------------- 
+dnl | DEFINES
+dnl `----------------------------
 
 AH_VERBATIM([_GNU_SOURCE],
 [/* Enable GNU extensions on systems that have them.  */
@@ -146,8 +154,9 @@ AC_DEFINE_UNQUOTED(HOST_OS, "$host_os",
 AC_DEFINE_UNQUOTED(HOST_VENDOR, "$host_vendor",
 	[System vendor type this program will run on.])
 
-# ------------------] HEADERS [
-#
+dnl ,---------------------------- 
+dnl | HEADERS
+dnl `----------------------------
 
 HEADERS_TO_CHECK="stdarg.h dlfcn.h dirent.h netinet/in.h sys/ioctl.h
 									arpa/inet.h netdb.h syslog.h signal.h"
@@ -163,27 +172,42 @@ AC_CHECK_HEADER(net/if.h,,
 AC_CHECK_HEADER([error.h],
 	AC_DEFINE(HAVE_ERROR_H, [], [Needed on OpenBSD systems.]))
 
-# ------------------] FUNCTIONS [
-#
+dnl ,---------------------------- 
+dnl | FUNCTIONS
+dnl `----------------------------
 
 AC_CHECK_FUNCS(dprintf)
 AC_CHECK_FUNCS(vsyslog)
 
-# ------------------] GCC OPTIONS [
-#
+dnl ,---------------------------- 
+dnl | PRECISION
+dnl `----------------------------
+
+AC_ARG_ENABLE([longdouble],
+	[AS_HELP_STRING([--enable-longdouble],
+								[use long double for probabilities @<:@default=yes@:>@])],
+	[],
+	[enable_longdouble=yes])
+AS_IF([test "x$enable_longdouble" = "xyes"],
+	[AC_DEFINE([PROB_T], [long double], [Use long double for probabilities.])],
+	[AC_DEFINE([PROB_T],      [double], [Use long double for probabilities.])])
+
+dnl ,---------------------------- 
+dnl | GCC_OPTIONS
+dnl `----------------------------
 
 CFLAGS=""
 AC_ARG_ENABLE([debug],
-	[  --enable-debug=[no/yes] turn on debugging [[default=no]]],,
-	enable_debug=$debug_default)
-if test "x$enable_debug" = "xyes"; then
-  AX_CFLAGS_GCC_OPTION([-g])
-  AX_CFLAGS_GCC_OPTION([-ggdb])
-	CFLAGS="$CFLAGS -DDEBUG"
-else
-  AX_CFLAGS_GCC_OPTION([-O3])
-  AX_CFLAGS_GCC_OPTION([-ffast-math])
-fi
+	[AS_HELP_STRING([--enable-debug],
+								[turn on debugging @<:@default=no@:>@])],
+	[],
+	[enable_debug=no])
+AS_IF([test "x$enable_debug" = "xyes"],
+  [AX_CFLAGS_GCC_OPTION([-g])
+   AX_CFLAGS_GCC_OPTION([-ggdb])
+	 CFLAGS="$CFLAGS -DDEBUG"],
+  [AX_CFLAGS_GCC_OPTION([-O3])
+   AX_CFLAGS_GCC_OPTION([-ffast-math])])
 
 AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
@@ -193,19 +217,22 @@ AX_CFLAGS_GCC_OPTION([-Wno-trigraphs])
 AX_CFLAGS_GCC_OPTION([-fPIC])
 AX_CFLAGS_GCC_OPTION([-fnested-functions])
 
-# ------------------] SUBDIR CONFIGURATION [
-#
+dnl ,---------------------------- 
+dnl | SUBDIR CONFIGURATION
+dnl `----------------------------
 
 #AC_NEW_SUBDIR([doc], [DOC], ["no"])
 
-# ------------------] PERL [
-#
+dnl ,---------------------------- 
+dnl | PERL
+dnl `----------------------------
 
-AC_PATH_PROG(PERL, perl, "no")
-AM_CONDITIONAL([COND_PERL], [test "$PERL" != no])
+dnl AC_PATH_PROG(PERL, perl, "no")
+dnl AM_CONDITIONAL([COND_PERL], [test "$PERL" != no])
 
-# ------------------] SWIG [
-#
+dnl ,---------------------------- 
+dnl | PYTHON / SWIG
+dnl `----------------------------
 
 AM_PATH_PYTHON(2.3)
 AX_PKG_SWIG(1.3.17, [], [ AC_MSG_ERROR([SWIG is required to build..]) ])
@@ -213,10 +240,11 @@ AX_PKG_SWIG(1.3.17, [], [ AC_MSG_ERROR([SWIG is required to build..]) ])
 #AX_SWIG_ENABLE_CXX
 AX_SWIG_PYTHON
 
-# ------------------] AC_OUTPUT [
-#
+dnl ,---------------------------- 
+dnl | AC_OUTPUT
+dnl `----------------------------
 
-AC_CONFIG_HEADER([config.h:config.h.in])
+AC_CONFIG_HEADER([config.h:config.h.in include/bayes_datatypes.h:include/bayes_datatypes.h.in])
 AC_CONFIG_FILES([
 	Makefile
 	version.h
@@ -227,6 +255,17 @@ AC_CONFIG_FILES([
  	])
 
 AC_OUTPUT
+
+dnl ,---------------------------- 
+dnl | Print a summary
+dnl `----------------------------
+
+AC_MSG_NOTICE_BOX([Configure summary
+
+System type:              ${host}
+Build with debug symbols: ${enable_debug}
+Use long double:          ${enable_longdouble}
+])
 
 dnl Local Variables:
 dnl tab-width: 2
