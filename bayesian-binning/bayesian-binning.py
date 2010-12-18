@@ -53,6 +53,7 @@ def usage():
     print
     print "   -h, --help                  - print help"
     print "   -v, --verbose               - be verbose"
+    print "   -t, --prombsTest            - test prombs algorithm"
     print
 
 # tools
@@ -309,6 +310,7 @@ def parseConfig(file):
 options = {
     'epsilon'    : 0.00001,
     'verbose'    : False,
+    'prombsTest' : False,
     'compare'    : False,
     'bprob'      : False,
     'likelihood' : 1,
@@ -321,8 +323,8 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "likelihood=", "load=",
-                      "save=", "which=", "epsilon="]
-        opts, tail = getopt.getopt(sys.argv[1:], "bhv", longopts)
+                      "save=", "which=", "epsilon=", "prombsTest"]
+        opts, tail = getopt.getopt(sys.argv[1:], "bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -331,6 +333,9 @@ def main():
         if o in ("-v", "--verbose"):
             sys.stderr.write("Verbose mode turned on.\n")
             options["verbose"] = True
+        if o in ("-t", "--prombsTest"):
+            sys.stderr.write("Testing prombs.\n")
+            options["prombsTest"] = True
         if o in ("-h", "--help"):
             usage()
             return 0

@@ -282,7 +282,7 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
         prob_t sum;
         unsigned int i, j;
 
-        for (i=0; i<bp->T; i++) {
+        for (i = 0; i < bp->T; i++) {
                 notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
                 execPrombs(bp, ev_log, i);
                 sum = -HUGE_VAL;
@@ -293,6 +293,22 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
                         }
                 }
                 bprob[i] = expl(sum - P_D);
+        }
+}
+
+static
+void prombsTest(binProblem *bp)
+{
+        prob_t ev_log[bp->T];
+        unsigned int i;
+
+        // set prior to 1
+        for (i = 0; i < bp->T; i++) {
+                bp->prior_log[i] = 0;
+        }
+        execPrombs(bp, ev_log, -1);
+        for (i = 0; i < bp->T; i++) {
+                (void)printf("evidence_log[%02d]: %.10f\n", i, (double)ev_log[i]);
         }
 }
 
@@ -398,6 +414,9 @@ gsl_matrix * bin_log(
                 bp.alpha[i]    = gsl_vector_get(alpha, i);
         }
         computeCountStatistics(&bp);
+        if (options->prombsTest) {
+                prombsTest(&bp);
+        }
         computeBinning(&bp, pdf, var, bprob, mpost, entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
                 gsl_matrix_set(m, 0, i, pdf[i]);
