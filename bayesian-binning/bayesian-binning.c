@@ -299,16 +299,33 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
 static
 void prombsTest(binProblem *bp)
 {
-        prob_t ev_log[bp->T];
+        MET_INIT;
+        prob_t result1[bp->T];
+        prob_t result2[bp->T];
         unsigned int i;
 
+        prob_t f(int i, int j)
+        {
+                return iec_log(bp, i, j);
+        }
+        prob_t h(int i, int j)
+        {
+                // - Log[f(b)]
+                return -iec_log(bp, i, j);
+        }
         // set prior to 1
         for (i = 0; i < bp->T; i++) {
                 bp->prior_log[i] = 0;
         }
-        execPrombs(bp, ev_log, -1);
+        MET("Testing prombs",
+            prombs   (result1, bp->prior_log, &f, bp->T, bp->T-1));
+        MET("Testing prombsExt",
+            prombsExt(result2, bp->prior_log, &f, &h, bp->epsilon, bp->T, bp->T-1));
         for (i = 0; i < bp->T; i++) {
-                (void)printf("evidence_log[%02d]: %.10f\n", i, (double)ev_log[i]);
+                (void)printf("prombs[%02d]: %.10f\n", i, (double)result1[i]);
+        }
+        for (i = 0; i < bp->T; i++) {
+                (void)printf("prombsExt[%02d]: %.10f\n", i, (double)result2[i]);
         }
 }
 

@@ -68,7 +68,7 @@ __attribute__ ((format(printf,2,0), noreturn));
 
 #ifdef DEBUG
 #  define print_debug(fmt, args...)                                             \
-                fprintf(stderr, DEBUG_COLOR("DEBUG("__FILE__":%i): " fmt),       \
+                fprintf(stderr, DEBUG_COLOR("DEBUG("__FILE__":%i): " fmt),      \
                         __LINE__, ##args)
 #else
 #  define print_debug(fmt, args...)
@@ -123,5 +123,15 @@ static int use_syslog = 0;
 #define PERR		1	/* sys error message */
 #define HERR		2	/* network error */
 
+/* measure execution time */
+#include <time.h>
+
+#define MET_INIT clock_t exception_met_start__;
+
+#define MET(MSG, CODE)                          \
+        exception_met_start__ = clock();        \
+        CODE;                                   \
+        fprintf(stderr, DEBUG_COLOR(""__FILE__":%i: " MSG " took %f seconds\n"), \
+                __LINE__, ((double)clock()-exception_met_start__)/CLOCKS_PER_SEC);
 
 #endif /* EXCEPTION_H */
