@@ -39,8 +39,8 @@ typedef struct matrix {
 typedef struct options {
         prob_t epsilon;
         int verbose;
+        int prombsTest;
         int gmp;
-        int likelihood;
         int bprob;
         int which;
 } Options;

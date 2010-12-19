@@ -43,10 +43,8 @@ typedef struct {
         unsigned int T;
         unsigned int events;
         gsl_matrix  *counts;
-        gsl_vector  *mprior;     // P(m_B)
-        prob_t *prior_log;  // P(p,B|m_B)
-        // type of the likelihood
-        int likelihood;
+        gsl_vector  *mprior;   // P(m_B)
+        prob_t *prior_log;     // P(p,B|m_B)
         // hyperparameters
         unsigned int *alpha;
         // internal data
@@ -138,21 +136,9 @@ void computePrior_log(binProblem *bp)
 {
         unsigned int m;
         prob_t b;
-        // multinomial
-        if (bp->likelihood == 1) {
-                for (m = 0; m < bp->T; m++) {
-                        unsigned int N = countStatistic(bp, 0, 0, bp->T-1);
-
-                        bp->prior_log[m] = gsl_sf_lnfact(bp->T-1-m) + 2*gsl_sf_lnfact(m)
-                                - gsl_sf_lnfact(bp->T-1) - gsl_sf_lnfact(N+m);
-                }
-        }
-        // binomial
-        if (bp->likelihood == 2) {
-                b = mbeta_log(bp, bp->alpha);
-                for (m = 0; m < bp->T; m++) {
-                        bp->prior_log[m] = (m+1)*b - gsl_sf_lnchoose(bp->T-1, m);
-                }
+        b = mbeta_log(bp, bp->alpha);
+        for (m = 0; m < bp->T; m++) {
+                bp->prior_log[m] = (m+1)*b - gsl_sf_lnchoose(bp->T-1, m);
         }
 }
 
@@ -161,20 +147,11 @@ static
 prob_t iec_log(binProblem *bp, int kk, int k)
 {
         unsigned int i;
-        // multinomial
-        if (bp->likelihood == 1) {
-                unsigned int n = countStatistic(bp, 0, kk, k);
-                return gsl_sf_lnfact(n) - n*logl(k-kk+1);
+        unsigned int c[bp->events];
+        for (i = 0; i < bp->events; i++) {
+                c[i] = countStatistic(bp, i, kk, k)+bp->alpha[i];
         }
-        // binomial
-        if (bp->likelihood == 2) {
-                unsigned int c[bp->events];
-                for (i = 0; i < bp->events; i++) {
-                        c[i] = countStatistic(bp, i, kk, k)+bp->alpha[i];
-                }
-                return mbetaInv_log(bp, c);
-        }
-        err(NONE, "Unknown likelihood function.");
+        return mbetaInv_log(bp, c);
 }
 
 /* Find the smallest m_B for which the prior P(m_B) is nonzero. */
@@ -302,6 +279,7 @@ void prombsTest(binProblem *bp)
         MET_INIT;
         prob_t result1[bp->T];
         prob_t result2[bp->T];
+        prob_t sum;
         unsigned int i;
 
         prob_t f(int i, int j)
@@ -321,12 +299,20 @@ void prombsTest(binProblem *bp)
             prombs   (result1, bp->prior_log, &f, bp->T, bp->T-1));
         MET("Testing prombsExt",
             prombsExt(result2, bp->prior_log, &f, &h, bp->epsilon, bp->T, bp->T-1));
+
+        sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
                 (void)printf("prombs[%02d]: %.10f\n", i, (double)result1[i]);
+                sum = logadd(sum, result1[i]);
         }
+        (void)printf("prombs: %.10f\n", (double)sum);
+
+        sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
                 (void)printf("prombsExt[%02d]: %.10f\n", i, (double)result2[i]);
+                sum = logadd(sum, result2[i]);
         }
+        (void)printf("prombsExt: %.10f\n", (double)sum);
 }
 
 static
@@ -417,7 +403,6 @@ gsl_matrix * bin_log(
         bp.epsilon    = options->epsilon;
         bp.mprior     = mprior;
         bp.T          = K;
-        bp.likelihood = options->likelihood;
         bp.prior_log  = prior_log;
         bp.add_event.pos   = 0;
         bp.add_event.n     = 0;

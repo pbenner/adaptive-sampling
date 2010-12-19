@@ -44,7 +44,6 @@ def usage():
     print
     print "Options:"
     print "   -b                          - compute break probabilities"
-    print "       --likelihood=LIKELIHOOD - multinomial, binomial"
     print "       --which=EVENT           - for which event to compute the binning"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
     print
@@ -217,14 +216,6 @@ def readMPrior(models_str, N):
         mprior[model-1] = 1.0/num_models
     return mprior
 
-def readOptions(config, section):
-    if config.has_option(section, 'likelihood'):
-        likelihood_str = config.get(section, 'likelihood')
-        if likelihood_str == "multinomial":
-            options["likelihood"] = 1
-        if likelihood_str == "binomial":
-            options["likelihood"] = 2
-
 def readAlpha(config, section, n):
     alpha = []
     if config.has_option(section, 'alpha'):
@@ -246,7 +237,6 @@ def parseConfig(file):
     if config.sections() == []:
         raise IOError("Invalid configuration file.")
     if config.has_section('Counts'):
-        readOptions(config, 'Counts')
         counts_str  = config.get   ('Counts', 'counts')
         counts      = []
         for line in counts_str.split('\n'):
@@ -271,7 +261,6 @@ def parseConfig(file):
             plotentropy(ax3, result[4])
             show()
     if config.has_section('Trials'):
-        readOptions(config, 'Trials')
         binsize     = config.getint('Trials', 'binsize')
         timings_str = config.get   ('Trials', 'timings')
         timings     = []
@@ -313,7 +302,6 @@ options = {
     'prombsTest' : False,
     'compare'    : False,
     'bprob'      : False,
-    'likelihood' : 1,
     'load'       : None,
     'save'       : None,
     'which'      : 0
@@ -322,8 +310,8 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "likelihood=", "load=",
-                      "save=", "which=", "epsilon=", "prombsTest"]
+        longopts   = ["help", "verbose", "load=", "save=",
+                      "which=", "epsilon=", "prombsTest"]
         opts, tail = getopt.getopt(sys.argv[1:], "bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -341,11 +329,6 @@ def main():
             return 0
         if o == "-b":
             options["bprob"] = True
-        if o == "--likelihood":
-            if a == "multinomial":
-                options["likelihood"] = 1
-            if a == "binomial":
-                options["likelihood"] = 2
         if o == "--load":
             options["load"] = a
         if o == "--save":
