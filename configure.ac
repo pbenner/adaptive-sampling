@@ -189,8 +189,8 @@ AC_ARG_ENABLE([longdouble],
 	[],
 	[enable_longdouble=yes])
 AS_IF([test "x$enable_longdouble" = "xyes"],
-	[AC_DEFINE([PROB_T], [long double], [Use long double for probabilities.])],
-	[AC_DEFINE([PROB_T],      [double], [Use long double for probabilities.])])
+	[AC_DEFINE([PROB_T], [long double], [Use long double to store log probabilities.])],
+	[AC_DEFINE([PROB_T], [double], [Use double to store log probabilities.])])
 
 dnl ,---------------------------- 
 dnl | GCC_OPTIONS

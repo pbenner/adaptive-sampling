@@ -20,7 +20,6 @@
 
 #include <config.h>
 
-/* Use long double for probabilities. */
 #undef PROB_T
 
 typedef PROB_T prob_t;
