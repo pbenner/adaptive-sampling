@@ -45,10 +45,10 @@ def computeEntropy(file):
         raise IOError("Invalid configuration file.")
     pdf_str     = config.get('Result', 'pdf')
     pdf         = map(float, pdf_str.split(' '))
-    p_sum       = 0
     entropy     = 0
-    for p in pdf: p_sum += p
-    for p in pdf: entropy += (p/p_sum)*math.log((p/p_sum))
+    for p in pdf:
+        entropy += p*math.log(p)
+        entropy += (1-p)*math.log(1-p)
     print -entropy
 
 def main():

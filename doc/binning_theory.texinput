@@ -15,6 +15,10 @@ $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots
 \{y_1, y_2, \dots, y_K\}$ (discretized into $L$ intervals of equal
 size) and $m_T$ is the number of trials.
 
+\section*{Probabilities}
+
+\section*{Inference}
+
 \section*{Assumptions and Prior Knowledge}
 Todo: De Finetti, n-exchangeability, from which it follows that the
 likelihood function is given by the multinomial likelihood
@@ -110,6 +114,29 @@ Hence
 \end{equation}
 
 \section*{Expectation and Variance}
+To characterize the inferred distribution, we will compute the first
+three moments from the moment generating function
+\begin{equation}
+  \begin{split}
+    \mu_i' = \int x^i\mathrm{d}P(x) = \frac{P(D^i|m_B)}{P(D|m_B)},
+  \end{split}
+\end{equation}
+where $P(x)$ denotes the Lebesgue-Stieltjes probability density
+function and $\mu_i'$ the $i$th raw moment. The central moments
+$\mu_i$ are given by
+\begin{equation}
+  \begin{split}
+    \mu_i = \int (x-\mu_1')^i\mathrm{d}P(x),
+  \end{split}
+\end{equation}
+which can be computed from the raw moments by using the binomial
+transform
+\begin{equation}
+  \begin{split}
+    \mu_i = \sum_{k=0}^{i} {i \choose k} (-1)^{i-k}\mu_k'(\mu_1')^{i-k}.
+  \end{split}
+\end{equation}
+Hence
 \begin{equation}
   \begin{split}
     \mathrm{E}[p_y^b|D,m_b] 

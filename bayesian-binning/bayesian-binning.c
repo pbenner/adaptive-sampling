@@ -30,8 +30,8 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
-#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_pow_int.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_exp.h>
@@ -318,17 +318,20 @@ void prombsTest(binProblem *bp)
 static
 void computeBinning(
         binProblem *bp,
-        prob_t *pdf,
+        prob_t *exp,
         prob_t *var,
+        prob_t *skew,
         prob_t *bprob,
         prob_t *mpost,
         prob_t *entropy,
         Options *options)
 {
-        prob_t ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T];
+        prob_t ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T], ev4_log[bp->T];
         prob_t sum1; // P(D) = sum_{m_B \in M} P(D|m_B)P(m_B)
         prob_t sum2; // E[p|D]
         prob_t sum3; // Var[p|D]
+        prob_t sum4; // Skew[p|D]
+        prob_t m1, m2, m3; // Moments
         unsigned int i, j;
 
         // compute evidence P(D)
@@ -342,11 +345,9 @@ void computeBinning(
         }
         // compute the multibin entropy
         computeEntropy(bp, entropy, sum1);
-        // for each timestep compute expectation and variance
-        // from the model average
-        notice(NONE, "T: %d", bp->T);
+        // for each timestep compute the first three moments
         for (i=0; i<bp->T; i++) {
-                notice(NONE, "exp./var.: %.1f%%", (float)100*i/bp->T);
+                notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);
                 // expectation
                 bp->add_event.pos = i;
                 bp->add_event.n   = 1;
@@ -358,19 +359,32 @@ void computeBinning(
                 computePrior_log(bp);
                 execPrombs(bp, ev3_log, -1);
 
+                // skewness
+                bp->add_event.n = 3;
+                computePrior_log(bp);
+                execPrombs(bp, ev4_log, -1);
+
                 sum2 = -HUGE_VAL;
                 sum3 = -HUGE_VAL;
+                sum4 = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
                         if (gsl_vector_get(bp->mprior, j) > 0) {
                                 prob_t mprior = gsl_vector_get(bp->mprior, j);
                                 sum2 = logadd(sum2, ev2_log[j] + logl(mprior));
                                 sum3 = logadd(sum3, ev3_log[j] + logl(mprior));
+                                sum4 = logadd(sum4, ev4_log[j] + logl(mprior));
                         }
                 }
-                // P(D' |M)/P(D|M)
-                pdf[i] = expl(sum2 - sum1);
-                // P(D''|M)/P(D|M) - (P(D' |M)/P(D|M))^2
-                var[i] = expl(sum3 - sum1) - expl(sum2 - sum1)*expl(sum2 - sum1);
+                // Moments
+                m1 = expl(sum2 - sum1);
+                m2 = expl(sum3 - sum1);
+                m3 = expl(sum4 - sum1);
+                // Expectation
+                exp[i]  = m1;
+                // Variance
+                var[i]  = m2 - m1*m1;
+                // Skewness
+                skew[i] = m3 - 3*m1*m2 + 2*m1*m1*m1;
         }
 }
 
@@ -381,9 +395,10 @@ gsl_matrix * bin_log(
         Options *options)
 {
         size_t K = counts->size2;
-        gsl_matrix *m = gsl_matrix_alloc(5, K);
-        prob_t pdf[K];
+        gsl_matrix *m = gsl_matrix_alloc(6, K);
+        prob_t exp[K];
         prob_t var[K];
+        prob_t skew[K];
         prob_t bprob[K];
         prob_t mpost[K];
         prob_t entropy[K];
@@ -391,8 +406,9 @@ gsl_matrix * bin_log(
         unsigned int i;
         binProblem bp;
 
-        bzero(pdf,       K*sizeof(prob_t));
+        bzero(exp,       K*sizeof(prob_t));
         bzero(var,       K*sizeof(prob_t));
+        bzero(skew,      K*sizeof(prob_t));
         bzero(bprob,     K*sizeof(prob_t));
         bzero(mpost,     K*sizeof(prob_t));
         bzero(entropy,   K*sizeof(prob_t));
@@ -419,14 +435,14 @@ gsl_matrix * bin_log(
         if (options->prombsTest) {
                 prombsTest(&bp);
         }
-        computeBinning(&bp, pdf, var, bprob, mpost, entropy, options);
+        computeBinning(&bp, exp, var, skew, bprob, mpost, entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
-                gsl_matrix_set(m, 0, i, pdf[i]);
+                gsl_matrix_set(m, 0, i, exp[i]);
                 gsl_matrix_set(m, 1, i, var[i]);
-                gsl_matrix_set(m, 2, i, bprob[i]);
-                gsl_matrix_set(m, 3, i, mpost[i]);
-                gsl_matrix_set(m, 4, i, entropy[i]);
-                notice(NONE, "pdf[%03d]=%f var[%03d]=%f", i, (double)pdf[i], i, (double)var[i]);
+                gsl_matrix_set(m, 2, i, skew[i]);
+                gsl_matrix_set(m, 3, i, bprob[i]);
+                gsl_matrix_set(m, 4, i, mpost[i]);
+                gsl_matrix_set(m, 5, i, entropy[i]);
         }
 
         for (i = 0; i < bp.events; i++) {
