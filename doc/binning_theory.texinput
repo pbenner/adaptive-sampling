@@ -3,6 +3,34 @@
 \providecommand{\Dir}{\ensuremath{\mathrm{Dir}}}
 \providecommand{\Beta}{\ensuremath{\mathrm{Beta}}}
 
+\newcommand{\Yf}{\boldsymbol{Y}}
+\newcommand{\Xf}{\boldsymbol{X}}
+\newcommand{\pf}{\boldsymbol{p}}
+\newcommand{\Df}{\boldsymbol{D}}
+\newcommand{\Ef}{\boldsymbol{E}}
+\newcommand{\xf}{\boldsymbol{x}}
+\newcommand{\yf}{\boldsymbol{y}}
+\newcommand{\zf}{\boldsymbol{z}}
+\newcommand{\cf}{\boldsymbol{c}}
+\newcommand{\gf}{\boldsymbol{g}}
+\newcommand{\alphaf}{\boldsymbol{\alpha}}
+\newcommand{\betaf}{\boldsymbol{\beta}}
+\newcommand{\gammaf}{\boldsymbol{\gamma}}
+
+\newcommand{\nf}{\boldsymbol{n}}
+
+\newcommand{\xt}{\tilde{x}}
+\newcommand{\yt}{\tilde{y}}
+
+\newcommand{\Xc}{\mathcal{X}}
+\newcommand{\Yc}{\mathcal{Y}}
+\newcommand{\Fc}{\mathcal{F}}
+\newcommand{\Gc}{\mathcal{G}}
+\newcommand{\Hc}{\mathcal{H}}
+\newcommand{\Oc}{\mathcal{O}}
+\newcommand{\Pc}{\mathcal{P}}
+\newcommand{\Cc}{\mathcal{C}}
+
 \section*{Introduction}
 \label{introduction}
 \begin{equation}
@@ -16,8 +44,46 @@ $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots
 size) and $m_T$ is the number of trials.
 
 \section*{Probabilities}
+The tripe $(\Omega, \mathcal{F}, P)$ is called a probability space,
+where $\Omega$ denotes the set of elementary events, $\mathcal{F}$ a
+$\sigma$-algebra of subsets of $\Omega$, and $P$ a probability
+measure of events $A \in \mathcal{F}$. Let $(\Omega, \mathcal{F}, P)$
+be a probability space and $(\Omega', \mathcal{F}')$ a measure space,
+then the function $X: \Omega \rightarrow \Omega'$ is called a random
+variable. Probability mass function $p(\omega_i) = P(\{\omega_i\})$
 
 \section*{Inference}
+
+\begin{definition}[Infinite exchangeability]
+  An infinite sequence of random quantities $X_1, X_2, \dots$ is said
+  to be infinitely exchangeable with respect to a probability measure
+  $P$ if for every subsequence of length $n$
+  \begin{equation}
+    P(X_1 = \omega_1, \dots, X_n = \omega_n) = P(X_{1} = \omega_{\pi(1)},
+    \dots, X_{n} = \omega_{\pi(n)})
+  \end{equation}
+  for all permutations $\pi$ defined on the set $\{1, \dots, n\}$.
+\end{definition}
+
+\begin{theorem}[de Finetti's representation theorem]
+  Let $X_1, X_2, \dots$ denote an infinitely exchangeable
+  sequence of random quantities with probability measure $P$. There
+  exists a cumulative distribution function $\Pi$ such that the joint
+  mass function $p(\omega_1, \dots, \omega_n) = P(X_1 = \omega_1, \dots,
+  X_n = \omega_n)$ has the form
+  \begin{equation}
+    \begin{split}
+      p(x_1, \dots, x_n) &=
+      \int_{\Delta^L} p(x_i|\theta)
+      \mathrm{d} \Pi(\vec{\theta})\\
+      &=
+      \int_{\Delta^L} \prod_{i=1}^{n}\vec{\theta}^{n_y}
+      \mathrm{d} \Pi(\vec{\theta}), ~ \text{where}\\
+      \Pi(\vec{\theta}) &= \lim\limits_{n \rightarrow \infty}
+      P \left\{\frac{n_y}{n} \le \theta_y \right\}.
+    \end{split}
+  \end{equation}
+\end{theorem}
 
 \section*{Assumptions and Prior Knowledge}
 Todo: De Finetti, n-exchangeability, from which it follows that the
@@ -55,6 +121,7 @@ A non-informative prior is chosen for the multi-bins
 \begin{equation}
   \pi(B|m_B) = {L \choose m_B}^{-1}
 \end{equation}
+Define $\pi(\vec{p}|m_B)$!
 
 \section*{Evidence}
 \begin{equation}
@@ -313,6 +380,123 @@ i.e. $\mathrm{E}[p^b_y|D,m_T] = \frac{n^b_y}{m_T}$, if $\alpha^b_y = 0
 prevents that prior probabilities of zero or one are used. In Bayesian
 statistics a probability of zero or one should only be used for
 logical statements, called \textit{Cromwell's rule}.
+
+\begin{lemma}[The Proximal Multi-Bin Summation (ProMBS) Algorithm] \label{prombslemma}
+%
+Let $f:C(\Xc)\rightarrow\mathbb{R}$ be any function mapping
+consecutive segments to the real numbers and
+$\gf=(g_1,\ldots,g_K)\in\mathbb{R}^K$ be any real valued
+vector. Define for $l=1,\dots,L$ the upper triangular matrices
+$A_l=(a^l_{ij})_{L\times L}$ recursively by
+%
+$$
+%
+			a^1_{ij}
+		=
+	\begin{cases}
+%
+				f(b_{i,j}) 	& \text{ if } i\geq j	
+			\\
+				0  & \text{ otherwise }
+%
+	\end{cases}
+% 
+\text{  and  }
+%
+ \ \
+		 a^{l+1}_{ij}
+		=
+	\begin{cases}
+				a^l_{i+1,j+1}	& i,j < L 			
+			\\
+				1							& i=j=L
+			\\
+				0							& \text{else}
+%
+	\end{cases} \ .
+% 
+$$
+%
+The sum
+$$
+		S[f]
+	=
+		\sum_{B\in\Pc(\Xc)}
+		g_{m_B}
+		\prod_{b\in B}
+		f(b)	
+$$
+%
+can be turned out as follows: The first $N\leq L$ partial sums
+$$
+		S_m[f]
+	=
+		\sum_{B\in\mathcal{P}_m(\Xc)}
+		\prod_{b\in B}
+		f(b)
+$$
+%
+can be evaluated by iterative matrix multiplications 
+%
+$$
+		(0,\ldots,S_N[f],\ldots,S_1[f])
+	=
+		(1,0,\ldots,0)
+	\prod_{m=1}^N
+		A_m .
+$$
+%
+Full evaluation of all partial sums delivers
+%
+$$
+		S[f,\gf]
+	=
+		\sum_{m=1}^K g_m S_m[f] \ .
+$$
+%
+\end{lemma}
+%
+\begin{lemma}[The extended ProMBS-Algorithm]\label{eprombslemma}
+%
+Consider the same conditions and definitions made in lemma
+(\ref{prombslemma}). Let $h:C(\Xc)\rightarrow\mathbb{R}$ and
+define for any $\epsilon>0$
+%
+$$
+		SP_\epsilon[f,\gf,h]
+	:=
+			\frac{			
+							S[f_\epsilon,\gf]
+						-
+							S[f,\gf]
+					}{
+						\epsilon
+					}
+			\ , ~ \text{where} ~
+			f_\epsilon(b)
+		:=
+			f(b)e^{\epsilon h(b)} \ .
+$$
+%
+For asymptotically small $\epsilon>0$, it holds that
+$$
+	\sum_{B\in\Pc(\Xc)}
+		g_{m_B}
+		\prod_{b\in B}
+		f(b)	
+			\sum_{b\in B}
+				h(b)
+	=
+			SP_\epsilon[f,\gf,h] 
+		+
+		\Oc(\epsilon)		
+			\ 
+			.
+$$
+%
+%
+%
+\end{lemma}
 
 \section*{Todo}
 \begin{itemize}
