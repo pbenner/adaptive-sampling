@@ -55,34 +55,51 @@ variable. Probability mass function $p(\omega_i) = P(\{\omega_i\})$
 \section*{Inference}
 
 \begin{definition}[Infinite exchangeability]
-  An infinite sequence of random quantities $X_1, X_2, \dots$ is said
-  to be infinitely exchangeable with respect to a probability measure
-  $P$ if for every subsequence of length $n$
+  An infinite sequence of random events $X_1, X_2, \dots$ on a
+  probability space $(\Omega, \mathcal{F}, P)$ is said to be
+  infinitely exchangeable with respect to the probability measure $P$ if
+  for every subsequence of length $n$
   \begin{equation}
     P(X_1 = \omega_1, \dots, X_n = \omega_n) = P(X_{1} = \omega_{\pi(1)},
     \dots, X_{n} = \omega_{\pi(n)})
   \end{equation}
-  for all permutations $\pi$ defined on the set $\{1, \dots, n\}$.
+  with $\omega_i \in \Omega$ and for all permutations $\pi$ defined on
+  the set $\{1, \dots, n\}$. (cf. \cite{Finetti1974})
 \end{definition}
 
-\begin{theorem}[de Finetti's representation theorem]
-  Let $X_1, X_2, \dots$ denote an infinitely exchangeable
-  sequence of random quantities with probability measure $P$. There
-  exists a cumulative distribution function $\Pi$ such that the joint
-  mass function $p(\omega_1, \dots, \omega_n) = P(X_1 = \omega_1, \dots,
-  X_n = \omega_n)$ has the form
+\begin{theorem}[Generalized de Finetti's representation theorem]
+  Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
+  random variables on a probability space $(\Omega, \mathcal{F},
+  P)$. There exists a cumulative distribution $\Pi$ such that
+  the joint mass function $p(\omega_1, \dots, \omega_n) = P(X_1 =
+  \omega_1, \dots, X_n = \omega_n)$ has the form
   \begin{equation}
     \begin{split}
-      p(x_1, \dots, x_n) &=
-      \int_{\Delta^L} p(x_i|\theta)
+      p(\omega_1, \dots, \omega_n) &=
+      \int_{\Delta^K} p(\omega_1, \dots, \omega_n|\theta)
       \mathrm{d} \Pi(\vec{\theta})\\
       &=
-      \int_{\Delta^L} \prod_{i=1}^{n}\vec{\theta}^{n_y}
+      \int_{\Delta^K} \prod_{\omega \in \Omega}\theta_\omega^{n_\omega}
       \mathrm{d} \Pi(\vec{\theta}), ~ \text{where}\\
       \Pi(\vec{\theta}) &= \lim\limits_{n \rightarrow \infty}
-      P \left\{\frac{n_y}{n} \le \theta_y \right\}.
+      P \left\{\frac{n_\omega}{n} \le \theta_\omega : \omega \in \Omega \right\},
     \end{split}
   \end{equation}
+  where $n_\omega$ denotes the count statistic for the event $\omega
+  \in \Omega$, $K = |\Omega|$, and $\Delta^K := \{\vec{\theta} =
+  (\theta_\omega)_{\omega \in \Omega} \in \mathbb{R}^K : \sum_{\omega
+    \in \Omega} \theta_\omega = 1 ~ \text{and} ~ \theta_\omega \ge
+  0~\forall \omega \in \Omega \}$ denotes the $K$-dimensional
+    probability simplex. (cf. \cite{Finetti1974, Hewitt1955})
+\end{theorem}
+In other words, conditional on $\vec{\theta}$ the joint probability
+mass function $p(\omega_1, \dots, \omega_n)$ can be written as a
+multinomial model of independent events.  In Bayesian inference, the
+distribution $\Pi$ is interpreted as the cumulative prior
+distribution.
+
+\begin{theorem}[Johnson's sufficientness postulate]
+  (cf. \cite{Johnson1932, Zabell1982})
 \end{theorem}
 
 \section*{Assumptions and Prior Knowledge}
@@ -136,8 +153,8 @@ Define $\pi(\vec{p}|m_B)$!
     P(D|B,m_B)
     &=
       \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
-          \Delta^K}_{m_B~\text{times}}}\mathrm{d}\vec{p}
-      P(D|\vec{p},B,m_B) \pi(\vec{p}|m_B)\\
+          \Delta^K}_{m_B~\text{times}}}
+      P(D|\vec{p},B,m_B) \mathrm{d}\Pi(\vec{p}|m_B)\\
     &=
       \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
       \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y}
@@ -497,9 +514,3 @@ $$
 %
 %
 \end{lemma}
-
-\section*{Todo}
-\begin{itemize}
-\item comparison of NSB method with binning to estimate entropies
-\item numerically compute iso-entropic lines on the probability simplex
-\end{itemize}
