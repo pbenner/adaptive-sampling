@@ -1,5 +1,6 @@
 % -*- mode: latex -*-
 %
+\providecommand{\Mult}{\ensuremath{\mathrm{Mult}}}
 \providecommand{\Dir}{\ensuremath{\mathrm{Dir}}}
 \providecommand{\Beta}{\ensuremath{\mathrm{Beta}}}
 
@@ -33,6 +34,190 @@
 
 \section*{Introduction}
 \label{introduction}
+
+\section*{Inference}
+Given a sequence of $m_T$ observations $D = (X_1, X_2, \dots,
+X_{m_T})$ how can we make predictions about future
+observations\footnote{This is known as \textit{Hume's problem of
+induction} and was answered by de Finetti's representation theorem.}?
+That is, how can we formulate a hypothesis $\mathcal{H}$ about the
+laws behind the sequence of observations and compute the probability
+of our hypothesis conditional on all the evidence that we gathered?
+From \textit{Bayes's rule of conditioning}
+\begin{equation}
+  P(\mathcal{H}|D) = \frac{P(D,\mathcal{H})}{P(D)}
+\end{equation}
+we know how to incorporate our observations into our probability
+function, but to fully answer the question of induction we have to
+clearly define the patterns or symmetries that we expect behing the
+sequence of observations. This will lead us to a theorem by de Finetti
+that tells us how the joint probability mass function for $P(D)$ can
+be represented. A corresponding mode of inductive inference is then
+given by the \textit{Johnson-Carnap continuum}.
+\begin{definition}[Infinite exchangeability]
+  Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
+  where each $X_i$ is a random variable from a probability space
+  $(\Omega, \mathcal{F}, P)$ to a measure space $(\mathcal{X},
+  \mathcal{F}')$. The sequence is said to be infinitely exchangeable
+  with respect to the probability measure $P$ if for every subsequence
+  of length $n$
+  \begin{equation}
+    P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) = P(X_{1} = x_{\pi(1)},
+    \dots, X_{m_T} = x_{\pi(m_T)})
+  \end{equation}
+  with $x_i \in \mathcal{X}$ and for all permutations $\pi$ defined on
+  the set $\{1, \dots, m_T\}$. (cf. \cite{Finetti1974})
+\end{definition}
+
+\begin{theorem}[Generalized de Finetti's representation theorem]
+  \label{thr:frm}
+  Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
+  random variables from a probability space $(\Omega, \mathcal{F}, P)$
+  to a measure space $(\mathcal{X}, \mathcal{F}')$. There exists a
+  cumulative distribution $\Pi$ such that the joint mass function
+  $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} = x_{m_T})$ has
+  the form
+  \begin{equation}
+    \begin{split}
+      \label{eq:frt}
+      p(x_1, \dots, x_{m_T}) &=
+      \int_{\Delta^K} p(x_1, \dots, x_{m_T}|\vec{\theta})
+      \mathrm{d} \Pi(\vec{\theta})\\
+      &=
+      \int_{\Delta^K} \Mult(\vec{n};\vec{\theta})
+      \mathrm{d} \Pi(\vec{\theta})\\
+      &=
+      \int_{\Delta^K}
+      \frac{m_T!}{\prod_{x \in \mathcal{X}}n_x!}
+      \prod_{x \in \mathcal{X}}
+      \theta_x^{n_x}
+      \mathrm{d} \Pi(\vec{\theta}), ~ \text{where}\\
+      \Pi(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
+      P \left\{\frac{n_x}{m_T} \le \theta_x : x \in \mathcal{X} \right\},
+    \end{split}
+  \end{equation}
+  where $n_x$ denotes the count statistic for $x \in \mathcal{X}$, $K
+  = |\mathcal{X}|$, and $\Delta^K := \{\vec{\theta} = (\theta_x)_{x \in
+    \mathcal{X}} \in \mathbb{R}^K : \sum_{x \in \mathcal{X}} \theta_x = 1
+  ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$ denotes
+  the $K$-dimensional probability simplex. (cf. \cite{Finetti1974,
+Hewitt1955})
+\end{theorem}
+In other words, conditional on $\vec{\theta}$ the joint probability
+mass function $p(x_1, \dots, x_{m_T})$ can be written as an integral
+mixture of multinomial probabilities. Note that for $K=1$ equation
+$\ref{eq:frt}$ computes the $n_x$th moment of $\mathrm{d}\Pi$. In
+Bayesian inference, the limiting distribution $\mathrm{d}\Pi$ is
+interpreted as the prior distribution. A common choice for
+$\mathrm{d}\Pi$ is a conjugate prior which substantially simplifies
+the computation of the posterior distribution. In the following we
+show how such a prior can be justified from inductive principles such
+that theorem \ref{thr:frm} holds.
+
+\begin{theorem}[Johnson-Carnap continuum]
+  \label{thr:jcc}
+  Let $X_1, X_2, \dots$ denote an infinite sequence of random
+  variables from a probability space $(\Omega, \mathcal{F}, P)$ to a
+  measure space $(\mathcal{X}, \mathcal{F}')$. Assume that
+  \begin{itemize}
+  \item[(i)  ] $K = |\mathcal{X}| \ge 3$,
+  \item[(ii) ] $P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) > 0$ for all $x_i \in
+    \mathcal{X}$, and
+  \item[(iii)] there exists a sufficient statistic $f_x(n_x,n)$ such
+    that $P(X_{m_T+1} = x_{m_T+1} | \vec{n}) = f_x(n_x,m_T)$, where $\vec{n} =
+    (n_x)_{x \in \mathcal{X}}$.
+  \end{itemize}
+  Then either the outcomes are independent or there exist positive
+  constants $\{\alpha_x | x \in \mathcal{X}\}$ such that for all $n \ge 1$
+  \begin{equation}
+    f_x(n_x, n) = \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}}
+      \alpha_{x^*}}.
+  \end{equation}
+  (cf. \cite{Johnson1932, Zabell1982})
+\end{theorem}
+Note that if $X_1, X_2, \dots$ is exchangeable then $P(X_{m_T+1} =
+x_{m_T+1} | \vec{n}) = P(X_{m_T+1} = x_{m_T+1} | n_x) = f_x(n_x,m_T)$. The
+Johnson-Carnap continuum of inductive methods not only provides us
+with a sufficient statistic for inductive reasoning, but also
+identifies a unique prior distribution for de Finetti's representation
+theorem.
+\begin{corollary}
+  Under the conditions (i-iii) of theorem \ref{thr:jcc} the prior
+  distribution $\mathrm{d}\Pi$ belongs to the \textit{Dirichlet
+    familiy}, i.e.
+  \begin{equation}
+    \begin{split}
+      \mathrm{d}\Pi(\vec{\theta}) =
+      \Dir(\vec{\theta};\vec{\alpha})\mathrm{d}\vec{\theta} &=
+      \frac{1}{\Beta(\vec{\alpha})}
+      \prod_{x \in \mathcal{X}} \theta_x^{\alpha_x -1}
+      \mathrm{d}\vec{\theta}, ~ \text{where}\\
+      \Beta(\vec{\alpha}) &= \frac{\prod_{x \in \mathcal{X}}
+        \Gamma(\alpha_x)}{\Gamma(\sum_{x
+          \in \mathcal{X}}\alpha_x)} =
+      \underbrace{\int_{\Delta^K}\prod_{x \in
+          \mathcal{X}} \theta^{\alpha_x-1}
+        \mathrm{d}\vec{\theta},}_{\text{Euler
+          integral of the first kind}}
+    \end{split}
+  \end{equation}
+  and $\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t$ denotes
+  the Gamma function.
+\end{corollary}
+To summarize our results, under the symmetry assumptions that we
+introduced about the sequence of observations $D = (X_1, X_2, \dots,
+X_{m_T})$ we are able to state a hypothesis $\mathcal{H}$ in form of the
+parameters $\vec{\theta}$ that represent our beliefs about the
+underlying process. Any knowledge that we have before we look at the
+data is represented in the parameters $\vec{\alpha}$. The probability
+of a hypothesis is then given by
+\begin{equation}
+  \begin{split}
+    P(\vec{\theta}|D)
+    &= \frac{P(D,\vec{\theta})}{P(D)}
+     =
+    \frac{\Mult(D;\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
+      \int_{\Delta^K}
+      \Mult(D;\vec{\theta}')
+      \mathrm{d}\Pi(\vec{\theta}')}\\
+    &=
+    \Dir(\vec{\theta}; \vec{n}+\vec{\alpha}).
+  \end{split}
+\end{equation}
+The update of our beliefs after seeing the data is therefore a mere
+shift in the parameters of the Dirichlet distribution
+(i.e. $\Dir(\vec{\theta};\vec{\alpha}) \mapsto \Dir(\vec{\theta};
+\vec{n}+\vec{\alpha})$) as it is a conjugate prior to the multinomial
+distribution. Intuitively, the Dirichlet distribution states our
+belief that the probabilities of $K$ rival events $x \in \mathcal{X}$
+are $(\theta_x)_{x \in \mathcal{X}}$ given that each event has been
+observed $\alpha_x - 1$ times. Since $\vec{\theta} \sim
+\Dir(\vec{\theta}; \vec{n}+\vec{\alpha})$ we can easily computed the
+expected value of $\vec{\theta}$ given our observations, i.e.
+\begin{equation}
+  \begin{split}
+    \hat{\theta}_x = \mathrm{E}[\theta_x|D] &=
+    \int_{\Delta^{K-1}}\theta_x \Mult(D;\vec{\theta})
+    \mathrm{d}\Pi(\vec{\theta}) =
+    \frac{
+      \int_{\Delta^K} \Mult(D \cup \{x\};\vec{\theta})
+      \mathrm{d}\Pi(\vec{\theta})
+    }{
+      \int_{\Delta^K} \Mult(D;\vec{\theta})
+      \mathrm{d}\Pi(\vec{\theta})
+    }\\
+    &= f_x(n_x,m_T)
+    = \frac{n_x + \alpha_x}{n + \sum_{x^* \in \mathcal{X}} \alpha_{x^*}},
+  \end{split}
+\end{equation}
+as it was shown in theorem \ref{thr:jcc}. The estimate is known as the
+\textit{extended Bayes-Laplace rule of succession}. It is equivalent
+to the frequentist's estimate ($\hat{\theta}_x = \frac{n_x}{m_T}$) if
+$\alpha_x = 0 ~ \forall x \in \mathcal{X}$. If $\alpha_x = 1 ~ \forall
+x \in \mathcal{X}$ we get \textit{Laplace's rule of succession}.
+
+\section*{Inductive inference for piecewise constant distributions}
+We will now generalize the results of the previous section. 
 \begin{equation}
   \begin{split}
     P(\vec{p},B|D,m_B) &= \frac{P(D,\vec{p},B|m_B)}{P(D|m_B)}\\
@@ -43,66 +228,6 @@ $\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots
 \{y_1, y_2, \dots, y_K\}$ (discretized into $L$ intervals of equal
 size) and $m_T$ is the number of trials.
 
-\section*{Probabilities}
-The tripe $(\Omega, \mathcal{F}, P)$ is called a probability space,
-where $\Omega$ denotes the set of elementary events, $\mathcal{F}$ a
-$\sigma$-algebra of subsets of $\Omega$, and $P$ a probability
-measure of events $A \in \mathcal{F}$. Let $(\Omega, \mathcal{F}, P)$
-be a probability space and $(\Omega', \mathcal{F}')$ a measure space,
-then the function $X: \Omega \rightarrow \Omega'$ is called a random
-variable. Probability mass function $p(\omega_i) = P(\{\omega_i\})$
-
-\section*{Inference}
-
-\begin{definition}[Infinite exchangeability]
-  An infinite sequence of random events $X_1, X_2, \dots$ on a
-  probability space $(\Omega, \mathcal{F}, P)$ is said to be
-  infinitely exchangeable with respect to the probability measure $P$ if
-  for every subsequence of length $n$
-  \begin{equation}
-    P(X_1 = \omega_1, \dots, X_n = \omega_n) = P(X_{1} = \omega_{\pi(1)},
-    \dots, X_{n} = \omega_{\pi(n)})
-  \end{equation}
-  with $\omega_i \in \Omega$ and for all permutations $\pi$ defined on
-  the set $\{1, \dots, n\}$. (cf. \cite{Finetti1974})
-\end{definition}
-
-\begin{theorem}[Generalized de Finetti's representation theorem]
-  Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
-  random variables on a probability space $(\Omega, \mathcal{F},
-  P)$. There exists a cumulative distribution $\Pi$ such that
-  the joint mass function $p(\omega_1, \dots, \omega_n) = P(X_1 =
-  \omega_1, \dots, X_n = \omega_n)$ has the form
-  \begin{equation}
-    \begin{split}
-      p(\omega_1, \dots, \omega_n) &=
-      \int_{\Delta^K} p(\omega_1, \dots, \omega_n|\theta)
-      \mathrm{d} \Pi(\vec{\theta})\\
-      &=
-      \int_{\Delta^K} \prod_{\omega \in \Omega}\theta_\omega^{n_\omega}
-      \mathrm{d} \Pi(\vec{\theta}), ~ \text{where}\\
-      \Pi(\vec{\theta}) &= \lim\limits_{n \rightarrow \infty}
-      P \left\{\frac{n_\omega}{n} \le \theta_\omega : \omega \in \Omega \right\},
-    \end{split}
-  \end{equation}
-  where $n_\omega$ denotes the count statistic for the event $\omega
-  \in \Omega$, $K = |\Omega|$, and $\Delta^K := \{\vec{\theta} =
-  (\theta_\omega)_{\omega \in \Omega} \in \mathbb{R}^K : \sum_{\omega
-    \in \Omega} \theta_\omega = 1 ~ \text{and} ~ \theta_\omega \ge
-  0~\forall \omega \in \Omega \}$ denotes the $K$-dimensional
-    probability simplex. (cf. \cite{Finetti1974, Hewitt1955})
-\end{theorem}
-In other words, conditional on $\vec{\theta}$ the joint probability
-mass function $p(\omega_1, \dots, \omega_n)$ can be written as a
-multinomial model of independent events.  In Bayesian inference, the
-distribution $\Pi$ is interpreted as the cumulative prior
-distribution.
-
-\begin{theorem}[Johnson's sufficientness postulate]
-  (cf. \cite{Johnson1932, Zabell1982})
-\end{theorem}
-
-\section*{Assumptions and Prior Knowledge}
 Todo: De Finetti, n-exchangeability, from which it follows that the
 likelihood function is given by the multinomial likelihood
 \begin{equation}
@@ -154,7 +279,7 @@ Define $\pi(\vec{p}|m_B)$!
     &=
       \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
           \Delta^K}_{m_B~\text{times}}}
-      P(D|\vec{p},B,m_B) \mathrm{d}\Pi(\vec{p}|m_B)\\
+      P(D|\vec{p},B,m_B) \pi(B|m_B)\\
     &=
       \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
       \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y}
