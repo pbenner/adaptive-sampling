@@ -53,7 +53,11 @@ clearly define the patterns or symmetries that we expect behing the
 sequence of observations. This will lead us to a theorem by de Finetti
 that tells us how the joint probability mass function for $P(D)$ can
 be represented. A corresponding mode of inductive inference is then
-given by the \textit{Johnson-Carnap continuum}.
+given by the \textit{Johnson-Carnap continuum}. Several drawbacks of
+the Johnson-Carnap continuum have been extensively discussed in the
+literature, one if which is the assumption that the number of possible
+outcomes $K$ is known in advance. Several generalizations were
+developed, for instance the one by Pitman which is especially 
 \begin{definition}[Infinite exchangeability]
   Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
   where each $X_i$ is a random variable from a probability space
@@ -157,8 +161,8 @@ theorem.
           \in \mathcal{X}}\alpha_x)} =
       \underbrace{\int_{\Delta^K}\prod_{x \in
           \mathcal{X}} \theta^{\alpha_x-1}
-        \mathrm{d}\vec{\theta},}_{\text{Euler
-          integral of the first kind}}
+        \mathrm{d}\vec{\theta},}_{\text{multinomial Euler
+          integral}}
     \end{split}
   \end{equation}
   and $\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t$ denotes
@@ -192,19 +196,19 @@ distribution. Intuitively, the Dirichlet distribution states our
 belief that the probabilities of $K$ rival events $x \in \mathcal{X}$
 are $(\theta_x)_{x \in \mathcal{X}}$ given that each event has been
 observed $\alpha_x - 1$ times. Since $\vec{\theta} \sim
-\Dir(\vec{\theta}; \vec{n}+\vec{\alpha})$ we can easily computed the
+\Dir(\vec{\theta}; \vec{n}+\vec{\alpha})$ we can easily compute the
 expected value of $\vec{\theta}$ given our observations, i.e.
 \begin{equation}
   \begin{split}
     \hat{\theta}_x = \mathrm{E}[\theta_x|D] &=
     \int_{\Delta^{K-1}}\theta_x \Mult(D;\vec{\theta})
-    \mathrm{d}\Pi(\vec{\theta}) =
+    \mathrm{d}\Pi(\vec{\theta}; \vec{\alpha}) =
     \frac{
       \int_{\Delta^K} \Mult(D \cup \{x\};\vec{\theta})
-      \mathrm{d}\Pi(\vec{\theta})
+      \mathrm{d}\Pi(\vec{\theta}; \vec{\alpha})
     }{
       \int_{\Delta^K} \Mult(D;\vec{\theta})
-      \mathrm{d}\Pi(\vec{\theta})
+      \mathrm{d}\Pi(\vec{\theta}; \vec{\alpha})
     }\\
     &= f_x(n_x,m_T)
     = \frac{n_x + \alpha_x}{n + \sum_{x^* \in \mathcal{X}} \alpha_{x^*}},
@@ -217,110 +221,114 @@ $\alpha_x = 0 ~ \forall x \in \mathcal{X}$. If $\alpha_x = 1 ~ \forall
 x \in \mathcal{X}$ we get \textit{Laplace's rule of succession}.
 
 \section*{Inductive inference for piecewise constant distributions}
-We will now generalize the results of the previous section. 
+We will now generalize the results of the previous section. Suppose
+that we have $m_T$ measurements (trials) where each of them is a
+sequence $X_i^1 = x_i^1, \dots, X_i^L = x_i^L$ of $L$ discrete events,
+with $x_i^j \in \mathcal{X}$. The sequence could for instance be a
+spike train where time has been discretized into intervals
+$\mathcal{T} = \{t_1, t_2, \dots, t_L\}$ of size $\Delta t$. Then
+$X_i^j$ would indicate whether or not a spike was recorded in the
+$j$th interval (with $\mathcal{X} = \{0,1\}$). We expect that the
+probabilities for an event in general varies over time. However, we
+assume that we can join some proximal intervals because the
+probabilites are nearly the same. The advantage of this strategy is
+that in case we have few measurements we can use the data from several
+intervals to get a better estimate, which we will call sharing
+strength. A well-ordered partition $B$ of $\mathcal{T}$ is a division
+of $\mathcal{T}$ into $m_B$ non-empty, non-overlapping consecutive
+subsets called bins, such that their union covers $\mathcal{T}$. The
+partition class $\Pc(\mathcal{T})$ denotes the collection of all
+well-ordered partitions and $\Pc_{m_B}(\mathcal{T}) \subset
+\Pc(\mathcal{T})$ the subclass of well-ordererd partitions in
+$\Pc(\mathcal{T})$ consisting of exactly $m_B$ different subsets. For
+simplicity we will first assume that we know the number of partitions
+$m_B$. We are interested in the joint probability of the parameters
+$\vec{\Theta} = (\vec{\theta}^b)_{b \in B}$ and a partition $B$ given
+our observations and the size of the partition $m_B$, i.e. we want to
+compute
 \begin{equation}
   \begin{split}
-    P(\vec{p},B|D,m_B) &= \frac{P(D,\vec{p},B|m_B)}{P(D|m_B)}\\
-                       &= \frac{P(D|\vec{p},B,m_B)\pi(\vec{p},B|m_B)}{P(D|m_B)}
+    P(\vec{\Theta},B|D,m_B)
+    &= \frac{P(D,\vec{\Theta},B|m_B)}{P(D|m_B)}\\
+    &= \frac{P(D|\vec{\Theta},B,m_B)P(\vec{\Theta},B|m_B)}{P(D|m_B)}.
   \end{split}
 \end{equation}
-$\vec{p} = (p_y^b)_{K\times m_B}$, $m_B = |B|$, $\mathcal{X} = \{x_1, x_2, \dots, x_L\}$, $\mathcal{Y} =
-\{y_1, y_2, \dots, y_K\}$ (discretized into $L$ intervals of equal
-size) and $m_T$ is the number of trials.
-
-Todo: De Finetti, n-exchangeability, from which it follows that the
-likelihood function is given by the multinomial likelihood
+We assume that events are independent between the bins and therefore
+we can factorize the likelihood and prior such that
 \begin{equation}
-  P(D|\vec{p},B,m_B) = \prod_{b\in B} \prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y},
+  P(D,\vec{\Theta},B|m_B) =
+  \prod_{b\in B} P(D|\vec{\theta}^b,B,m_B)P(\vec{\theta}^b,B|m_B).
 \end{equation}
-where $n^b_y$ denotes the count statistic for event $y$ in bin
-$b$. The conjugate prior for a multinomial likelihood function is
-given by the Dirichlet distribution $\Dir(\vec{p}^b;\vec{\alpha}^b)$, which
-states the belief that the probabilities of $K$ rival events in bin
-$b$ are $p_y^b$ given that each event has been observed $\alpha^b_y - 1$
-times. The choice of this prior can be justified by \textit{Johnson's
-  sufficiency postulate}. Hence
+where $\vec{\theta}^b = (\theta^b_x)_{x \in \mathcal{X}}$ denote the
+probabilities of observing event $x \in \mathcal{X}$ in bin $b$.
+For $P(\vec{\theta}^b,B|m_B)$ we choose a non-informative prior
+assumption such that
 \begin{equation}
-  P(\vec{p},B|m_B) = \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
-  \prod_{y\in \mathcal{Y}}(p_y^b)^{\alpha^b_y-1},
+  P(\vec{\theta}^b,B|m_B) = P(\vec{\theta}^b|m_B)P(B|m_B),
 \end{equation}
-
+which means that the prior knowledge about $\vec{\theta}^b$ is
+independent of $B$ and vice versa. We also choose a flat prior for the
+partitions, i.e.
 \begin{equation}
-  \Beta(z_1,z_2,\dots,z_m) =
-  \frac{\prod_{i=1}^{m}\Gamma(z_i)}{\Gamma(\sum_{i=1}^{m}z_i)},~
-  \text{with}~
-  \Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t
+  P(B|m_B) = {L \choose m_B}^{-1}
 \end{equation}
-
-For $\pi(\vec{p},B|m_B)$ a non-informative prior assumption is made, i.e.
-\begin{equation}
-  \pi(\vec{p},B|m_B) = \pi(\vec{p}|m_B)\pi(B|m_B),
-\end{equation}
-which means that the prior knowledge about $\vec{p}$ is independent of
-$B$ and vice versa.
-
-A non-informative prior is chosen for the multi-bins
-\begin{equation}
-  \pi(B|m_B) = {L \choose m_B}^{-1}
-\end{equation}
-Define $\pi(\vec{p}|m_B)$!
-
-\section*{Evidence}
+because we have no information a priori which of the partitions is
+more probable. $P(\vec{\theta}^b|m_B)$ is represented by a distribution of
+the Dirichlet familiy as discussed earlier. To compute the evidence
 \begin{equation}
   \begin{split}
     P(D|m_B)
     &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-      P(D|B,m_B) \pi(B|m_B)\\
+      P(D|B,m_B) P(B|m_B)\\
   \end{split}
 \end{equation}
+we have to sum over all possible partitions $B \in
+\mathcal{P}_{m_B}$. Furthermore we have
 \begin{equation}
   \begin{split}
     P(D|B,m_B)
     &=
       \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
           \Delta^K}_{m_B~\text{times}}}
-      P(D|\vec{p},B,m_B) \pi(B|m_B)\\
+      P(D|\vec{\Theta},B,m_B) P(\vec{\Theta}|B,m_B)\mathrm{d}\vec{\Theta}\\
     &=
-      \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
-      \prod_{b\in B}\prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y}
-      \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
-      \prod_{y\in \mathcal{Y}}(p_y^b)^{\alpha^b_y-1}\\
-    &=
-      \int_{\Delta^K \times \Delta^K \times \dots \times \Delta^K}\mathrm{d}\vec{p}
-      \prod_{b\in B}\frac{1}{\Beta(\vec{\alpha}^b)}
-      \prod_{y\in \mathcal{Y}}(p_y^b)^{n^b_y+\alpha^b_y-1},
+      \prod_{b\in B} \int_{\Delta^K}
+      \Mult(\vec{\theta}^b;\vec{n}^b)
+      \mathrm{d}\Pi(\vec{\theta}^b; \vec{\alpha}^b).
   \end{split}
 \end{equation}
-where $\Delta^K := \{(p_1,p_2,\dots,p_K)\in\mathbb{R} : \sum_{i=1}^{K}
-p_i = 1 ~ \text{and} ~ p_i \ge 0~\forall i\}$ denotes the
-$K$-dimensional probability simplex. The solution of the Euler
-integral of the first kind is given by the multinomial Beta-function.
-
-\begin{equation}
-  \begin{split}
-    \Beta(\vec{z}) =
-    \underbrace{\int_{\Delta^K}\prod_{z\in\mathcal{Z}}t^{z-1}\mathrm{d}t}_{\text{Euler
-      integral of the first kind}}=
-    \underbrace{\frac{\prod_{z\in\mathcal{Z}}\Gamma(z)}{\Gamma(\sum_{z\in\mathcal{Z}}z)}}_{\text{multinomial
-      Beta function}}
-  \end{split}
-\end{equation}
-
-Hence
+By solving the integrals we get
 \begin{equation}
   \begin{split}
     P(D|m_B)
-    &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-    \pi(B|m_B)
+    &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
+    P(B|m_B)
     \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
-    \frac{\prod_{y\in
-        \mathcal{Y}}\Gamma(n_y^b+\alpha^b_y)}{\Gamma(\sum_{y\in
-        \mathcal{Y}}n_y^b+\alpha^b_y)}\\
-    &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-    \pi(B|m_B)
+    \frac{\prod_{x \in
+        \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
+        \mathcal{X}}n^b_x+\alpha^b_x)}\\
+    &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
+    P(B|m_B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
+which we can compute with the algorithm sketched in lemma
+\ref{prombslemma}. To compute the full model we still need to average
+over all possible $m_B$, i.e.
+\begin{equation}
+  P(\vec{\Theta},B|D) = \sum_{m_B = 1}^L P(\vec{\Theta},B|D,m_B) P(m_B|D),
+\end{equation}
+where $P(m_B|D)$ denotes the model posterior, which is given by
+\begin{equation}
+  \begin{split}
+    P(m_B|D)
+    &= \frac{P(D|m_B) P(m_B)}{P(D)}\\
+    &= \frac{P(D|m_B) P(m_B)}{\sum_{m_B\in M}P(D|m_B) P(m_B)}.
+  \end{split}
+\end{equation}
+$P(m_B)$ is the prior for a given model size $m_B$. We will usually
+choose a non-informative prior $1/L$ unless we want to select
+specific model sizes.
 
 \section*{Expectation and Variance}
 To characterize the inferred distribution, we will compute the first
@@ -348,54 +356,45 @@ transform
 Hence
 \begin{equation}
   \begin{split}
-    \mathrm{E}[p_y^b|D,m_b] 
+    \mathrm{E}[\theta_x^b|D,m_b] 
     = P(y_b|D,m_B)
-    = \frac{P(y_b,D|m_B)}{P(D|m_B)}
+    = \frac{P(x_b,D|m_B)}{P(D|m_B)}
     = \frac{P(D'|m_B)}{P(D|m_B)},
   \end{split}
 \end{equation}
 
 \begin{equation}
   \begin{split}
-    \mathrm{Var}[p_y^b|D,m_b]
-    &= P(y_b,y_b|D,m_B) - (P(y_b|D,m_B))^2\\
+    \mathrm{Var}[p_x^b|D,m_b]
+    &= P(x_b,x_b|D,m_B) - (P(x_b|D,m_B))^2\\
     &= \frac{P(D''|m_B)}{P(D|m_B)} - \left(
     \frac{P(D'|m_B)}{P(D|m_B)} \right)^2
   \end{split}
 \end{equation}
-where $D' = D \cup \{y_b\}$.
+where $D' = D \cup \{x_b\}$.
+
+\begin{equation}
+  \begin{split}
+    \mathrm{E}[p_y^b|D] 
+    = \frac{\sum_{m_B\in M}P(D'|m_B) P(m_B)}{\sum_{m_B\in M}P(D|m_B) P(m_B)},
+  \end{split}
+\end{equation}
+with $M = \{1,2,\dots,L\}$.
 
 \section*{Break Probabilities}
 \begin{equation}
   \begin{split}
     \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{X})}P(B|D,m_B) &=
       \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)\pi(B|m_B)}{\sum_{B\in
-               \mathcal{P}_{m_B}(\mathcal{X})} P(D|B,m_B)\pi(B|m_B)}\\
+          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B) P(B|m_B)}{\sum_{B\in
+               \mathcal{P}_{m_B}(\mathcal{X})} P(D|B,m_B) P(B|m_B)}\\
       &= \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B)\pi(B|m_B)}{P(D|m_B)},
+          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B) P(B|m_B)}{P(D|m_B)},
   \end{split}
 \end{equation}
 where $\mathcal{I}^i_{m_B}(\mathcal{X}) \subseteq
 \mathcal{P}_{m_B}(\mathcal{X})$ denotes the set of multi-bins that
 have a border at position $i$.
-
-\section*{Model Posterior and Model Average}
-\begin{equation}
-  \begin{split}
-    P(m_B|D)
-    &= \frac{P(D|m_B)\pi(m_B)}{P(D)}\\
-    &= \frac{P(D|m_B)\pi(m_B)}{\sum_{m_B\in M}P(D|m_B)\pi(m_B)},
-  \end{split}
-\end{equation}
-
-\begin{equation}
-  \begin{split}
-    \mathrm{E}[p_y^b|D] 
-    = \frac{\sum_{m_B\in M}P(D'|m_B)\pi(m_B)}{\sum_{m_B\in M}P(D|m_B)\pi(m_B)},
-  \end{split}
-\end{equation}
-with $M = \{1,2,\dots,L\}$.
 
 \section*{Bayesian Hypothesis Testing}
 Bayes factor
@@ -405,32 +404,34 @@ Bayes factor
   \end{split}
 \end{equation}
 
-\section*{Entropy}
-The uncertainty about which multi-bin model describes the data best is
-given by the Shannon entropy
+\section*{Information-theoretic quantities}
+By intriducing a random variable $\mathcal{B}$ that represents the
+outcome of a certain partition, we can compute our uncertainty about
+which partition describes the data best, which is given by the Shannon
+entropy
 \begin{equation}
   \begin{split}
-    \mathrm{H}(&\mathcal{P}(\mathcal{X})|D)\\
+    \mathrm{H}(&\mathcal{B}|D)\\
     &= -\sum_{B\in \mathcal{P}(\mathcal{X})}P(B|D) \log P(B|D)\\
-    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(D|B)\pi(B)}{P(D)}
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(D|B)P(B)}{P(D)}
     \log
-    \frac{P(D|B)\pi(B)}{P(D)}\\
-    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}
-    \frac{P(D|B)\pi(B)}{\sum_{B\in
-        \mathcal{P}(\mathcal{X})}P(D|B)\pi(B)}
-    \log
-    \frac{P(D|B)\pi(B)}{\sum_{B\in
-        \mathcal{P}(\mathcal{X})}P(D|B)\pi(B)}\\
+    \frac{P(D|B)P(B)}{P(D)}\\
+%     &= -\sum_{B\in \mathcal{P}(\mathcal{X})}
+%     \frac{P(D|B)P(B)}{\sum_{B\in
+%         \mathcal{P}(\mathcal{X})}P(D|B)P(B)}
+%     \log
+%     \frac{P(D|B)P(B)}{\sum_{B\in
+%         \mathcal{P}(\mathcal{X})}P(D|B)P(B)}\\
     &=
     -\frac{1}{P(D)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
-    \pi(B)
+    P(B)
     \prod_{b\in
       B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
     \left[
       \log
-      \frac{\pi(B)}{P(D)} +
+      \frac{P(B)}{P(D)} +
       \sum_{b \in B}
       \log
       \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
@@ -438,7 +439,7 @@ given by the Shannon entropy
     &=
     \frac{1}{P(D)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
-    \pi(B)
+    P(B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
     \sum_{b \in B}
     \left[-\log
@@ -446,82 +447,12 @@ given by the Shannon entropy
     &-
     \frac{1}{P(D)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
-    \pi(B)
-    \log\frac{\pi(B)}{P(D)}
+    P(B)
+    \log\frac{P(B)}{P(D)}
     \prod_{b\in B}
     \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
-
-\section*{Implementation}
-\begin{equation}
-  \begin{split}
-    \sum_{B\in \mathcal{P}(\mathcal{X})}
-    g_{m_B}
-    \prod_{b\in B}
-    f(b)
-  \end{split}
-\end{equation}
-
-\begin{equation}
-  \begin{split}
-    \sum_{B\in \mathcal{P}(\mathcal{X})}
-    g_{m_B}
-    \prod_{b\in B}
-    f(b)
-    \sum_{b \in B}
-    h(b)
-  \end{split}
-\end{equation}
-
-\begin{equation}
-  \begin{split}
-    \lim\limits_{\epsilon \rightarrow \infty}
-    \frac{\exp[\epsilon\sum_i h_i]-1}{\epsilon}
-    =
-    \frac{\mathrm{d}}{\mathrm{d}\epsilon}
-    \exp[\epsilon\sum_i h_i]\bigg|_{\epsilon=0}
-    =
-    \sum_ih_i
-  \end{split}
-\end{equation}
-
-\section*{Estimation of Multinomial Probabilities}
-If $m_T$ is the number of trials, then the estimated probabilities
-of $p^b_y$ in bin $b$ are given by
-\begin{equation}
-  \begin{split}
-    P(\vec{p}^b|D,m_T)
-    &= \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_T)}{P(D|m_T)}\\
-    &=
-    \frac{P(D|\vec{p}^b,m_T)\pi(\vec{p}^b|m_T)}{
-      \int_{\Delta^K}
-      P(D|\vec{p}^b,m_T)
-      \pi(\vec{p}^b|m_T)
-      \mathrm{d}\vec{p}^b}\\
-    &=
-    \Dir(\vec{p}^b; \vec{n}^b+\vec{\alpha}^b),
-  \end{split}
-\end{equation}
-where $\pi(\vec{p}^b|m_T) = \Dir(\vec{p}^b; \vec{\alpha}^b)$. Hence
-the expectation for $\vec{p}^b \sim \Dir(\vec{p}^b;
-\vec{n}^b+\vec{\alpha}^b)$ is given by
-\begin{equation}
-  \begin{split}
-    \hat{p}^b_y = \mathrm{E}[p^b_y|D,m_T]
-    &= \frac{n^b_y + \alpha^b_y}{\sum_{y \in \mathcal{Y}} n^b_y + \alpha^b_y}\\
-    &= \frac{n^b_y + \alpha^b_y}{m_T + \sum_{y^* \in \mathcal{Y}} \alpha^b_{y^*}},
-  \end{split}
-\end{equation}
-which is also known as the \textit{extended Bayes-Laplace rule} and is
-often used whenever only a small number of observations is
-available. This estimate is equal to the frequentist's estimate,
-i.e. $\mathrm{E}[p^b_y|D,m_T] = \frac{n^b_y}{m_T}$, if $\alpha^b_y = 0
-~ \forall y \in \mathcal{Y}$. For $\alpha^b_y = 1 ~ \forall y \in
-\mathcal{Y}$ we get \textit{Laplace's rule of succession}, which
-prevents that prior probabilities of zero or one are used. In Bayesian
-statistics a probability of zero or one should only be used for
-logical statements, called \textit{Cromwell's rule}.
 
 \begin{lemma}[The Proximal Multi-Bin Summation (ProMBS) Algorithm] \label{prombslemma}
 %
@@ -617,8 +548,20 @@ $$
 			\ , ~ \text{where} ~
 			f_\epsilon(b)
 		:=
-			f(b)e^{\epsilon h(b)} \ .
+			f(b)e^{\epsilon h(b)} \ ,
 $$
+where we use
+\begin{equation}
+  \begin{split}
+    \sum_ih_i =
+    \lim\limits_{\epsilon \rightarrow \infty}
+    \frac{\exp[\epsilon\sum_i h_i]-1}{\epsilon}
+    =
+    \frac{\mathrm{d}}{\mathrm{d}\epsilon}
+    \exp[\epsilon\sum_i h_i]\bigg|_{\epsilon=0}
+  \end{split}
+\end{equation}
+for the approximation.
 %
 For asymptotically small $\epsilon>0$, it holds that
 $$
