@@ -333,7 +333,7 @@ choose a non-informative prior $1/|\mathcal{M}|$ with $\mathcal{M} =
 \{1, 2, \dots, L\}$ unless we want to select specific model sizes.
 
 \section*{Central moments}
-To characterize the inferred distribution, we will compute the first
+To characterize the inferred distribution, we want to compute the first
 three raw moments $\mu_i^b(x|D)$ for each bin $b \in B$ and event $x \in
 \mathcal{X}$ from averaging over
 \begin{equation}
@@ -452,13 +452,26 @@ entropy
     \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
+We use the algorithm sketched in lemma \ref{eprombslemma} to
+approximate the first term of the last expression.
 
 \section*{Spike train analysis}
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{../data/data8.pdf}
   \caption{
-    Bayesian binning of a spike train with 30 trials.
+    Bayesian analysis of 30 repeated recordings from a neuron ($m_T =
+    30$). Time was discretized into intervals of length $\Delta t =
+    1ms$. Models with up to 20 bins were included in the computation,
+    i.e. $\mathcal{M} = \{1, 2, \dots, 20\}$ and $P(m_B) =
+    1/|\mathcal{M}|$. For the prior we chose $\vec{\alpha} = (1,32)$ for
+    all intervals. The red line in the second plot shows the estimated
+    probability to observe a spike $S_i$ within the $i$th bin of size
+    1ms. The standard deviation is shown as a dashed line. Skews were
+    computed but turned out to be very small (max. $10^{-7}$). Break
+    probabilities $\Rsh_i$ were computed for each interval $i$, shown in
+    green. The third plot shows the model posterior for each $m_B \in
+    \mathcal{M}$.
   }
-  \label{fig:app:a:1}
+  \label{fig:1}
 \end{figure}
