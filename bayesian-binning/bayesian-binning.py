@@ -86,11 +86,12 @@ def plotmodelpost(ax, modelpost):
     ax.set_ylabel(r'$P(m_B|D)$', font)
 
 def plotentropy(ax, entropy):
-    N = len(entropy)
-    x = np.arange(0, N+1, 1)
-    entropy.insert(0, 0)
-    ax.step(x, entropy, 'b--', where='mid', linewidth=1)
-    ax.set_ylabel(r'$H(B|D,m_B)$', font)
+    if len(entropy) > 0:
+        N = len(entropy)
+        x = np.arange(0, N+1, 1)
+        entropy.insert(0, 0)
+        ax.step(x, entropy, 'b--', where='mid', linewidth=1)
+        ax.set_ylabel(r'$H(\mathcal{B}|D,m_B)$', font)
 
 def plotspikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -108,7 +109,7 @@ def plotspikes(ax, x, timings):
 def plotbinboundaries(ax, x, bprob, modelpost):
     ax.plot(x[1:-1], bprob[1:-1], 'g')
     ax.set_ylim(0,1)
-    ax.set_ylabel('P(Break|D)', font)
+    ax.set_ylabel(r'$P(\Rsh_i|D)$', font)
 #    nbins = argmax(modelpost)[1]+1
 #    bprob_max = sorted(bprob)[-nbins:]
 #    for b in bprob_max:
@@ -143,17 +144,20 @@ def bin(counts, alpha, mprior):
         var_str     = config.get('Result', 'var')
         skew_str    = config.get('Result', 'skew')
         mpost_str   = config.get('Result', 'mpost')
-        entropy_str = config.get('Result', 'entropy')
         exp         = map(float, exp_str.split(' '))
         var         = map(float, var_str.split(' '))
         skew        = map(float, skew_str.split(' '))
         mpost       = map(float, mpost_str.split(' '))
-        entropy     = map(float, entropy_str.split(' '))
         if config.has_option('Result', 'bprob'):
             bprob_str = config.get('Result', 'bprob')
             bprob     = map(float, bprob_str.split(' '))
         else:
-            bprob = []
+            bprob     = []
+        if config.has_option('Result', 'entropy'):
+            entropy_str = config.get('Result', 'entropy')
+            entropy     = map(float, entropy_str.split(' '))
+        else:
+            entropy     = []
         return [exp, var, skew, bprob, mpost, entropy]
     else:
         counts_i = [ map(int, row) for row in counts ]

@@ -54,10 +54,11 @@ sequence of observations. This will lead us to a theorem by de Finetti
 that tells us how the joint probability mass function for $P(D)$ can
 be represented. A corresponding mode of inductive inference is then
 given by the \textit{Johnson-Carnap continuum}. Several drawbacks of
-the Johnson-Carnap continuum have been extensively discussed in the
+the Johnson-Carnap continuum have been extensively discussed in
 literature, one if which is the assumption that the number of possible
 outcomes $K$ is known in advance. Several generalizations were
-developed, for instance the one by Pitman which is especially 
+developed, for instance the one by Pitman. However, for our purposes
+the Johnson-Carnap continuum suffices.
 \begin{definition}[Infinite exchangeability]
   Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
   where each $X_i$ is a random variable from a probability space
@@ -78,25 +79,26 @@ developed, for instance the one by Pitman which is especially
   Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
   random variables from a probability space $(\Omega, \mathcal{F}, P)$
   to a measure space $(\mathcal{X}, \mathcal{F}')$. There exists a
-  cumulative distribution $\Pi$ such that the joint mass function
-  $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} = x_{m_T})$ has
+  cumulative distribution $\Pi_{\vec{\alpha}}$ such that the joint mass
+  function $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} =
+  x_{m_T})$ has
   the form
   \begin{equation}
     \begin{split}
       \label{eq:frt}
       p(x_1, \dots, x_{m_T}) &=
       \int_{\Delta^K} p(x_1, \dots, x_{m_T}|\vec{\theta})
-      \mathrm{d} \Pi(\vec{\theta})\\
+      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
       &=
       \int_{\Delta^K} \Mult(\vec{n};\vec{\theta})
-      \mathrm{d} \Pi(\vec{\theta})\\
+      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
       &=
       \int_{\Delta^K}
       \frac{m_T!}{\prod_{x \in \mathcal{X}}n_x!}
       \prod_{x \in \mathcal{X}}
       \theta_x^{n_x}
-      \mathrm{d} \Pi(\vec{\theta}), ~ \text{where}\\
-      \Pi(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
+      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}), ~ \text{where}\\
+      \Pi_{\vec{\alpha}}(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
       P \left\{\frac{n_x}{m_T} \le \theta_x : x \in \mathcal{X} \right\},
     \end{split}
   \end{equation}
@@ -110,10 +112,10 @@ Hewitt1955})
 In other words, conditional on $\vec{\theta}$ the joint probability
 mass function $p(x_1, \dots, x_{m_T})$ can be written as an integral
 mixture of multinomial probabilities. Note that for $K=1$ equation
-$\ref{eq:frt}$ computes the $n_x$th moment of $\mathrm{d}\Pi$. In
-Bayesian inference, the limiting distribution $\mathrm{d}\Pi$ is
+$\ref{eq:frt}$ computes the $n_x$th moment of $\mathrm{d}\Pi_{\vec{\alpha}}$. In
+Bayesian inference, the limiting distribution $\mathrm{d}\Pi_{\vec{\alpha}}$ is
 interpreted as the prior distribution. A common choice for
-$\mathrm{d}\Pi$ is a conjugate prior which substantially simplifies
+$\mathrm{d}\Pi_{\vec{\alpha}}$ is a conjugate prior which substantially simplifies
 the computation of the posterior distribution. In the following we
 show how such a prior can be justified from inductive principles such
 that theorem \ref{thr:frm} holds.
@@ -147,11 +149,11 @@ identifies a unique prior distribution for de Finetti's representation
 theorem.
 \begin{corollary}
   Under the conditions (i-iii) of theorem \ref{thr:jcc} the prior
-  distribution $\mathrm{d}\Pi$ belongs to the \textit{Dirichlet
+  distribution $\mathrm{d}\Pi_{\vec{\alpha}}$ belongs to the \textit{Dirichlet
     familiy}, i.e.
   \begin{equation}
     \begin{split}
-      \mathrm{d}\Pi(\vec{\theta}) =
+      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}) =
       \Dir(\vec{\theta};\vec{\alpha})\mathrm{d}\vec{\theta} &=
       \frac{1}{\Beta(\vec{\alpha})}
       \prod_{x \in \mathcal{X}} \theta_x^{\alpha_x -1}
@@ -183,7 +185,7 @@ of a hypothesis is then given by
     \frac{\Mult(D;\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
       \int_{\Delta^K}
       \Mult(D;\vec{\theta}')
-      \mathrm{d}\Pi(\vec{\theta}')}\\
+      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}')}\\
     &=
     \Dir(\vec{\theta}; \vec{n}+\vec{\alpha}).
   \end{split}
@@ -202,13 +204,13 @@ expected value of $\vec{\theta}$ given our observations, i.e.
   \begin{split}
     \hat{\theta}_x = \mathrm{E}[\theta_x|D] &=
     \int_{\Delta^{K-1}}\theta_x \Mult(D;\vec{\theta})
-    \mathrm{d}\Pi(\vec{\theta}; \vec{\alpha}) =
+    \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}) =
     \frac{
-      \int_{\Delta^K} \Mult(D \cup \{x\};\vec{\theta})
-      \mathrm{d}\Pi(\vec{\theta}; \vec{\alpha})
+      \int_{\Delta^K} \Mult(\{X_{m_T+1} = x,D\};\vec{\theta})
+      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }{
       \int_{\Delta^K} \Mult(D;\vec{\theta})
-      \mathrm{d}\Pi(\vec{\theta}; \vec{\alpha})
+      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }\\
     &= f_x(n_x,m_T)
     = \frac{n_x + \alpha_x}{n + \sum_{x^* \in \mathcal{X}} \alpha_{x^*}},
@@ -294,7 +296,7 @@ we have to sum over all possible partitions $B \in
     &=
       \prod_{b\in B} \int_{\Delta^K}
       \Mult(\vec{\theta}^b;\vec{n}^b)
-      \mathrm{d}\Pi(\vec{\theta}^b; \vec{\alpha}^b).
+      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
   \end{split}
 \end{equation}
 By solving the integrals we get
@@ -316,96 +318,93 @@ which we can compute with the algorithm sketched in lemma
 \ref{prombslemma}. To compute the full model we still need to average
 over all possible $m_B$, i.e.
 \begin{equation}
-  P(\vec{\Theta},B|D) = \sum_{m_B = 1}^L P(\vec{\Theta},B|D,m_B) P(m_B|D),
+  P(\vec{\Theta},B|D) = \sum_{m_B \in \mathcal{M}} P(\vec{\Theta},B|D,m_B) P(m_B|D),
 \end{equation}
 where $P(m_B|D)$ denotes the model posterior, which is given by
 \begin{equation}
   \begin{split}
     P(m_B|D)
     &= \frac{P(D|m_B) P(m_B)}{P(D)}\\
-    &= \frac{P(D|m_B) P(m_B)}{\sum_{m_B\in M}P(D|m_B) P(m_B)}.
+    &= \frac{P(D|m_B) P(m_B)}{\sum_{m_B \in \mathcal{M}}P(D|m_B) P(m_B)}.
   \end{split}
 \end{equation}
 $P(m_B)$ is the prior for a given model size $m_B$. We will usually
-choose a non-informative prior $1/L$ unless we want to select
-specific model sizes.
+choose a non-informative prior $1/|\mathcal{M}|$ with $\mathcal{M} =
+\{1, 2, \dots, L\}$ unless we want to select specific model sizes.
 
-\section*{Expectation and Variance}
+\section*{Central moments}
 To characterize the inferred distribution, we will compute the first
-three moments from the moment generating function
+three raw moments $\mu_i^b(x|D)$ for each bin $b \in B$ and event $x \in
+\mathcal{X}$ from averaging over
 \begin{equation}
   \begin{split}
-    \mu_i' = \int x^i\mathrm{d}P(x) = \frac{P(D^i|m_B)}{P(D|m_B)},
+    \mu_i^b(x|D,B,m_B)
+    &=
+    \int_{\Delta^{K-1}} (\theta^b_x)^i P(\vec{\theta}^b|D,B,m_B)
+    \mathrm{d}\vec{\theta}^b \\
+    &= \frac{P(X_{m_T+1}^b = x, \dots, X_{m_T+i}^b = x,D|B,m_B)}{P(D|B,m_B)}.
   \end{split}
 \end{equation}
-where $P(x)$ denotes the Lebesgue-Stieltjes probability density
-function and $\mu_i'$ the $i$th raw moment. The central moments
-$\mu_i$ are given by
+That is, we simply have to add $i$ events to our observations and
+recompute the evidence to get the $i$th moment. We therefore get
 \begin{equation}
   \begin{split}
-    \mu_i = \int (x-\mu_1')^i\mathrm{d}P(x),
+    \mu_i^j(x|D) 
+    = \frac{\sum_{m_B\in \mathcal{M}}P(X_{m_T+1}^j = x, \dots, X_{m_T+i}^j =
+      x,D|m_B) P(m_B)}{\sum_{m_B\in \mathcal{M}}P(D|m_B) P(m_B)},
   \end{split}
 \end{equation}
-which can be computed from the raw moments by using the binomial
+for the full model where be add an event into the respective bin at
+position $j$. The central moments $\bar{\mu}_i^b$ are given by
+\begin{equation}
+  \begin{split}
+    \bar{\mu}^b_i(x|B,m_B) = \int_{\Delta^{K-1}}
+    (\theta^b_x-\mu^b_1(x|D,B,m_B))^i
+    P(\vec{\theta}^b|D,B,m_B)\mathrm{d}
+    \vec{\theta}^b,
+  \end{split}
+\end{equation}
+which can be computed from the raw moments with the binomial
 transform
 \begin{equation}
   \begin{split}
-    \mu_i = \sum_{k=0}^{i} {i \choose k} (-1)^{i-k}\mu_k'(\mu_1')^{i-k}.
+    \bar{\mu}_i = \sum_{k=0}^{i} {i \choose k} (-1)^{i-k}\mu_k(\mu_1)^{i-k}.
   \end{split}
 \end{equation}
-Hence
-\begin{equation}
-  \begin{split}
-    \mathrm{E}[\theta_x^b|D,m_b] 
-    = P(y_b|D,m_B)
-    = \frac{P(x_b,D|m_B)}{P(D|m_B)}
-    = \frac{P(D'|m_B)}{P(D|m_B)},
-  \end{split}
-\end{equation}
-
-\begin{equation}
-  \begin{split}
-    \mathrm{Var}[p_x^b|D,m_b]
-    &= P(x_b,x_b|D,m_B) - (P(x_b|D,m_B))^2\\
-    &= \frac{P(D''|m_B)}{P(D|m_B)} - \left(
-    \frac{P(D'|m_B)}{P(D|m_B)} \right)^2
-  \end{split}
-\end{equation}
-where $D' = D \cup \{x_b\}$.
-
-\begin{equation}
-  \begin{split}
-    \mathrm{E}[p_y^b|D] 
-    = \frac{\sum_{m_B\in M}P(D'|m_B) P(m_B)}{\sum_{m_B\in M}P(D|m_B) P(m_B)},
-  \end{split}
-\end{equation}
-with $M = \{1,2,\dots,L\}$.
 
 \section*{Break Probabilities}
+For the analysis of certain data it is often useful to know where a
+new partition begins. For instance when we want to analyse
+psychometric functions such knowledge could help to clearly define
+changepoints. Also for the analysis of spike trains one often wants to
+distinguish between tonic and phasic regimes of a stimulus response.
+Hence we would like to compute the probability that a break $\Rsh_i$
+occurs at the $i$th interval.
 \begin{equation}
   \begin{split}
-    \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{X})}P(B|D,m_B) &=
+    P(\Rsh_i|D,m_B) =
+    \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{T})}P(B|D,m_B) &=
       \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B) P(B|m_B)}{\sum_{B\in
-               \mathcal{P}_{m_B}(\mathcal{X})} P(D|B,m_B) P(B|m_B)}\\
+          \mathcal{I}^i_{m_B}(\mathcal{T})} P(D|B,m_B) P(B|m_B)}{\sum_{B\in
+               \mathcal{P}_{m_B}(\mathcal{T})} P(D|B,m_B) P(B|m_B)}\\
       &= \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{X})} P(D|B,m_B) P(B|m_B)}{P(D|m_B)},
+          \mathcal{I}^i_{m_B}(\mathcal{T})} P(D|B,m_B) P(B|m_B)}{P(D|m_B)},
   \end{split}
 \end{equation}
-where $\mathcal{I}^i_{m_B}(\mathcal{X}) \subseteq
-\mathcal{P}_{m_B}(\mathcal{X})$ denotes the set of multi-bins that
-have a border at position $i$.
+where $\mathcal{I}^i_{m_B}(\mathcal{T}) \subseteq
+\mathcal{P}_{m_B}(\mathcal{T})$ denotes the set of partitions that
+have a break at the $i$th interval.
 
-\section*{Bayesian Hypothesis Testing}
-Bayes factor
-\begin{equation}
-  \begin{split}
-    K = \frac{P(D|m_1)}{P(D|m_2)}
-  \end{split}
-\end{equation}
+% \section*{Bayesian Hypothesis Testing}
+% Bayes factor
+% \begin{equation}
+%   \begin{split}
+%     K = \frac{P(D|m_1)}{P(D|m_2)}
+%   \end{split}
+% \end{equation}
 
 \section*{Information-theoretic quantities}
-By intriducing a random variable $\mathcal{B}$ that represents the
+By introducing a random variable $\mathcal{B}$ that represents the
 outcome of a certain partition, we can compute our uncertainty about
 which partition describes the data best, which is given by the Shannon
 entropy
@@ -454,131 +453,12 @@ entropy
   \end{split}
 \end{equation}
 
-\begin{lemma}[The Proximal Multi-Bin Summation (ProMBS) Algorithm] \label{prombslemma}
-%
-Let $f:C(\Xc)\rightarrow\mathbb{R}$ be any function mapping
-consecutive segments to the real numbers and
-$\gf=(g_1,\ldots,g_K)\in\mathbb{R}^K$ be any real valued
-vector. Define for $l=1,\dots,L$ the upper triangular matrices
-$A_l=(a^l_{ij})_{L\times L}$ recursively by
-%
-$$
-%
-			a^1_{ij}
-		=
-	\begin{cases}
-%
-				f(b_{i,j}) 	& \text{ if } i\geq j	
-			\\
-				0  & \text{ otherwise }
-%
-	\end{cases}
-% 
-\text{  and  }
-%
- \ \
-		 a^{l+1}_{ij}
-		=
-	\begin{cases}
-				a^l_{i+1,j+1}	& i,j < L 			
-			\\
-				1							& i=j=L
-			\\
-				0							& \text{else}
-%
-	\end{cases} \ .
-% 
-$$
-%
-The sum
-$$
-		S[f]
-	=
-		\sum_{B\in\Pc(\Xc)}
-		g_{m_B}
-		\prod_{b\in B}
-		f(b)	
-$$
-%
-can be turned out as follows: The first $N\leq L$ partial sums
-$$
-		S_m[f]
-	=
-		\sum_{B\in\mathcal{P}_m(\Xc)}
-		\prod_{b\in B}
-		f(b)
-$$
-%
-can be evaluated by iterative matrix multiplications 
-%
-$$
-		(0,\ldots,S_N[f],\ldots,S_1[f])
-	=
-		(1,0,\ldots,0)
-	\prod_{m=1}^N
-		A_m .
-$$
-%
-Full evaluation of all partial sums delivers
-%
-$$
-		S[f,\gf]
-	=
-		\sum_{m=1}^K g_m S_m[f] \ .
-$$
-%
-\end{lemma}
-%
-\begin{lemma}[The extended ProMBS-Algorithm]\label{eprombslemma}
-%
-Consider the same conditions and definitions made in lemma
-(\ref{prombslemma}). Let $h:C(\Xc)\rightarrow\mathbb{R}$ and
-define for any $\epsilon>0$
-%
-$$
-		SP_\epsilon[f,\gf,h]
-	:=
-			\frac{			
-							S[f_\epsilon,\gf]
-						-
-							S[f,\gf]
-					}{
-						\epsilon
-					}
-			\ , ~ \text{where} ~
-			f_\epsilon(b)
-		:=
-			f(b)e^{\epsilon h(b)} \ ,
-$$
-where we use
-\begin{equation}
-  \begin{split}
-    \sum_ih_i =
-    \lim\limits_{\epsilon \rightarrow \infty}
-    \frac{\exp[\epsilon\sum_i h_i]-1}{\epsilon}
-    =
-    \frac{\mathrm{d}}{\mathrm{d}\epsilon}
-    \exp[\epsilon\sum_i h_i]\bigg|_{\epsilon=0}
-  \end{split}
-\end{equation}
-for the approximation.
-%
-For asymptotically small $\epsilon>0$, it holds that
-$$
-	\sum_{B\in\Pc(\Xc)}
-		g_{m_B}
-		\prod_{b\in B}
-		f(b)	
-			\sum_{b\in B}
-				h(b)
-	=
-			SP_\epsilon[f,\gf,h] 
-		+
-		\Oc(\epsilon)		
-			\ 
-			.
-$$
-%
-%
-%
-\end{lemma}
+\section*{Spike train analysis}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.9\textwidth]{../data/data8.pdf}
+  \caption{
+    Bayesian binning of a spike train with 30 trials.
+  }
+  \label{fig:app:a:1}
+\end{figure}

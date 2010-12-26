@@ -1,11 +1,131 @@
 % -*- mode: latex -*-
 %
 \section*{Appendix A}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=.9\textwidth]{../data/data8.pdf}
-  \caption{
-    Bayesian binning of a spike train with 30 trials.
-  }
-  \label{fig:app:a:1}
-\end{figure}
+\begin{lemma}[The Proximal Multi-Bin Summation (ProMBS) Algorithm] \label{prombslemma}
+%
+Let $f:C(\Xc)\rightarrow\mathbb{R}$ be any function mapping
+consecutive segments to the real numbers and
+$\gf=(g_1,\ldots,g_K)\in\mathbb{R}^K$ be any real valued
+vector. Define for $l=1,\dots,L$ the upper triangular matrices
+$A_l=(a^l_{ij})_{L\times L}$ recursively by
+%
+$$
+%
+			a^1_{ij}
+		=
+	\begin{cases}
+%
+				f(b_{i,j}) 	& \text{ if } i\geq j	
+			\\
+				0  & \text{ otherwise }
+%
+	\end{cases}
+% 
+\text{  and  }
+%
+ \ \
+		 a^{l+1}_{ij}
+		=
+	\begin{cases}
+				a^l_{i+1,j+1}	& i,j < L 			
+			\\
+				1							& i=j=L
+			\\
+				0							& \text{else}
+%
+	\end{cases} \ .
+% 
+$$
+%
+The sum
+$$
+		S[f]
+	=
+		\sum_{B\in\Pc(\Xc)}
+		g_{m_B}
+		\prod_{b\in B}
+		f(b)	
+$$
+%
+can be turned out as follows: The first $N\leq L$ partial sums
+$$
+		S_m[f]
+	=
+		\sum_{B\in\mathcal{P}_m(\Xc)}
+		\prod_{b\in B}
+		f(b)
+$$
+%
+can be evaluated by iterative matrix multiplications 
+%
+$$
+		(0,\ldots,S_N[f],\ldots,S_1[f])
+	=
+		(1,0,\ldots,0)
+	\prod_{m=1}^N
+		A_m .
+$$
+%
+Full evaluation of all partial sums delivers
+%
+$$
+		S[f,\gf]
+	=
+		\sum_{m=1}^K g_m S_m[f] \ .
+$$
+%
+\end{lemma}
+%
+\begin{lemma}[The extended ProMBS-Algorithm]\label{eprombslemma}
+%
+Consider the same conditions and definitions made in lemma
+(\ref{prombslemma}). Let $h:C(\Xc)\rightarrow\mathbb{R}$ and
+define for any $\epsilon>0$
+%
+$$
+		SP_\epsilon[f,\gf,h]
+	:=
+			\frac{			
+							S[f_\epsilon,\gf]
+						-
+							S[f,\gf]
+					}{
+						\epsilon
+					}
+			\ , ~ \text{where} ~
+			f_\epsilon(b)
+		:=
+			f(b)e^{\epsilon h(b)} \ ,
+$$
+where we use
+\begin{equation}
+  \begin{split}
+    \sum_ih_i =
+    \lim\limits_{\epsilon \rightarrow \infty}
+    \frac{\exp[\epsilon\sum_i h_i]-1}{\epsilon}
+    =
+    \frac{\mathrm{d}}{\mathrm{d}\epsilon}
+    \exp[\epsilon\sum_i h_i]\bigg|_{\epsilon=0}
+  \end{split}
+\end{equation}
+for the approximation.
+%
+For asymptotically small $\epsilon>0$, it holds that
+$$
+	\sum_{B\in\Pc(\Xc)}
+		g_{m_B}
+		\prod_{b\in B}
+		f(b)	
+			\sum_{b\in B}
+				h(b)
+	=
+			SP_\epsilon[f,\gf,h] 
+		+
+		\Oc(\epsilon)		
+			\ 
+			.
+$$
+%
+%
+%
+\end{lemma}
