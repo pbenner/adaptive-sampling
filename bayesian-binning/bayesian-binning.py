@@ -89,7 +89,7 @@ def plotentropy(ax, entropy):
     if len(entropy) > 0:
         N = len(entropy)
         x = np.arange(0, N+1, 1)
-        entropy.insert(0, 0)
+        entropy.append(0)
         ax.step(x, entropy, 'b--', where='mid', linewidth=1)
         ax.set_ylabel(r'$H(\mathcal{B}|D,m_B)$', font)
 

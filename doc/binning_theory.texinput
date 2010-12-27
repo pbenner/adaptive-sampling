@@ -59,7 +59,7 @@ literature, one of which is the assumption that the number of possible
 outcomes $K$ is known in advance. Several generalizations were
 developed, for instance the one by Pitman which overcomes this
 limitation. However, we will first focus on the Johnson-Carnap
-continuum. More general forms will become useful later when we want
+continuum. More general forms will become useful later when we want to
 estimate entropies from severely undersampled probability spaces.
 \begin{definition}[Infinite exchangeability]
   Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
@@ -75,6 +75,17 @@ estimate entropies from severely undersampled probability spaces.
   with $x_i \in \mathcal{X}$ and for all permutations $\pi$ defined on
   the set $\{1, \dots, m_T\}$. (cf. \cite{Finetti1974})
 \end{definition}
+Assuming exchangeability for a sequence of observations makes the
+assignment of probabilites a tractable problem and still allows
+inductive reasoning. Note that this is not the case when we assume
+that observations are independently generated, i.e.
+\begin{equation}
+    P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) = P(X_{1} = x_{\pi(1)})
+    \dots P(X_{m_T} = x_{\pi(m_T)}),
+\end{equation}
+as it is often assumed in orthodox statistics. If independence were
+truly the case we would not be able to draw any conclusions about the
+future given our observations.
 
 \begin{theorem}[Generalized de Finetti's representation theorem]
   \label{thr:frm}
@@ -335,9 +346,10 @@ choose a non-informative prior $1/|\mathcal{M}|$ with $\mathcal{M} =
 \{1, 2, \dots, L\}$ unless we want to select specific model sizes.
 
 \section*{Central moments}
-To characterize the inferred distribution, we want to compute the first
-three raw moments $\mu_i^b(x|D)$ for each bin $b \in B$ and event $x \in
-\mathcal{X}$ from averaging over
+From the Hausdorff moment theorem we know that a probability measure
+on a compact set $[0,1]$ is fully characterized by its moments.  Hence
+we would like to compute the first $n$ raw moments $\mu_i^b(x|D)$ for
+each bin $b \in B$ and event $x \in \mathcal{X}$ from the average of
 \begin{equation}
   \begin{split}
     \mu_i^b(x|D,B,m_B)
