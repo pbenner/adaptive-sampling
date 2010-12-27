@@ -101,7 +101,7 @@ where we use
 \begin{equation}
   \begin{split}
     \sum_ih_i =
-    \lim\limits_{\epsilon \rightarrow \infty}
+    \lim\limits_{\epsilon \rightarrow 0}
     \frac{\exp[\epsilon\sum_i h_i]-1}{\epsilon}
     =
     \frac{\mathrm{d}}{\mathrm{d}\epsilon}
