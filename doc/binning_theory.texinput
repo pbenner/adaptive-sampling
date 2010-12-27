@@ -55,10 +55,12 @@ that tells us how the joint probability mass function for $P(D)$ can
 be represented. A corresponding mode of inductive inference is then
 given by the \textit{Johnson-Carnap continuum}. Several drawbacks of
 the Johnson-Carnap continuum have been extensively discussed in
-literature, one if which is the assumption that the number of possible
+literature, one of which is the assumption that the number of possible
 outcomes $K$ is known in advance. Several generalizations were
-developed, for instance the one by Pitman. However, for our purposes
-the Johnson-Carnap continuum suffices.
+developed, for instance the one by Pitman which overcomes this
+limitation. However, we will first focus on the Johnson-Carnap
+continuum. More general forms will become useful later when we want
+estimate entropies from severely undersampled probability spaces.
 \begin{definition}[Infinite exchangeability]
   Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
   where each $X_i$ is a random variable from a probability space
@@ -456,6 +458,21 @@ We use the algorithm sketched in lemma \ref{eprombslemma} to
 approximate the first term of the last expression.
 
 \section*{Spike train analysis}
+When analysing spike trains with the framework discussed above we make
+the assumption that we deal with a Poisson process, i.e. spikes are
+independently generated from a renewal process with exponential ISI
+distribution. This assumption is of course violated for most
+recordings, especially for recordings from higher cortical areas such
+as FEF where ISI are clearly gamma distributed. For an information
+theoretic analysis of receptive field models it is important to have a
+good estimate for entropies and mutual information. Assuming a Poisson
+process greatly affects the estimate, which is why most approaches
+(such as NSB, Nemenmann and Bialek) try to sample the joint probability
+distribution instead of assuming independence. An interesting approach
+to estimate entropies from the joint distribution could result from
+the Pitman continuum of inductive methods. There might also be a way
+to represent spike trains in form of interspike intervals such that we
+can use the Johnson-Carnap continuum as discussed above.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{../data/data8.pdf}
