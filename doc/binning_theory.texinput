@@ -39,28 +39,31 @@
 Given a sequence of $m_T$ observations $D = (X_1, X_2, \dots,
 X_{m_T})$ how can we make predictions about future
 observations\footnote{This is known as \textit{Hume's problem of
-induction} and was answered by de Finetti's representation theorem.}?
-That is, how can we formulate a hypothesis $\mathcal{H}$ about the
-laws behind the sequence of observations and compute the probability
-of our hypothesis conditional on all the evidence that we gathered?
-From \textit{Bayes's rule of conditioning}
+    induction} and was answered by de Finetti's representation
+  theorem.}?  That is, how can we formulate a hypothesis $\mathcal{H}$
+about the laws behind the sequence of observations and compute the
+probability of our hypothesis conditional on all the evidence that we
+gathered?  From Bayesian probability theory, which are justified by
+Cox's theorem (cf. \cite{Cox1946, Cox1961, Jaynes2003}), and
+\textit{Bayes's rule of conditioning}
 \begin{equation}
-  P(\mathcal{H}|D) = \frac{P(D,\mathcal{H})}{P(D)}
+  P(\mathcal{H}|D) = \frac{P(D,\mathcal{H})}{P(D)},
 \end{equation}
-we know how to incorporate our observations into our probability
-function, but to fully answer the question of induction we have to
-clearly define the patterns or symmetries that we expect behing the
-sequence of observations. This will lead us to a theorem by de Finetti
-that tells us how the joint probability mass function for $P(D)$ can
-be represented. A corresponding mode of inductive inference is then
-given by the \textit{Johnson-Carnap continuum}. Several drawbacks of
-the Johnson-Carnap continuum have been extensively discussed in
-literature, one of which is the assumption that the number of possible
-outcomes $K$ is known in advance. Several generalizations were
-developed, for instance the one by Pitman which overcomes this
-limitation. However, we will first focus on the Johnson-Carnap
-continuum. More general forms will become useful later when we want to
-estimate entropies from severely undersampled probability spaces.
+we know how to incorporate our observations into our
+probability function. But to fully answer the question of induction we
+have to clearly define the patterns or symmetries that we expect
+behing the sequence of observations. This will lead us to a theorem by
+de Finetti that tells us how the joint probability mass function for
+$P(D)$ can be represented. A corresponding mode of inductive inference
+is then given by the \textit{Johnson-Carnap continuum}. Several
+drawbacks of the Johnson-Carnap continuum have been extensively
+discussed in literature, one of which is the assumption that the
+number of possible outcomes $K$ is known in advance. Several
+generalizations were developed, for instance the one by Pitman which
+overcomes this limitation. However, we will first focus on the
+Johnson-Carnap continuum. More general forms will become useful later
+when we want to estimate entropies from severely undersampled
+probability spaces.
 \begin{definition}[Infinite exchangeability]
   Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
   where each $X_i$ is a random variable from a probability space
@@ -282,13 +285,14 @@ assumption such that
   P(\vec{\theta}^b,B|m_B) = P(\vec{\theta}^b|m_B)P(B|m_B),
 \end{equation}
 which means that the prior knowledge about $\vec{\theta}^b$ is
-independent of $B$ and vice versa. We also choose a flat prior for the
-partitions, i.e.
+independent of $B$ and vice versa. Since we have no a priori
+information about the partitions, we choose a prior in an objective
+Bayesian fashion that maximizes the entropy (cf. \cite{Jaynes1957}),
+i.e.
 \begin{equation}
-  P(B|m_B) = {L \choose m_B}^{-1}
+  P(B|m_B) = {L \choose m_B}^{-1}.
 \end{equation}
-because we have no information a priori which of the partitions is
-more probable. $P(\vec{\theta}^b|m_B)$ is represented by a distribution of
+$P(\vec{\theta}^b|m_B)$ is represented by a distribution of
 the Dirichlet familiy as discussed earlier. To compute the evidence
 \begin{equation}
   \begin{split}
