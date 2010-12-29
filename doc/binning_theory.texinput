@@ -115,8 +115,7 @@ future given our observations.
   to a measure space $(\mathcal{X}, \mathcal{F}')$. There exists a
   cumulative distribution $\Pi_{\vec{\alpha}}$ such that the joint mass
   function $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} =
-  x_{m_T})$ has
-  the form
+  x_{m_T})$ has the form
   \begin{equation}
     \begin{split}
       \label{eq:frt}
@@ -355,10 +354,12 @@ By solving the integrals we get
     \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
     \frac{\prod_{x \in
         \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
-        \mathcal{X}}n^b_x+\alpha^b_x)}\\
+        \mathcal{X}}n^b_x+\alpha^b_x)}
+    \frac{m_T!}{\prod_{x \in \mathcal{X}}n^b_x!}\\
     &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
     P(B|m_B)
-    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
+      \Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}    
   \end{split}
 \end{equation}
 which we can compute with the algorithm sketched in lemma
@@ -474,30 +475,30 @@ entropy
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \prod_{b\in
-      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
+      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
     \left[
       \log
       \frac{P(B)}{P(E)} +
       \sum_{b \in B}
       \log
-      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}
     \right]\\
     &=
     \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
-    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}
     \sum_{b \in B}
     \left[-\log
-    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\right]\\
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}\right]\\
     &-
     \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \log\frac{P(B)}{P(E)}
     \prod_{b\in B}
-    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
 We use the algorithm sketched in lemma \ref{eprombslemma} to
