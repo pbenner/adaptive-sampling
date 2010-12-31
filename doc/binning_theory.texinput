@@ -1,6 +1,5 @@
 % -*- mode: latex -*-
 %
-\providecommand{\Mult}{\ensuremath{\mathrm{Mult}}}
 \providecommand{\Dir}{\ensuremath{\mathrm{Dir}}}
 \providecommand{\Beta}{\ensuremath{\mathrm{Beta}}}
 
@@ -123,11 +122,7 @@ future given our observations.
       \int_{\Delta^K} p(x_1, \dots, x_{m_T}|\vec{\theta})
       \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
       &=
-      \int_{\Delta^K} \Mult(\vec{n}(E);\vec{\theta})
-      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
-      &=
       \int_{\Delta^K}
-      \frac{m_T!}{\prod_{x \in \mathcal{X}}n_x!}
       \prod_{x \in \mathcal{X}}
       \theta_x^{n_x}
       \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}), ~ \text{with}\\
@@ -226,9 +221,9 @@ of a hypothesis is then given by
     P(\vec{\theta}|E)
     &= \frac{P(E,\vec{\theta})}{P(E)}
      =
-    \frac{\Mult(\vec{n}(E);\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
+    \frac{P(\vec{n}(E)|\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
       \int_{\Delta^K}
-      \Mult(\vec{n}(E);\vec{\theta}')
+      P(\vec{n}(E)|\vec{\theta}')
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}')}\\
     &=
     \Dir(\vec{\theta}; \vec{n}(E)+\vec{\alpha}).
@@ -247,14 +242,14 @@ expected value of $\vec{\theta}$ given our observations, i.e.
 \begin{equation}
   \begin{split}
     \hat{\theta}_x = \mathrm{E}[\theta_x|E] &=
-    \int_{\Delta^{K-1}}\theta_x \Mult(\vec{n}(E);\vec{\theta})
+    \int_{\Delta^{K-1}}\theta_x P(\vec{n}(E)|\vec{\theta})
     \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})\\
     &=
     \frac{
-      \int_{\Delta^K} \Mult(\vec{n}(\{X_{m_T+1} = x,E\});\vec{\theta})
+      \int_{\Delta^K} P(\vec{n}(\{X_{m_T+1} = x,E\});\vec{\theta})
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }{
-      \int_{\Delta^K} \Mult(\vec{n}(E);\vec{\theta})
+      \int_{\Delta^K} P(\vec{n}(E)|\vec{\theta})
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }\\
     &= f_x(n_x,m_T)
@@ -341,7 +336,7 @@ we have to sum over all possible partitions $B \in
       P(E|\vec{\Theta},B,m_B) P(\vec{\Theta}|B,m_B)\mathrm{d}\vec{\Theta}\\
     &=
       \prod_{b\in B} \int_{\Delta^K}
-      \Mult(\vec{\theta}^b;\vec{n}^b)
+      p(\vec{\theta}^b|\vec{n}^b)
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
   \end{split}
 \end{equation}
@@ -359,7 +354,7 @@ By solving the integrals we get
     &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
     P(B|m_B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
-      \Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}    
+      \Beta(\vec{\alpha}^b)}    
   \end{split}
 \end{equation}
 which we can compute with the algorithm sketched in lemma
@@ -475,30 +470,30 @@ entropy
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \prod_{b\in
-      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}\\
+      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
     &\quad\quad\quad
     \left[
       \log
       \frac{P(B)}{P(E)} +
       \sum_{b \in B}
       \log
-      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}
+      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
     \right]\\
     &=
     \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
-    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
     \sum_{b \in B}
     \left[-\log
-    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}\right]\\
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\right]\\
     &-
     \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \log\frac{P(B)}{P(E)}
     \prod_{b\in B}
-    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{n}^b+1)\Beta(\vec{\alpha}^b)}
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
 We use the algorithm sketched in lemma \ref{eprombslemma} to
