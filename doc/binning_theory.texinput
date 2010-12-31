@@ -1,6 +1,5 @@
 % -*- mode: latex -*-
 %
-\providecommand{\Mult}{\ensuremath{\mathrm{Mult}}}
 \providecommand{\Dir}{\ensuremath{\mathrm{Dir}}}
 \providecommand{\Beta}{\ensuremath{\mathrm{Beta}}}
 
@@ -35,26 +34,44 @@
 \section*{Introduction}
 \label{introduction}
 
+\section*{Bayesian inference and the meaning of probability}
+As an extension of logic, Bayesian theory provides us with a framework
+for optimal reasoning about uncertain statements. For an axiomatic
+justification of the rules of probability we use Cox's theorem
+(cf. \cite{Cox1946, Cox1961, Jaynes2003}) as opposed to the axioms
+proposed by Kolmogorov. In Bayesian probability theory, the meaning of
+probability is of epistemic nature. That is, probabilities represent a
+degree of belief about a statement or hypothesis rather than a
+physical property, which also means that probabilities are considered
+to be subjective. An extreme view, introduced by de Finetti, states
+that probabilities are purely subjective and do not exist as physical
+properties. Other viewpoints are less extreme and accept the existence
+of such probabilities. A new approach called objective Bayesian
+inference, which started with \cite{Jaynes1957a, Jaynes1957b}, made
+the assignment of probabilities less subjective in the sense that
+one chooses the maximum entropy distribution given a set of
+observations. From a technical point of view it is of course not
+always easy to compute this distribution called a Gibbs measure
+(cf. \cite{Jaynes1957a}).
+
 \section*{Inference}
-Given a sequence of $m_T$ observations $D = (X_1, X_2, \dots,
-X_{m_T})$ how can we make predictions about future
+Given a sequence of $m_T$ observations $E = \{X_1, X_2, \dots,
+X_{m_T}\}$ how can we make predictions about future
 observations\footnote{This is known as \textit{Hume's problem of
     induction} and was answered by de Finetti's representation
   theorem.}?  That is, how can we formulate a hypothesis $\mathcal{H}$
 about the laws behind the sequence of observations and compute the
-probability of our hypothesis conditional on all the evidence that we
-gathered?  From Bayesian probability theory, which are justified by
-Cox's theorem (cf. \cite{Cox1946, Cox1961, Jaynes2003}), and
-\textit{Bayes's rule of conditioning}
+probability of our hypothesis conditional on all the evidence $E$ that
+we gathered?  From \textit{Bayes's rule of conditioning}
 \begin{equation}
-  P(\mathcal{H}|D) = \frac{P(D,\mathcal{H})}{P(D)},
+  P(\mathcal{H}|E) = \frac{P(E,\mathcal{H})}{P(E)},
 \end{equation}
 we know how to incorporate our observations into our
 probability function. But to fully answer the question of induction we
 have to clearly define the patterns or symmetries that we expect
 behing the sequence of observations. This will lead us to a theorem by
 de Finetti that tells us how the joint probability mass function for
-$P(D)$ can be represented. A corresponding mode of inductive inference
+$P(E)$ can be represented. A corresponding mode of inductive inference
 is then given by the \textit{Johnson-Carnap continuum}. Several
 drawbacks of the Johnson-Carnap continuum have been extensively
 discussed in literature, one of which is the assumption that the
@@ -97,8 +114,7 @@ future given our observations.
   to a measure space $(\mathcal{X}, \mathcal{F}')$. There exists a
   cumulative distribution $\Pi_{\vec{\alpha}}$ such that the joint mass
   function $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} =
-  x_{m_T})$ has
-  the form
+  x_{m_T})$ has the form
   \begin{equation}
     \begin{split}
       \label{eq:frt}
@@ -106,35 +122,36 @@ future given our observations.
       \int_{\Delta^K} p(x_1, \dots, x_{m_T}|\vec{\theta})
       \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
       &=
-      \int_{\Delta^K} \Mult(\vec{n};\vec{\theta})
-      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
-      &=
       \int_{\Delta^K}
-      \frac{m_T!}{\prod_{x \in \mathcal{X}}n_x!}
       \prod_{x \in \mathcal{X}}
       \theta_x^{n_x}
-      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}), ~ \text{where}\\
+      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}), ~ \text{with}\\
       \Pi_{\vec{\alpha}}(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
       P \left\{\frac{n_x}{m_T} \le \theta_x : x \in \mathcal{X} \right\},
     \end{split}
   \end{equation}
-  where $n_x$ denotes the count statistic for $x \in \mathcal{X}$, $K
-  = |\mathcal{X}|$, and $\Delta^K := \{\vec{\theta} = (\theta_x)_{x \in
-    \mathcal{X}} \in \mathbb{R}^K : \sum_{x \in \mathcal{X}} \theta_x = 1
-  ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$ denotes
-  the $K$-dimensional probability simplex. (cf. \cite{Finetti1974,
+  where $\vec{n}(E) = (n_x)_{x \in \mathcal{X}}$ denotes the count
+  statistic for every occurence of $x \in \mathcal{X}$ in $E$, $K =
+  |\mathcal{X}|$, and $\Delta^K := \{\vec{\theta} = (\theta_x)_{x \in
+    \mathcal{X}} \in \mathbb{R}^K : \sum_{x \in \mathcal{X}} \theta_x
+  = 1 ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$
+  denotes the $K$-dimensional probability
+  simplex. (cf. \cite{Finetti1974,
 Hewitt1955})
 \end{theorem}
+\begin{proof}
+  Todo
+\end{proof}
 In other words, conditional on $\vec{\theta}$ the joint probability
 mass function $p(x_1, \dots, x_{m_T})$ can be written as an integral
 mixture of multinomial probabilities. Note that for $K=1$ equation
 $\ref{eq:frt}$ computes the $n_x$th moment of $\mathrm{d}\Pi_{\vec{\alpha}}$. In
 Bayesian inference, the limiting distribution $\mathrm{d}\Pi_{\vec{\alpha}}$ is
-interpreted as the prior distribution. A common choice for
+interpreted as a prior distribution. A common choice for
 $\mathrm{d}\Pi_{\vec{\alpha}}$ is a conjugate prior which substantially simplifies
 the computation of the posterior distribution. In the following we
 show how such a prior can be justified from inductive principles such
-that theorem \ref{thr:frm} holds.
+that theorem \ref{thr:frm} holds for a proper choice of $\vec{\alpha}$.
 
 \begin{theorem}[Johnson-Carnap continuum]
   \label{thr:jcc}
@@ -146,19 +163,22 @@ that theorem \ref{thr:frm} holds.
   \item[(ii) ] $P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) > 0$ for all $x_i \in
     \mathcal{X}$, and
   \item[(iii)] there exists a sufficient statistic $f_x(n_x,n)$ such
-    that $P(X_{m_T+1} = x_{m_T+1} | \vec{n}) = f_x(n_x,m_T)$, where $\vec{n} =
+    that $P(X_{m_T+1} = x_{m_T+1} | \vec{n}(E)) = f_x(n_x,m_T)$, where $\vec{n}(E) =
     (n_x)_{x \in \mathcal{X}}$.
   \end{itemize}
   Then either the outcomes are independent or there exist positive
-  constants $\{\alpha_x | x \in \mathcal{X}\}$ such that for all $n \ge 1$
+  constants $\{\alpha_x : x \in \mathcal{X}\}$ such that for all $n \ge 1$
   \begin{equation}
     f_x(n_x, n) = \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}}
       \alpha_{x^*}}.
   \end{equation}
   (cf. \cite{Johnson1932, Zabell1982})
 \end{theorem}
+\begin{proof}
+  Todo
+\end{proof}
 Note that if $X_1, X_2, \dots$ is exchangeable then $P(X_{m_T+1} =
-x_{m_T+1} | \vec{n}) = P(X_{m_T+1} = x_{m_T+1} | n_x) = f_x(n_x,m_T)$. The
+x_{m_T+1} | \vec{n}(E)) = P(X_{m_T+1} = x_{m_T+1} | n_x) = f_x(n_x,m_T)$. The
 Johnson-Carnap continuum of inductive methods not only provides us
 with a sufficient statistic for inductive reasoning, but also
 identifies a unique prior distribution for de Finetti's representation
@@ -186,8 +206,11 @@ theorem.
   and $\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}\mathrm{d}t$ denotes
   the Gamma function.
 \end{corollary}
+\begin{proof}
+  Todo
+\end{proof}
 To summarize our results, under the symmetry assumptions that we
-introduced about the sequence of observations $D = (X_1, X_2, \dots,
+introduced about the sequence of observations $E = (X_1, X_2, \dots,
 X_{m_T})$ we are able to state a hypothesis $\mathcal{H}$ in form of the
 parameters $\vec{\theta}$ that represent our beliefs about the
 underlying process. Any knowledge that we have before we look at the
@@ -195,37 +218,38 @@ data is represented in the parameters $\vec{\alpha}$. The probability
 of a hypothesis is then given by
 \begin{equation}
   \begin{split}
-    P(\vec{\theta}|D)
-    &= \frac{P(D,\vec{\theta})}{P(D)}
+    P(\vec{\theta}|E)
+    &= \frac{P(E,\vec{\theta})}{P(E)}
      =
-    \frac{\Mult(D;\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
+    \frac{P(\vec{n}(E)|\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
       \int_{\Delta^K}
-      \Mult(D;\vec{\theta}')
+      P(\vec{n}(E)|\vec{\theta}')
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}')}\\
     &=
-    \Dir(\vec{\theta}; \vec{n}+\vec{\alpha}).
+    \Dir(\vec{\theta}; \vec{n}(E)+\vec{\alpha}).
   \end{split}
 \end{equation}
 The update of our beliefs after seeing the data is therefore a mere
 shift in the parameters of the Dirichlet distribution
 (i.e. $\Dir(\vec{\theta};\vec{\alpha}) \mapsto \Dir(\vec{\theta};
-\vec{n}+\vec{\alpha})$) as it is a conjugate prior to the multinomial
+\vec{n}(E)+\vec{\alpha})$) as it is a conjugate prior to the multinomial
 distribution. Intuitively, the Dirichlet distribution states our
 belief that the probabilities of $K$ rival events $x \in \mathcal{X}$
 are $(\theta_x)_{x \in \mathcal{X}}$ given that each event has been
 observed $\alpha_x - 1$ times. Since $\vec{\theta} \sim
-\Dir(\vec{\theta}; \vec{n}+\vec{\alpha})$ we can easily compute the
+\Dir(\vec{\theta}; \vec{n}(E)+\vec{\alpha})$ we can easily compute the
 expected value of $\vec{\theta}$ given our observations, i.e.
 \begin{equation}
   \begin{split}
-    \hat{\theta}_x = \mathrm{E}[\theta_x|D] &=
-    \int_{\Delta^{K-1}}\theta_x \Mult(D;\vec{\theta})
-    \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}) =
+    \hat{\theta}_x = \mathrm{E}[\theta_x|E] &=
+    \int_{\Delta^{K-1}}\theta_x P(\vec{n}(E)|\vec{\theta})
+    \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})\\
+    &=
     \frac{
-      \int_{\Delta^K} \Mult(\{X_{m_T+1} = x,D\};\vec{\theta})
+      \int_{\Delta^K} P(\vec{n}(\{X_{m_T+1} = x,E\});\vec{\theta})
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }{
-      \int_{\Delta^K} \Mult(D;\vec{\theta})
+      \int_{\Delta^K} P(\vec{n}(E)|\vec{\theta})
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }\\
     &= f_x(n_x,m_T)
@@ -266,16 +290,16 @@ our observations and the size of the partition $m_B$, i.e. we want to
 compute
 \begin{equation}
   \begin{split}
-    P(\vec{\Theta},B|D,m_B)
-    &= \frac{P(D,\vec{\Theta},B|m_B)}{P(D|m_B)}\\
-    &= \frac{P(D|\vec{\Theta},B,m_B)P(\vec{\Theta},B|m_B)}{P(D|m_B)}.
+    P(\vec{\Theta},B|E,m_B)
+    &= \frac{P(E,\vec{\Theta},B|m_B)}{P(E|m_B)}\\
+    &= \frac{P(E|\vec{\Theta},B,m_B)P(\vec{\Theta},B|m_B)}{P(E|m_B)}.
   \end{split}
 \end{equation}
 We assume that events are independent between the bins and therefore
 we can factorize the likelihood and prior such that
 \begin{equation}
-  P(D,\vec{\Theta},B|m_B) =
-  \prod_{b\in B} P(D|\vec{\theta}^b,B,m_B)P(\vec{\theta}^b,B|m_B).
+  P(E,\vec{\Theta},B|m_B) =
+  \prod_{b\in B} P(E|\vec{\theta}^b,B,m_B)P(\vec{\theta}^b,B|m_B).
 \end{equation}
 where $\vec{\theta}^b = (\theta^b_x)_{x \in \mathcal{X}}$ denote the
 probabilities of observing event $x \in \mathcal{X}$ in bin $b$.
@@ -287,8 +311,8 @@ assumption such that
 which means that the prior knowledge about $\vec{\theta}^b$ is
 independent of $B$ and vice versa. Since we have no a priori
 information about the partitions, we choose a prior in an objective
-Bayesian fashion that maximizes the entropy (cf. \cite{Jaynes1957}),
-i.e.
+Bayesian fashion that maximizes the entropy (cf. \cite{Jaynes1957a,
+  Jaynes1957b, Jaynes2003}), i.e.
 \begin{equation}
   P(B|m_B) = {L \choose m_B}^{-1}.
 \end{equation}
@@ -296,53 +320,55 @@ $P(\vec{\theta}^b|m_B)$ is represented by a distribution of
 the Dirichlet familiy as discussed earlier. To compute the evidence
 \begin{equation}
   \begin{split}
-    P(D|m_B)
+    P(E|m_B)
     &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-      P(D|B,m_B) P(B|m_B)\\
+      P(E|B,m_B) P(B|m_B)\\
   \end{split}
 \end{equation}
 we have to sum over all possible partitions $B \in
 \mathcal{P}_{m_B}$. Furthermore we have
 \begin{equation}
   \begin{split}
-    P(D|B,m_B)
+    P(E|B,m_B)
     &=
       \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
           \Delta^K}_{m_B~\text{times}}}
-      P(D|\vec{\Theta},B,m_B) P(\vec{\Theta}|B,m_B)\mathrm{d}\vec{\Theta}\\
+      P(E|\vec{\Theta},B,m_B) P(\vec{\Theta}|B,m_B)\mathrm{d}\vec{\Theta}\\
     &=
       \prod_{b\in B} \int_{\Delta^K}
-      \Mult(\vec{\theta}^b;\vec{n}^b)
+      p(\vec{\theta}^b|\vec{n}^b)
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
   \end{split}
 \end{equation}
 By solving the integrals we get
 \begin{equation}
   \begin{split}
-    P(D|m_B)
+    P(E|m_B)
     &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
     P(B|m_B)
     \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
     \frac{\prod_{x \in
         \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
-        \mathcal{X}}n^b_x+\alpha^b_x)}\\
+        \mathcal{X}}n^b_x+\alpha^b_x)}
+    \frac{m_T!}{\prod_{x \in \mathcal{X}}n^b_x!}\\
     &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
     P(B|m_B)
-    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
+      \Beta(\vec{\alpha}^b)}    
   \end{split}
 \end{equation}
 which we can compute with the algorithm sketched in lemma
 \ref{prombslemma}. To compute the full model we still need to average
 over all possible $m_B$, i.e.
 \begin{equation}
-  P(\vec{\Theta},B|D) = \sum_{m_B \in \mathcal{M}} P(\vec{\Theta},B|D,m_B) P(m_B|D),
+  P(\vec{\Theta},B|E) = \sum_{m_B \in \mathcal{M}} P(\vec{\Theta},B|E,m_B) P(m_B|E),
 \end{equation}
-where $P(m_B|D)$ denotes the model posterior, which is given by
+where $P(m_B|E)$ denotes the model posterior, which is given by
 \begin{equation}
   \begin{split}
-    P(m_B|D)
-    &= \frac{P(D|m_B) P(m_B)}{P(D)}\\
-    &= \frac{P(D|m_B) P(m_B)}{\sum_{m_B \in \mathcal{M}}P(D|m_B) P(m_B)}.
+    P(m_B|E)
+    &= \frac{P(E|m_B) P(m_B)}{P(E)}\\
+    &= \frac{P(E|m_B) P(m_B)}{\sum_{m_B \in \mathcal{M}}P(E|m_B) P(m_B)}.
   \end{split}
 \end{equation}
 $P(m_B)$ is the prior for a given model size $m_B$. We will usually
@@ -352,24 +378,24 @@ choose a non-informative prior $1/|\mathcal{M}|$ with $\mathcal{M} =
 \section*{Central moments}
 From the Hausdorff moment theorem we know that a probability measure
 on a compact set $[0,1]$ is fully characterized by its moments.  Hence
-we would like to compute the first $n$ raw moments $\mu_i^b(x|D)$ for
+we would like to compute the first $n$ raw moments $\mu_i^b(x|E)$ for
 each bin $b \in B$ and event $x \in \mathcal{X}$ from the average of
 \begin{equation}
   \begin{split}
-    \mu_i^b(x|D,B,m_B)
+    \mu_i^b(x|E,B,m_B)
     &=
-    \int_{\Delta^{K-1}} (\theta^b_x)^i P(\vec{\theta}^b|D,B,m_B)
+    \int_{\Delta^{K-1}} (\theta^b_x)^i P(\vec{\theta}^b|E,B,m_B)
     \mathrm{d}\vec{\theta}^b \\
-    &= \frac{P(X_{m_T+1}^b = x, \dots, X_{m_T+i}^b = x,D|B,m_B)}{P(D|B,m_B)}.
+    &= \frac{P(X_{m_T+1}^b = x, \dots, X_{m_T+i}^b = x,E|B,m_B)}{P(E|B,m_B)}.
   \end{split}
 \end{equation}
 That is, we simply have to add $i$ events to our observations and
 recompute the evidence to get the $i$th moment. We therefore get
 \begin{equation}
   \begin{split}
-    \mu_i^j(x|D) 
+    \mu_i^j(x|E) 
     = \frac{\sum_{m_B\in \mathcal{M}}P(X_{m_T+1}^j = x, \dots, X_{m_T+i}^j =
-      x,D|m_B) P(m_B)}{\sum_{m_B\in \mathcal{M}}P(D|m_B) P(m_B)},
+      x,E|m_B) P(m_B)}{\sum_{m_B\in \mathcal{M}}P(E|m_B) P(m_B)},
   \end{split}
 \end{equation}
 for the full model where be add an event into the respective bin at
@@ -377,8 +403,8 @@ position $j$. The central moments $\bar{\mu}_i^b$ are given by
 \begin{equation}
   \begin{split}
     \bar{\mu}^b_i(x|B,m_B) = \int_{\Delta^{K-1}}
-    (\theta^b_x-\mu^b_1(x|D,B,m_B))^i
-    P(\vec{\theta}^b|D,B,m_B)\mathrm{d}
+    (\theta^b_x-\mu^b_1(x|E,B,m_B))^i
+    P(\vec{\theta}^b|E,B,m_B)\mathrm{d}
     \vec{\theta}^b,
   \end{split}
 \end{equation}
@@ -400,13 +426,13 @@ Hence we would like to compute the probability that a break $\Rsh_i$
 occurs at the $i$th interval.
 \begin{equation}
   \begin{split}
-    P(\Rsh_i|D,m_B) =
-    \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{T})}P(B|D,m_B) &=
+    P(\Rsh_i|E,m_B) =
+    \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{T})}P(B|E,m_B) &=
       \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{T})} P(D|B,m_B) P(B|m_B)}{\sum_{B\in
-               \mathcal{P}_{m_B}(\mathcal{T})} P(D|B,m_B) P(B|m_B)}\\
+          \mathcal{I}^i_{m_B}(\mathcal{T})} P(E|B,m_B) P(B|m_B)}{\sum_{B\in
+               \mathcal{P}_{m_B}(\mathcal{T})} P(E|B,m_B) P(B|m_B)}\\
       &= \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{T})} P(D|B,m_B) P(B|m_B)}{P(D|m_B)},
+          \mathcal{I}^i_{m_B}(\mathcal{T})} P(E|B,m_B) P(B|m_B)}{P(E|m_B)},
   \end{split}
 \end{equation}
 where $\mathcal{I}^i_{m_B}(\mathcal{T}) \subseteq
@@ -417,7 +443,7 @@ have a break at the $i$th interval.
 % Bayes factor
 % \begin{equation}
 %   \begin{split}
-%     K = \frac{P(D|m_1)}{P(D|m_2)}
+%     K = \frac{P(E|m_1)}{P(E|m_2)}
 %   \end{split}
 % \end{equation}
 
@@ -428,19 +454,19 @@ which partition describes the data best, which is given by the Shannon
 entropy
 \begin{equation}
   \begin{split}
-    \mathrm{H}(&\mathcal{B}|D)\\
-    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}P(B|D) \log P(B|D)\\
-    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(D|B)P(B)}{P(D)}
+    \mathrm{H}(&\mathcal{B}|E)\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}P(B|E) \log P(B|E)\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(E|B)P(B)}{P(E)}
     \log
-    \frac{P(D|B)P(B)}{P(D)}\\
+    \frac{P(E|B)P(B)}{P(E)}\\
 %     &= -\sum_{B\in \mathcal{P}(\mathcal{X})}
-%     \frac{P(D|B)P(B)}{\sum_{B\in
-%         \mathcal{P}(\mathcal{X})}P(D|B)P(B)}
+%     \frac{P(E|B)P(B)}{\sum_{B\in
+%         \mathcal{P}(\mathcal{X})}P(E|B)P(B)}
 %     \log
-%     \frac{P(D|B)P(B)}{\sum_{B\in
-%         \mathcal{P}(\mathcal{X})}P(D|B)P(B)}\\
+%     \frac{P(E|B)P(B)}{\sum_{B\in
+%         \mathcal{P}(\mathcal{X})}P(E|B)P(B)}\\
     &=
-    -\frac{1}{P(D)}
+    -\frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \prod_{b\in
@@ -448,13 +474,13 @@ entropy
     &\quad\quad\quad
     \left[
       \log
-      \frac{P(B)}{P(D)} +
+      \frac{P(B)}{P(E)} +
       \sum_{b \in B}
       \log
       \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
     \right]\\
     &=
-    \frac{1}{P(D)}
+    \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
@@ -462,10 +488,10 @@ entropy
     \left[-\log
     \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\right]\\
     &-
-    \frac{1}{P(D)}
+    \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
-    \log\frac{P(B)}{P(D)}
+    \log\frac{P(B)}{P(E)}
     \prod_{b\in B}
     \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
   \end{split}
@@ -476,19 +502,20 @@ approximate the first term of the last expression.
 \section*{Spike train analysis}
 When analysing spike trains with the framework discussed above we make
 the assumption that we deal with a Poisson process, i.e. spikes are
-independently generated from a renewal process with exponential ISI
-distribution. This assumption is of course violated for most
-recordings, especially for recordings from higher cortical areas such
-as FEF where ISI are clearly gamma distributed. For an information
-theoretic analysis of receptive field models it is important to have a
-good estimate for entropies and mutual information. Assuming a Poisson
-process greatly affects the estimate, which is why most approaches
-(such as NSB, Nemenmann and Bialek) try to sample the joint probability
-distribution instead of assuming independence. An interesting approach
-to estimate entropies from the joint distribution could result from
-the Pitman continuum of inductive methods. There might also be a way
-to represent spike trains in form of interspike intervals such that we
-can use the Johnson-Carnap continuum as discussed above.
+independently generated from a renewal process with exponential
+interspike interval distribution. This assumption is of course
+violated for most recordings, especially for those from higher
+cortical areas such as FEF where interspike intervals are clearly
+gamma distributed. For an information theoretic analysis of receptive
+field models it is important to have a good estimate for entropies and
+mutual information. Assuming a Poisson process greatly affects the
+estimate, which is why most approaches (such as NSB, Nemenmann and
+Bialek) try to sample the joint probability distribution instead of
+assuming independence. An interesting approach to the estimation of
+entropies from the joint distribution could result from the Pitman
+continuum of inductive methods. There might also be a way to represent
+spike trains in form of interspike intervals such that we can use the
+Johnson-Carnap continuum as discussed above.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.9\textwidth]{../data/data8.pdf}

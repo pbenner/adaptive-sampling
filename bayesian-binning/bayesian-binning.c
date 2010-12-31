@@ -72,7 +72,6 @@ unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
         }
 }
 
-
 static
 prob_t mbeta_log(binProblem *bp, unsigned int *p)
 {
@@ -86,7 +85,7 @@ prob_t mbeta_log(binProblem *bp, unsigned int *p)
                 sum2 += gsl_sf_lngamma(p[i]);
         }
 
-        return gsl_sf_lngamma(sum1) - sum2;
+        return sum2 - gsl_sf_lngamma(sum1);
 }
 
 static
@@ -102,7 +101,7 @@ prob_t mbetaInv_log(binProblem *bp, unsigned int *p)
                 sum2 += gsl_sf_lngamma(p[i]);
         }
 
-        return sum2 - gsl_sf_lngamma(sum1);
+        return gsl_sf_lngamma(sum1) - sum2;
 }
 
 static
@@ -136,7 +135,7 @@ void computePrior_log(binProblem *bp)
 {
         unsigned int m;
         prob_t b;
-        b = mbeta_log(bp, bp->alpha);
+        b = mbetaInv_log(bp, bp->alpha);
         for (m = 0; m < bp->T; m++) {
                 bp->prior_log[m] = (m+1)*b - gsl_sf_lnchoose(bp->T-1, m);
         }
@@ -151,7 +150,7 @@ prob_t iec_log(binProblem *bp, int kk, int k)
         for (i = 0; i < bp->events; i++) {
                 c[i] = countStatistic(bp, i, kk, k)+bp->alpha[i];
         }
-        return mbetaInv_log(bp, c);
+        return mbeta_log(bp, c);
 }
 
 /* Find the smallest m_B for which the prior P(m_B) is nonzero. */
