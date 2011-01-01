@@ -534,12 +534,12 @@ information. Assuming a Poisson process greatly affects the estimate,
 which is why most approaches try to sample the joint probability
 distribution instead of assuming independence. A method presented by
 \cite{Nemenman2002} (also \cite{Nemenman2004}) that is based on a
-Bayesian analysis where a flat prior for the prior entropy
-distribution is derived. Other methods (e.g. \cite{Grassberger1988,
-Grassberger2008}) merely use a correction term for the biased
-maximum-likelihood estimate and are reported to be less successful. An
-interesting approach to the estimation of entropies from the joint
-distribution could result from the Pitman continuum of inductive
-methods. There might also be a way to represent spike trains in form
-of interspike intervals such that we can use the Johnson-Carnap
-continuum as discussed above.
+Bayesian analysis where a flat prior for the entropy distribution is
+derived. Other methods (e.g. \cite{Grassberger1988, Grassberger2008})
+merely use a correction term for the biased maximum-likelihood
+estimate and are reported to be less successful. An interesting
+approach to the estimation of entropies from the joint distribution
+could result from the Pitman continuum of inductive methods. There
+might also be a way to represent spike trains in form of interspike
+intervals such that we can use the Johnson-Carnap continuum as
+discussed above.
