@@ -10,11 +10,13 @@
     PyObject *epsilon    = PyDict_GetItemString($input, "epsilon");
     PyObject *gmp        = PyDict_GetItemString($input, "gmp");
     PyObject *bprob      = PyDict_GetItemString($input, "bprob");
+    PyObject *entropy    = PyDict_GetItemString($input, "entropy");
     PyObject *which      = PyDict_GetItemString($input, "which");
     $1->verbose    = (verbose    == Py_True ? 1 : 0);
     $1->prombsTest = (prombsTest == Py_True ? 1 : 0);
     $1->gmp        = (gmp        == Py_True ? 1 : 0);
     $1->bprob      = (bprob      == Py_True ? 1 : 0);
+    $1->entropy    = (entropy    == Py_True ? 1 : 0);
     $1->which      = PyInt_AsLong(which);
     $1->epsilon    = PyFloat_AsDouble(epsilon);
 }

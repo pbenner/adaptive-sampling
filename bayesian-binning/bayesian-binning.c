@@ -343,7 +343,9 @@ void computeBinning(
                 computeBreakProbabilities(bp, bprob, sum1);
         }
         // compute the multibin entropy
-        computeEntropy(bp, entropy, sum1);
+        if (options->entropy) {
+                computeEntropy(bp, entropy, sum1);
+        }
         // for each timestep compute the first three moments
         for (i=0; i<bp->T; i++) {
                 notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);

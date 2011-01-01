@@ -41,6 +41,7 @@ typedef struct options {
         int prombsTest;
         int gmp;
         int bprob;
+        int entropy;
         int which;
 } Options;
 

@@ -33,7 +33,7 @@
 
 \section*{Introduction}
 \label{introduction}
-
+%\includegraphics[width=.9\textwidth]{../data/data8.pdf}
 \section*{Bayesian inference and the meaning of probability}
 As an extension of logic, Bayesian theory provides us with a framework
 for optimal reasoning about uncertain statements. For an axiomatic
@@ -169,7 +169,7 @@ that theorem \ref{thr:frm} holds for a proper choice of $\vec{\alpha}$.
   Then either the outcomes are independent or there exist positive
   constants $\{\alpha_x : x \in \mathcal{X}\}$ such that for all $n \ge 1$
   \begin{equation}
-    f_x(n_x, n) = \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}}
+    f_x(n_x, m_T) = \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}}
       \alpha_{x^*}}.
   \end{equation}
   (cf. \cite{Johnson1932, Zabell1982})
@@ -221,9 +221,9 @@ of a hypothesis is then given by
     P(\vec{\theta}|E)
     &= \frac{P(E,\vec{\theta})}{P(E)}
      =
-    \frac{P(\vec{n}(E)|\vec{\theta})\Dir(\vec{\theta};\vec{\alpha})}{
+    \frac{P(E|\vec{\theta})\pi_{\vec{\alpha}}(\vec{\theta})}{
       \int_{\Delta^K}
-      P(\vec{n}(E)|\vec{\theta}')
+      P(E|\vec{\theta}')
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}')}\\
     &=
     \Dir(\vec{\theta}; \vec{n}(E)+\vec{\alpha}).
@@ -242,18 +242,18 @@ expected value of $\vec{\theta}$ given our observations, i.e.
 \begin{equation}
   \begin{split}
     \hat{\theta}_x = \mathrm{E}[\theta_x|E] &=
-    \int_{\Delta^{K-1}}\theta_x P(\vec{n}(E)|\vec{\theta})
+    \int_{\Delta^{K-1}}\theta_x P(E|\vec{\theta})
     \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})\\
     &=
     \frac{
-      \int_{\Delta^K} P(\vec{n}(\{X_{m_T+1} = x,E\});\vec{\theta})
+      \int_{\Delta^K} P(X_{m_T+1} = x,E|\vec{\theta})
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }{
-      \int_{\Delta^K} P(\vec{n}(E)|\vec{\theta})
+      \int_{\Delta^K} P(E|\vec{\theta})
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
     }\\
     &= f_x(n_x,m_T)
-    = \frac{n_x + \alpha_x}{n + \sum_{x^* \in \mathcal{X}} \alpha_{x^*}},
+    = \frac{n_x + \alpha_x}{m_T + \sum_{x' \in \mathcal{X}} \alpha_{x'}},
   \end{split}
 \end{equation}
 as it was shown in theorem \ref{thr:jcc}. The estimate is known as the
@@ -336,7 +336,7 @@ we have to sum over all possible partitions $B \in
       P(E|\vec{\Theta},B,m_B) P(\vec{\Theta}|B,m_B)\mathrm{d}\vec{\Theta}\\
     &=
       \prod_{b\in B} \int_{\Delta^K}
-      p(\vec{\theta}^b|\vec{n}^b)
+      P(\vec{\theta}^b|\vec{n}^b)
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
   \end{split}
 \end{equation}
@@ -349,8 +349,7 @@ By solving the integrals we get
     \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
     \frac{\prod_{x \in
         \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
-        \mathcal{X}}n^b_x+\alpha^b_x)}
-    \frac{m_T!}{\prod_{x \in \mathcal{X}}n^b_x!}\\
+        \mathcal{X}}n^b_x+\alpha^b_x)}\\
     &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
     P(B|m_B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
@@ -393,7 +392,7 @@ That is, we simply have to add $i$ events to our observations and
 recompute the evidence to get the $i$th moment. We therefore get
 \begin{equation}
   \begin{split}
-    \mu_i^j(x|E) 
+    \mu_i^j(x|E)
     = \frac{\sum_{m_B\in \mathcal{M}}P(X_{m_T+1}^j = x, \dots, X_{m_T+i}^j =
       x,E|m_B) P(m_B)}{\sum_{m_B\in \mathcal{M}}P(E|m_B) P(m_B)},
   \end{split}
@@ -500,23 +499,7 @@ We use the algorithm sketched in lemma \ref{eprombslemma} to
 approximate the first term of the last expression.
 
 \section*{Spike train analysis}
-When analysing spike trains with the framework discussed above we make
-the assumption that we deal with a Poisson process, i.e. spikes are
-independently generated from a renewal process with exponential
-interspike interval distribution. This assumption is of course
-violated for most recordings, especially for those from higher
-cortical areas such as FEF where interspike intervals are clearly
-gamma distributed. For an information theoretic analysis of receptive
-field models it is important to have a good estimate for entropies and
-mutual information. Assuming a Poisson process greatly affects the
-estimate, which is why most approaches (such as NSB, Nemenmann and
-Bialek) try to sample the joint probability distribution instead of
-assuming independence. An interesting approach to the estimation of
-entropies from the joint distribution could result from the Pitman
-continuum of inductive methods. There might also be a way to represent
-spike trains in form of interspike intervals such that we can use the
-Johnson-Carnap continuum as discussed above.
-\begin{figure}[htbp]
+\begin{figure}[ht]
   \centering
   \includegraphics[width=.9\textwidth]{../data/data8.pdf}
   \caption{
@@ -535,3 +518,20 @@ Johnson-Carnap continuum as discussed above.
   }
   \label{fig:1}
 \end{figure}
+When analysing spike trains with the framework discussed above we make
+the assumption that we deal with a Poisson process, i.e. spikes are
+independently generated from a renewal process with exponential
+interspike interval distribution. This assumption is of course
+violated for most recordings, especially for those from higher
+cortical areas such as FEF where interspike intervals are clearly
+gamma distributed. For an information theoretic analysis of receptive
+field models it is important to have a good estimate for entropies and
+mutual information. Assuming a Poisson process greatly affects the
+estimate, which is why most approaches (such as NSB, Nemenmann and
+Bialek) try to sample the joint probability distribution instead of
+assuming independence. An interesting approach to the estimation of
+entropies from the joint distribution could result from the Pitman
+continuum of inductive methods. There might also be a way to represent
+spike trains in form of interspike intervals such that we can use the
+Johnson-Carnap continuum as discussed above.
+

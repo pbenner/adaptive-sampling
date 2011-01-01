@@ -44,6 +44,7 @@ def usage():
     print
     print "Options:"
     print "   -b                          - compute break probabilities"
+    print "   -e                          - compute entropies"
     print "       --which=EVENT           - for which event to compute the binning"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
     print
@@ -86,7 +87,7 @@ def plotmodelpost(ax, modelpost):
     ax.set_ylabel(r'$P(m_B|D)$', font)
 
 def plotentropy(ax, entropy):
-    if len(entropy) > 0:
+    if entropy and options['entropy']:
         N = len(entropy)
         x = np.arange(0, N+1, 1)
         entropy.append(0)
@@ -296,6 +297,7 @@ options = {
     'prombsTest' : False,
     'compare'    : False,
     'bprob'      : False,
+    'entropy'    : False,
     'load'       : None,
     'save'       : None,
     'which'      : 0
@@ -306,7 +308,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=",
                       "which=", "epsilon=", "prombsTest"]
-        opts, tail = getopt.getopt(sys.argv[1:], "bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "behvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -323,6 +325,8 @@ def main():
             return 0
         if o == "-b":
             options["bprob"] = True
+        if o == "-e":
+            options["entropy"] = True
         if o == "--load":
             options["load"] = a
         if o == "--save":

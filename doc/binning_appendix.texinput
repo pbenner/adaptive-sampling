@@ -1,5 +1,6 @@
 % -*- mode: latex -*-
 %
+\newpage
 \section*{Appendix A}
 \begin{lemma}[The Proximal Multi-Bin Summation (ProMBS) Algorithm] \label{prombslemma}
 %
