@@ -84,7 +84,7 @@ def plotmodelpost(ax, modelpost):
     patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
     ax.add_patch(patch)
     ax.set_xlabel(r'$m_B$',  font)
-    ax.set_ylabel(r'$P(m_B|D)$', font)
+    ax.set_ylabel(r'$P(m_B|E)$', font)
 
 def plotentropy(ax, entropy):
     if entropy and options['entropy']:
@@ -92,7 +92,7 @@ def plotentropy(ax, entropy):
         x = np.arange(0, N+1, 1)
         entropy.append(0)
         ax.step(x, entropy, 'b--', where='mid', linewidth=1)
-        ax.set_ylabel(r'$H(\mathcal{B}|D,m_B)$', font)
+        ax.set_ylabel(r'$H(\mathcal{B}|E,m_B)$', font)
 
 def plotspikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -110,7 +110,7 @@ def plotspikes(ax, x, timings):
 def plotbinboundaries(ax, x, bprob, modelpost):
     ax.plot(x[1:-1], bprob[1:-1], 'g')
     ax.set_ylim(0,1)
-    ax.set_ylabel(r'$P(\Rsh_i|D)$', font)
+    ax.set_ylabel(r'$P(\Rsh_i|E)$', font)
 #    nbins = argmax(modelpost)[1]+1
 #    bprob_max = sorted(bprob)[-nbins:]
 #    for b in bprob_max:
@@ -127,7 +127,7 @@ def plotbin(ax, x, exp, var, skew, bprob, modelpost):
     ax.plot(x, [max(0,a - math.sqrt(b)) for a, b in zip(exp, var)], 'k--')
     ax.plot(x, exp, 'r')
     ax.set_xlabel('t',  font)
-    ax.set_ylabel(r'$P(S_i|D)$', font)
+    ax.set_ylabel(r'$P(S_i|E)$', font)
     if bprob and options['bprob']:
         plotbinboundaries(ax.twinx(), x, bprob, modelpost)
 
