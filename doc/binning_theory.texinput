@@ -145,13 +145,15 @@ Hewitt1955})
 In other words, conditional on $\vec{\theta}$ the joint probability
 mass function $p(x_1, \dots, x_{m_T})$ can be written as an integral
 mixture of multinomial probabilities. Note that for $K=1$ equation
-$\ref{eq:frt}$ computes the $n_x$th moment of $\mathrm{d}\Pi_{\vec{\alpha}}$. In
-Bayesian inference, the limiting distribution $\mathrm{d}\Pi_{\vec{\alpha}}$ is
-interpreted as a prior distribution. A common choice for
-$\mathrm{d}\Pi_{\vec{\alpha}}$ is a conjugate prior which substantially simplifies
-the computation of the posterior distribution. In the following we
-show how such a prior can be justified from inductive principles such
-that theorem \ref{thr:frm} holds for a proper choice of $\vec{\alpha}$.
+$\ref{eq:frt}$ computes the $n_x$th moment of
+$\mathrm{d}\Pi_{\vec{\alpha}}$. In Bayesian inference, the limiting
+distribution $\pi_{\vec{\alpha}} = \mathrm{d}\Pi_{\vec{\alpha}} /
+\mathrm{d}\vec{\theta}$ is interpreted as a prior distribution. A
+common choice for $\mathrm{d}\Pi_{\vec{\alpha}}$ is a conjugate prior
+which substantially simplifies the computation of the posterior
+distribution. In the following we show how such a prior can be
+justified from inductive principles such that theorem \ref{thr:frm}
+holds for a proper choice of $\vec{\alpha}$.
 
 \begin{theorem}[Johnson-Carnap continuum]
   \label{thr:jcc}
