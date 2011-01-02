@@ -4,11 +4,11 @@
 \section*{Appendix A}
 \begin{lemma}[The Proximal Multi-Bin Summation (ProMBS) Algorithm] \label{prombslemma}
 %
-Let $f:C(\Xc)\rightarrow\mathbb{R}$ be any function mapping
-consecutive segments to the real numbers and
-$\gf=(g_1,\ldots,g_K)\in\mathbb{R}^K$ be any real valued
-vector. Define for $l=1,\dots,L$ the upper triangular matrices
-$A_l=(a^l_{ij})_{L\times L}$ recursively by
+Let $f:C(\Xc) \rightarrow \mathbb{R}$ be any function mapping
+consecutive segments to the real numbers and $\gf=(g_1,\ldots,g_K) \in
+\mathbb{R}^K$ be any real valued vector. Define for $l = 1, \dots, L$
+the upper triangular matrices $A_l = (a^l_{ij})_{L\times L}$
+recursively by
 %
 $$
 %
