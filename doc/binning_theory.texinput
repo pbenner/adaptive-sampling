@@ -98,6 +98,9 @@ probability spaces.
   with $x_i \in \mathcal{X}$ and for all permutations $\pi$ defined on
   the set $\{1, \dots, m_T\}$. (cf. \cite{Finetti1974})
 \end{definition}
+\begin{example}[Exchangeability and i.i.d. ]
+  Let $X_1, X_2, \dots$ be an infinite sequence of random events and p
+\end{example}
 Assuming exchangeability for a sequence of observations makes the
 assignment of probabilites a tractable problem and still allows
 inductive reasoning. Note that this is not the case when we assume
