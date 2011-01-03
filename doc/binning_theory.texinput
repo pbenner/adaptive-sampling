@@ -380,6 +380,8 @@ we have to sum over all possible partitions $B \in
       \prod_{b\in B} \int_{\Delta^K}
       P(\vec{\theta}^b|\vec{n}^b)
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
+      ~ ~ ~
+      \text{(see Fubini's theorem)}
   \end{split}
 \end{equation}
 By solving the integrals we get
@@ -395,7 +397,7 @@ By solving the integrals we get
     &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
     P(B|m_B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
-      \Beta(\vec{\alpha}^b)}    
+      \Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
 which we can compute with the algorithm sketched in lemma
