@@ -56,6 +56,36 @@ observations. From a technical point of view it is of course not
 always easy to compute this distribution called a Gibbs measure
 (cf. \cite{Jaynes1957a}).
 
+\section*{Basic Definitions}
+A probability space is given as a triple $(\Omega, \mathcal{F}, P)$,
+where $\Omega$ denotes the set of outcomes (or elementary events),
+$\mathcal{F} \subseteq \mathcal{P}(\Omega)$ a set of possible events
+and $P : \mathcal{F} \rightarrow [0,1]$ a probability measure with
+$P(\Omega) = 1$. We define a random variable $X : \Omega \rightarrow
+\mathbb{R}$ as a measurable map from $(\Omega, \mathcal{F})$ to
+$(\mathcal{X}, \mathcal{F}')$ with
+\begin{equation}
+  X^{-1}(B) = \{ \omega : X(\omega) \in B \} \in \mathcal{F} ~
+  \text{for all} ~ B \in \mathcal{F}'.
+\end{equation}
+For a random variable $X$ from a probability space $(\Omega,
+\mathcal{F}, P)$ to a measure space $(\mathcal{X}, \mathcal{F}')$ we
+define the expected value as
+\begin{equation}
+  E[X] = \int_\Omega X(\omega) \mathrm{d}P(\omega),
+\end{equation}
+but to compute the integral we need to move to a different space. For a
+measurable function $f$ from $(\mathcal{X}, \mathcal{F}')$ to
+$(\mathbb{R}, \mathcal{R})$ and a distribution $\mu(A) = P(X \in A)$
+of an event $A$ with $A \subseteq \mathcal{F}$ we define
+\begin{equation}
+  \begin{split}
+  E_f[X] &= \int_\Omega f(X(\omega)) \mathrm{d}P(\omega)\\
+         &= \int_{\mathcal{F}'} f(y) \mathrm{d}(P \circ X^{-1})\\
+         &= \int_{\mathcal{F}'} f(y) \mu(\mathrm{d}y).
+  \end{split}
+\end{equation}
+
 \section*{Inference}
 Given a sequence of $m_T$ observations $E = \{X_1, X_2, \dots,
 X_{m_T}\}$ how can we make predictions about future
