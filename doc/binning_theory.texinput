@@ -181,7 +181,7 @@ future events given our observations.
       \theta_x^{n_x}
       \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}), ~ \text{with}\\
       \Pi_{\vec{\alpha}}(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
-      P \left\{\frac{n_x}{m_T} \le \theta_x : x \in \mathcal{X} \right\},
+      \Pr \left\{\frac{n_x}{m_T} \le \theta_x : x \in \mathcal{X} \right\},
     \end{split}
   \end{equation}
   where $\vec{n}(E) = (n_x)_{x \in \mathcal{X}}$ denotes the count
@@ -646,11 +646,12 @@ Johnson-Carnap continuum as discussed above.
 \cite{Mora2010}
 
 \section*{de Finetti extension of typical sets}
-Shannon's theory relies on the notion of typical sets where a sequence
-is drawn from an i.i.d. distribution $X$ over a finite alphabet
+Shannon's theory relies on the notion of typical sets where an
+i.i.d. and ergodic sequence $X_1, X_2, \dots, X_{m_T}$ is drawn from a
+distribution with entropy $H(X)$ over a finite alphabet
 $\mathcal{X}$. To define typical sets we need a generalization of the
 strong law of large numbers called the asymptotic equipartition
-property (AEP) by noticing that
+property (AEP), given by
 \begin{equation}
   \begin{split}
     -\frac{1}{m_T} p(x_1, \dots, x_{m_T})
@@ -703,3 +704,4 @@ exchangeable sequences, we then have
     \frac{1}{m_T} \log \Beta(\vec{n}+\vec{\alpha})\\
   \end{split}
 \end{equation}
+What does this result mean?
