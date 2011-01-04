@@ -129,6 +129,19 @@ probability spaces.
   with $x_i \in \mathcal{X}$ and for all permutations $\pi$ defined on
   the set $\{1, \dots, m_T\}$. (cf. \cite{Finetti1974})
 \end{definition}
+
+\begin{lemma}
+  Exchangeable sequences are strictly stationary, i.e.
+  \begin{equation}
+    P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) = P(X_{1} = x_{1+\tau},
+    \dots, X_{m_T} = x_{m_T+\tau})
+  \end{equation}
+  for all $\tau \in \mathbb{N}$.
+\end{lemma}
+
+Note that de Finetti's representation theorem is a form of ergodic
+decomposition for stationary (non-ergodic) random processes.
+
 \begin{example}[Exchangeability]
   Let $X_1, X_2, \dots$ be an infinite sequence of binary random
   events with $\mathcal{X} = \{0, 1 \}$ and $X_i \sim p$, where we
@@ -645,6 +658,8 @@ Johnson-Carnap continuum as discussed above.
 \section*{Self-organized criticality in biological systems}
 \cite{Mora2010}
 
+\section*{Bayesian spiking neurons}
+
 \section*{de Finetti extension of typical sets}
 Shannon's theory relies on the notion of typical sets where an
 i.i.d. and ergodic sequence $X_1, X_2, \dots, X_{m_T}$ is drawn from a
@@ -675,7 +690,7 @@ which includes all sequences which satisfy
   2^{-n (H(X) + \epsilon)} \le p(x_1, \dots, x_{m_T}) \le 2^{-n (H(X) - \epsilon)}.
 \end{equation}
 We can generalize this definition with de Finetti's notion of
-exchangeable sequences, we then have
+exchangeable (non-ergodic) sequences, we then have
 \begin{equation}
   \begin{split}
     -\frac{1}{m_T} p(x_1, \dots, x_{m_T})
