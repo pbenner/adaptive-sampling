@@ -77,7 +77,7 @@ define the expected value as
 but to compute the integral we need to move to a different space. For
 a measurable function $f$ from $(\mathcal{X}, \mathcal{F}')$ to
 $(\mathbb{R}, \mathcal{R})$ and a distribution $\mu(A) = P(\{\omega :
-X(\omega) \in A\}) = P(X \in A)$, i.e. $X \sim p$, with $A
+X(\omega) \in A\}) = P(X \in A)$, i.e. $X \sim \mu$, with $A
 \subseteq \mathcal{F}'$ we define
 \begin{equation}
   \begin{split}
@@ -202,9 +202,10 @@ future events given our observations.
   |\mathcal{X}|$, and $\Delta^K := \{\vec{\theta} = (\theta_x)_{x \in
     \mathcal{X}} \in \mathbb{R}^K : \sum_{x \in \mathcal{X}} \theta_x
   = 1 ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$
-  denotes the $K$-dimensional probability
-  simplex. (cf. \cite{Finetti1974,
-Hewitt1955})
+  denotes the $K$-dimensional probability simplex. If
+  $\Pi_{\vec{\alpha}}$ is a non-decreasing real function we get the
+  Riemann-Stieltjes integral.
+  (cf. \cite{Finetti1974, Hewitt1955})
 \end{theorem}
 \begin{proof}
   Todo
@@ -589,13 +590,13 @@ We use the algorithm sketched in lemma \ref{eprombslemma} to
 approximate the first term of the last expression.
 
 \section*{Finite and partial exchangeability}
-\cite{Pitman1995}
+\cite{Pitman1995}, \cite{Jaynes1986}
 
 \section*{Information theoretic analysis of biological systems}
 Shannon's original work on information theory (cf. \cite{Shannon1948})
 has shown us how to optimally design communication systems and might
-also provide us with a framework to understand information processing
-in biological systems.
+also provide us with a unifying framework to understand information
+processing in biological systems\dots
 
 \section*{Spike train analysis}
 \begin{figure}[ht]
@@ -652,13 +653,60 @@ continuum of inductive methods. There might also be a way to represent
 spike trains in form of interspike intervals such that we can use the
 Johnson-Carnap continuum as discussed above.
 
+\section*{Markov exchangeability on spike trains}
+For the analysis of spike trains we made the assumption that events
+between the invervals $\mathcal{T} = \{t_1, t_2, \dots, t_L\}$ of size
+$\Delta t$ are independent. This is true if we assume that spike
+trains are generated from a Poisson process. To account for refractory
+periods we will extend the model to include Markov dependencies between
+the intervals. Hence we want to infer the transition probabilities for
+
+\begin{center}
+  \begin{tikzpicture}
+    \tikzstyle{vertex}=[circle,minimum size=25pt,draw]
+    \node[vertex] (A-1) at (1,0) {$0$};
+    \node[vertex] (A-2) at (4,0) {$1$};
+    %% connections between both nodes
+    \draw[->,thick] (A-1) .. controls +(+1.5,+0.5) .. node[above,sloped] {$p_{01}$} (A-2);
+    \draw[->,thick] (A-2) .. controls +(-1.5,-0.5) .. node[above,sloped] {$p_{10}$} (A-1);
+    %% self-connections
+    \draw[->,thick] (A-1) .. controls +(-1.5,0.5) and +(-1.5,-0.5) .. node[left]  {$p_{00}$} (A-1);
+    \draw[->,thick] (A-2) .. controls +(1.5,-0.5) and +(1.5,0.5)   .. node[right] {$p_{11}$} (A-2);
+  \end{tikzpicture}
+\end{center}
+where the state $1$ denotes a spike. Assuming that the refractory
+period affects only a single proximal interval we have $p_{11} = 0$
+and hence $p_{01} = p_{10}$. The sufficient statistic is therefore
+given by
+\begin{equation}
+  \vec{n}(E) =
+  \begin{pmatrix}
+    n_{00} & n_{01}\\
+    n_{10} & n_{11}
+  \end{pmatrix},
+\end{equation}
+where $n_{ij}$ counts the number of transitions from $i$ to $j$.
+\begin{equation}
+  p(x_1, \dots, x_{L}) =
+  \int_{\Delta^L}
+  \theta_{00}^{n_{00}}
+  \theta_{01}^{n_{01}}
+  \theta_{10}^{n_{10}}
+  \theta_{11}^{n_{11}}
+  \mathrm{d} \Pi_{\vec{\alpha}} (\vec{\theta})
+\end{equation}
+
 \section*{Rate-distortion theory and the information bottleneck
-  method}
+  method for efficient neural coding}
 
 \section*{Self-organized criticality in biological systems}
 \cite{Mora2010}
 
 \section*{Bayesian spiking neurons}
+
+\section*{Relations between adaptive sampling and reinforcement
+  learning}
+Multi-armed bandit
 
 \section*{de Finetti extension of typical sets}
 Shannon's theory relies on the notion of typical sets where an
@@ -685,7 +733,7 @@ set as
     &= \left\{ (x_1, \dots, x_{m_T}) : \left| \log \frac{1}{p(x_1, \dots, x_{m_T})} - n H(X) \right| < \epsilon \right\},
   \end{split}
 \end{equation}
-which includes all sequences which satisfy
+which includes all sequences that satisfy
 \begin{equation}
   2^{-n (H(X) + \epsilon)} \le p(x_1, \dots, x_{m_T}) \le 2^{-n (H(X) - \epsilon)}.
 \end{equation}
