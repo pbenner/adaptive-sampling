@@ -357,22 +357,24 @@ notion of $L$-fold partial exchangeablility, where we allow events of
 a sequence $X_1, X_2, \dots$ to belong to $L$ different classes.
 We can therefore split the sequence into $L$ sequences $(\vec{X^1},
 \vec{X^2}, \dots,  \vec{X^L})$ where each $\vec{X^i}$ represents the
-events that we assign to the $i$th class.
+events that we assign to the $i$th class. Within the classes the
+ordering provides no relevant information. This leads us to the
+following definition:
 
 \begin{definition}[Partial exchangeability]
-%   A sequence of events $X_1, X_2, \dots$ is partially exchangeable if
-%   we can define an equivalence relation $\sim$ on
+  We call a tuple $(\vec{X^l})_{l=1}^L$ of infinitely exchangeable
+  sequences $\vec{X^l} = X^l_1, X^l_2, \dots$ $L$-fold partially
+  exchangeable.
 \end{definition}
 
 \begin{theorem}[Representation theorem for partially exchangeable
   sequences]
-  Let $(\vec{X}^l)_{l=1}^L$ denote a set of $L$ partially exchangeable
-  sequences where each $\vec{X}^l$ is and infinitely exchangeable
+  Let $(\vec{X}^l)_{l=1}^L$ denote an $L$-fold partially exchangeable
   sequence of random variables from a probability space $(\Omega,
   \mathcal{F}, P)$ to a measure space $(\mathcal{X},
   \mathcal{F}')$. There exists a cumulative distribution
   $\Pi_{\vec{\alpha}}^L$ such that the joint mass function $p(\vec{x}^1,
-  \dots, \vec{x}^{L}) = P(\vec{X}^1 = x^1, \dots, \vec{X}^L =
+  \dots, \vec{x}^{L}) = P(\vec{X}^1 = \vec{x}^1, \dots, \vec{X}^L =
   \vec{x}^L)$ has the form
   \begin{equation}
     \begin{split}
