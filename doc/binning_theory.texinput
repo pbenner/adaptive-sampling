@@ -115,19 +115,20 @@ overcomes this limitation. However, we will first focus on the
 Johnson-Carnap continuum. More general forms will become useful later
 when we want to estimate entropies from severely undersampled
 probability spaces.
-\begin{definition}[Infinite exchangeability]
-  Let $X_1, X_2, \dots$ denote an infinite sequence of random events,
+\begin{definition}[Finite and infinite exchangeability]
+  Let $X_1, X_2, \dots$ denote sequence of random events,
   where each $X_i$ is a random variable from a probability space
   $(\Omega, \mathcal{F}, P)$ to a measure space $(\mathcal{X},
-  \mathcal{F}')$. The sequence is said to be infinitely exchangeable
-  with respect to the probability measure $P$ if for every subsequence
-  of length $n$
+  \mathcal{F}')$. A finite sequence of $m_T$ events is said to be
+  $m_T$-exchangeable with respect to the probability measure $P$ if
   \begin{equation}
     P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) = P(X_{1} = x_{\pi(1)},
     \dots, X_{m_T} = x_{\pi(m_T)})
   \end{equation}
   with $x_i \in \mathcal{X}$ and for all permutations $\pi$ defined on
-  the set $\{1, \dots, m_T\}$. (cf. \cite{Finetti1974})
+  the set $\{1, \dots, m_T\}$. An infinite sequence is exchangeable if
+  it is $m_T$-exchangeable for all $m_T \in \mathbb{N}$.
+  (cf. \cite{Finetti1974})
 \end{definition}
 
 \begin{lemma}
@@ -350,6 +351,64 @@ x \in \mathcal{X}$ we get \textit{Laplace's rule of succession}.
   white balls. Conditional on $\theta$ the sequence $X_1, X_2, \dots$ is
   independent.
 \end{example}
+
+The concept of exchangeability was generalized by de Finetti to the
+notion of $L$-fold partial exchangeablility, where we allow events of
+a sequence $X_1, X_2, \dots$ to belong to $L$ different classes.
+We can therefore split the sequence into $L$ sequences $(\vec{X^1},
+\vec{X^2}, \dots,  \vec{X^L})$ where each $\vec{X^i}$ represents the
+events that we assign to the $i$th class.
+
+\begin{definition}[Partial exchangeability]
+%   A sequence of events $X_1, X_2, \dots$ is partially exchangeable if
+%   we can define an equivalence relation $\sim$ on
+\end{definition}
+
+\begin{theorem}[Representation theorem for partially exchangeable
+  sequences]
+  Let $(\vec{X}^l)_{l=1}^L$ denote a set of $L$ partially exchangeable
+  sequences where each $\vec{X}^l$ is and infinitely exchangeable
+  sequence of random variables from a probability space $(\Omega,
+  \mathcal{F}, P)$ to a measure space $(\mathcal{X},
+  \mathcal{F}')$. There exists a cumulative distribution
+  $\Pi_{\vec{\alpha}}^L$ such that the joint mass function $p(\vec{x}^1,
+  \dots, \vec{x}^{L}) = P(\vec{X}^1 = x^1, \dots, \vec{X}^L =
+  \vec{x}^L)$ has the form
+  \begin{equation}
+    \begin{split}
+      p(\vec{x}^1, \dots, \vec{x}^{L}) &=
+      \int_{\Delta_L^K}
+      \left\{
+      \prod_{l=1}^L
+      p(x^l_1, \dots, x^l_{m_T}|\vec{\theta}^l)
+      \right\}
+      \mathrm{d} \Pi_{\vec{\alpha}}^L(\vec{\Theta})\\
+      &=
+      \int_{\Delta_L^K}
+      \left\{
+      \prod_{l=1}^L
+      \prod_{x \in \mathcal{X}}
+      (\theta_x^l)^{n_x^l}
+      \right\}
+      \mathrm{d} \Pi_{\vec{\alpha}}^L(\vec{\Theta}), ~ \text{with}\\
+      \Pi_{\vec{\alpha}}^L(\vec{\Theta}) &= \lim\limits_{m_T \rightarrow \infty}
+      \Pr \left\{\frac{n_x^l}{m_T} \le \theta^l_x : x \in \mathcal{X}
+        ~ \text{and} ~ l=1,2, \dots, L \right\},
+    \end{split}
+  \end{equation}
+  where $\Delta^K_L = \varprod_{i=1}^L \Delta^K$. We have strong
+  partial exchangeability if we can write the joint probability mass
+  function as
+  \begin{equation}
+      p(\vec{x}_1, \dots, \vec{x}_{L}) =
+      \prod_{l=1}^L
+      \int_{\Delta^K}
+      \prod_{x \in \mathcal{X}}
+      \theta_x^{n_x^l}
+      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}),
+  \end{equation}
+  i.e. the classes are independent.
+\end{theorem}
 
 \section*{Inductive inference for piecewise constant distributions}
 We will now generalize the results of the previous section. Suppose
@@ -674,10 +733,9 @@ the intervals. Hence we want to infer the transition probabilities for
     \draw[->,thick] (A-2) .. controls +(1.5,-0.5) and +(1.5,0.5)   .. node[right] {$p_{11}$} (A-2);
   \end{tikzpicture}
 \end{center}
-where the state $1$ denotes a spike. Assuming that the refractory
-period affects only a single proximal interval we have $p_{11} = 0$
-and hence $p_{01} = p_{10}$. The sufficient statistic is therefore
-given by
+where the state $1$ denotes a spike. We assume that the refractory
+period affects only a single proximal interval and set $p_{11} = 0$,
+hence $p_{01} = p_{10}$. The sufficient statistic is given by 
 \begin{equation}
   \vec{n}(E) =
   \begin{pmatrix}
@@ -698,9 +756,11 @@ where $n_{ij}$ counts the number of transitions from $i$ to $j$.
 
 \section*{Rate-distortion theory and the information bottleneck
   method for efficient neural coding}
+\cite{Schneidman2001}, \cite{Tishby1999}
 
 \section*{Self-organized criticality in biological systems}
 \cite{Mora2010}
+\cite{Monteforte2010}
 
 \section*{Bayesian spiking neurons}
 
@@ -717,7 +777,7 @@ strong law of large numbers called the asymptotic equipartition
 property (AEP), given by
 \begin{equation}
   \begin{split}
-    -\frac{1}{m_T} p(x_1, \dots, x_{m_T})
+    -\frac{1}{m_T} \log p(x_1, \dots, x_{m_T})
     &= - \frac{1}{m_T} \log \prod_{i=1}^{m_T} p(x_i)\\
     &= - \frac{1}{m_T} \sum_{i=1}^{m_T} \log p(x_i)\\
     &\rightarrow - E[\log p(x)] = H(X),
@@ -741,7 +801,7 @@ We can generalize this definition with de Finetti's notion of
 exchangeable (non-ergodic) sequences, we then have
 \begin{equation}
   \begin{split}
-    -\frac{1}{m_T} p(x_1, \dots, x_{m_T})
+    -\frac{1}{m_T} \log p(x_1, \dots, x_{m_T})
     &=
     - \frac{1}{m_T} \log
     \int_{\Delta^K} p(x_1, \dots, x_{m_T}|\vec{\theta})
@@ -767,4 +827,4 @@ exchangeable (non-ergodic) sequences, we then have
     \frac{1}{m_T} \log \Beta(\vec{n}+\vec{\alpha})\\
   \end{split}
 \end{equation}
-What does this result mean?
+%What does this result mean?
