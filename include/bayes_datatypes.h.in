@@ -20,6 +20,9 @@
 
 #include <config.h>
 
+#include <gsl/gsl_matrix.h>
+
+
 #undef PROB_T
 
 typedef PROB_T prob_t;
@@ -43,6 +46,21 @@ typedef struct options {
         int bprob;
         int entropy;
         int which;
+        int n_moments;
 } Options;
+
+typedef struct binningResultGSL {
+        gsl_matrix *moments;
+        gsl_vector *bprob;
+        gsl_vector *mpost;
+        gsl_vector *entropy;
+} BinningResultGSL;
+
+typedef struct binningResult{
+        Matrix *moments;
+        Vector *bprob;
+        Vector *mpost;
+        Vector *entropy;
+} BinningResult;
 
 #endif /* DATATYPES_H */

@@ -1,7 +1,49 @@
 %module interface
 %{
 #include "interface.h"
+
+PyObject * matrixToPyList(Matrix *m) {
+    PyObject* mat = PyList_New(m->rows);
+    int i, j;
+    for(i = 0; i < m->rows; i++) {
+       PyObject* item = PyList_New(m->columns);
+       PyList_SetItem(mat, i, item);
+       for(j = 0; j < m->columns; j++) {
+          PyList_SetItem(item, j, PyFloat_FromDouble(m->mat[i][j]));
+       }
+    }
+    return mat;
+}
+
+PyObject * vectorToPyList(Vector *v) {
+    PyObject* vec = PyList_New(v->size);
+    int i;
+    for(i = 0; i < v->size; i++) {
+       PyList_SetItem(vec, i, PyFloat_FromDouble(v->vec[i]));
+    }
+    return vec;
+}
 %}
+
+
+%typemap(out) BinningResult * {
+    PyObject * dict    = PyDict_New();
+
+    PyDict_SetItemString(dict, "moments", matrixToPyList($1->moments));
+    PyDict_SetItemString(dict, "bprob",   vectorToPyList($1->bprob));
+    PyDict_SetItemString(dict, "mpost",   vectorToPyList($1->mpost));
+    PyDict_SetItemString(dict, "entropy", vectorToPyList($1->entropy));
+
+    $result = dict;
+}
+
+%typemap(freearg) BinningResult * {
+    freeMatrix($1->moments);
+    freeVector($1->bprob);
+    freeVector($1->mpost);
+    freeVector($1->entropy);
+    free($1);
+}
 
 %typemap(in) Options * {
     $1 = (Options *)malloc(sizeof(Options));
@@ -12,12 +54,14 @@
     PyObject *bprob      = PyDict_GetItemString($input, "bprob");
     PyObject *entropy    = PyDict_GetItemString($input, "entropy");
     PyObject *which      = PyDict_GetItemString($input, "which");
+    PyObject *n_moments  = PyDict_GetItemString($input, "n_moments");
     $1->verbose    = (verbose    == Py_True ? 1 : 0);
     $1->prombsTest = (prombsTest == Py_True ? 1 : 0);
     $1->gmp        = (gmp        == Py_True ? 1 : 0);
     $1->bprob      = (bprob      == Py_True ? 1 : 0);
     $1->entropy    = (entropy    == Py_True ? 1 : 0);
     $1->which      = PyInt_AsLong(which);
+    $1->n_moments  = PyInt_AsLong(n_moments);
     $1->epsilon    = PyFloat_AsDouble(epsilon);
 }
 
@@ -51,12 +95,7 @@
 }
 
 %typemap(out) Vector * {
-    PyObject* list = PyList_New($1->size);
-    int i;
-    for(i = 0; i < $1->size; i++) {
-       PyList_SetItem(list, i, PyFloat_FromDouble($1->vec[i]));
-    }
-    $result = list;
+    $result = vectorToPyList($1);
 }
 
 %typemap(freearg) Vector * {
@@ -101,16 +140,7 @@
 }
 
 %typemap(out) Matrix * {
-    PyObject* mat = PyList_New($1->rows);
-    int i, j;
-    for(i = 0; i < $1->rows; i++) {
-       PyObject* item = PyList_New($1->columns);
-       PyList_SetItem(mat, i, item);
-       for(j = 0; j < $1->columns; j++) {
-          PyList_SetItem(item, j, PyFloat_FromDouble($1->mat[i][j]));
-       }
-    }
-    $result = mat;
+    $result = matrixToPyList($1);
 }
 
 %typemap(freearg) Matrix * {

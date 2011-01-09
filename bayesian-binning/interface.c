@@ -91,21 +91,28 @@ Matrix * fromGslMatrix(const gsl_matrix * matrix)
         return m;
 }
 
-Matrix * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *options)
+BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *options)
 {
-        gsl_matrix *tmp1 = toGslMatrix(counts);
-        gsl_vector *tmp2 = toGslVector(alpha);
-        gsl_vector *tmp3 = toGslVector(prior);
-        gsl_matrix *tmp4;
-        Matrix *m;
+        gsl_matrix *counts_m = toGslMatrix(counts);
+        gsl_vector *alpha_v  = toGslVector(alpha);
+        gsl_vector *prior_v  = toGslVector(prior);
+        BinningResultGSL *resultGsl;
+        BinningResult    *result = (BinningResult *)malloc(sizeof(BinningResult));
 
-        tmp4 = bin_log(tmp1, tmp2, tmp3, options);
-        m    = fromGslMatrix(tmp4);
+        resultGsl = bin_log(counts_m, alpha_v, prior_v, options);
+        result->moments = fromGslMatrix(resultGsl->moments);
+        result->bprob   = fromGslVector(resultGsl->bprob);
+        result->mpost   = fromGslVector(resultGsl->mpost);
+        result->entropy = fromGslVector(resultGsl->entropy);
 
-        gsl_matrix_free(tmp1);
-        gsl_vector_free(tmp2);
-        gsl_vector_free(tmp3);
-        gsl_matrix_free(tmp4);
+        gsl_matrix_free(counts_m);
+        gsl_vector_free(alpha_v);
+        gsl_vector_free(prior_v);
+        gsl_matrix_free(resultGsl->moments);
+        gsl_vector_free(resultGsl->bprob);
+        gsl_vector_free(resultGsl->mpost);
+        gsl_vector_free(resultGsl->entropy);
+        free(resultGsl);
 
-        return m;
+        return result;
 }

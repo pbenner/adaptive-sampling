@@ -315,101 +315,108 @@ void prombsTest(binProblem *bp)
 }
 
 static
+prob_t binomial_transform(prob_t *raw_moments, unsigned int n)
+{
+        unsigned int k;
+        prob_t sum;
+
+        sum = pow(-1, n)*pow(raw_moments[0], n);
+        for (k = 1; k <= n; k++) {
+                sum = pow(-1, n-k)*gsl_sf_choose(n, k)*raw_moments[k-1]*pow(raw_moments[0],n-k);
+        }
+
+        return sum;
+}
+
+static
 void computeBinning(
         binProblem *bp,
-        prob_t *exp,
-        prob_t *var,
-        prob_t *skew,
+        prob_t **moments,
         prob_t *bprob,
         prob_t *mpost,
         prob_t *entropy,
         Options *options)
 {
-        prob_t ev1_log[bp->T], ev2_log[bp->T], ev3_log[bp->T], ev4_log[bp->T];
-        prob_t sum1; // P(D) = sum_{m_B \in M} P(D|m_B)P(m_B)
-        prob_t sum2; // E[p|D]
-        prob_t sum3; // Var[p|D]
-        prob_t sum4; // Skew[p|D]
-        prob_t m1, m2, m3; // Moments
-        unsigned int i, j;
+        prob_t  ev_log[options->n_moments+1][bp->T];
+        prob_t sum_log[options->n_moments+1];
+        prob_t raw_moments[options->n_moments];
+        unsigned int i, j, k;
 
         // compute evidence P(D)
         computePrior_log(bp);
-        sum1 = computeEvidence(bp, ev1_log);
+        sum_log[0] = computeEvidence(bp, ev_log[0]);
         // compute model posteriors P(m_B|D)
-        computeModelPosteriors(bp, ev1_log, mpost, sum1);
+        computeModelPosteriors(bp, ev_log[0], mpost, sum_log[0]);
         // break probability
         if (options->bprob) {
-                computeBreakProbabilities(bp, bprob, sum1);
+                computeBreakProbabilities(bp, bprob, sum_log[0]);
         }
         // compute the multibin entropy
         if (options->entropy) {
-                computeEntropy(bp, entropy, sum1);
+                computeEntropy(bp, entropy, sum_log[0]);
         }
         // for each timestep compute the first three moments
         for (i=0; i<bp->T; i++) {
                 notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);
-                // expectation
                 bp->add_event.pos = i;
-                bp->add_event.n   = 1;
-                computePrior_log(bp);
-                execPrombs(bp, ev2_log, -1);
+                // recompute the evidence 
+                for (k = 1; k <= options->n_moments; k++) {
+                        bp->add_event.n   = k;
+                        computePrior_log(bp);
+                        execPrombs(bp, ev_log[k], -1);
+                        // initialize sum
+                        sum_log[k] = -HUGE_VAL;
+                }
 
-                // variance
-                bp->add_event.n = 2;
-                computePrior_log(bp);
-                execPrombs(bp, ev3_log, -1);
-
-                // skewness
-                bp->add_event.n = 3;
-                computePrior_log(bp);
-                execPrombs(bp, ev4_log, -1);
-
-                sum2 = -HUGE_VAL;
-                sum3 = -HUGE_VAL;
-                sum4 = -HUGE_VAL;
                 for (j=0; j<bp->T; j++) {
                         if (gsl_vector_get(bp->mprior, j) > 0) {
                                 prob_t mprior = gsl_vector_get(bp->mprior, j);
-                                sum2 = logadd(sum2, ev2_log[j] + logl(mprior));
-                                sum3 = logadd(sum3, ev3_log[j] + logl(mprior));
-                                sum4 = logadd(sum4, ev4_log[j] + logl(mprior));
+                                for (k = 1; k <= options->n_moments; k++) {
+                                        sum_log[k] = logadd(sum_log[k], ev_log[k][j] + logl(mprior));
+                                }
                         }
                 }
                 // Moments
-                m1 = expl(sum2 - sum1);
-                m2 = expl(sum3 - sum1);
-                m3 = expl(sum4 - sum1);
-                // Expectation
-                exp[i]  = m1;
-                // Variance
-                var[i]  = m2 - m1*m1;
-                // Skewness
-                skew[i] = m3 - 3*m1*m2 + 2*m1*m1*m1;
+                for (k = 0; k < options->n_moments; k++) {
+                        raw_moments[k] = expl(sum_log[k+1] - sum_log[0]);
+                }
+                moments[0][i] = raw_moments[0];
+                for (k = 1; k < options->n_moments; k++) {
+                        moments[k][i] = binomial_transform(raw_moments, k+1);
+                }
+/*                 // Expectation */
+/*                 moments[0][i] = raw_moments[0]; */
+/*                 // Variance */
+/*                 moments[1][i] = raw_moments[1] - raw_moments[0]*raw_moments[0]; */
+/*                 // Skewness */
+/*                 moments[2][i] = raw_moments[2] - 3*raw_moments[0]*raw_moments[1] + 2*raw_moments[0]*raw_moments[0]*raw_moments[0]; */
         }
 }
 
-gsl_matrix * bin_log(
+BinningResultGSL *
+bin_log(
         gsl_matrix *counts,
         gsl_vector *alpha,
         gsl_vector *mprior,
         Options *options)
 {
         size_t K = counts->size2;
-        gsl_matrix *m = gsl_matrix_alloc(6, K);
-        prob_t exp[K];
-        prob_t var[K];
-        prob_t skew[K];
+        BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
+        result->moments = gsl_matrix_alloc(options->n_moments, K);
+        result->bprob   = gsl_vector_alloc(K);
+        result->mpost   = gsl_vector_alloc(K);
+        result->entropy = gsl_vector_alloc(K);
+        prob_t * moments[options->n_moments];
         prob_t bprob[K];
         prob_t mpost[K];
         prob_t entropy[K];
         prob_t prior_log[K];
-        unsigned int i;
+        unsigned int i, j;
         binProblem bp;
 
-        bzero(exp,       K*sizeof(prob_t));
-        bzero(var,       K*sizeof(prob_t));
-        bzero(skew,      K*sizeof(prob_t));
+        for (i = 0; i < options->n_moments; i++) {
+                moments[i] = (prob_t *)calloc(K, sizeof(prob_t));
+        }
         bzero(bprob,     K*sizeof(prob_t));
         bzero(mpost,     K*sizeof(prob_t));
         bzero(entropy,   K*sizeof(prob_t));
@@ -436,21 +443,24 @@ gsl_matrix * bin_log(
         if (options->prombsTest) {
                 prombsTest(&bp);
         }
-        computeBinning(&bp, exp, var, skew, bprob, mpost, entropy, options);
+        computeBinning(&bp, moments, bprob, mpost, entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
-                gsl_matrix_set(m, 0, i, exp[i]);
-                gsl_matrix_set(m, 1, i, var[i]);
-                gsl_matrix_set(m, 2, i, skew[i]);
-                gsl_matrix_set(m, 3, i, bprob[i]);
-                gsl_matrix_set(m, 4, i, mpost[i]);
-                gsl_matrix_set(m, 5, i, entropy[i]);
+                for (j = 0; j < options->n_moments; j++) {
+                        gsl_matrix_set(result->moments, j, i, moments[j][i]);
+                }
+                gsl_vector_set(result->bprob,   i, bprob[i]);
+                gsl_vector_set(result->mpost,   i, mpost[i]);
+                gsl_vector_set(result->entropy, i, entropy[i]);
         }
 
         for (i = 0; i < bp.events; i++) {
                 gsl_matrix_free(bp.counts_m[i]);
         }
+        for (i = 0; i < options->n_moments; i++) {
+                free(moments[i]);
+        }
         free(bp.alpha);
         free(bp.counts_m);
 
-        return m;
+        return result;
 }

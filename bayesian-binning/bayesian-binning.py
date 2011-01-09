@@ -68,17 +68,17 @@ font = {'family'     : 'serif',
         'weight'     : 'normal',
         'size'       : 12 }
 
-def plotmodelpost(ax, modelpost):
-    N = len(modelpost)
+def plotmodelpost(ax, result):
+    N = len(result['mpost'])
     x = np.arange(0, N+1, 1)
-    modelpost.insert(0, 0)
-    ax.step(x, modelpost, 'r--', where='mid', linewidth=1)
+    result['mpost'].insert(0, 0)
+    ax.step(x, result['mpost'], 'r--', where='mid', linewidth=1)
     ax.grid(True)
 
     left    = np.array(x[:-1]) + 0.5
     right   = np.array(x[1:])  + 0.5
     bottom  = np.zeros(len(left))
-    top     = bottom + modelpost[1:]
+    top     = bottom + result['mpost'][1:]
     XY      = np.array([[left,left,right,right], [bottom,top,top,bottom]]).T
     barpath = path.Path.make_compound_path_from_polys(XY)
     patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
@@ -86,12 +86,12 @@ def plotmodelpost(ax, modelpost):
     ax.set_xlabel(r'$m_B$',  font)
     ax.set_ylabel(r'$P(m_B|E)$', font)
 
-def plotentropy(ax, entropy):
-    if entropy and options['entropy']:
-        N = len(entropy)
+def plotentropy(ax, result):
+    if result['entropy'] and options['entropy']:
+        N = len(result['entropy'])
         x = np.arange(0, N+1, 1)
         entropy.append(0)
-        ax.step(x, entropy, 'b--', where='mid', linewidth=1)
+        ax.step(x, result['entropy'], 'b--', where='mid', linewidth=1)
         ax.set_ylabel(r'$H(\mathcal{B}|E,m_B)$', font)
 
 def plotspikes(ax, x, timings):
@@ -108,28 +108,28 @@ def plotspikes(ax, x, timings):
     ax.plot(X, Y, 'k|')
 
 def plotbinboundaries(ax, x, bprob, modelpost):
-    ax.plot(x[1:-1], bprob[1:-1], 'g')
+    ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
     ax.set_ylim(0,1)
     ax.set_ylabel(r'$P(\Rsh_i|E)$', font)
-#    nbins = argmax(modelpost)[1]+1
-#    bprob_max = sorted(bprob)[-nbins:]
+#    nbins = argmax(result['mpost'])[1]+1
+#    bprob_max = sorted(result['bprob'])[-nbins:]
 #    for b in bprob_max:
 #        i = bprob.index(b)
 #        ax.axvline(x[i])
 
-def plotbin(ax, x, exp, var, skew, bprob, modelpost):
+def plotbin(ax, x, result):
     """Plot the binning result."""
-    N = len(exp)
+    N = len(result['moments'][0])
     if x==None:
         x = np.arange(0, N, 1)
     ax.set_xlim(x[0],x[-1])
-    ax.plot(x, [min(1,a + math.sqrt(b)) for a, b in zip(exp, var)], 'k--')
-    ax.plot(x, [max(0,a - math.sqrt(b)) for a, b in zip(exp, var)], 'k--')
-    ax.plot(x, exp, 'r')
+    ax.plot(x, [min(1,a + math.sqrt(b)) for a, b in zip(result['moments'][0], result['moments'][1])], 'k--')
+    ax.plot(x, [max(0,a - math.sqrt(b)) for a, b in zip(result['moments'][0], result['moments'][1])], 'k--')
+    ax.plot(x, result['moments'][0], 'r')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
-    if bprob and options['bprob']:
-        plotbinboundaries(ax.twinx(), x, bprob, modelpost)
+    if result['bprob'] and options['bprob']:
+        plotbinboundaries(ax.twinx(), x, result['bprob'], result['mpost'])
 
 # binning
 # ------------------------------------------------------------------------------
@@ -141,13 +141,13 @@ def bin(counts, alpha, mprior):
         config.read(options['load'])
         if not config.has_section('Result'):
             raise IOError("Invalid configuration file.")
-        exp_str     = config.get('Result', 'exp')
-        var_str     = config.get('Result', 'var')
-        skew_str    = config.get('Result', 'skew')
+
+        moments_str = config.get   ('Result', 'moments')
+        moments     = []
+        for line in moments_str.split('\n'):
+            if line != '':
+                moments.append([float(a) for a in line.split(' ')])
         mpost_str   = config.get('Result', 'mpost')
-        exp         = map(float, exp_str.split(' '))
-        var         = map(float, var_str.split(' '))
-        skew        = map(float, skew_str.split(' '))
         mpost       = map(float, mpost_str.split(' '))
         if config.has_option('Result', 'bprob'):
             bprob_str = config.get('Result', 'bprob')
@@ -159,7 +159,12 @@ def bin(counts, alpha, mprior):
             entropy     = map(float, entropy_str.split(' '))
         else:
             entropy     = []
-        return [exp, var, skew, bprob, mpost, entropy]
+        result = {
+            'moments' : moments,
+            'bprob'   : bprob,
+            'mpost'   : mpost,
+            'entropy' : entropy }
+        return result
     else:
         counts_i = [ map(int, row) for row in counts ]
         mprior_i =   map(float, mprior)
@@ -172,12 +177,10 @@ def bin(counts, alpha, mprior):
 def saveResult(result):
     config = ConfigParser.ConfigParser()
     config.add_section('Result')
-    config.set('Result', 'exp',     " ".join(map(str, result[0])))
-    config.set('Result', 'var',     " ".join(map(str, result[1])))
-    config.set('Result', 'skew',    " ".join(map(str, result[2])))
-    config.set('Result', 'bprob',   " ".join(map(str, result[3])))
-    config.set('Result', 'mpost',   " ".join(map(str, result[4])))
-    config.set('Result', 'entropy', " ".join(map(str, result[5])))
+    config.set('Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
+    config.set('Result', 'bprob',   " ".join(map(str, result['bprob'])))
+    config.set('Result', 'mpost',   " ".join(map(str, result['mpost'])))
+    config.set('Result', 'entropy', " ".join(map(str, result['entropy'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
 
@@ -252,9 +255,9 @@ def parseConfig(file):
             fig.subplots_adjust(hspace=0.35)
             ax1 = fig.add_subplot(2,1,1)
             ax2 = fig.add_subplot(2,1,2)
-            plotbin(ax1, None, result[0], result[1], result[2], result[3], result[4])
-            plotmodelpost(ax2, result[4])
-            plotentropy(ax2.twinx(), result[5])
+            plotbin(ax1, None, result)
+            plotmodelpost(ax2, result)
+            plotentropy(ax2.twinx(), result)
             show()
     if config.has_section('Trials'):
         binsize     = config.getint('Trials', 'binsize')
@@ -283,9 +286,9 @@ def parseConfig(file):
             ax2 = fig.add_subplot(3,1,2)
             ax3 = fig.add_subplot(3,1,3)
             plotspikes(ax1, x, timings)
-            plotbin   (ax2, x, result[0], result[1], result[2], result[3], result[4])
-            plotmodelpost(ax3, result[4])
-            plotentropy(ax3.twinx(), result[5])
+            plotbin   (ax2, x, result)
+            plotmodelpost(ax3, result)
+            plotentropy(ax3.twinx(), result)
             show()
 
 # main
@@ -293,6 +296,7 @@ def parseConfig(file):
 
 options = {
     'epsilon'    : 0.00001,
+    'n_moments'  : 3,
     'verbose'    : False,
     'prombsTest' : False,
     'compare'    : False,

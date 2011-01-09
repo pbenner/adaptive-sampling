@@ -21,4 +21,4 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-extern gsl_matrix * bin_log(gsl_matrix *counts, gsl_vector *alpha, gsl_vector *prior, Options *options);
+extern BinningResultGSL * bin_log(gsl_matrix *counts, gsl_vector *alpha, gsl_vector *prior, Options *options);
