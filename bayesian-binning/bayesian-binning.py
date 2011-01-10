@@ -45,8 +45,9 @@ def usage():
     print "Options:"
     print "   -b                          - compute break probabilities"
     print "   -e                          - compute entropies"
-    print "       --which=EVENT           - for which event to compute the binning"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
+    print "   -m  --moments=N             - compute the first N>=3 moments"
+    print "       --which=EVENT           - for which event to compute the binning"
     print
     print "       --load                  - load result from file"
     print "       --save                  - save result to file"
@@ -60,6 +61,26 @@ def usage():
 # ------------------------------------------------------------------------------
 
 argmax = lambda array:max(izip(array, xrange(len(array))))
+
+# moments
+# ------------------------------------------------------------------------------
+
+def binomial(n,k):
+    return math.factorial(n) / (math.factorial(k)*math.factorial(n-k))
+
+def binomialTransform(moments, n):
+    result = math.pow(-moments[0], n)
+    for k in range(1, n+1):
+        result += binomial(n, k)*moments[k-1]*math.pow(-moments[0], n-k)
+    return result
+
+def centralMoments(moments_list, n):
+    return map(lambda moments: binomialTransform(moments, n), zip(*moments_list))
+
+def standardizedMoments(moments, n):
+    m2 = centralMoments(moments, 2)
+    mn = centralMoments(moments, n)
+    return [ mu / math.pow(math.sqrt(var), n) for var, mu in zip(m2, mn) ]
 
 # plotting
 # ------------------------------------------------------------------------------
@@ -123,8 +144,14 @@ def plotbin(ax, x, result):
     if x==None:
         x = np.arange(0, N, 1)
     ax.set_xlim(x[0],x[-1])
-    ax.plot(x, [min(1,a + math.sqrt(b)) for a, b in zip(result['moments'][0], result['moments'][1])], 'k--')
-    ax.plot(x, [max(0,a - math.sqrt(b)) for a, b in zip(result['moments'][0], result['moments'][1])], 'k--')
+    stddev = map(math.sqrt, centralMoments(result['moments'], 2))
+    skew     = standardizedMoments(result['moments'], 3)
+#    kurtosis = standardizedMoments(result['moments'], 4)
+#    tail     = standardizedMoments(result['moments'], 5)
+    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], stddev) ], 'k--')
+    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
+#    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
+#    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
     ax.plot(x, result['moments'][0], 'r')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
@@ -311,8 +338,8 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "load=", "save=",
-                      "which=", "epsilon=", "prombsTest"]
-        opts, tail = getopt.getopt(sys.argv[1:], "behvt", longopts)
+                      "which=", "epsilon=", "moments=", "prombsTest"]
+        opts, tail = getopt.getopt(sys.argv[1:], "m:behvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -324,6 +351,12 @@ def main():
         if o in ("-t", "--prombsTest"):
             sys.stderr.write("Testing prombs.\n")
             options["prombsTest"] = True
+        if o in ("-m", "--moments"):
+            if int(a) >= 3:
+                options["n_moments"] = int(a)
+            else:
+                usage()
+                return 0
         if o in ("-h", "--help"):
             usage()
             return 0

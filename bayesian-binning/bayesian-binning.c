@@ -315,20 +315,6 @@ void prombsTest(binProblem *bp)
 }
 
 static
-prob_t binomial_transform(prob_t *raw_moments, unsigned int n)
-{
-        unsigned int k;
-        prob_t sum;
-
-        sum = pow(-1, n)*pow(raw_moments[0], n);
-        for (k = 1; k <= n; k++) {
-                sum = pow(-1, n-k)*gsl_sf_choose(n, k)*raw_moments[k-1]*pow(raw_moments[0],n-k);
-        }
-
-        return sum;
-}
-
-static
 void computeBinning(
         binProblem *bp,
         prob_t **moments,
@@ -339,7 +325,6 @@ void computeBinning(
 {
         prob_t  ev_log[options->n_moments+1][bp->T];
         prob_t sum_log[options->n_moments+1];
-        prob_t raw_moments[options->n_moments];
         unsigned int i, j, k;
 
         // compute evidence P(D)
@@ -378,18 +363,8 @@ void computeBinning(
                 }
                 // Moments
                 for (k = 0; k < options->n_moments; k++) {
-                        raw_moments[k] = expl(sum_log[k+1] - sum_log[0]);
+                        moments[k][i] = expl(sum_log[k+1] - sum_log[0]);
                 }
-                moments[0][i] = raw_moments[0];
-                for (k = 1; k < options->n_moments; k++) {
-                        moments[k][i] = binomial_transform(raw_moments, k+1);
-                }
-/*                 // Expectation */
-/*                 moments[0][i] = raw_moments[0]; */
-/*                 // Variance */
-/*                 moments[1][i] = raw_moments[1] - raw_moments[0]*raw_moments[0]; */
-/*                 // Skewness */
-/*                 moments[2][i] = raw_moments[2] - 3*raw_moments[0]*raw_moments[1] + 2*raw_moments[0]*raw_moments[0]*raw_moments[0]; */
         }
 }
 
