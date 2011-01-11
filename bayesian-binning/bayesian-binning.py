@@ -129,7 +129,7 @@ def plotspikes(ax, x, timings):
     ax.set_ylabel('Trial')
     ax.plot(X, Y, 'k|')
 
-def plotbinboundaries(ax, x, bprob, modelpost):
+def plotbinboundaries(ax, x, result):
     ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
     ax.set_ylim(0,1)
     ax.set_ylabel(r'$P(\Rsh_i|E)$', font)
@@ -158,7 +158,7 @@ def plotbin(ax, x, result):
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
     if result['bprob'] and options['bprob']:
-        plotbinboundaries(ax.twinx(), x, result['bprob'], result['mpost'])
+        plotbinboundaries(ax.twinx(), x, result)
 
 # binning
 # ------------------------------------------------------------------------------

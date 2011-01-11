@@ -203,6 +203,41 @@ prob_t computeEvidence(binProblem *bp, prob_t *ev_log)
 }
 
 static
+prob_t computeMoment(
+        binProblem *bp,
+        unsigned int nth,
+        unsigned int pos,
+        prob_t evidence_ref)
+{
+        prob_t evidence_log;
+        prob_t evidence_log_tmp[bp->T];
+
+        bp->add_event.pos = pos;
+        bp->add_event.n   = nth;
+        evidence_log      = computeEvidence(bp, evidence_log_tmp);
+        bp->add_event.pos = 0;
+        bp->add_event.n   = 0;
+
+        return expl(evidence_log - evidence_ref);
+}
+
+static
+prob_t singlebinEntropy(binProblem *bp, int i, int j)
+{
+        unsigned int k;
+        unsigned int c[bp->events];
+        unsigned int n = 0;
+        prob_t sum = 0;
+        for (k = 0; k < bp->events; k++) {
+                c[k] = countStatistic(bp, k, i, j)+bp->alpha[k];
+                sum += (c[k] - 1)*gsl_sf_psi_int(c[k]);
+                n   +=  c[k];
+        }
+        return mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi_int(n) - sum;
+
+}
+
+static
 prob_t differentialEntropy(binProblem *bp, prob_t evidence)
 {
         unsigned int i;
@@ -215,16 +250,7 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
         }
         prob_t h(int i, int j)
         {
-                unsigned int k;
-                unsigned int c[bp->events];
-                unsigned int n = 0;
-                prob_t sum = 0;
-                for (k = 0; k < bp->events; k++) {
-                        c[k] = countStatistic(bp, k, i, j)+bp->alpha[k];
-                        sum += (c[k] - 1)*gsl_sf_psi_int(c[k]);
-                        n   +=  c[k];
-                }
-                return -(mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi_int(n) - sum);
+                return -singlebinEntropy(bp, i, j);
         }
 
         prombsExt(ev_log, bp->prior_log, &f, &h, epsilon, bp->T, bp->T-1);
@@ -239,18 +265,18 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
 }
 
 static
-void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence)
+void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref)
 {
         unsigned int i, j;
         prob_t expected_entropy;
         prob_t entropy;
-        prob_t evidence_ref = evidence;
+        prob_t evidence;
         prob_t evidence_log_tmp[bp->T];
 
         bp->add_event.pos  = 0;
         bp->add_event.n    = 0;
         computePrior_log(bp);
-        entropy = differentialEntropy(bp, evidence);
+        entropy = differentialEntropy(bp, evidence_ref);
 
         bp->add_event.n    = 1;
         for (i = 0; i < bp->T; i++) {
@@ -393,41 +419,34 @@ void computeBinning(
         prob_t *multibin_entropy,
         Options *options)
 {
-        prob_t evidence_log[options->n_moments+1];
+        prob_t evidence_ref;
         prob_t evidence_log_tmp[bp->T];
         unsigned int i, j;
 
         // compute evidence P(D)
         computePrior_log(bp);
-        evidence_log[0] = computeEvidence(bp, evidence_log_tmp);
+        evidence_ref = computeEvidence(bp, evidence_log_tmp);
         // compute model posteriors P(m_B|D)
-        computeModelPosteriors(bp, evidence_log_tmp, mpost, evidence_log[0]);
+        computeModelPosteriors(bp, evidence_log_tmp, mpost, evidence_ref);
         // break probability
         if (options->bprob) {
-                computeBreakProbabilities(bp, bprob, evidence_log[0]);
+                computeBreakProbabilities(bp, bprob, evidence_ref);
         }
         // compute the multibin entropy
         if (options->multibin_entropy) {
-                computeMultibinEntropy(bp, multibin_entropy, evidence_log[0]);
+                computeMultibinEntropy(bp, multibin_entropy, evidence_ref);
         }
         // for each timestep compute the first n moments
         for (i = 0; i < bp->T; i++) {
                 notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);
-                bp->add_event.pos = i;
-                // recompute the evidence 
-                for (j = 0; j < options->n_moments; j++) {
-                        bp->add_event.n   = j+1;
-                        evidence_log[j+1] = computeEvidence(bp, evidence_log_tmp);
-                }
-
                 // Moments
                 for (j = 0; j < options->n_moments; j++) {
-                        moments[j][i] = expl(evidence_log[j+1] - evidence_log[0]);
+                        moments[j][i] = computeMoment(bp, j+1, i, evidence_ref);
                 }
         }
         // compute the differential entropy
         if (options->differential_entropy) {
-                differentialUtility(bp, differential_entropy, evidence_log[0]);
+                differentialUtility(bp, differential_entropy, evidence_ref);
         }
 }
 
