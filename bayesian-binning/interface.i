@@ -32,7 +32,8 @@ PyObject * vectorToPyList(Vector *v) {
     PyDict_SetItemString(dict, "moments", matrixToPyList($1->moments));
     PyDict_SetItemString(dict, "bprob",   vectorToPyList($1->bprob));
     PyDict_SetItemString(dict, "mpost",   vectorToPyList($1->mpost));
-    PyDict_SetItemString(dict, "entropy", vectorToPyList($1->entropy));
+    PyDict_SetItemString(dict, "differential_entropy", vectorToPyList($1->differential_entropy));
+    PyDict_SetItemString(dict, "multibin_entropy", vectorToPyList($1->multibin_entropy));
 
     $result = dict;
 }
@@ -41,7 +42,8 @@ PyObject * vectorToPyList(Vector *v) {
     freeMatrix($1->moments);
     freeVector($1->bprob);
     freeVector($1->mpost);
-    freeVector($1->entropy);
+    freeVector($1->differential_entropy);
+    freeVector($1->multibin_entropy);
     free($1);
 }
 
@@ -52,14 +54,16 @@ PyObject * vectorToPyList(Vector *v) {
     PyObject *epsilon    = PyDict_GetItemString($input, "epsilon");
     PyObject *gmp        = PyDict_GetItemString($input, "gmp");
     PyObject *bprob      = PyDict_GetItemString($input, "bprob");
-    PyObject *entropy    = PyDict_GetItemString($input, "entropy");
     PyObject *which      = PyDict_GetItemString($input, "which");
     PyObject *n_moments  = PyDict_GetItemString($input, "n_moments");
+    PyObject *differential_entropy = PyDict_GetItemString($input, "differential_entropy");
+    PyObject *multibin_entropy     = PyDict_GetItemString($input, "multibin_entropy");
     $1->verbose    = (verbose    == Py_True ? 1 : 0);
     $1->prombsTest = (prombsTest == Py_True ? 1 : 0);
     $1->gmp        = (gmp        == Py_True ? 1 : 0);
     $1->bprob      = (bprob      == Py_True ? 1 : 0);
-    $1->entropy    = (entropy    == Py_True ? 1 : 0);
+    $1->differential_entropy = (differential_entropy  == Py_True ? 1 : 0);
+    $1->multibin_entropy     = (multibin_entropy == Py_True ? 1 : 0);
     $1->which      = PyInt_AsLong(which);
     $1->n_moments  = PyInt_AsLong(n_moments);
     $1->epsilon    = PyFloat_AsDouble(epsilon);

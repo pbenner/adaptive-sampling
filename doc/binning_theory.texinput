@@ -526,7 +526,7 @@ $P(m_B)$ is the prior for a given model size $m_B$. We will usually
 choose a non-informative prior $1/|\mathcal{M}|$ with $\mathcal{M} =
 \{1, 2, \dots, L\}$ unless we want to select specific model sizes.
 
-\section*{Central moments}
+\section*{The moment problem and maximum entropy distributions}
 From the Hausdorff moment theorem we know that a probability measure
 on a compact set $[0,1]$ is fully characterized by its moments.  Hence
 we would like to compute the first $n$ raw moments $\mu_i^b(x|E)$ for
@@ -567,6 +567,26 @@ transform
   \end{split}
 \end{equation}
 
+Having computed the first $n$ moments we would like to find the
+corresponding maximum entropy (ME) distribution $p(x)$. Hence we would
+like to compute the following optimization problem
+\begin{equation}
+  \begin{split}
+    \operatorname*{maximize}_{p(x)} ~ H(X) &= - \int p(x)\log p(x) \mathrm{d}x, ~
+    \text{subject to}\\
+    \int x^ip(x) \mathrm{d}x &= \mu'_{i} ~
+    \text{for} ~ i = 1, \dots, n
+  \end{split}
+\end{equation}
+where $\mu'_0 = 1$ is the normalization constraint.
+\begin{equation}
+  L = \int p(x)\log p(x) \mathrm{d}x +
+  \sum_{i=0}^{n}\lambda_0\left[ \int x^ip(x) \mathrm{d}x - \mu'_i \right]
+\end{equation}
+
+\begin{equation}
+  p(x|\vec{\lambda}) = \exp(-1 -\sum_{i=0}^n\lambda_ix^i)
+\end{equation}
 \section*{Break Probabilities}
 For the analysis of certain data it is often useful to know where a
 new partition begins. For instance when we want to analyse

@@ -35,6 +35,7 @@
 #include <gsl/gsl_sf_pow_int.h>
 #include <gsl/gsl_sf_log.h>
 #include <gsl/gsl_sf_exp.h>
+#include <gsl/gsl_sf_psi.h>
 
 typedef struct {
         // precision for entropy estimates
@@ -133,11 +134,11 @@ void computeCountStatistics(binProblem *bp)
 static
 void computePrior_log(binProblem *bp)
 {
-        unsigned int m;
+        unsigned int m_b;
         prob_t b;
         b = mbetaInv_log(bp, bp->alpha);
-        for (m = 0; m < bp->T; m++) {
-                bp->prior_log[m] = (m+1)*b - gsl_sf_lnchoose(bp->T-1, m);
+        for (m_b = 0; m_b < bp->T; m_b++) {
+                bp->prior_log[m_b] = (m_b+1)*b - gsl_sf_lnchoose(bp->T-1, m_b);
         }
 }
 
@@ -185,7 +186,98 @@ void execPrombs(binProblem *bp, prob_t *ev_log, int pos)
 }
 
 static
-void computeEntropy(binProblem *bp, prob_t *result, prob_t evidence)
+prob_t differentialEntropy(binProblem *bp, prob_t evidence)
+{
+        unsigned int i;
+        prob_t ev_log[bp->T];
+        prob_t sum;
+        prob_t epsilon = bp->epsilon;
+        prob_t f(int i, int j)
+        {
+                return iec_log(bp, i, j);
+        }
+        prob_t h(int i, int j)
+        {
+                unsigned int k;
+                unsigned int c[bp->events];
+                unsigned int n = 0;
+                prob_t sum = 0;
+                for (k = 0; k < bp->events; k++) {
+                        c[k] = countStatistic(bp, k, i, j)+bp->alpha[k];
+                        sum += (c[k] - 1)*gsl_sf_psi_int(c[k]);
+                        n   +=  c[k];
+//                        printf("c[%d]=%d\n", k, c[k]);
+                }
+//                printf("psi(%d) = %f\n",n,gsl_sf_psi_int(n));
+//                printf("ENTROPY: %Lf\n", mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi_int(n) - sum);
+                return -(mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi_int(n) - sum);
+        }
+
+        prombsExt(ev_log, bp->prior_log, &f, &h, epsilon, bp->T, bp->T-1);
+        sum = -HUGE_VAL;
+        for (i = 0; i < bp->T; i++) {
+                if (gsl_vector_get(bp->mprior, i) > 0) {
+                        prob_t mprior = gsl_vector_get(bp->mprior, i);
+                        sum = logadd(sum, ev_log[i] + logl(mprior));
+                }
+        }
+        return -expl(sum - evidence);
+}
+
+static
+void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence)
+{
+        unsigned int i, j, k;
+        prob_t  ev_log[bp->events][bp->T];
+        prob_t sum_log[bp->events];
+        prob_t expected_entropy[bp->events];
+        prob_t entropy;
+        prob_t old_evidence = evidence;
+
+        bp->add_event.pos  = 0;
+        bp->add_event.n    = 0;
+        computePrior_log(bp);
+        entropy = differentialEntropy(bp, evidence);
+
+        bp->add_event.n    = 1;
+        for (i = 0; i < bp->T; i++) {
+                notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bp->T);
+                bp->add_event.pos = i;
+                // recompute the evidence 
+                for (j = 0; j < bp->events; j++) {
+                        bp->add_event.which = j;
+                        computePrior_log(bp);
+                        execPrombs(bp, ev_log[j], -1);
+                        evidence = -HUGE_VAL;
+                        for (k = 0; k < bp->T; k++) {
+                                prob_t mprior = gsl_vector_get(bp->mprior, k);
+                                evidence = logadd(evidence, ev_log[j][k] + logl(mprior));
+                        }
+                        // entropy
+                        expected_entropy[j] = differentialEntropy(bp, evidence);
+                        // initialize sum
+                        sum_log[j] = -HUGE_VAL;
+                }
+
+                for (j = 0; j < bp->T; j++) {
+                        if (gsl_vector_get(bp->mprior, j) > 0) {
+                                prob_t mprior = gsl_vector_get(bp->mprior, j);
+                                for (k = 0; k < bp->events; k++) {
+                                        sum_log[k] = logadd(sum_log[k], ev_log[k][j] + logl(mprior));
+                                }
+                        }
+                }
+
+                result[i] = 0;
+                for (j = 0; j < bp->events; j++) {
+                        result[i] += expl(sum_log[j] - old_evidence)*expected_entropy[j];
+                }
+                result[i] = entropy - result[i];
+         }
+}
+
+static
+void computeMultibinEntropy(binProblem *bp, prob_t *result, prob_t evidence)
 {
         size_t i;
         prob_t resulta[bp->T];
@@ -226,7 +318,7 @@ prob_t computeEvidence(binProblem *bp, prob_t *ev_log)
 
         execPrombs(bp, ev_log, -1);
         sum = -HUGE_VAL;
-        for (j=0; j<bp->T; j++) {
+        for (j = 0; j < bp->T; j++) {
                 if (gsl_vector_get(bp->mprior, j) > 0) {
                         prob_t mprior = gsl_vector_get(bp->mprior, j);
                         sum = logadd(sum, ev_log[j] + logl(mprior));
@@ -240,7 +332,7 @@ void computeModelPosteriors(binProblem *bp, prob_t *ev_log, prob_t *mpost, prob_
 {
         unsigned int j;
 
-        for (j=0; j<bp->T; j++) {
+        for (j = 0; j < bp->T; j++) {
                 if (gsl_vector_get(bp->mprior, j) > 0) {
                         prob_t mprior = gsl_vector_get(bp->mprior, j);
                         mpost[j] = expl(ev_log[j] + logl(mprior) - P_D);
@@ -262,7 +354,7 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
                 notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
                 execPrombs(bp, ev_log, i);
                 sum = -HUGE_VAL;
-                for (j=0; j<bp->T; j++) {
+                for (j = 0; j < bp->T; j++) {
                         if (gsl_vector_get(bp->mprior, j) > 0) {
                                 prob_t mprior = gsl_vector_get(bp->mprior, j);
                                 sum = logadd(sum, ev_log[j] + logl(mprior));
@@ -320,7 +412,8 @@ void computeBinning(
         prob_t **moments,
         prob_t *bprob,
         prob_t *mpost,
-        prob_t *entropy,
+        prob_t *differential_entropy,
+        prob_t *multibin_entropy,
         Options *options)
 {
         prob_t  ev_log[options->n_moments+1][bp->T];
@@ -337,11 +430,11 @@ void computeBinning(
                 computeBreakProbabilities(bp, bprob, sum_log[0]);
         }
         // compute the multibin entropy
-        if (options->entropy) {
-                computeEntropy(bp, entropy, sum_log[0]);
+        if (options->multibin_entropy) {
+                computeMultibinEntropy(bp, multibin_entropy, sum_log[0]);
         }
         // for each timestep compute the first three moments
-        for (i=0; i<bp->T; i++) {
+        for (i = 0; i < bp->T; i++) {
                 notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);
                 bp->add_event.pos = i;
                 // recompute the evidence 
@@ -353,7 +446,7 @@ void computeBinning(
                         sum_log[k] = -HUGE_VAL;
                 }
 
-                for (j=0; j<bp->T; j++) {
+                for (j = 0; j < bp->T; j++) {
                         if (gsl_vector_get(bp->mprior, j) > 0) {
                                 prob_t mprior = gsl_vector_get(bp->mprior, j);
                                 for (k = 1; k <= options->n_moments; k++) {
@@ -365,6 +458,10 @@ void computeBinning(
                 for (k = 0; k < options->n_moments; k++) {
                         moments[k][i] = expl(sum_log[k+1] - sum_log[0]);
                 }
+        }
+        // compute the differential entropy
+        if (options->differential_entropy) {
+                differentialUtility(bp, differential_entropy, sum_log[0]);
         }
 }
 
@@ -380,11 +477,13 @@ bin_log(
         result->moments = gsl_matrix_alloc(options->n_moments, K);
         result->bprob   = gsl_vector_alloc(K);
         result->mpost   = gsl_vector_alloc(K);
-        result->entropy = gsl_vector_alloc(K);
+        result->differential_entropy = gsl_vector_alloc(K);
+        result->multibin_entropy     = gsl_vector_alloc(K);
         prob_t * moments[options->n_moments];
         prob_t bprob[K];
         prob_t mpost[K];
-        prob_t entropy[K];
+        prob_t differential_entropy[K];
+        prob_t multibin_entropy[K];
         prob_t prior_log[K];
         unsigned int i, j;
         binProblem bp;
@@ -394,8 +493,9 @@ bin_log(
         }
         bzero(bprob,     K*sizeof(prob_t));
         bzero(mpost,     K*sizeof(prob_t));
-        bzero(entropy,   K*sizeof(prob_t));
         bzero(prior_log, K*sizeof(prob_t));
+        bzero(differential_entropy,  K*sizeof(prob_t));
+        bzero(multibin_entropy, K*sizeof(prob_t));
 
         verbose       = options->verbose;
 
@@ -418,14 +518,15 @@ bin_log(
         if (options->prombsTest) {
                 prombsTest(&bp);
         }
-        computeBinning(&bp, moments, bprob, mpost, entropy, options);
+        computeBinning(&bp, moments, bprob, mpost, differential_entropy, multibin_entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
                 }
-                gsl_vector_set(result->bprob,   i, bprob[i]);
-                gsl_vector_set(result->mpost,   i, mpost[i]);
-                gsl_vector_set(result->entropy, i, entropy[i]);
+                gsl_vector_set(result->bprob, i, bprob[i]);
+                gsl_vector_set(result->mpost, i, mpost[i]);
+                gsl_vector_set(result->differential_entropy, i, differential_entropy[i]);
+                gsl_vector_set(result->multibin_entropy,     i, multibin_entropy[i]);
         }
 
         for (i = 0; i < bp.events; i++) {

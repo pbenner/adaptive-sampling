@@ -44,7 +44,8 @@ def usage():
     print
     print "Options:"
     print "   -b                          - compute break probabilities"
-    print "   -e                          - compute entropies"
+    print "   -d                          - compute differential entropies"
+    print "   -e                          - compute multibin entropies"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
     print "   -m  --moments=N             - compute the first N>=3 moments"
     print "       --which=EVENT           - for which event to compute the binning"
@@ -107,12 +108,12 @@ def plotmodelpost(ax, result):
     ax.set_xlabel(r'$m_B$',  font)
     ax.set_ylabel(r'$P(m_B|E)$', font)
 
-def plotentropy(ax, result):
-    if result['entropy'] and options['entropy']:
-        N = len(result['entropy'])
+def plotMultibinEntropy(ax, result):
+    if result['multibin_entropy'] and options['multibin_entropy']:
+        N = len(result['multibin_entropy'])
         x = np.arange(0, N+1, 1)
-        entropy.append(0)
-        ax.step(x, result['entropy'], 'b--', where='mid', linewidth=1)
+        result['multibin_entropy'].append(0)
+        ax.step(x, result['multibin_entropy'], 'b--', where='mid', linewidth=1)
         ax.set_ylabel(r'$H(\mathcal{B}|E,m_B)$', font)
 
 def plotspikes(ax, x, timings):
@@ -152,6 +153,7 @@ def plotbin(ax, x, result):
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
 #    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
 #    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
+    ax.twinx().plot(x, result['differential_entropy'])
     ax.plot(x, result['moments'][0], 'r')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
@@ -181,16 +183,16 @@ def bin(counts, alpha, mprior):
             bprob     = map(float, bprob_str.split(' '))
         else:
             bprob     = []
-        if config.has_option('Result', 'entropy'):
-            entropy_str = config.get('Result', 'entropy')
-            entropy     = map(float, entropy_str.split(' '))
+        if config.has_option('Result', 'multibin_entropy'):
+            multibin_entropy_str = config.get('Result', 'multibin_entropy')
+            multibin_entropy     = map(float, entropy_str.split(' '))
         else:
             entropy     = []
         result = {
             'moments' : moments,
             'bprob'   : bprob,
             'mpost'   : mpost,
-            'entropy' : entropy }
+            'multibin_entropy' : multibin_entropy }
         return result
     else:
         counts_i = [ map(int, row) for row in counts ]
@@ -207,7 +209,7 @@ def saveResult(result):
     config.set('Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
     config.set('Result', 'bprob',   " ".join(map(str, result['bprob'])))
     config.set('Result', 'mpost',   " ".join(map(str, result['mpost'])))
-    config.set('Result', 'entropy', " ".join(map(str, result['entropy'])))
+    config.set('Result', 'multibin_entropy', " ".join(map(str, result['multibin_entropy'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
 
@@ -284,7 +286,7 @@ def parseConfig(file):
             ax2 = fig.add_subplot(2,1,2)
             plotbin(ax1, None, result)
             plotmodelpost(ax2, result)
-            plotentropy(ax2.twinx(), result)
+            plotMultibinEntropy(ax2.twinx(), result)
             show()
     if config.has_section('Trials'):
         binsize     = config.getint('Trials', 'binsize')
@@ -315,7 +317,7 @@ def parseConfig(file):
             plotspikes(ax1, x, timings)
             plotbin   (ax2, x, result)
             plotmodelpost(ax3, result)
-            plotentropy(ax3.twinx(), result)
+            plotMutibinEntropy(ax3.twinx(), result)
             show()
 
 # main
@@ -324,14 +326,15 @@ def parseConfig(file):
 options = {
     'epsilon'    : 0.00001,
     'n_moments'  : 3,
+    'which'      : 0,
+    'load'       : None,
+    'save'       : None,
     'verbose'    : False,
     'prombsTest' : False,
     'compare'    : False,
     'bprob'      : False,
-    'entropy'    : False,
-    'load'       : None,
-    'save'       : None,
-    'which'      : 0
+    'differential_entropy' : False,
+    'multibin_entropy'     : False,
     }
 
 def main():
@@ -339,7 +342,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=",
                       "which=", "epsilon=", "moments=", "prombsTest"]
-        opts, tail = getopt.getopt(sys.argv[1:], "m:behvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "dem:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -362,8 +365,10 @@ def main():
             return 0
         if o == "-b":
             options["bprob"] = True
+        if o == "-d":
+            options["differential_entropy"] = True
         if o == "-e":
-            options["entropy"] = True
+            options["multibin_entropy"] = True
         if o == "--load":
             options["load"] = a
         if o == "--save":

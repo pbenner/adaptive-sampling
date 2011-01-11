@@ -103,8 +103,8 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m
 void prombsExt(
         prob_t *result,
         prob_t *g,
-        prob_t (*f)(int, int),
-        prob_t (*h)(int, int),
+        prob_t (*f)(int, int), // on log scale
+        prob_t (*h)(int, int), // on normal scale
         prob_t epsilon,
         size_t L, size_t m)
 {
