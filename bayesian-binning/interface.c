@@ -103,8 +103,8 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         result->moments = fromGslMatrix(resultGsl->moments);
         result->bprob   = fromGslVector(resultGsl->bprob);
         result->mpost   = fromGslVector(resultGsl->mpost);
-        result->differential_entropy = fromGslVector(resultGsl->differential_entropy);
-        result->multibin_entropy     = fromGslVector(resultGsl->multibin_entropy);
+        result->differential_gain = fromGslVector(resultGsl->differential_gain);
+        result->multibin_entropy  = fromGslVector(resultGsl->multibin_entropy);
 
         gsl_matrix_free(counts_m);
         gsl_vector_free(alpha_v);
@@ -112,7 +112,7 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         gsl_matrix_free(resultGsl->moments);
         gsl_vector_free(resultGsl->bprob);
         gsl_vector_free(resultGsl->mpost);
-        gsl_vector_free(resultGsl->differential_entropy);
+        gsl_vector_free(resultGsl->differential_gain);
         gsl_vector_free(resultGsl->multibin_entropy);
         free(resultGsl);
 

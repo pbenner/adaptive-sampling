@@ -415,7 +415,7 @@ void computeBinning(
         prob_t **moments,
         prob_t *bprob,
         prob_t *mpost,
-        prob_t *differential_entropy,
+        prob_t *differential_gain,
         prob_t *multibin_entropy,
         Options *options)
 {
@@ -427,7 +427,9 @@ void computeBinning(
         computePrior_log(bp);
         evidence_ref = computeEvidence(bp, evidence_log_tmp);
         // compute model posteriors P(m_B|D)
-        computeModelPosteriors(bp, evidence_log_tmp, mpost, evidence_ref);
+        if (options->model_posterior) {
+                computeModelPosteriors(bp, evidence_log_tmp, mpost, evidence_ref);
+        }
         // break probability
         if (options->bprob) {
                 computeBreakProbabilities(bp, bprob, evidence_ref);
@@ -437,16 +439,18 @@ void computeBinning(
                 computeMultibinEntropy(bp, multibin_entropy, evidence_ref);
         }
         // for each timestep compute the first n moments
-        for (i = 0; i < bp->T; i++) {
-                notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);
-                // Moments
-                for (j = 0; j < options->n_moments; j++) {
-                        moments[j][i] = computeMoment(bp, j+1, i, evidence_ref);
+        if (options->n_moments > 0) {
+                for (i = 0; i < bp->T; i++) {
+                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bp->T);
+                        // Moments
+                        for (j = 0; j < options->n_moments; j++) {
+                                moments[j][i] = computeMoment(bp, j+1, i, evidence_ref);
+                        }
                 }
         }
         // compute the differential entropy
-        if (options->differential_entropy) {
-                differentialUtility(bp, differential_entropy, evidence_ref);
+        if (options->differential_gain) {
+                differentialUtility(bp, differential_gain, evidence_ref);
         }
 }
 
@@ -462,12 +466,12 @@ bin_log(
         result->moments = gsl_matrix_alloc(options->n_moments, K);
         result->bprob   = gsl_vector_alloc(K);
         result->mpost   = gsl_vector_alloc(K);
-        result->differential_entropy = gsl_vector_alloc(K);
-        result->multibin_entropy     = gsl_vector_alloc(K);
+        result->differential_gain = gsl_vector_alloc(K);
+        result->multibin_entropy  = gsl_vector_alloc(K);
         prob_t * moments[options->n_moments];
         prob_t bprob[K];
         prob_t mpost[K];
-        prob_t differential_entropy[K];
+        prob_t differential_gain[K];
         prob_t multibin_entropy[K];
         prob_t prior_log[K];
         unsigned int i, j;
@@ -479,7 +483,7 @@ bin_log(
         bzero(bprob,     K*sizeof(prob_t));
         bzero(mpost,     K*sizeof(prob_t));
         bzero(prior_log, K*sizeof(prob_t));
-        bzero(differential_entropy,  K*sizeof(prob_t));
+        bzero(differential_gain,  K*sizeof(prob_t));
         bzero(multibin_entropy, K*sizeof(prob_t));
 
         verbose       = options->verbose;
@@ -503,15 +507,15 @@ bin_log(
         if (options->prombsTest) {
                 prombsTest(&bp);
         }
-        computeBinning(&bp, moments, bprob, mpost, differential_entropy, multibin_entropy, options);
+        computeBinning(&bp, moments, bprob, mpost, differential_gain, multibin_entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
                 }
                 gsl_vector_set(result->bprob, i, bprob[i]);
                 gsl_vector_set(result->mpost, i, mpost[i]);
-                gsl_vector_set(result->differential_entropy, i, differential_entropy[i]);
-                gsl_vector_set(result->multibin_entropy,     i, multibin_entropy[i]);
+                gsl_vector_set(result->differential_gain, i, differential_gain[i]);
+                gsl_vector_set(result->multibin_entropy,  i, multibin_entropy[i]);
         }
 
         for (i = 0; i < bp.events; i++) {

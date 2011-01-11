@@ -153,7 +153,7 @@ def plotbin(ax, x, result):
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
 #    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
 #    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
-    ax.twinx().plot(x, result['differential_entropy'])
+    ax.twinx().plot(x, result['differential_gain'])
     ax.plot(x, result['moments'][0], 'r')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
@@ -333,8 +333,9 @@ options = {
     'prombsTest' : False,
     'compare'    : False,
     'bprob'      : False,
-    'differential_entropy' : False,
-    'multibin_entropy'     : False,
+    'differential_gain' : False,
+    'multibin_entropy'  : False,
+    'model_posterior'   : True,
     }
 
 def main():
@@ -366,7 +367,7 @@ def main():
         if o == "-b":
             options["bprob"] = True
         if o == "-d":
-            options["differential_entropy"] = True
+            options["differential_gain"] = True
         if o == "-e":
             options["multibin_entropy"] = True
         if o == "--load":
