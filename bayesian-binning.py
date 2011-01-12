@@ -19,7 +19,6 @@
 import sys
 import getopt
 import os
-import interface
 import ConfigParser
 import numpy as np
 import math
@@ -28,6 +27,10 @@ from matplotlib import *
 from matplotlib.pyplot import *
 import matplotlib.patches as patches
 import matplotlib.path as path
+
+import bayesian_binning.interface as interface
+import bayesian_binning.visualization as vis
+import bayesian_binning.statistics as statistics
 
 # global options
 # ------------------------------------------------------------------------------
@@ -44,7 +47,7 @@ def usage():
     print
     print "Options:"
     print "   -b                          - compute break probabilities"
-    print "   -d                          - compute differential entropies"
+    print "   -d                          - compute differential gain"
     print "   -e                          - compute multibin entropies"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
     print "   -m  --moments=N             - compute the first N>=3 moments"
@@ -58,107 +61,39 @@ def usage():
     print "   -t, --prombsTest            - test prombs algorithm"
     print
 
-# tools
+# load results from file
 # ------------------------------------------------------------------------------
 
-argmax = lambda array:max(izip(array, xrange(len(array))))
+def load_config():
+    config = ConfigParser.RawConfigParser()
+    config.read(options['load'])
+    if not config.has_section('Result'):
+        raise IOError("Invalid configuration file.")
 
-# moments
-# ------------------------------------------------------------------------------
-
-def binomial(n,k):
-    return math.factorial(n) / (math.factorial(k)*math.factorial(n-k))
-
-def binomialTransform(moments, n):
-    result = math.pow(-moments[0], n)
-    for k in range(1, n+1):
-        result += binomial(n, k)*moments[k-1]*math.pow(-moments[0], n-k)
+    moments_str = config.get   ('Result', 'moments')
+    moments     = []
+    for line in moments_str.split('\n'):
+        if line != '':
+            moments.append([float(a) for a in line.split(' ')])
+    mpost_str   = config.get('Result', 'mpost')
+    mpost       = map(float, mpost_str.split(' '))
+    if config.has_option('Result', 'bprob'):
+        bprob_str = config.get('Result', 'bprob')
+        bprob     = map(float, bprob_str.split(' '))
+    else:
+        bprob     = []
+    if config.has_option('Result', 'multibin_entropy'):
+        multibin_entropy_str = config.get('Result', 'multibin_entropy')
+        multibin_entropy     = map(float, multibin_entropy_str.split(' '))
+    else:
+        multibin_entropy     = []
+    result = {
+        'moments' : moments,
+        'bprob'   : bprob,
+        'mpost'   : mpost,
+        'multibin_entropy'  : multibin_entropy,
+        'differential_gain' : [] }
     return result
-
-def centralMoments(moments_list, n):
-    return map(lambda moments: binomialTransform(moments, n), zip(*moments_list))
-
-def standardizedMoments(moments, n):
-    m2 = centralMoments(moments, 2)
-    mn = centralMoments(moments, n)
-    return [ mu / math.pow(math.sqrt(var), n) for var, mu in zip(m2, mn) ]
-
-# plotting
-# ------------------------------------------------------------------------------
-font = {'family'     : 'serif',
-        'color'      : 'k',
-        'weight'     : 'normal',
-        'size'       : 12 }
-
-def plotmodelpost(ax, result):
-    N = len(result['mpost'])
-    x = np.arange(0, N+1, 1)
-    result['mpost'].insert(0, 0)
-    ax.step(x, result['mpost'], 'r--', where='mid', linewidth=1)
-    ax.grid(True)
-
-    left    = np.array(x[:-1]) + 0.5
-    right   = np.array(x[1:])  + 0.5
-    bottom  = np.zeros(len(left))
-    top     = bottom + result['mpost'][1:]
-    XY      = np.array([[left,left,right,right], [bottom,top,top,bottom]]).T
-    barpath = path.Path.make_compound_path_from_polys(XY)
-    patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
-    ax.add_patch(patch)
-    ax.set_xlabel(r'$m_B$',  font)
-    ax.set_ylabel(r'$P(m_B|E)$', font)
-
-def plotMultibinEntropy(ax, result):
-    if result['multibin_entropy'] and options['multibin_entropy']:
-        N = len(result['multibin_entropy'])
-        x = np.arange(0, N+1, 1)
-        result['multibin_entropy'].append(0)
-        ax.step(x, result['multibin_entropy'], 'b--', where='mid', linewidth=1)
-        ax.set_ylabel(r'$H(\mathcal{B}|E,m_B)$', font)
-
-def plotspikes(ax, x, timings):
-    """Plot trials of spike trains."""
-    X = []
-    Y = []
-    for i in range(0, len(timings)):
-        for val in timings[i]:
-            X.append(val)
-            Y.append(i)
-    ax.set_xlim(x[0],x[-1])
-    ax.set_ylabel(r'$t$')
-    ax.set_ylabel('Trial')
-    ax.plot(X, Y, 'k|')
-
-def plotbinboundaries(ax, x, result):
-    ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
-    ax.set_ylim(0,1)
-    ax.set_ylabel(r'$P(\Rsh_i|E)$', font)
-#    nbins = argmax(result['mpost'])[1]+1
-#    bprob_max = sorted(result['bprob'])[-nbins:]
-#    for b in bprob_max:
-#        i = bprob.index(b)
-#        ax.axvline(x[i])
-
-def plotbin(ax, x, result):
-    """Plot the binning result."""
-    N = len(result['moments'][0])
-    if x==None:
-        x = np.arange(0, N, 1)
-    ax.set_xlim(x[0],x[-1])
-    stddev = map(math.sqrt, centralMoments(result['moments'], 2))
-    skew     = standardizedMoments(result['moments'], 3)
-#    kurtosis = standardizedMoments(result['moments'], 4)
-#    tail     = standardizedMoments(result['moments'], 5)
-    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], stddev) ], 'k--')
-    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
-#    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
-#    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
-    ax.twinx().plot(x, result['differential_gain'])
-    ax.plot(x, result['moments'][0], 'r')
-    ax.set_xlabel('t',  font)
-    ax.set_ylabel(r'$P(S_i|E)$', font)
-    if result['bprob'] and options['bprob']:
-        plotbinboundaries(ax.twinx(), x, result)
 
 # binning
 # ------------------------------------------------------------------------------
@@ -166,34 +101,7 @@ def plotbin(ax, x, result):
 def bin(counts, alpha, mprior):
     """Call the binning library."""
     if options['load']:
-        config = ConfigParser.RawConfigParser()
-        config.read(options['load'])
-        if not config.has_section('Result'):
-            raise IOError("Invalid configuration file.")
-
-        moments_str = config.get   ('Result', 'moments')
-        moments     = []
-        for line in moments_str.split('\n'):
-            if line != '':
-                moments.append([float(a) for a in line.split(' ')])
-        mpost_str   = config.get('Result', 'mpost')
-        mpost       = map(float, mpost_str.split(' '))
-        if config.has_option('Result', 'bprob'):
-            bprob_str = config.get('Result', 'bprob')
-            bprob     = map(float, bprob_str.split(' '))
-        else:
-            bprob     = []
-        if config.has_option('Result', 'multibin_entropy'):
-            multibin_entropy_str = config.get('Result', 'multibin_entropy')
-            multibin_entropy     = map(float, entropy_str.split(' '))
-        else:
-            entropy     = []
-        result = {
-            'moments' : moments,
-            'bprob'   : bprob,
-            'mpost'   : mpost,
-            'multibin_entropy' : multibin_entropy }
-        return result
+        return load_config()
     else:
         counts_i = [ map(int, row) for row in counts ]
         mprior_i =   map(float, mprior)
@@ -235,7 +143,7 @@ def computeFailures(successes, trials):
         raise ValueError("Number of trials is smaller than some counts.")
     return failures
 
-def readMPrior(models_str, N):
+def readModelPrior(models_str, N):
     models = []
     mprior = list(np.repeat(0, N))
     for str in models_str.split(' '):
@@ -275,19 +183,13 @@ def parseConfig(file):
         prior       = list(np.repeat(1, N))
         alpha       = readAlpha(config, 'Counts', len(counts))
         if config.has_option('Counts', 'mprior'):
-            prior   = readMPrior(config.get('Counts', 'mprior'), N)
+            prior   = readModelPrior(config.get('Counts', 'mprior'), N)
         result      = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
-            fig = figure()
-            fig.subplots_adjust(hspace=0.35)
-            ax1 = fig.add_subplot(2,1,1)
-            ax2 = fig.add_subplot(2,1,2)
-            plotbin(ax1, None, result)
-            plotmodelpost(ax2, result)
-            plotMultibinEntropy(ax2.twinx(), result)
-            show()
+            x = np.arange(0, N, 1)
+            vis.plotBinning(x, result, options['bprob'], options['multibin_entropy'])
     if config.has_section('Trials'):
         binsize     = config.getint('Trials', 'binsize')
         timings_str = config.get   ('Trials', 'timings')
@@ -304,21 +206,12 @@ def parseConfig(file):
         prior        = list(np.repeat(1, N))
         alpha        = readAlpha(config, 'Trials', 2)
         if config.has_option('Trials', 'mprior'):
-            prior    = readMPrior(config.get('Trials', 'mprior'), N)
+            prior    = readModelPrior(config.get('Trials', 'mprior'), N)
         result       = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
-            fig = figure()
-            fig.subplots_adjust(hspace=0.35)
-            ax1 = fig.add_subplot(3,1,1)
-            ax2 = fig.add_subplot(3,1,2)
-            ax3 = fig.add_subplot(3,1,3)
-            plotspikes(ax1, x, timings)
-            plotbin   (ax2, x, result)
-            plotmodelpost(ax3, result)
-            plotMutibinEntropy(ax3.twinx(), result)
-            show()
+            vis.plotBinningSpikes(x, timings, result, options['bprob'], options['multibin_entropy'])
 
 # main
 # ------------------------------------------------------------------------------

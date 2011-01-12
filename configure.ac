@@ -22,7 +22,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AC_CONFIG_SRCDIR(bayesian-binning/bayesian-binning.c)
+AC_CONFIG_SRCDIR(bayesian_binning/bayesian-binning.c)
 AM_INIT_AUTOMAKE([gnu dist-bzip2])
 AC_PROG_LIBTOOL
 LT_INIT
@@ -250,7 +250,7 @@ AC_CONFIG_FILES([
 	version.h
 	libprombs/Makefile
 	libexception/Makefile
-	bayesian-binning/Makefile
+	bayesian_binning/Makefile
 	include/Makefile
  	])
 

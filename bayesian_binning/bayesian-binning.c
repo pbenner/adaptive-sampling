@@ -354,7 +354,7 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
         unsigned int i, j;
 
         for (i = 0; i < bp->T; i++) {
-                notice(NONE, "break prob.: %.1f%%", (float)100*i/bp->T);
+                notice(NONE, "break probabilities: %.1f%%", (float)100*i/bp->T);
                 execPrombs(bp, ev_log, i);
                 sum = -HUGE_VAL;
                 for (j = 0; j < bp->T; j++) {

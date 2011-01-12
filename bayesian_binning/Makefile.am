@@ -36,8 +36,13 @@ _interface.so:
 	$(LN_S) .libs/_interface.so _interface.so
 
 clean-local:
+	$(RM) __init__.pyc
+	$(RM) visualization.pyc
+	$(RM) statistics.pyc
 	$(RM) _interface.so
-	$(RM) interface_wrap.c interface.py interface.pyc
+	$(RM) interface.py
+	$(RM) interface.pyc
+	$(RM) interface_wrap.c
 
 ## manuals
 man1_MANS = bayesian-binning.1
