@@ -37,6 +37,7 @@ _interface.so:
 
 clean-local:
 	$(RM) __init__.pyc
+	$(RM) config.pyc
 	$(RM) visualization.pyc
 	$(RM) statistics.pyc
 	$(RM) _interface.so

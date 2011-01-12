@@ -258,6 +258,9 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
         for (i = 0; i < bp->T; i++) {
                 if (gsl_vector_get(bp->mprior, i) > 0) {
                         prob_t mprior = gsl_vector_get(bp->mprior, i);
+                        if (!isfinite(ev_log[i])) {
+                                return 0;
+                        }
                         sum = logadd(sum, ev_log[i] + logl(mprior));
                 }
         }
@@ -463,7 +466,9 @@ bin_log(
 {
         size_t K = counts->size2;
         BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
-        result->moments = gsl_matrix_alloc(options->n_moments, K);
+        if (options->n_moments > 0) {
+                result->moments = gsl_matrix_alloc(options->n_moments, K);
+        }
         result->bprob   = gsl_vector_alloc(K);
         result->mpost   = gsl_vector_alloc(K);
         result->differential_gain = gsl_vector_alloc(K);

@@ -28,6 +28,7 @@ from matplotlib.pyplot import *
 import matplotlib.patches as patches
 import matplotlib.path as path
 
+import bayesian_binning.config as config
 import bayesian_binning.interface as interface
 import bayesian_binning.visualization as vis
 import bayesian_binning.statistics as statistics
@@ -65,28 +66,21 @@ def usage():
 # ------------------------------------------------------------------------------
 
 def load_config():
-    config = ConfigParser.RawConfigParser()
-    config.read(options['load'])
-    if not config.has_section('Result'):
+    config_parser = ConfigParser.RawConfigParser()
+    config_parser.read(options['load'])
+    if not config_parser.has_section('Result'):
         raise IOError("Invalid configuration file.")
 
-    moments_str = config.get   ('Result', 'moments')
-    moments     = []
-    for line in moments_str.split('\n'):
-        if line != '':
-            moments.append([float(a) for a in line.split(' ')])
-    mpost_str   = config.get('Result', 'mpost')
-    mpost       = map(float, mpost_str.split(' '))
-    if config.has_option('Result', 'bprob'):
-        bprob_str = config.get('Result', 'bprob')
-        bprob     = map(float, bprob_str.split(' '))
+    moments = config.readMatrix(config_parser, 'Result', 'moments', float)
+    mpost   = config.readVector(config_parser, 'Result', 'mpost',   float)
+    if config_parser.has_option('Result', 'bprob'):
+        bprob = config.readVector(config_parser, 'Result', 'bprob', float)
     else:
         bprob     = []
-    if config.has_option('Result', 'multibin_entropy'):
-        multibin_entropy_str = config.get('Result', 'multibin_entropy')
-        multibin_entropy     = map(float, multibin_entropy_str.split(' '))
+    if config_parser.has_option('Result', 'multibin_entropy'):
+        multibin_entropy = config.readVector(config_parser, 'Result', 'multibin_entropy', float)
     else:
-        multibin_entropy     = []
+        multibin_entropy = []
     result = {
         'moments' : moments,
         'bprob'   : bprob,
@@ -124,24 +118,27 @@ def saveResult(result):
 # parse config file
 # ------------------------------------------------------------------------------
 
-def timingsToCounts(timings, binsize):
-    MIN    = min(map(min, timings))
-    MAX    = max(map(max, timings))
-    N      = int(math.ceil(float(MAX-MIN)/binsize))
-    counts = list(np.repeat(0, N+1))
-    x      = range(MIN, MAX+binsize, binsize)
-    for trial in timings:
-        for t in trial:
-            n = int(math.ceil(float(t-MIN)/binsize))
-            counts[n] += 1
-    return x, counts
-
 def computeFailures(successes, trials):
     N        = len(successes)
     failures = np.repeat(trials, N) - successes
     if any([ a<0 for a in failures]):
         raise ValueError("Number of trials is smaller than some counts.")
     return failures
+
+def timingsToCounts(timings, binsize):
+    MIN       = min(map(min, timings))
+    MAX       = max(map(max, timings))
+    N         = int(math.ceil(float(MAX-MIN)/binsize))
+    successes = list(np.repeat(0, N+1))
+    x         = range(MIN, MAX+binsize, binsize)
+    for trial in timings:
+        for t in trial:
+            n = int(math.ceil(float(t-MIN)/binsize))
+            successes[n] += 1
+    trials    = len(timings)
+    failures  = computeFailures(successes, trials)
+    counts    = [successes, failures]
+    return x, counts
 
 def readModelPrior(models_str, N):
     models = []
@@ -153,12 +150,10 @@ def readModelPrior(models_str, N):
         mprior[model-1] = 1.0/num_models
     return mprior
 
-def readAlpha(config, section, n):
+def readAlpha(config_parser, section, n):
     alpha = []
-    if config.has_option(section, 'alpha'):
-        alpha_str  = config.get   (section, 'alpha')
-        for str in alpha_str.split(' '):
-            alpha.append(int(str))
+    if config_parser.has_option(section, 'alpha'):
+        alpha = config.readVector(config_parser, section, 'alpha', int)
         if len(alpha) < n:
             raise ValueError("Not enough alpha parameters.")
         if len(alpha) > n:
@@ -167,47 +162,35 @@ def readAlpha(config, section, n):
         alpha = list(np.repeat(1, n))
     return alpha
 
-def parseConfig(file):
-    config = ConfigParser.RawConfigParser()
-    config.read(file)
+def parseConfig(config_file):
+    config_parser = ConfigParser.RawConfigParser()
+    config_parser.read(config_file)
 
-    if config.sections() == []:
+    if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
-    if config.has_section('Counts'):
-        counts_str  = config.get   ('Counts', 'counts')
-        counts      = []
-        for line in counts_str.split('\n'):
-            if line != '':
-                counts.append([int(a) for a in line.split(' ')])
+    if config_parser.has_section('Counts'):
+        counts      = config.readMatrix(config_parser, 'Counts', 'counts', int)
         N           = len(counts[0])
         prior       = list(np.repeat(1, N))
-        alpha       = readAlpha(config, 'Counts', len(counts))
-        if config.has_option('Counts', 'mprior'):
-            prior   = readModelPrior(config.get('Counts', 'mprior'), N)
+        alpha       = readAlpha(config_parser, 'Counts', len(counts))
+        if config_parser.has_option('Counts', 'mprior'):
+            prior   = readModelPrior(config_parser.get('Counts', 'mprior'), N)
         result      = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
             x = np.arange(0, N, 1)
             vis.plotBinning(x, result, options['bprob'], options['multibin_entropy'])
-    if config.has_section('Trials'):
-        binsize     = config.getint('Trials', 'binsize')
-        timings_str = config.get   ('Trials', 'timings')
-        timings     = []
-        for line in timings_str.split('\n'):
-            if line != '':
-                timings.append([int(a) for a in line.split(' ')])
-
-        x, successes = timingsToCounts(timings, binsize)
-        trials       = len(timings)
-        failures     = computeFailures(successes, trials)
-        counts       = [successes, failures]
-        N            = len(successes)
-        prior        = list(np.repeat(1, N))
-        alpha        = readAlpha(config, 'Trials', 2)
-        if config.has_option('Trials', 'mprior'):
-            prior    = readModelPrior(config.get('Trials', 'mprior'), N)
-        result       = bin(counts, alpha, prior)
+    if config_parser.has_section('Trials'):
+        binsize     = config_parser.getint('Trials', 'binsize')
+        timings     = config.readMatrix(config_parser, 'Trials', 'timings', int)
+        x, counts   = timingsToCounts(timings, binsize)
+        N           = len(counts[0])
+        prior       = list(np.repeat(1, N))
+        alpha       = readAlpha(config_parser, 'Trials', 2)
+        if config_parser.has_option('Trials', 'mprior'):
+            prior   = readModelPrior(config_parser.get('Trials', 'mprior'), N)
+        result      = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:

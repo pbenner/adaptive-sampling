@@ -19,15 +19,20 @@
 import sys
 import getopt
 import os
-import interface
 import ConfigParser
 import numpy as np
 import math
+import random
 from itertools import izip
 from matplotlib import *
 from matplotlib.pyplot import *
 import matplotlib.patches as patches
 import matplotlib.path as path
+
+import bayesian_binning.config as config
+import bayesian_binning.interface as interface
+import bayesian_binning.visualization as vis
+import bayesian_binning.statistics as statistics
 
 # global options
 # ------------------------------------------------------------------------------
@@ -47,6 +52,7 @@ def usage():
     print "   -d                          - compute differential gain"
     print "   -e                          - compute multibin entropies"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
+    print "   -n  --samples=N             - number of samples"
     print "   -m  --moments=N             - compute the first N>=3 moments"
     print "       --which=EVENT           - for which event to compute the binning"
     print
@@ -58,38 +64,70 @@ def usage():
     print "   -t, --prombsTest            - test prombs algorithm"
     print
 
+# tools
+# ------------------------------------------------------------------------------
+
+def argmax(array):
+    result = []
+    for i in izip(array, xrange(len(array))):
+        if i[0] == max(array):
+            result.append(i[1])
+    return result
+
+def selectRandom(array):
+    length = len(array)-1
+    index  = random.randint(0, length)
+    return array[index]
+
+# save result
+# ------------------------------------------------------------------------------
+
+def saveResult(result):
+    config = ConfigParser.ConfigParser()
+    config.add_section('Sampling Result')
+    config.set('Sampling Result', 'counts',  "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['counts'])))
+    config.set('Sampling Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
+    config.set('Sampling Result', 'samples', " ".join(map(str, result['samples'])))
+    config.set('Sampling Result', 'bprob',   " ".join(map(str, result['bprob'])))
+    config.set('Sampling Result', 'mpost',   " ".join(map(str, result['mpost'])))
+    configfile = open(options['save'], 'wb')
+    config.write(configfile)
+
 # load results from file
 # ------------------------------------------------------------------------------
 
-def load_config():
-    config = ConfigParser.RawConfigParser()
-    config.read(options['load'])
-    if not config.has_section('Result'):
-        raise IOError("Invalid configuration file.")
+def loadResult():
+    if options['load']:
+        config_parser = ConfigParser.RawConfigParser()
+        config_parser.read(options['load'])
+        if not config_parser.has_section('Sampling Result'):
+            raise IOError("Invalid configuration file.")
 
-    moments_str = config.get   ('Result', 'moments')
-    moments     = []
-    for line in moments_str.split('\n'):
-        if line != '':
-            moments.append([float(a) for a in line.split(' ')])
-    mpost_str   = config.get('Result', 'mpost')
-    mpost       = map(float, mpost_str.split(' '))
-    if config.has_option('Result', 'bprob'):
-        bprob_str = config.get('Result', 'bprob')
-        bprob     = map(float, bprob_str.split(' '))
+        counts  = config.readMatrix(config_parser, 'Sampling Result', 'counts',  int)
+        moments = config.readMatrix(config_parser, 'Sampling Result', 'moments', float)
+        samples = config.readVector(config_parser, 'Sampling Result', 'samples', int)
+        mpost   = config.readVector(config_parser, 'Sampling Result', 'mpost',   float)
+        if config_parser.has_option('Sampling Result', 'bprob'):
+            bprob = config.readVector(config_parser, 'Sampling Result', 'bprob', float)
+        else:
+            bprob     = []
+        result = {
+            'moments' : moments,
+            'bprob'   : bprob,
+            'mpost'   : mpost,
+            'counts'  : counts,
+            'samples' : samples,
+            'multibin_entropy'  : [],
+            'differential_gain' : [] }
     else:
-        bprob     = []
-    if config.has_option('Result', 'multibin_entropy'):
-        multibin_entropy_str = config.get('Result', 'multibin_entropy')
-        multibin_entropy     = map(float, multibin_entropy_str.split(' '))
-    else:
-        multibin_entropy     = []
-    result = {
-        'moments' : moments,
-        'bprob'   : bprob,
-        'mpost'   : mpost,
-        'multibin_entropy'  : multibin_entropy,
-        'differential_gain' : [] }
+        result = {
+            'moments' : [],
+            'bprob'   : [],
+            'mpost'   : [],
+            'counts'  : [],
+            'samples' : [],
+            'multibin_entropy'  : [],
+            'differential_gain' : [] }
     return result
 
 # binning
@@ -97,65 +135,56 @@ def load_config():
 
 def bin(counts, alpha, mprior):
     """Call the binning library."""
-    if options['load']:
-        return load_config()
+    counts_i = [ map(int, row) for row in counts ]
+    mprior_i =   map(float, mprior)
+    alpha_i  =   map(int, alpha)
+    return interface.binning(counts_i, alpha_i, mprior_i, options)
+
+# sampling
+# ------------------------------------------------------------------------------
+
+def plotResult(x, result):
+    vis.plotSampling(x, result, options['bprob'], options['multibin_entropy'])
+
+def experiment(ground_truth, index):
+    if ground_truth[index] >= random.uniform(0.0, 1.0):
+        return 0 # success
     else:
-        counts_i = [ map(int, row) for row in counts ]
-        mprior_i =   map(float, mprior)
-        alpha_i  =   map(int, alpha)
-        return interface.binning(counts_i, alpha_i, mprior_i, options)
+        return 1 # failure
 
-# save result
+def sampleFromGroundTruth(ground_truth, result, alpha):
+    n       = len(ground_truth)
+    mprior  = list(np.repeat(1, n))
+    if result['counts']:
+        counts = result['counts']
+    else:
+        counts = [ list(np.repeat(0, n)), list(np.repeat(0, n)) ]
+    if result['samples']:
+        samples = result['samples']
+    else:
+        samples = []
+    for i in range(0, options['samples']):
+        print "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
+        result  = bin(counts, alpha, mprior)
+        gain    = map(lambda x: round(x, 4), result['differential_gain'])
+        index   = selectRandom(argmax(gain))
+        event   = experiment(ground_truth, index)
+        samples.append(index)
+        counts[event][index] += 1
+    options['model_posterior'] = True
+    options['n_moments'] = 3
+    result = bin(counts, alpha, mprior)
+    result['counts']  = counts
+    result['samples'] = samples
+    return result
+
+# parse config
 # ------------------------------------------------------------------------------
 
-def saveResult(result):
-    config = ConfigParser.ConfigParser()
-    config.add_section('Result')
-    config.set('Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
-    config.set('Result', 'bprob',   " ".join(map(str, result['bprob'])))
-    config.set('Result', 'mpost',   " ".join(map(str, result['mpost'])))
-    config.set('Result', 'multibin_entropy', " ".join(map(str, result['multibin_entropy'])))
-    configfile = open(options['save'], 'wb')
-    config.write(configfile)
-
-# parse config file
-# ------------------------------------------------------------------------------
-
-def timingsToCounts(timings, binsize):
-    MIN    = min(map(min, timings))
-    MAX    = max(map(max, timings))
-    N      = int(math.ceil(float(MAX-MIN)/binsize))
-    counts = list(np.repeat(0, N+1))
-    x      = range(MIN, MAX+binsize, binsize)
-    for trial in timings:
-        for t in trial:
-            n = int(math.ceil(float(t-MIN)/binsize))
-            counts[n] += 1
-    return x, counts
-
-def computeFailures(successes, trials):
-    N        = len(successes)
-    failures = np.repeat(trials, N) - successes
-    if any([ a<0 for a in failures]):
-        raise ValueError("Number of trials is smaller than some counts.")
-    return failures
-
-def readModelPrior(models_str, N):
-    models = []
-    mprior = list(np.repeat(0, N))
-    for str in models_str.split(' '):
-        models.append(int(str))
-    num_models = len(models)
-    for model in models:
-        mprior[model-1] = 1.0/num_models
-    return mprior
-
-def readAlpha(config, section, n):
+def readAlpha(config_parser, section, n):
     alpha = []
-    if config.has_option(section, 'alpha'):
-        alpha_str  = config.get   (section, 'alpha')
-        for str in alpha_str.split(' '):
-            alpha.append(int(str))
+    if config_parser.has_option(section, 'alpha'):
+        alpha = config.readVector(config_parser, section, 'alpha', int)
         if len(alpha) < n:
             raise ValueError("Not enough alpha parameters.")
         if len(alpha) > n:
@@ -164,20 +193,31 @@ def readAlpha(config, section, n):
         alpha = list(np.repeat(1, n))
     return alpha
 
-def parseConfig(file):
-    config = ConfigParser.RawConfigParser()
-    config.read(file)
+def parseConfig(config_file):
+    config_parser = ConfigParser.RawConfigParser()
+    config_parser.read(config_file)
 
-    if config.sections() == []:
+    if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
-    if config.has_section('Ground Truth'):
+    if config_parser.has_section('Ground Truth'):
+        gt     = config.readVector(config_parser, "Ground Truth", "gt", float)
+        alpha  = readAlpha(config_parser, 'Counts', 2)
+        result = loadResult()
+        result = sampleFromGroundTruth(gt, result, alpha)
+        if options['save']:
+            saveResult(result)
+        else:
+            n = len(gt)
+            x = np.arange(0, n, 1)
+            plotResult(x, result)
 
 # main
 # ------------------------------------------------------------------------------
 
 options = {
+    'samples'    : 0,
     'epsilon'    : 0.00001,
-    'n_moments'  : 3,
+    'n_moments'  : 0,
     'which'      : 0,
     'load'       : None,
     'save'       : None,
@@ -185,17 +225,17 @@ options = {
     'prombsTest' : False,
     'compare'    : False,
     'bprob'      : False,
-    'differential_gain' : False,
+    'differential_gain' : True,
     'multibin_entropy'  : False,
-    'model_posterior'   : True,
+    'model_posterior'   : False,
     }
 
 def main():
     global options
     try:
         longopts   = ["help", "verbose", "load=", "save=",
-                      "which=", "epsilon=", "moments=", "prombsTest"]
-        opts, tail = getopt.getopt(sys.argv[1:], "dem:bhvt", longopts)
+                      "which=", "epsilon=", "moments" ]
+        opts, tail = getopt.getopt(sys.argv[1:], "dem:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -207,6 +247,8 @@ def main():
         if o in ("-t", "--prombsTest"):
             sys.stderr.write("Testing prombs.\n")
             options["prombsTest"] = True
+        if o == "-n":
+            options["samples"] = int(a)
         if o in ("-m", "--moments"):
             if int(a) >= 3:
                 options["n_moments"] = int(a)

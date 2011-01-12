@@ -45,6 +45,13 @@ def plotModelPosterior(ax, result):
     ax.add_patch(patch)
     ax.set_xlabel(r'$m_B$',  font)
     ax.set_ylabel(r'$P(m_B|E)$', font)
+    ax.set_xlim(0, N)
+
+def plotCounts(ax, result):
+    N = len(result['mpost'])
+    n, bins, patches = ax.hist(result['samples'], N, normed=0, facecolor='yellow', alpha=0.8)
+    ax.set_ylim(0, ax.get_ylim()[1]+1)
+    ax.set_ylabel('Counts', font)
 
 def plotMultibinEntropy(ax, result):
     N = len(result['multibin_entropy'])
@@ -91,7 +98,9 @@ def plotBin(ax, x, result):
 #    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
 #    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
     if result['differential_gain']:
-        ax.twinx().plot(x, result['differential_gain'])
+        twin = ax.twinx()
+        twin.plot(x, result['differential_gain'])
+        twin.set_ylabel(r'$U_x$', font)
     ax.plot(x, result['moments'][0], 'r')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
@@ -105,6 +114,21 @@ def plotBinning(x, result, plot_bprob, plot_multientropy):
     plotModelPosterior(ax2, result)
     if result['multibin_entropy'] and plot_multientropy:
         plotMultibinEntropy(ax2.twinx(), result)
+    if result['bprob'] and plot_bprob:
+        plotBinBoundaries(ax1.twinx(), x, result)
+    show()
+
+def plotSampling(x, result, plot_bprob, plot_multientropy):
+    fig = figure()
+    fig.subplots_adjust(hspace=0.35)
+    ax1 = fig.add_subplot(3,1,1)
+    ax2 = fig.add_subplot(3,1,2)
+    ax3 = fig.add_subplot(3,1,3)
+    plotBin(ax1, None, result)
+    plotModelPosterior(ax3, result)
+    plotCounts(ax2, result)
+    if result['multibin_entropy'] and plot_multientropy:
+        plotMultibinEntropy(ax3.twinx(), result)
     if result['bprob'] and plot_bprob:
         plotBinBoundaries(ax1.twinx(), x, result)
     show()

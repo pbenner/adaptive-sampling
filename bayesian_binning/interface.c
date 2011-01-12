@@ -100,7 +100,12 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         BinningResult    *result = (BinningResult *)malloc(sizeof(BinningResult));
 
         resultGsl = bin_log(counts_m, alpha_v, prior_v, options);
-        result->moments = fromGslMatrix(resultGsl->moments);
+        if (options->n_moments > 0) {
+                result->moments = fromGslMatrix(resultGsl->moments);
+        }
+        else {
+                result->moments = NULL;
+        }
         result->bprob   = fromGslVector(resultGsl->bprob);
         result->mpost   = fromGslVector(resultGsl->mpost);
         result->differential_gain = fromGslVector(resultGsl->differential_gain);
@@ -109,7 +114,9 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         gsl_matrix_free(counts_m);
         gsl_vector_free(alpha_v);
         gsl_vector_free(prior_v);
-        gsl_matrix_free(resultGsl->moments);
+        if (options->n_moments > 0) {
+                gsl_matrix_free(resultGsl->moments);
+        }
         gsl_vector_free(resultGsl->bprob);
         gsl_vector_free(resultGsl->mpost);
         gsl_vector_free(resultGsl->differential_gain);

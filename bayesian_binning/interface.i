@@ -29,7 +29,12 @@ PyObject * vectorToPyList(Vector *v) {
 %typemap(out) BinningResult * {
     PyObject * dict    = PyDict_New();
 
-    PyDict_SetItemString(dict, "moments", matrixToPyList($1->moments));
+    if ($1->moments != NULL) {
+            PyDict_SetItemString(dict, "moments", matrixToPyList($1->moments));
+    }
+    else {
+            PyDict_SetItemString(dict, "moments", PyList_New(0));
+    }
     PyDict_SetItemString(dict, "bprob",   vectorToPyList($1->bprob));
     PyDict_SetItemString(dict, "mpost",   vectorToPyList($1->mpost));
     PyDict_SetItemString(dict, "differential_gain", vectorToPyList($1->differential_gain));
