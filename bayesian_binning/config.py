@@ -16,6 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import numpy as np
 import ConfigParser
 
 def readVector(config, section, option, converter):
@@ -30,3 +31,26 @@ def readMatrix(config, section, option, converter):
         if line != '':
             matrix.append([converter(a) for a in line.split(' ')])
     return matrix
+
+def readAlpha(config_parser, n, section, converter):
+    alpha = []
+    if config_parser.has_option(section, 'alpha'):
+        alpha = readVector(config_parser, section, 'alpha', converter)
+        if len(alpha) < n:
+            raise ValueError("Not enough alpha parameters.")
+        if len(alpha) > n:
+            raise ValueError("Too many alpha parameters.")
+    else:
+        alpha = list(np.repeat(1, n))
+    return alpha
+
+def readModelPrior(config_parser, n, section, converter):
+    models = []
+    mprior = list(np.repeat(1, n))
+    if config_parser.has_option(section, 'mprior'):
+        mprior = list(np.repeat(0, n))
+        models = readVector(config_parser, section, 'mprior', converter)
+        num_models = len(models)
+        for model in models:
+            mprior[model-1] = 1.0/num_models
+    return mprior

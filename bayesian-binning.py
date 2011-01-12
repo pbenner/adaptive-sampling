@@ -140,28 +140,6 @@ def timingsToCounts(timings, binsize):
     counts    = [successes, failures]
     return x, counts
 
-def readModelPrior(models_str, N):
-    models = []
-    mprior = list(np.repeat(0, N))
-    for str in models_str.split(' '):
-        models.append(int(str))
-    num_models = len(models)
-    for model in models:
-        mprior[model-1] = 1.0/num_models
-    return mprior
-
-def readAlpha(config_parser, section, n):
-    alpha = []
-    if config_parser.has_option(section, 'alpha'):
-        alpha = config.readVector(config_parser, section, 'alpha', int)
-        if len(alpha) < n:
-            raise ValueError("Not enough alpha parameters.")
-        if len(alpha) > n:
-            raise ValueError("Too many alpha parameters.")
-    else:
-        alpha = list(np.repeat(1, n))
-    return alpha
-
 def parseConfig(config_file):
     config_parser = ConfigParser.RawConfigParser()
     config_parser.read(config_file)
@@ -169,28 +147,26 @@ def parseConfig(config_file):
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Counts'):
-        counts      = config.readMatrix(config_parser, 'Counts', 'counts', int)
-        N           = len(counts[0])
-        prior       = list(np.repeat(1, N))
-        alpha       = readAlpha(config_parser, 'Counts', len(counts))
-        if config_parser.has_option('Counts', 'mprior'):
-            prior   = readModelPrior(config_parser.get('Counts', 'mprior'), N)
-        result      = bin(counts, alpha, prior)
+        counts    = config.readMatrix(config_parser, 'Counts', 'counts', int)
+        N         = len(counts[0])
+        prior     = list(np.repeat(1, N))
+        alpha     = config.readAlpha(config_parser, len(counts), 'Counts', int)
+        prior     = config.readModelPrior(config_parser, N, 'Counts', int)
+        result    = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
             x = np.arange(0, N, 1)
             vis.plotBinning(x, result, options['bprob'], options['multibin_entropy'])
     if config_parser.has_section('Trials'):
-        binsize     = config_parser.getint('Trials', 'binsize')
-        timings     = config.readMatrix(config_parser, 'Trials', 'timings', int)
-        x, counts   = timingsToCounts(timings, binsize)
-        N           = len(counts[0])
-        prior       = list(np.repeat(1, N))
-        alpha       = readAlpha(config_parser, 'Trials', 2)
-        if config_parser.has_option('Trials', 'mprior'):
-            prior   = readModelPrior(config_parser.get('Trials', 'mprior'), N)
-        result      = bin(counts, alpha, prior)
+        binsize   = config_parser.getint('Trials', 'binsize')
+        timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
+        x, counts = timingsToCounts(timings, binsize)
+        N         = len(counts[0])
+        prior     = list(np.repeat(1, N))
+        alpha     = config.readAlpha(config_parser, len(counts), 'Trials', int)
+        prior     = config.readModelPrior(config_parser, N, 'Trials', int)
+        result    = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:

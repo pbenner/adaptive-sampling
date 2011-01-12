@@ -152,9 +152,8 @@ def experiment(ground_truth, index):
     else:
         return 1 # failure
 
-def sampleFromGroundTruth(ground_truth, result, alpha):
-    n       = len(ground_truth)
-    mprior  = list(np.repeat(1, n))
+def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
+    n = len(ground_truth)
     if result['counts']:
         counts = result['counts']
     else:
@@ -181,18 +180,6 @@ def sampleFromGroundTruth(ground_truth, result, alpha):
 # parse config
 # ------------------------------------------------------------------------------
 
-def readAlpha(config_parser, section, n):
-    alpha = []
-    if config_parser.has_option(section, 'alpha'):
-        alpha = config.readVector(config_parser, section, 'alpha', int)
-        if len(alpha) < n:
-            raise ValueError("Not enough alpha parameters.")
-        if len(alpha) > n:
-            raise ValueError("Too many alpha parameters.")
-    else:
-        alpha = list(np.repeat(1, n))
-    return alpha
-
 def parseConfig(config_file):
     config_parser = ConfigParser.RawConfigParser()
     config_parser.read(config_file)
@@ -200,10 +187,11 @@ def parseConfig(config_file):
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Ground Truth'):
-        gt     = config.readVector(config_parser, "Ground Truth", "gt", float)
-        alpha  = readAlpha(config_parser, 'Counts', 2)
+        gt     = config.readVector(config_parser, 'Ground Truth', 'gt', float)
+        alpha  = config.readAlpha(config_parser, 2, 'Ground Truth', int)
+        mprior = config.readModelPrior(config_parser, len(gt), 'Ground Truth', int)
         result = loadResult()
-        result = sampleFromGroundTruth(gt, result, alpha)
+        result = sampleFromGroundTruth(gt, result, alpha, mprior)
         if options['save']:
             saveResult(result)
         else:
