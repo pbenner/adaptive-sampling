@@ -157,7 +157,7 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             x = np.arange(0, N, 1)
-            vis.plotBinning(x, result, options['bprob'], options['multibin_entropy'])
+            vis.plotBinning(x, result, options)
     if config_parser.has_section('Trials'):
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
@@ -170,7 +170,7 @@ def parseConfig(config_file):
         if options['save']:
             saveResult(result)
         else:
-            vis.plotBinningSpikes(x, timings, result, options['bprob'], options['multibin_entropy'])
+            vis.plotBinningSpikes(x, timings, result, options)
 
 # main
 # ------------------------------------------------------------------------------

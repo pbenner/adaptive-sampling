@@ -143,8 +143,8 @@ def bin(counts, alpha, mprior):
 # sampling
 # ------------------------------------------------------------------------------
 
-def plotResult(x, result):
-    vis.plotSampling(x, result, options['bprob'], options['multibin_entropy'])
+def plotResult(x, result, gt):
+    vis.plotSampling(x, result, gt, options)
 
 def experiment(ground_truth, index):
     if ground_truth[index] >= random.uniform(0.0, 1.0):
@@ -197,7 +197,7 @@ def parseConfig(config_file):
         else:
             n = len(gt)
             x = np.arange(0, n, 1)
-            plotResult(x, result)
+            plotResult(x, result, gt)
 
 # main
 # ------------------------------------------------------------------------------

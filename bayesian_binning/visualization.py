@@ -28,6 +28,19 @@ font = {'family'     : 'serif',
         'weight'     : 'normal',
         'size'       : 12 }
 
+def plotGroundTruth(ax, gt):
+    x = np.arange(0, len(gt), 1)
+    ax.plot(x, gt, label='Ground Truth')
+    ax.set_ylabel('Ground Truth', font)
+    ax.legend(loc=2, frameon=False)
+
+def plotUtility(ax, result):
+    x = np.arange(0, len(result['differential_gain']), 1)
+    plot(x, result['differential_gain'], label=r'$U_x$')
+    ax.set_ylabel(r'$U_x$', font)
+    ax.ticklabel_format(style='sci', scilimits=(0,0))
+    ax.legend(loc=4, frameon=False)
+
 def plotModelPosterior(ax, result):
     N = len(result['mpost'])
     x = np.arange(0, N+1, 1)
@@ -89,6 +102,7 @@ def plotBin(ax, x, result):
     if x==None:
         x = np.arange(0, N, 1)
     ax.set_xlim(x[0],x[-1])
+    ax.set_ylim(0,1)
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
     skew     = statistics.standardizedMoments(result['moments'], 3)
 #    kurtosis = statistics.standardizedMoments(result['moments'], 4)
@@ -97,13 +111,10 @@ def plotBin(ax, x, result):
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
 #    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
 #    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
-    if result['differential_gain']:
-        twin = ax.twinx()
-        twin.plot(x, result['differential_gain'])
-        twin.set_ylabel(r'$U_x$', font)
-    ax.plot(x, result['moments'][0], 'r')
+    ax.plot(x, result['moments'][0], 'r', label='$P(S_i|E)$')
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
+    ax.legend(loc=4, frameon=False)
 
 def plotBinning(x, result, plot_bprob, plot_multientropy):
     fig = figure()
@@ -116,24 +127,30 @@ def plotBinning(x, result, plot_bprob, plot_multientropy):
         plotMultibinEntropy(ax2.twinx(), result)
     if result['bprob'] and plot_bprob:
         plotBinBoundaries(ax1.twinx(), x, result)
+    if result['differential_gain']:
+        plotUtility(ax1.twinx(), result)
     show()
 
-def plotSampling(x, result, plot_bprob, plot_multientropy):
+def plotSampling(x, result, gt, options):
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax1 = fig.add_subplot(3,1,1)
     ax2 = fig.add_subplot(3,1,2)
     ax3 = fig.add_subplot(3,1,3)
+    title(str(len(result['samples']))+" Samples")
     plotBin(ax1, None, result)
-    plotModelPosterior(ax3, result)
+    plotGroundTruth(ax1.twinx(), gt)
     plotCounts(ax2, result)
-    if result['multibin_entropy'] and plot_multientropy:
+    plotModelPosterior(ax3, result)
+    if result['multibin_entropy'] and options['multibin_entropy']:
         plotMultibinEntropy(ax3.twinx(), result)
-    if result['bprob'] and plot_bprob:
+    if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax1.twinx(), x, result)
+    if result['differential_gain'] and options['differential_gain']:
+        plotUtility(ax2.twinx(), result)
     show()
 
-def plotBinningSpikes(x, timings, result, plot_bprob, plot_multientropy):
+def plotBinningSpikes(x, timings, result, options):
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax1 = fig.add_subplot(3,1,1)
@@ -142,8 +159,10 @@ def plotBinningSpikes(x, timings, result, plot_bprob, plot_multientropy):
     plotSpikes(ax1, x, timings)
     plotBin   (ax2, x, result)
     plotModelPosterior(ax3, result)
-    if result['multibin_entropy'] and plot_multientropy:
+    if result['multibin_entropy'] and options['multibin_entropy']:
         plotMutibinEntropy(ax3.twinx(), result)
-    if result['bprob'] and plot_bprob:
+    if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax1.twinx(), x, result)
+    if result['differential_gain'] and options['differential_gain']:
+        plotUtility(ax1.twinx(), result)
     show()
