@@ -62,10 +62,11 @@ def plotModelPosterior(ax, result):
 
 def plotCounts(ax, result):
     N = len(result['mpost'])
-    n, bins, patches = ax.hist(result['samples'], N, normed=0, facecolor='yellow', alpha=0.8)
-    ax.set_ylim(0, ax.get_ylim()[1]+1)
+    if len(result['samples']) > 0:
+        n, bins, patches = ax.hist(result['samples'], N, normed=0, facecolor='yellow', alpha=0.8)
+        ax.set_ylim(0, ax.get_ylim()[1]+1)
     ax.set_ylabel('Counts', font)
-
+    
 def plotMultibinEntropy(ax, result):
     N = len(result['multibin_entropy'])
     x = np.arange(0, N+1, 1)
