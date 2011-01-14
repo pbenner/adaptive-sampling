@@ -85,11 +85,12 @@ def selectRandom(array):
 def saveResult(result):
     config = ConfigParser.ConfigParser()
     config.add_section('Sampling Result')
-    config.set('Sampling Result', 'counts',  "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['counts'])))
-    config.set('Sampling Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
-    config.set('Sampling Result', 'samples', " ".join(map(str, result['samples'])))
-    config.set('Sampling Result', 'bprob',   " ".join(map(str, result['bprob'])))
-    config.set('Sampling Result', 'mpost',   " ".join(map(str, result['mpost'])))
+    config.set('Sampling Result', 'counts',    "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['counts'])))
+    config.set('Sampling Result', 'moments',   "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
+    config.set('Sampling Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
+    config.set('Sampling Result', 'samples',   " ".join(map(str, result['samples'])))
+    config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
+    config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
 
@@ -157,6 +158,8 @@ def experiment(ground_truth, index):
 
 def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
     n = len(ground_truth)
+    marginal = options['marginal']
+    options['marginal'] = 0
     if result['counts']:
         counts = result['counts']
     else:
@@ -175,6 +178,7 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         counts[event][index] += 1
     options['model_posterior'] = True
     options['n_moments'] = 3
+    options['marginal'] = marginal
     result = bin(counts, alpha, mprior)
     result['counts']  = counts
     result['samples'] = samples
