@@ -35,6 +35,12 @@ PyObject * vectorToPyList(Vector *v) {
     else {
             PyDict_SetItemString(dict, "moments", PyList_New(0));
     }
+    if ($1->marginals != NULL) {
+            PyDict_SetItemString(dict, "marginals", matrixToPyList($1->marginals));
+    }
+    else {
+            PyDict_SetItemString(dict, "marginals", PyList_New(0));
+    }
     PyDict_SetItemString(dict, "bprob",   vectorToPyList($1->bprob));
     PyDict_SetItemString(dict, "mpost",   vectorToPyList($1->mpost));
     PyDict_SetItemString(dict, "differential_gain", vectorToPyList($1->differential_gain));
@@ -45,6 +51,7 @@ PyObject * vectorToPyList(Vector *v) {
 
 %typemap(freearg) BinningResult * {
     freeMatrix($1->moments);
+    freeMatrix($1->marginals);
     freeVector($1->bprob);
     freeVector($1->mpost);
     freeVector($1->differential_gain);
@@ -54,13 +61,15 @@ PyObject * vectorToPyList(Vector *v) {
 
 %typemap(in) Options * {
     $1 = (Options *)malloc(sizeof(Options));
-    PyObject *verbose    = PyDict_GetItemString($input, "verbose");
-    PyObject *prombsTest = PyDict_GetItemString($input, "prombsTest");
-    PyObject *epsilon    = PyDict_GetItemString($input, "epsilon");
-    PyObject *gmp        = PyDict_GetItemString($input, "gmp");
-    PyObject *bprob      = PyDict_GetItemString($input, "bprob");
-    PyObject *which      = PyDict_GetItemString($input, "which");
-    PyObject *n_moments  = PyDict_GetItemString($input, "n_moments");
+    PyObject *verbose       = PyDict_GetItemString($input, "verbose");
+    PyObject *prombsTest    = PyDict_GetItemString($input, "prombsTest");
+    PyObject *epsilon       = PyDict_GetItemString($input, "epsilon");
+    PyObject *gmp           = PyDict_GetItemString($input, "gmp");
+    PyObject *bprob         = PyDict_GetItemString($input, "bprob");
+    PyObject *which         = PyDict_GetItemString($input, "which");
+    PyObject *marginal      = PyDict_GetItemString($input, "marginal");
+    PyObject *marginal_step = PyDict_GetItemString($input, "marginal_step");
+    PyObject *n_moments     = PyDict_GetItemString($input, "n_moments");
     PyObject *differential_gain = PyDict_GetItemString($input, "differential_gain");
     PyObject *multibin_entropy  = PyDict_GetItemString($input, "multibin_entropy");
     PyObject *model_posterior   = PyDict_GetItemString($input, "model_posterior");
@@ -71,9 +80,12 @@ PyObject * vectorToPyList(Vector *v) {
     $1->differential_gain = (differential_gain  == Py_True ? 1 : 0);
     $1->multibin_entropy  = (multibin_entropy   == Py_True ? 1 : 0);
     $1->model_posterior   = (model_posterior    == Py_True ? 1 : 0);
-    $1->which      = PyInt_AsLong(which);
-    $1->n_moments  = PyInt_AsLong(n_moments);
-    $1->epsilon    = PyFloat_AsDouble(epsilon);
+    $1->which         = PyInt_AsLong(which);
+    $1->marginal      = PyInt_AsLong(marginal);
+    $1->marginal_step = PyFloat_AsDouble(marginal_step);
+    $1->n_marginals   = (int)floor(1.0/$1->marginal_step);
+    $1->n_moments     = PyInt_AsLong(n_moments);
+    $1->epsilon       = PyFloat_AsDouble(epsilon);
 }
 
 %typemap(freearg) Options * {

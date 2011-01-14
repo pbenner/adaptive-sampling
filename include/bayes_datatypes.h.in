@@ -47,12 +47,16 @@ typedef struct options {
         int differential_gain;
         int multibin_entropy;
         int which;
+        int marginal;
+        float marginal_step;
         int n_moments;
+        int n_marginals;
         int model_posterior;
 } Options;
 
 typedef struct binningResultGSL {
         gsl_matrix *moments;
+        gsl_matrix *marginals;
         gsl_vector *bprob;
         gsl_vector *mpost;
         gsl_vector *differential_gain;
@@ -61,6 +65,7 @@ typedef struct binningResultGSL {
 
 typedef struct binningResult{
         Matrix *moments;
+        Matrix *marginals;
         Vector *bprob;
         Vector *mpost;
         Vector *differential_gain;

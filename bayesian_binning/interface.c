@@ -106,6 +106,12 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         else {
                 result->moments = NULL;
         }
+        if (options->marginal) {
+                result->marginals = fromGslMatrix(resultGsl->marginals);
+        }
+        else {
+                result->marginals = NULL;
+        }
         result->bprob   = fromGslVector(resultGsl->bprob);
         result->mpost   = fromGslVector(resultGsl->mpost);
         result->differential_gain = fromGslVector(resultGsl->differential_gain);
@@ -116,6 +122,9 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         gsl_vector_free(prior_v);
         if (options->n_moments > 0) {
                 gsl_matrix_free(resultGsl->moments);
+        }
+        if (options->marginal) {
+                gsl_matrix_free(resultGsl->marginals);
         }
         gsl_vector_free(resultGsl->bprob);
         gsl_vector_free(resultGsl->mpost);

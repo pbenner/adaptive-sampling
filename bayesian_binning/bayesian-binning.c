@@ -55,6 +55,11 @@ typedef struct {
                 int n;
                 int which;
         } add_event;
+        struct {
+                int pos;
+                prob_t val;
+                int which;
+        } fix_prob;
 } binProblem;
 
 static
@@ -135,10 +140,12 @@ static
 void computePrior_log(binProblem *bp)
 {
         unsigned int m_b;
-        prob_t b;
-        b = mbetaInv_log(bp, bp->alpha);
+//        prob_t b;
+//        b = mbetaInv_log(bp, bp->alpha);
         for (m_b = 0; m_b < bp->T; m_b++) {
-                bp->prior_log[m_b] = (m_b+1)*b - gsl_sf_lnchoose(bp->T-1, m_b);
+//                bp->prior_log[m_b] = (m_b+1)*b -
+//                gsl_sf_lnchoose(bp->T-1, m_b);
+                bp->prior_log[m_b] = gsl_sf_lnchoose(bp->T-1, m_b);
         }
 }
 
@@ -149,9 +156,16 @@ prob_t iec_log(binProblem *bp, int kk, int k)
         unsigned int i;
         unsigned int c[bp->events];
         for (i = 0; i < bp->events; i++) {
-                c[i] = countStatistic(bp, i, kk, k)+bp->alpha[i];
+                c[i] = countStatistic(bp, i, kk, k) + bp->alpha[i];
         }
-        return mbeta_log(bp, c);
+        if (kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
+                // compute marginals
+                return (c[0]-1)*log(bp->fix_prob.val) + (c[1]-1)*log(1-bp->fix_prob.val)
+                        - mbeta_log(bp, bp->alpha);
+        }
+        else {
+                return mbeta_log(bp, c) - mbeta_log(bp, bp->alpha);
+        }
 }
 
 /* Find the smallest m_B for which the prior P(m_B) is nonzero. */
@@ -215,8 +229,30 @@ prob_t computeMoment(
         bp->add_event.pos = pos;
         bp->add_event.n   = nth;
         evidence_log      = computeEvidence(bp, evidence_log_tmp);
-        bp->add_event.pos = 0;
+        bp->add_event.pos = -1;
         bp->add_event.n   = 0;
+
+        return expl(evidence_log - evidence_ref);
+}
+
+static
+prob_t computeMarginal(
+        binProblem *bp,
+        int pos,
+        prob_t val,
+        int which,
+        prob_t evidence_ref)
+{
+        prob_t evidence_log;
+        prob_t evidence_log_tmp[bp->T];
+
+        bp->fix_prob.pos   = pos;
+        bp->fix_prob.val   = val;
+        bp->fix_prob.which = which;
+        evidence_log       = computeEvidence(bp, evidence_log_tmp);
+        bp->fix_prob.pos   = -1;
+        bp->fix_prob.val   =  0;
+        bp->fix_prob.which =  0;
 
         return expl(evidence_log - evidence_ref);
 }
@@ -268,7 +304,7 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
 }
 
 static
-void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref)
+void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref, Options *options)
 {
         unsigned int i, j;
         prob_t expected_entropy;
@@ -276,12 +312,10 @@ void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref)
         prob_t evidence;
         prob_t evidence_log_tmp[bp->T];
 
-        bp->add_event.pos  = 0;
-        bp->add_event.n    = 0;
         computePrior_log(bp);
         entropy = differentialEntropy(bp, evidence_ref);
 
-        bp->add_event.n    = 1;
+        bp->add_event.n = 1;
         for (i = 0; i < bp->T; i++) {
                 notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bp->T);
                 bp->add_event.pos = i;
@@ -297,6 +331,9 @@ void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref)
                 }
                 result[i] = entropy - result[i];
          }
+        bp->add_event.n     =  0;
+        bp->add_event.pos   = -1;
+        bp->add_event.which = options->which;
 }
 
 static
@@ -357,7 +394,7 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
         unsigned int i, j;
 
         for (i = 0; i < bp->T; i++) {
-                notice(NONE, "break probabilities: %.1f%%", (float)100*i/bp->T);
+                notice(NONE, "Computing break probabilities: %.1f%%", (float)100*i/bp->T);
                 execPrombs(bp, ev_log, i);
                 sum = -HUGE_VAL;
                 for (j = 0; j < bp->T; j++) {
@@ -416,6 +453,7 @@ static
 void computeBinning(
         binProblem *bp,
         prob_t **moments,
+        prob_t **marginals,
         prob_t *bprob,
         prob_t *mpost,
         prob_t *differential_gain,
@@ -432,6 +470,15 @@ void computeBinning(
         // compute model posteriors P(m_B|D)
         if (options->model_posterior) {
                 computeModelPosteriors(bp, evidence_log_tmp, mpost, evidence_ref);
+        }
+        if (options->marginal) {
+                for (i = 0; i < bp->T; i++) {
+                        notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bp->T);
+                        for (j = 0; j < options->n_marginals; j++) {
+                                prob_t p = (j+1)*options->marginal_step;
+                                marginals[i][j] = computeMarginal(bp, i, p, options->which, evidence_ref);
+                        }
+                }
         }
         // break probability
         if (options->bprob) {
@@ -453,7 +500,7 @@ void computeBinning(
         }
         // compute the differential entropy
         if (options->differential_gain) {
-                differentialUtility(bp, differential_gain, evidence_ref);
+                differentialUtility(bp, differential_gain, evidence_ref, options);
         }
 }
 
@@ -469,11 +516,15 @@ bin_log(
         if (options->n_moments > 0) {
                 result->moments = gsl_matrix_alloc(options->n_moments, K);
         }
+        if (options->marginal) {
+                result->marginals = gsl_matrix_alloc(K, options->n_marginals);
+        }
         result->bprob   = gsl_vector_alloc(K);
         result->mpost   = gsl_vector_alloc(K);
         result->differential_gain = gsl_vector_alloc(K);
         result->multibin_entropy  = gsl_vector_alloc(K);
         prob_t * moments[options->n_moments];
+        prob_t * marginals[K];
         prob_t bprob[K];
         prob_t mpost[K];
         prob_t differential_gain[K];
@@ -485,11 +536,14 @@ bin_log(
         for (i = 0; i < options->n_moments; i++) {
                 moments[i] = (prob_t *)calloc(K, sizeof(prob_t));
         }
+        for (i = 0; i < K; i++) {
+                marginals[i] = (prob_t *)calloc(options->n_marginals, sizeof(prob_t));
+        }
         bzero(bprob,     K*sizeof(prob_t));
         bzero(mpost,     K*sizeof(prob_t));
         bzero(prior_log, K*sizeof(prob_t));
-        bzero(differential_gain,  K*sizeof(prob_t));
-        bzero(multibin_entropy, K*sizeof(prob_t));
+        bzero(differential_gain, K*sizeof(prob_t));
+        bzero(multibin_entropy,  K*sizeof(prob_t));
 
         verbose       = options->verbose;
 
@@ -497,9 +551,12 @@ bin_log(
         bp.mprior     = mprior;
         bp.T          = K;
         bp.prior_log  = prior_log;
-        bp.add_event.pos   = 0;
+        bp.add_event.pos   = -1;
         bp.add_event.n     = 0;
         bp.add_event.which = options->which;
+        bp.fix_prob.pos    = -1;
+        bp.fix_prob.val    = 0;
+        bp.fix_prob.which  = options->which;
         bp.events     = counts->size1;
         bp.counts     = counts;
         bp.alpha      = (unsigned int *)malloc(bp.events*sizeof(unsigned int));
@@ -512,10 +569,13 @@ bin_log(
         if (options->prombsTest) {
                 prombsTest(&bp);
         }
-        computeBinning(&bp, moments, bprob, mpost, differential_gain, multibin_entropy, options);
+        computeBinning(&bp, moments, marginals, bprob, mpost, differential_gain, multibin_entropy, options);
         for (i = 0; i <= bp.T-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
+                }
+                for (j = 0; j < options->n_marginals; j++) {
+                        gsl_matrix_set(result->marginals, i, j, marginals[i][j]);
                 }
                 gsl_vector_set(result->bprob, i, bprob[i]);
                 gsl_vector_set(result->mpost, i, mpost[i]);
@@ -528,6 +588,9 @@ bin_log(
         }
         for (i = 0; i < options->n_moments; i++) {
                 free(moments[i]);
+        }
+        for (i = 0; i < K; i++) {
+                free(marginals[i]);
         }
         free(bp.alpha);
         free(bp.counts_m);

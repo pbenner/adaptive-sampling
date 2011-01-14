@@ -103,29 +103,32 @@ def loadResult():
         if not config_parser.has_section('Sampling Result'):
             raise IOError("Invalid configuration file.")
 
-        counts  = config.readMatrix(config_parser, 'Sampling Result', 'counts',  int)
-        moments = config.readMatrix(config_parser, 'Sampling Result', 'moments', float)
-        samples = config.readVector(config_parser, 'Sampling Result', 'samples', int)
-        mpost   = config.readVector(config_parser, 'Sampling Result', 'mpost',   float)
+        counts    = config.readMatrix(config_parser, 'Sampling Result', 'counts',    int)
+        moments   = config.readMatrix(config_parser, 'Sampling Result', 'moments',   float)
+        marginals = config.readMatrix(config_parser, 'Sampling Result', 'marginals', float)
+        samples   = config.readVector(config_parser, 'Sampling Result', 'samples',   int)
+        mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',     float)
         if config_parser.has_option('Sampling Result', 'bprob'):
-            bprob = config.readVector(config_parser, 'Sampling Result', 'bprob', float)
+            bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',     float)
         else:
             bprob     = []
         result = {
-            'moments' : moments,
-            'bprob'   : bprob,
-            'mpost'   : mpost,
-            'counts'  : counts,
-            'samples' : samples,
+            'moments'   : moments,
+            'marginals' : marginals,
+            'bprob'     : bprob,
+            'mpost'     : mpost,
+            'counts'    : counts,
+            'samples'   : samples,
             'multibin_entropy'  : [],
             'differential_gain' : [] }
     else:
         result = {
-            'moments' : [],
-            'bprob'   : [],
-            'mpost'   : [],
-            'counts'  : [],
-            'samples' : [],
+            'moments'   : [],
+            'marginals' : [],
+            'bprob'     : [],
+            'mpost'     : [],
+            'counts'    : [],
+            'samples'   : [],
             'multibin_entropy'  : [],
             'differential_gain' : [] }
     return result
@@ -203,16 +206,18 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'samples'    : 0,
-    'epsilon'    : 0.00001,
-    'n_moments'  : 0,
-    'which'      : 0,
-    'load'       : None,
-    'save'       : None,
-    'verbose'    : False,
-    'prombsTest' : False,
-    'compare'    : False,
-    'bprob'      : False,
+    'samples'       : 0,
+    'epsilon'       : 0.00001,
+    'n_moments'     : 0,
+    'marginal'      : 1,
+    'marginal_step' : 0.01,
+    'which'         : 0,
+    'load'          : None,
+    'save'          : None,
+    'verbose'       : False,
+    'prombsTest'    : False,
+    'compare'       : False,
+    'bprob'         : False,
     'differential_gain' : True,
     'multibin_entropy'  : False,
     'model_posterior'   : False,

@@ -18,6 +18,7 @@ import math
 import numpy as np
 from matplotlib import *
 from matplotlib.pyplot import *
+from matplotlib.image import NonUniformImage
 import matplotlib.patches as patches
 import matplotlib.path as path
 
@@ -117,18 +118,24 @@ def plotBin(ax, x, result):
     ax.set_ylabel(r'$P(S_i|E)$', font)
     ax.legend(loc=4, frameon=False)
 
-def plotBinning(x, result, plot_bprob, plot_multientropy):
+    y = np.linspace(0, 1, len(result['marginals'][0]))
+    z = zip(*result['marginals'])
+    im = NonUniformImage(ax, interpolation='nearest', cmap=cm.Greys)
+    im.set_data(x, y, z)
+    ax.images.append(im)
+
+def plotBinning(x, result, options):
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax1 = fig.add_subplot(2,1,1)
     ax2 = fig.add_subplot(2,1,2)
     plotBin(ax1, None, result)
     plotModelPosterior(ax2, result)
-    if result['multibin_entropy'] and plot_multientropy:
+    if result['multibin_entropy'] and options['multibin_entropy']:
         plotMultibinEntropy(ax2.twinx(), result)
-    if result['bprob'] and plot_bprob:
+    if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax1.twinx(), x, result)
-    if result['differential_gain']:
+    if result['differential_gain'] and options['differential_gain']:
         plotUtility(ax1.twinx(), result)
     show()
 

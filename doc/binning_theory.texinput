@@ -587,6 +587,7 @@ where $\mu'_0 = 1$ is the normalization constraint.
 \begin{equation}
   p(x|\vec{\lambda}) = \exp(-1 -\sum_{i=0}^n\lambda_ix^i)
 \end{equation}
+
 \section*{Break Probabilities}
 For the analysis of certain data it is often useful to know where a
 new partition begins. For instance when we want to analyse

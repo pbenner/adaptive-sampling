@@ -71,10 +71,11 @@ def load_config():
     if not config_parser.has_section('Result'):
         raise IOError("Invalid configuration file.")
 
-    moments = config.readMatrix(config_parser, 'Result', 'moments', float)
-    mpost   = config.readVector(config_parser, 'Result', 'mpost',   float)
+    moments   = config.readMatrix(config_parser, 'Result', 'moments',   float)
+    marginals = config.readMatrix(config_parser, 'Result', 'marginals', float)
+    mpost     = config.readVector(config_parser, 'Result', 'mpost',     float)
     if config_parser.has_option('Result', 'bprob'):
-        bprob = config.readVector(config_parser, 'Result', 'bprob', float)
+        bprob = config.readVector(config_parser, 'Result', 'bprob',     float)
     else:
         bprob     = []
     if config_parser.has_option('Result', 'multibin_entropy'):
@@ -82,9 +83,10 @@ def load_config():
     else:
         multibin_entropy = []
     result = {
-        'moments' : moments,
-        'bprob'   : bprob,
-        'mpost'   : mpost,
+        'moments'   : moments,
+        'marginals' : marginals,
+        'bprob'     : bprob,
+        'mpost'     : mpost,
         'multibin_entropy'  : multibin_entropy,
         'differential_gain' : [] }
     return result
@@ -109,6 +111,7 @@ def saveResult(result):
     config = ConfigParser.ConfigParser()
     config.add_section('Result')
     config.set('Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
+    config.set('Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
     config.set('Result', 'bprob',   " ".join(map(str, result['bprob'])))
     config.set('Result', 'mpost',   " ".join(map(str, result['mpost'])))
     config.set('Result', 'multibin_entropy', " ".join(map(str, result['multibin_entropy'])))
@@ -176,15 +179,17 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'epsilon'    : 0.00001,
-    'n_moments'  : 3,
-    'which'      : 0,
-    'load'       : None,
-    'save'       : None,
-    'verbose'    : False,
-    'prombsTest' : False,
-    'compare'    : False,
-    'bprob'      : False,
+    'epsilon'       : 0.00001,
+    'marginal'      : 1,
+    'marginal_step' : 0.01,
+    'n_moments'     : 3,
+    'which'         : 0,
+    'load'          : None,
+    'save'          : None,
+    'verbose'       : False,
+    'prombsTest'    : False,
+    'compare'       : False,
+    'bprob'         : False,
     'differential_gain' : False,
     'multibin_entropy'  : False,
     'model_posterior'   : True,
