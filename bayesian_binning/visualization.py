@@ -25,22 +25,25 @@ import matplotlib.path as path
 import statistics
 
 font = {'family'     : 'serif',
-        'color'      : 'k',
         'weight'     : 'normal',
         'size'       : 12 }
 
+smallfont = {'family'     : 'serif',
+             'weight'     : 'normal',
+             'size'       : 10 }
+
 def plotGroundTruth(ax, gt):
     x = np.arange(0, len(gt), 1)
-    ax.plot(x, gt, label='Ground Truth')
+    p = ax.plot(x, gt, label='Ground Truth')
     ax.set_ylabel('Ground Truth', font)
-    ax.legend(loc=2, frameon=False)
+    return p
 
 def plotUtility(ax, result):
     x = np.arange(0, len(result['differential_gain']), 1)
-    plot(x, result['differential_gain'], label=r'$U_x$')
+    p = plot(x, result['differential_gain'], label=r'$U_x$')
     ax.set_ylabel(r'$U_x$', font)
     ax.ticklabel_format(style='sci', scilimits=(0,0))
-    ax.legend(loc=4, frameon=False)
+    return p
 
 def plotModelPosterior(ax, result):
     N = len(result['mpost'])
@@ -92,32 +95,27 @@ def plotBinBoundaries(ax, x, result):
     ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
     ax.set_ylim(0,1)
     ax.set_ylabel(r'$P(\Rsh_i|E)$', font)
-#    nbins = argmax(result['mpost'])[1]+1
-#    bprob_max = sorted(result['bprob'])[-nbins:]
-#    for b in bprob_max:
-#        i = bprob.index(b)
-#        ax.axvline(x[i])
 
 def plotBin(ax, x, result):
     """Plot the binning result."""
     N = len(result['moments'][0])
     if x==None:
         x = np.arange(0, N, 1)
-    ax.set_xlim(x[0],x[-1])
-    ax.set_ylim(0,1)
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
     skew     = statistics.standardizedMoments(result['moments'], 3)
-#    kurtosis = statistics.standardizedMoments(result['moments'], 4)
-#    tail     = statistics.standardizedMoments(result['moments'], 5)
     ax.plot(x, [ a + b for a, b in zip(result['moments'][0], stddev) ], 'k--')
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
-#    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], skew) ], 'g--')
-#    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], tail) ], 'y--')
-    ax.plot(x, result['moments'][0], 'r', label='$P(S_i|E)$')
+    p = ax.plot(x, result['moments'][0], 'r', label='$P(S_i|E)$')
+    ax.set_xlim(x[0],x[-1])
+    ax.set_ylim(0,1)
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
-    ax.legend(loc=4, frameon=False)
+    return p
 
+def plotMarginal(ax, x, result):
+    N = len(result['moments'][0])
+    if x==None:
+        x = np.arange(0, N, 1)
     y = np.linspace(0, 1, len(result['marginals'][0]))
     z = zip(*result['marginals'])
     im = NonUniformImage(ax, interpolation='nearest', cmap=cm.Greys)
@@ -146,8 +144,10 @@ def plotSampling(x, result, gt, options):
     ax2 = fig.add_subplot(3,1,2)
     ax3 = fig.add_subplot(3,1,3)
     title(str(len(result['samples']))+" Samples")
-    plotBin(ax1, None, result)
-    plotGroundTruth(ax1.twinx(), gt)
+    p1 = plotBin(ax1, None, result)
+    p2 = plotGroundTruth(ax1.twinx(), gt)
+    legend([p1, p2], ['$P(S_i|E)$', 'Ground Truth'], loc=4, prop=smallfont)
+    plotMarginal(ax1, None, result)
     plotCounts(ax2, result)
     plotModelPosterior(ax3, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
@@ -155,7 +155,8 @@ def plotSampling(x, result, gt, options):
     if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax1.twinx(), x, result)
     if result['differential_gain'] and options['differential_gain']:
-        plotUtility(ax2.twinx(), result)
+        p3 = plotUtility(ax2.twinx(), result)
+        legend([p3], ['$U_x$'], loc=4, prop=smallfont)
     show()
 
 def plotBinningSpikes(x, timings, result, options):
