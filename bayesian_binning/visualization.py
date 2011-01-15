@@ -107,7 +107,10 @@ def plotBin(ax, x, result):
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
     p = ax.plot(x, result['moments'][0], 'r', label='$P(S_i|E)$')
     ax.set_xlim(x[0],x[-1])
-    ax.set_ylim(0,1)
+    [y1,y2] = ax.get_ylim()
+    if y1 < 0: y1 = 0
+    if y2 > 1: y2 = 1
+    ax.set_ylim(y1, y2)
     ax.set_xlabel('t',  font)
     ax.set_ylabel(r'$P(S_i|E)$', font)
     return p
@@ -129,6 +132,8 @@ def plotBinning(x, result, options):
     ax2 = fig.add_subplot(2,1,2)
     plotBin(ax1, None, result)
     plotModelPosterior(ax2, result)
+    if result['marginals'] and options['marginal']:
+        plotMarginal(ax1, None, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
         plotMultibinEntropy(ax2.twinx(), result)
     if result['bprob'] and options['bprob']:
@@ -147,9 +152,10 @@ def plotSampling(x, result, gt, options):
     p1 = plotBin(ax1, None, result)
     p2 = plotGroundTruth(ax1.twinx(), gt)
     legend([p1, p2], ['$P(S_i|E)$', 'Ground Truth'], loc=4, prop=smallfont)
-    plotMarginal(ax1, None, result)
     plotCounts(ax2, result)
     plotModelPosterior(ax3, result)
+    if result['marginals'] and options['marginal']:
+        plotMarginal(ax1, None, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
         plotMultibinEntropy(ax3.twinx(), result)
     if result['bprob'] and options['bprob']:
@@ -168,6 +174,8 @@ def plotBinningSpikes(x, timings, result, options):
     plotSpikes(ax1, x, timings)
     plotBin   (ax2, x, result)
     plotModelPosterior(ax3, result)
+    if result['marginals'] and options['marginal']:
+        plotMarginal(ax1, None, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
         plotMutibinEntropy(ax3.twinx(), result)
     if result['bprob'] and options['bprob']:

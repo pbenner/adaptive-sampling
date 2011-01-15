@@ -50,10 +50,11 @@ def usage():
     print "Options:"
     print "   -b                          - compute break probabilities"
     print "   -d                          - compute differential gain"
-    print "   -e                          - compute multibin entropies"
+    print "   -m  --marginal              - compute full marginal distribution"
+    print "   -s  --marginal-step=STEP    - step size for the marginal distribution"
     print "       --epsilon=EPSILON       - epsilon for entropy estimations"
     print "   -n  --samples=N             - number of samples"
-    print "   -m  --moments=N             - compute the first N>=3 moments"
+    print "   -k  --moments=N             - compute the first N>=3 moments"
     print "       --which=EVENT           - for which event to compute the binning"
     print
     print "       --load                  - load result from file"
@@ -213,7 +214,7 @@ options = {
     'samples'       : 0,
     'epsilon'       : 0.00001,
     'n_moments'     : 0,
-    'marginal'      : 1,
+    'marginal'      : 0,
     'marginal_step' : 0.01,
     'which'         : 0,
     'load'          : None,
@@ -230,9 +231,9 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "load=", "save=",
-                      "which=", "epsilon=", "moments" ]
-        opts, tail = getopt.getopt(sys.argv[1:], "dem:n:bhvt", longopts)
+        longopts   = ["help", "verbose", "load=", "save=", "marginal",
+                      "marginal-step=", "which=", "epsilon=", "moments" ]
+        opts, tail = getopt.getopt(sys.argv[1:], "dems:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -246,7 +247,11 @@ def main():
             options["prombsTest"] = True
         if o == "-n":
             options["samples"] = int(a)
-        if o in ("-m", "--moments"):
+        if o in ("-m", "--marginal"):
+            options["marginal"] = True
+        if o in ("-s", "--marginal-step"):
+            options["marginal_step"] = float(a)
+        if o in ("-k", "--moments"):
             if int(a) >= 3:
                 options["n_moments"] = int(a)
             else:

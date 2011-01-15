@@ -140,8 +140,14 @@ prob_t iec_log(binProblem *bp, int kk, int k)
         }
         if (kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
                 // compute marginals
-                return (c[0]-1)*log(bp->fix_prob.val) + (c[1]-1)*log(1-bp->fix_prob.val)
-                        - mbeta_log(bp, bp->alpha);
+                if (bp->fix_prob.which == 0) {
+                        return (c[0]-1)*log(bp->fix_prob.val) + (c[1]-1)*log(1-bp->fix_prob.val)
+                                - mbeta_log(bp, bp->alpha);
+                }
+                else {
+                        return (c[0]-1)*log(1-bp->fix_prob.val) + (c[1]-1)*log(bp->fix_prob.val)
+                                - mbeta_log(bp, bp->alpha);
+                }
         }
         else {
                 return mbeta_log(bp, c) - mbeta_log(bp, bp->alpha);
