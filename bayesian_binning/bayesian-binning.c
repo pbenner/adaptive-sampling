@@ -95,22 +95,6 @@ prob_t mbeta_log(binProblem *bp, unsigned int *p)
 }
 
 static
-prob_t mbetaInv_log(binProblem *bp, unsigned int *p)
-{
-        unsigned int i;
-        prob_t sum1, sum2;
-
-        sum1 = 0;
-        sum2 = 0;
-        for (i = 0; i < bp->events; i++) {
-                sum1 += p[i];
-                sum2 += gsl_sf_lngamma(p[i]);
-        }
-
-        return gsl_sf_lngamma(sum1) - sum2;
-}
-
-static
 void computeCountStatistics(binProblem *bp)
 {
         int ks, ke, i, j;
@@ -140,12 +124,8 @@ static
 void computePrior_log(binProblem *bp)
 {
         unsigned int m_b;
-        prob_t b;
-        b = mbetaInv_log(bp, bp->alpha);
         for (m_b = 0; m_b < bp->T; m_b++) {
-                bp->prior_log[m_b] = (m_b+1)*b -
-                gsl_sf_lnchoose(bp->T-1, m_b);
-//                bp->prior_log[m_b] = gsl_sf_lnchoose(bp->T-1, m_b);
+                bp->prior_log[m_b] = -gsl_sf_lnchoose(bp->T-1, m_b);
         }
 }
 
@@ -160,12 +140,11 @@ prob_t iec_log(binProblem *bp, int kk, int k)
         }
         if (kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
                 // compute marginals
-                return (c[0]-1)*log(bp->fix_prob.val) + (c[1]-1)*log(1-bp->fix_prob.val);
-//                        - mbeta_log(bp, bp->alpha);
+                return (c[0]-1)*log(bp->fix_prob.val) + (c[1]-1)*log(1-bp->fix_prob.val)
+                        - mbeta_log(bp, bp->alpha);
         }
         else {
-//                return mbeta_log(bp, c) - mbeta_log(bp, bp->alpha);
-                return mbeta_log(bp, c);
+                return mbeta_log(bp, c) - mbeta_log(bp, bp->alpha);
         }
 }
 
