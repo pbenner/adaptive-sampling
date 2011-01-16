@@ -460,9 +460,16 @@ void computeBinning(
         if (options->marginal) {
                 for (i = 0; i < bp->T; i++) {
                         notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bp->T);
-                        for (j = 0; j < options->n_marginals; j++) {
-                                prob_t p = (j+1)*options->marginal_step;
-                                marginals[i][j] = computeMarginal(bp, i, p, options->which, evidence_ref);
+                        marginals[i][0] = 0;
+                        for (j = 1; j < options->n_marginals; j++) {
+                                prob_t p = j*options->marginal_step;
+                                if (options->marginal_range.from <= p &&
+                                    options->marginal_range.to   >= p) {
+                                        marginals[i][j] = computeMarginal(bp, i, p, options->which, evidence_ref);
+                                }
+                                else {
+                                        marginals[i][j] = 0;
+                                }
                         }
                 }
         }

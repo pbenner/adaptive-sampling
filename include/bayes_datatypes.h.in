@@ -49,6 +49,10 @@ typedef struct options {
         int which;
         int marginal;
         float marginal_step;
+        struct {
+                prob_t from;
+                prob_t to;
+        } marginal_range;
         int n_moments;
         int n_marginals;
         int model_posterior;

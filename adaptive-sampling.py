@@ -48,21 +48,22 @@ def usage():
     print "adaptive-sampling.py [option]... FILE "
     print
     print "Options:"
-    print "   -b                          - compute break probabilities"
-    print "   -d                          - compute differential gain"
-    print "   -m  --marginal              - compute full marginal distribution"
-    print "   -s  --marginal-step=STEP    - step size for the marginal distribution"
-    print "       --epsilon=EPSILON       - epsilon for entropy estimations"
-    print "   -n  --samples=N             - number of samples"
-    print "   -k  --moments=N             - compute the first N>=3 moments"
-    print "       --which=EVENT           - for which event to compute the binning"
+    print "   -b                             - compute break probabilities"
+    print "   -d                             - compute differential gain"
+    print "   -m  --marginal                 - compute full marginal distribution"
+    print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
+    print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
+    print "       --epsilon=EPSILON          - epsilon for entropy estimations"
+    print "   -n  --samples=N                - number of samples"
+    print "   -k  --moments=N                - compute the first N>=3 moments"
+    print "       --which=EVENT              - for which event to compute the binning"
     print
-    print "       --load                  - load result from file"
-    print "       --save                  - save result to file"
+    print "       --load                     - load result from file"
+    print "       --save                     - save result to file"
     print
-    print "   -h, --help                  - print help"
-    print "   -v, --verbose               - be verbose"
-    print "   -t, --prombsTest            - test prombs algorithm"
+    print "   -h, --help                     - print help"
+    print "   -v, --verbose                  - be verbose"
+    print "   -t, --prombsTest               - test prombs algorithm"
     print
 
 # tools
@@ -211,18 +212,19 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'samples'       : 0,
-    'epsilon'       : 0.00001,
-    'n_moments'     : 0,
-    'marginal'      : 0,
-    'marginal_step' : 0.01,
-    'which'         : 0,
-    'load'          : None,
-    'save'          : None,
-    'verbose'       : False,
-    'prombsTest'    : False,
-    'compare'       : False,
-    'bprob'         : False,
+    'samples'           : 0,
+    'epsilon'           : 0.00001,
+    'n_moments'         : 0,
+    'marginal'          : 0,
+    'marginal_step'     : 0.01,
+    'marginal_range'    : (0.0,1.0),
+    'which'             : 0,
+    'load'              : None,
+    'save'              : None,
+    'verbose'           : False,
+    'prombsTest'        : False,
+    'compare'           : False,
+    'bprob'             : False,
     'differential_gain' : True,
     'multibin_entropy'  : False,
     'model_posterior'   : False,
@@ -231,9 +233,9 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "load=", "save=", "marginal",
+        longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments" ]
-        opts, tail = getopt.getopt(sys.argv[1:], "dems:k:n:bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -249,6 +251,8 @@ def main():
             options["samples"] = int(a)
         if o in ("-m", "--marginal"):
             options["marginal"] = True
+        if o in ("-r", "--marginal-range"):
+            options['marginal_range'] = tuple(map(float, a[1:-1].split(',')))
         if o in ("-s", "--marginal-step"):
             options["marginal_step"] = float(a)
         if o in ("-k", "--moments"):

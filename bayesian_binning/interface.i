@@ -61,15 +61,16 @@ PyObject * vectorToPyList(Vector *v) {
 
 %typemap(in) Options * {
     $1 = (Options *)malloc(sizeof(Options));
-    PyObject *verbose       = PyDict_GetItemString($input, "verbose");
-    PyObject *prombsTest    = PyDict_GetItemString($input, "prombsTest");
-    PyObject *epsilon       = PyDict_GetItemString($input, "epsilon");
-    PyObject *gmp           = PyDict_GetItemString($input, "gmp");
-    PyObject *bprob         = PyDict_GetItemString($input, "bprob");
-    PyObject *which         = PyDict_GetItemString($input, "which");
-    PyObject *marginal      = PyDict_GetItemString($input, "marginal");
-    PyObject *marginal_step = PyDict_GetItemString($input, "marginal_step");
-    PyObject *n_moments     = PyDict_GetItemString($input, "n_moments");
+    PyObject *verbose        = PyDict_GetItemString($input, "verbose");
+    PyObject *prombsTest     = PyDict_GetItemString($input, "prombsTest");
+    PyObject *epsilon        = PyDict_GetItemString($input, "epsilon");
+    PyObject *gmp            = PyDict_GetItemString($input, "gmp");
+    PyObject *bprob          = PyDict_GetItemString($input, "bprob");
+    PyObject *which          = PyDict_GetItemString($input, "which");
+    PyObject *marginal       = PyDict_GetItemString($input, "marginal");
+    PyObject *marginal_step  = PyDict_GetItemString($input, "marginal_step");
+    PyObject *marginal_range = PyDict_GetItemString($input, "marginal_range");
+    PyObject *n_moments      = PyDict_GetItemString($input, "n_moments");
     PyObject *differential_gain = PyDict_GetItemString($input, "differential_gain");
     PyObject *multibin_entropy  = PyDict_GetItemString($input, "multibin_entropy");
     PyObject *model_posterior   = PyDict_GetItemString($input, "model_posterior");
@@ -83,7 +84,9 @@ PyObject * vectorToPyList(Vector *v) {
     $1->which         = PyInt_AsLong(which);
     $1->marginal      = PyInt_AsLong(marginal);
     $1->marginal_step = PyFloat_AsDouble(marginal_step);
-    $1->n_marginals   = (int)floor(1.0/$1->marginal_step);
+    $1->marginal_range.from = PyFloat_AsDouble(PyTuple_GetItem(marginal_range, 0));
+    $1->marginal_range.to   = PyFloat_AsDouble(PyTuple_GetItem(marginal_range, 1));
+    $1->n_marginals   = (int)floor(1.0/$1->marginal_step) + 1;
     $1->n_moments     = PyInt_AsLong(n_moments);
     $1->epsilon       = PyFloat_AsDouble(epsilon);
 }

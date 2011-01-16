@@ -175,7 +175,7 @@ def plotBinningSpikes(x, timings, result, options):
     plotBin   (ax2, x, result)
     plotModelPosterior(ax3, result)
     if result['marginals'] and options['marginal']:
-        plotMarginal(ax1, None, result)
+        plotMarginal(ax2, x, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
         plotMutibinEntropy(ax3.twinx(), result)
     if result['bprob'] and options['bprob']:

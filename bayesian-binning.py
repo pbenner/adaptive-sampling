@@ -47,21 +47,22 @@ def usage():
     print "bayesian-binning.py [option]... FILE "
     print
     print "Options:"
-    print "   -b                          - compute break probabilities"
-    print "   -d                          - compute differential gain"
-    print "   -e                          - compute multibin entropies"
-    print "   -m  --marginal              - compute full marginal distribution"
-    print "   -s  --marginal-step=STEP    - step size for the marginal distribution"
-    print "       --epsilon=EPSILON       - epsilon for entropy estimations"
-    print "   -k  --moments=N             - compute the first N>=3 moments"
-    print "       --which=EVENT           - for which event to compute the binning"
+    print "   -b                             - compute break probabilities"
+    print "   -d                             - compute differential gain"
+    print "   -e                             - compute multibin entropies"
+    print "   -m  --marginal                 - compute full marginal distribution"
+    print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
+    print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
+    print "       --epsilon=EPSILON          - epsilon for entropy estimations"
+    print "   -k  --moments=N                - compute the first N>=3 moments"
+    print "       --which=EVENT              - for which event to compute the binning"
     print
-    print "       --load                  - load result from file"
-    print "       --save                  - save result to file"
+    print "       --load                     - load result from file"
+    print "       --save                     - save result to file"
     print
-    print "   -h, --help                  - print help"
-    print "   -v, --verbose               - be verbose"
-    print "   -t, --prombsTest            - test prombs algorithm"
+    print "   -h, --help                     - print help"
+    print "   -v, --verbose                  - be verbose"
+    print "   -t, --prombsTest               - test prombs algorithm"
     print
 
 # load results from file
@@ -161,7 +162,7 @@ def parseConfig(config_file):
         if options['save']:
             saveResult(result)
         else:
-            x = np.arange(0, N, 1)
+            x = np.arange(0, int(N), 1)
             vis.plotBinning(x, result, options)
     if config_parser.has_section('Trials'):
         binsize   = config_parser.getint('Trials', 'binsize')
@@ -181,17 +182,18 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'epsilon'       : 0.00001,
-    'marginal'      : 0,
-    'marginal_step' : 0.01,
-    'n_moments'     : 3,
-    'which'         : 0,
-    'load'          : None,
-    'save'          : None,
-    'verbose'       : False,
-    'prombsTest'    : False,
-    'compare'       : False,
-    'bprob'         : False,
+    'epsilon'           : 0.00001,
+    'marginal'          : 0,
+    'marginal_step'     : 0.01,
+    'marginal_range'    : (0.0,1.0),
+    'n_moments'         : 3,
+    'which'             : 0,
+    'load'              : None,
+    'save'              : None,
+    'verbose'           : False,
+    'prombsTest'        : False,
+    'compare'           : False,
+    'bprob'             : False,
     'differential_gain' : False,
     'multibin_entropy'  : False,
     'model_posterior'   : True,
@@ -200,9 +202,9 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "load=", "save=", "marginal",
+        longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest"]
-        opts, tail = getopt.getopt(sys.argv[1:], "dems:k:bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -216,6 +218,9 @@ def main():
             options["prombsTest"] = True
         if o in ("-m", "--marginal"):
             options["marginal"] = True
+        if o in ("-r", "--marginal-range"):
+            options['marginal_range'] = tuple(map(float, a[1:-1].split(',')))
+            print options['marginal_range']
         if o in ("-s", "--marginal-step"):
             options["marginal_step"] = float(a)
         if o in ("-k", "--moments"):
