@@ -220,7 +220,6 @@ def main():
             options["marginal"] = True
         if o in ("-r", "--marginal-range"):
             options['marginal_range'] = tuple(map(float, a[1:-1].split(',')))
-            print options['marginal_range']
         if o in ("-s", "--marginal-step"):
             options["marginal_step"] = float(a)
         if o in ("-k", "--moments"):
