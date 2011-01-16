@@ -49,6 +49,7 @@ def usage():
     print
     print "Options:"
     print "   -b                             - compute break probabilities"
+    print "       --blocks=N                 - sample in blocks of N measurements"
     print "   -d                             - compute differential gain"
     print "   -m  --marginal                 - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
@@ -174,10 +175,12 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         print "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
         result  = bin(counts, alpha, mprior)
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
-        index   = selectRandom(argmax(gain))
-        event   = experiment(ground_truth, index)
-        samples.append(index)
-        counts[event][index] += 1
+        for j in range(0, options['blocks']):
+            index   = selectRandom(argmax(gain))
+            event   = experiment(ground_truth, index)
+            samples.append(index)
+            counts[event][index] += 1
+            gain.pop(index)
     options['model_posterior'] = True
     options['n_moments'] = 3
     options['marginal'] = marginal
@@ -212,6 +215,7 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
+    'blocks'            : 1,
     'samples'           : 0,
     'epsilon'           : 0.00001,
     'n_moments'         : 0,
@@ -234,13 +238,15 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
-                      "marginal-step=", "which=", "epsilon=", "moments" ]
+                      "marginal-step=", "which=", "epsilon=", "moments", "blocks=" ]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
     output = None
     for o, a in opts:
+        if o == "--blocks":
+            options["blocks"] = int(a)
         if o in ("-v", "--verbose"):
             sys.stderr.write("Verbose mode turned on.\n")
             options["verbose"] = True

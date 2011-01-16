@@ -851,3 +851,16 @@ exchangeable (non-ergodic) sequences, we then have
   \end{split}
 \end{equation}
 %What does this result mean?
+
+\section*{Adaptive sampling}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=.48\textwidth,page=1]{../data/data12.pdf}
+  \includegraphics[width=.48\textwidth,page=2]{../data/data12.pdf}\\
+  \includegraphics[width=.48\textwidth,page=3]{../data/data12.pdf}
+  \includegraphics[width=.48\textwidth,page=4]{../data/data12.pdf}
+  \caption{
+    Adaptive sampling from a given ground truth.
+  }
+  \label{fig:2}
+\end{figure}
