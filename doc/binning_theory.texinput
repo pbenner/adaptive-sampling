@@ -90,9 +90,10 @@ X(\omega) \in A\}) = P(X \in A)$, i.e. $X \sim \mu$, with $A
 \section*{Inference}
 Given a sequence of $m_T$ observations $E = \{X_1, X_2, \dots,
 X_{m_T}\}$ how can we make predictions about future
-observations\footnote{This is known as \textit{Hume's problem of
-induction} and was first answered by de Finetti's representation
-theorem for problems where sequences of events are exchangeable.}?
+observations?
+%\footnote{This is known as \textit{Hume's problem of
+%induction} and was first answered by de Finetti's representation
+%theorem for problems where sequences of events are exchangeable.}
 That is, how can we formulate a hypothesis $\mathcal{H}$ about the
 laws behind the sequence of observations and compute the probability
 of our hypothesis conditional on all the evidence $E$ that we
@@ -412,7 +413,7 @@ following definition:
   i.e. the classes are independent.
 \end{theorem}
 
-\section*{Inductive inference for piecewise constant distributions}
+\section*{Inductive inference of piecewise constant distributions}
 We will now generalize the results of the previous section. Suppose
 that we have $m_T$ measurements (trials) where each of them is a
 sequence $X_i^1 = x_i^1, \dots, X_i^L = x_i^L$ of $L$ discrete events,
@@ -436,27 +437,26 @@ $\Pc(\mathcal{T})$ consisting of exactly $m_B$ different subsets. For
 simplicity we will first assume that we know the number of partitions
 $m_B$. We are interested in the joint probability of the parameters
 $\vec{\Theta} = (\vec{\theta}^b)_{b \in B}$ and a partition $B$ given
-our observations and the size of the partition $m_B$, i.e. we want to
-compute
+our observations, i.e. we want to compute
 \begin{equation}
   \begin{split}
-    P(\vec{\Theta},B|E,m_B)
-    &= \frac{P(E,\vec{\Theta},B|m_B)}{P(E|m_B)}\\
-    &= \frac{P(E|\vec{\Theta},B,m_B)P(\vec{\Theta},B|m_B)}{P(E|m_B)}.
+    P(\vec{\Theta},B|E)
+    &= \frac{P(E,\vec{\Theta},B)}{P(E)}\\
+    &= \frac{P(E|\vec{\Theta},B)P(\vec{\Theta},B)}{P(E)}.
   \end{split}
 \end{equation}
 We assume that events are independent between the bins and therefore
 we can factorize the likelihood and prior such that
 \begin{equation}
-  P(E,\vec{\Theta},B|m_B) =
-  \prod_{b\in B} P(E|\vec{\theta}^b,B,m_B)P(\vec{\theta}^b,B|m_B).
+  P(E,\vec{\Theta},B) =
+  \prod_{b\in B} P(E|\vec{\theta}^b,B)P(\vec{\theta}^b,B).
 \end{equation}
 where $\vec{\theta}^b = (\theta^b_x)_{x \in \mathcal{X}}$ denote the
 probabilities of observing event $x \in \mathcal{X}$ in bin $b$.
 For $P(\vec{\theta}^b,B|m_B)$ we choose a non-informative prior
 assumption such that
 \begin{equation}
-  P(\vec{\theta}^b,B|m_B) = P(\vec{\theta}^b|m_B)P(B|m_B),
+  P(\vec{\theta}^b,B) = P(\vec{\theta}^b)P(B),
 \end{equation}
 which means that the prior knowledge about $\vec{\theta}^b$ is
 independent of $B$ and vice versa. Since we have no a priori
@@ -464,80 +464,76 @@ information about the partitions, we choose a prior in an objective
 Bayesian fashion that maximizes the entropy (cf. \cite{Jaynes1957a,
   Jaynes1957b, Jaynes2003}), i.e.
 \begin{equation}
-  P(B|m_B) = {L \choose m_B}^{-1}.
+  P(B) = \sum_{m_B \in \mathcal{M}} P(B|m_B)P(m_B)
+       = \sum_{m_B \in \mathcal{M}} {L \choose m_B}^{-1}P(m_B),
 \end{equation}
-$P(\vec{\theta}^b|m_B)$ is represented by a distribution of
-the Dirichlet familiy as discussed earlier. To compute the evidence
+where $P(m_B)$ denotes the prior for a given model size $m_B$. We will
+usually choose a non-informative prior $1/|\mathcal{M}|$ with
+$\mathcal{M} = \{1, 2, \dots, L\}$ unless we want to select specific
+model sizes. $P(\vec{\theta}^b|m_B)$ is represented by a distribution
+of the Dirichlet familiy as discussed earlier. To compute the evidence
 \begin{equation}
   \begin{split}
-    P(E|m_B)
-    &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{X})}
-      P(E|B,m_B) P(B|m_B)\\
+    P(E)
+    &= \sum_{B\in \mathcal{P}(\mathcal{X})}
+      P(E|B) P(B)\\
   \end{split}
 \end{equation}
 we have to sum over all possible partitions $B \in
-\mathcal{P}_{m_B}$. Furthermore we have
+\mathcal{P}$. Furthermore we have
 \begin{equation}
   \begin{split}
-    P(E|B,m_B)
+    P(E|B)
     &=
       \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
           \Delta^K}_{m_B~\text{times}}}
-      P(E|\vec{\Theta},B,m_B) P(\vec{\Theta}|B,m_B)\mathrm{d}\vec{\Theta}\\
+      P(E|\vec{\Theta},B) P(\vec{\Theta}|B)\mathrm{d}\vec{\Theta}\\
     &=
       \prod_{b\in B} \int_{\Delta^K}
       P(\vec{\theta}^b|\vec{n}^b)
       \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
-      ~ ~ ~
-      \text{(see Fubini's theorem)}
   \end{split}
 \end{equation}
 By solving the integrals we get
 \begin{equation}
   \begin{split}
-    P(E|m_B)
-    &= \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
-    P(B|m_B)
+    P(E)
+    &= \sum_{B\in \mathcal{P}(\mathcal{T})}
+    P(B)
     \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
     \frac{\prod_{x \in
         \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
         \mathcal{X}}n^b_x+\alpha^b_x)}\\
-    &=  \sum_{B\in \mathcal{P}_{m_B}(\mathcal{T})}
-    P(B|m_B)
+    &=
+    \sum_{B\in \mathcal{P}(\mathcal{T})}
+    P(B)
     \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
       \Beta(\vec{\alpha}^b)}
   \end{split}
 \end{equation}
 which we can compute with the algorithm sketched in lemma
-\ref{prombslemma}. To compute the full model we still need to average
-over all possible $m_B$, i.e.
-\begin{equation}
-  P(\vec{\Theta},B|E) = \sum_{m_B \in \mathcal{M}} P(\vec{\Theta},B|E,m_B) P(m_B|E),
-\end{equation}
-where $P(m_B|E)$ denotes the model posterior, which is given by
+\ref{prombslemma}. We are also interested in computing the model posterior
 \begin{equation}
   \begin{split}
     P(m_B|E)
     &= \frac{P(E|m_B) P(m_B)}{P(E)}\\
-    &= \frac{P(E|m_B) P(m_B)}{\sum_{m_B \in \mathcal{M}}P(E|m_B) P(m_B)}.
+    &= \frac{P(E|m_B) P(m_B)}{\sum_{m_B \in \mathcal{M}}P(E|m_B) P(m_B)},
   \end{split}
 \end{equation}
-$P(m_B)$ is the prior for a given model size $m_B$. We will usually
-choose a non-informative prior $1/|\mathcal{M}|$ with $\mathcal{M} =
-\{1, 2, \dots, L\}$ unless we want to select specific model sizes.
+that tells us how probable a partition into $m_B$ bins is.
 
 \section*{The moment problem and maximum entropy distributions}
 From the Hausdorff moment theorem we know that a probability measure
 on a compact set $[0,1]$ is fully characterized by its moments.  Hence
 we would like to compute the first $n$ raw moments $\mu_i^b(x|E)$ for
-each bin $b \in B$ and event $x \in \mathcal{X}$ from the average of
+each bin $b \in B$ and event $x \in \mathcal{X}$ by averaging over
 \begin{equation}
   \begin{split}
-    \mu_i^b(x|E,B,m_B)
+    \mu_i^b(x|E,B)
     &=
-    \int_{\Delta^{K-1}} (\theta^b_x)^i P(\vec{\theta}^b|E,B,m_B)
+    \int_{\Delta^{K-1}} (\theta^b_x)^i P(\vec{\theta}^b|E,B)
     \mathrm{d}\vec{\theta}^b \\
-    &= \frac{P(X_{m_T+1}^b = x, \dots, X_{m_T+i}^b = x,E|B,m_B)}{P(E|B,m_B)}.
+    &= \frac{P(X_{m_T+1}^b = x, \dots, X_{m_T+i}^b = x,E|B)}{P(E|B)}.
   \end{split}
 \end{equation}
 That is, we simply have to add $i$ events to our observations and
@@ -549,13 +545,13 @@ recompute the evidence to get the $i$th moment. We therefore get
       x,E|m_B) P(m_B)}{\sum_{m_B\in \mathcal{M}}P(E|m_B) P(m_B)},
   \end{split}
 \end{equation}
-for the full model where be add an event into the respective bin at
+for the full model where we add an event into the respective bin at
 position $j$. The central moments $\bar{\mu}_i^b$ are given by
 \begin{equation}
   \begin{split}
-    \bar{\mu}^b_i(x|B,m_B) = \int_{\Delta^{K-1}}
-    (\theta^b_x-\mu^b_1(x|E,B,m_B))^i
-    P(\vec{\theta}^b|E,B,m_B)\mathrm{d}
+    \bar{\mu}^b_i(x|B) = \int_{\Delta^{K-1}}
+    (\theta^b_x-\mu^b_1(x|E,B))^i
+    P(\vec{\theta}^b|E,B)\mathrm{d}
     \vec{\theta}^b,
   \end{split}
 \end{equation}
@@ -598,17 +594,17 @@ Hence we would like to compute the probability that a break $\Rsh_i$
 occurs at the $i$th interval.
 \begin{equation}
   \begin{split}
-    P(\Rsh_i|E,m_B) =
-    \sum_{B\in \mathcal{I}^i_{m_B}(\mathcal{T})}P(B|E,m_B) &=
+    P(\Rsh_i|E) =
+    \sum_{B\in \mathcal{I}^i(\mathcal{T})}P(B|E) &=
       \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{T})} P(E|B,m_B) P(B|m_B)}{\sum_{B\in
-               \mathcal{P}_{m_B}(\mathcal{T})} P(E|B,m_B) P(B|m_B)}\\
+          \mathcal{I}^i(\mathcal{T})} P(E|B) P(B)}{\sum_{B\in
+               \mathcal{P}(\mathcal{T})} P(E|B) P(B)}\\
       &= \frac{\sum_{B\in
-          \mathcal{I}^i_{m_B}(\mathcal{T})} P(E|B,m_B) P(B|m_B)}{P(E|m_B)},
+          \mathcal{I}^i(\mathcal{T})} P(E|B) P(B)}{P(E)},
   \end{split}
 \end{equation}
-where $\mathcal{I}^i_{m_B}(\mathcal{T}) \subseteq
-\mathcal{P}_{m_B}(\mathcal{T})$ denotes the set of partitions that
+where $\mathcal{I}^i(\mathcal{T}) \subseteq
+\mathcal{P}(\mathcal{T})$ denotes the set of partitions that
 have a break at the $i$th interval.
 
 % \section*{Bayesian Hypothesis Testing}
