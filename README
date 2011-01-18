@@ -10,6 +10,7 @@ Binning examples
 ./bayesian-binning.py -v -b -m --save=data/data8.result data/data8.cfg
 ./bayesian-binning.py -v -b -m --load=data/data8.result data/data8.cfg
 
+./bayesian-binning.py -v -b -m -r '(0,0.1)' -s 0.001 --save=data/data8.result data/data8.cfg
 
 Adaptive sampling examples
 --------------------------------------------------------------------------------
