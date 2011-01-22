@@ -164,6 +164,7 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             vis.plotBinning(result, options)
+            show()
     if config_parser.has_section('Trials'):
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
@@ -178,6 +179,7 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             vis.plotBinningSpikes(x, timings, result, options)
+            show()
 
 # main
 # ------------------------------------------------------------------------------

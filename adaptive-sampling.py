@@ -216,8 +216,9 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             vis.plotSampling(result, gt, options)
-        if options['plot-utility']:
-            vis.plotUtilitySeries(result, options)
+            if options['plot-utility']:
+                vis.plotUtilitySeries(result, options)
+            show()
 
 # main
 # ------------------------------------------------------------------------------

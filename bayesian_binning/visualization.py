@@ -141,7 +141,6 @@ def plotBinning(result, options):
     if options['script'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22], [p11, p12, p21, p22],
                  result, options)
-    show()
 
 def plotBinningSpikes(x, timings, result, options):
     title = ''
@@ -177,7 +176,6 @@ def plotBinningSpikes(x, timings, result, options):
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
-    show()
 
 def plotSampling(result, gt, options):
     x = np.arange(0, len(gt), 1)
@@ -214,7 +212,6 @@ def plotSampling(result, gt, options):
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
-    show()
 
 def normalizeUtility(result):
     utility_matrix = []
@@ -249,4 +246,3 @@ def plotUtilitySeries(result, options):
     ax.set_ylim(min(y), max(y))
     if options['script'] and not utilitypostplot is None:
         utilitypostplot(ax, p1, cb)
-    show()

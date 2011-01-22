@@ -22,3 +22,5 @@ Adaptive sampling examples
 ./adaptive-sampling.py -n 100 -m --load=data/data12.result2 --save=data/data12.result3 data/data12.cfg
 
 ./adaptive-sampling.py -m --load=data/data12.result3 data/data12.cfg
+
+./adaptive-sampling.py -n 100 -m --plot-utility data/data12.cfg
