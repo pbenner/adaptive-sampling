@@ -215,3 +215,38 @@ def plotSampling(result, gt, options):
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
     show()
+
+def normalizeUtility(result):
+    utility_matrix = []
+    for utility in result['utility']:
+        utility_min = min(utility)
+        utility_max = max(utility)
+        if utility_max - utility_min > 0 :
+            utility_matrix.append(map(lambda x: (x-utility_min)/(utility_max-utility_min),utility))
+        else:
+            utility_matrix.append(map(lambda x: 0.5, utility))
+    return utility_matrix
+
+def plotUtilitySeries(result, options):
+    utilitypreplot  = None
+    utilitypostplot = None
+    utility_matrix  = normalizeUtility(result)
+    title = ''
+    x = range(1, len(utility_matrix)+1)
+    y = np.array(range(0, len(utility_matrix[0])))
+    if options['script']:
+        exec options['script']
+        if not utilitypreplot is None:
+            x, y, title = utilitypreplot(result)
+    fig = figure()
+    ax = fig.add_subplot(111, title=title)
+    z = zip(*utility_matrix)
+    p1 = ax.contourf(x, y, z, np.arange(0,1.1,0.1))
+    cb = colorbar(p1)
+    z = np.array(result['samples'])
+    ax.scatter(x, z,marker='o',c='b',s=5,zorder=10)
+    ax.set_xlim(min(x), max(x))
+    ax.set_ylim(min(y), max(y))
+    if options['script'] and not utilitypostplot is None:
+        utilitypostplot(ax, p1, cb)
+    show()

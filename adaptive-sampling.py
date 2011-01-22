@@ -26,6 +26,9 @@ import random
 from itertools import izip
 from matplotlib import *
 from matplotlib.pyplot import *
+import matplotlib.cm as cm
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.path as path
 
@@ -58,6 +61,8 @@ def usage():
     print "   -n  --samples=N                - number of samples"
     print "   -k  --moments=N                - compute the first N>=3 moments"
     print "       --which=EVENT              - for which event to compute the binning"
+    print
+    print "       --plot-utility             - plot utility as a function of sample steps"
     print
     print "       --load                     - load result from file"
     print "       --save                     - save result to file"
@@ -123,6 +128,7 @@ def loadResult():
             'mpost'     : mpost,
             'counts'    : counts,
             'samples'   : samples,
+            'utility'   : [],
             'multibin_entropy'  : [],
             'differential_gain' : [] }
     else:
@@ -133,6 +139,7 @@ def loadResult():
             'mpost'     : [],
             'counts'    : [],
             'samples'   : [],
+            'utility'   : [],
             'multibin_entropy'  : [],
             'differential_gain' : [] }
     return result
@@ -158,6 +165,7 @@ def experiment(ground_truth, index):
 
 def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
     n = len(ground_truth)
+    utility  = []
     marginal = options['marginal']
     options['marginal'] = 0
     if result['counts']:
@@ -172,6 +180,7 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         print "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
         result  = bin(counts, alpha, mprior)
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
+        utility.append(gain)
         for j in range(0, options['blocks']):
             index   = selectRandom(argmax(gain))
             event   = experiment(ground_truth, index)
@@ -184,6 +193,7 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
     result = bin(counts, alpha, mprior)
     result['counts']  = counts
     result['samples'] = samples
+    result['utility'] = utility
     return result
 
 # parse config
@@ -206,6 +216,8 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             vis.plotSampling(result, gt, options)
+        if options['plot-utility']:
+            vis.plotUtilitySeries(result, options)
 
 # main
 # ------------------------------------------------------------------------------
@@ -222,6 +234,7 @@ options = {
     'script'            : None,
     'load'              : None,
     'save'              : None,
+    'plot-utility'      : False,
     'verbose'           : False,
     'prombsTest'        : False,
     'compare'           : False,
@@ -235,7 +248,8 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
-                      "marginal-step=", "which=", "epsilon=", "moments", "blocks=" ]
+                      "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
+                      "plot-utility"]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -281,6 +295,8 @@ def main():
             options["which"] = int(a)
         if o == "--epsilon":
             options["epsilon"] = float(a)
+        if o == "--plot-utility":
+            options["plot-utility"] = True
     if len(tail) != 1:
         usage()
         return 1
