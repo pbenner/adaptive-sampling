@@ -20,17 +20,19 @@
 
 #include <math.h>
 
+#include <bayes_datatypes.h>
+
 /* Log Sum of Exponentials Algorithm */
 
 static inline
-long double logadd(long double a, long double b)
+prob_t logadd(prob_t a, prob_t b)
 {
         if (a < b) return a == -HUGE_VAL ? b : b + log1pl(expl(a-b));
         else       return b == -HUGE_VAL ? a : a + log1pl(expl(b-a));
 }
 
 static inline
-long double logsub(long double a, long double b)
+prob_t logsub(prob_t a, prob_t b)
 {
         return b == -HUGE_VAL ? a : a + logl(1-expl(b-a));
 }
