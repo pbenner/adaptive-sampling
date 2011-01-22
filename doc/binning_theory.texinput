@@ -56,7 +56,7 @@ observations. From a technical point of view it is of course not
 always easy to compute this distribution called a Gibbs measure
 (cf. \cite{Jaynes1957a}).
 
-\section*{Basic Definitions}
+\section*{Bayesic Definitions}
 A probability space is given as a triple $(\Omega, \mathcal{F}, P)$,
 where $\Omega$ denotes the set of outcomes (or elementary events),
 $\mathcal{F} \subseteq \mathcal{P}(\Omega)$ a set of possible events
@@ -204,7 +204,7 @@ future events given our observations.
   |\mathcal{X}|$, and $\Delta^K := \{\vec{\theta} = (\theta_x)_{x \in
     \mathcal{X}} \in \mathbb{R}^K : \sum_{x \in \mathcal{X}} \theta_x
   = 1 ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$
-  denotes the $K$-dimensional probability simplex. If
+  denotes the $K-1$-dimensional probability simplex. If
   $\Pi_{\vec{\alpha}}$ is a non-decreasing real function we get the
   Riemann-Stieltjes integral.
   (cf. \cite{Finetti1974, Hewitt1955})

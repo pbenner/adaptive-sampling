@@ -16,6 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import os.path
 import numpy as np
 import ConfigParser
 
@@ -54,3 +55,13 @@ def readModelPrior(config_parser, n, section, converter):
         for model in models:
             mprior[model-1] = 1.0/num_models
     return mprior
+
+def readScript(config_parser, section, dir):
+    if config_parser.has_option(section, 'script'):
+        file = config_parser.get(section, 'script')
+        f = open(os.path.abspath(dir)+'/'+file, 'r')
+        str = f.read()
+        f.close()
+        return str
+    else:
+        return None

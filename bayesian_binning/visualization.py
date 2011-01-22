@@ -32,17 +32,14 @@ smallfont = {'family'     : 'serif',
              'weight'     : 'normal',
              'size'       : 10 }
 
-def plotGroundTruth(ax, gt):
-    x = np.arange(0, len(gt), 1)
-    p = ax.plot(x, gt, label='Ground Truth')
-    ax.set_ylabel('Ground Truth', font)
+def plotGroundTruth(ax, x, gt):
+    p = ax.plot(x, gt)
+    ax.set_ylim(0,1)
     return p
 
-def plotUtility(ax, result):
-    x = np.arange(0, len(result['differential_gain']), 1)
-    p = plot(x, result['differential_gain'], label=r'$U_x$')
-    ax.set_ylabel(r'$U_x$', font)
-    ax.ticklabel_format(style='sci', scilimits=(0,0))
+def plotUtility(ax, x, result):
+    p = ax.plot(x, result['differential_gain'])
+    ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
     return p
 
 def plotModelPosterior(ax, result):
@@ -60,23 +57,19 @@ def plotModelPosterior(ax, result):
     barpath = path.Path.make_compound_path_from_polys(XY)
     patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
     ax.add_patch(patch)
-    ax.set_xlabel(r'$m_B$',  font)
-    ax.set_ylabel(r'$P(m_B|E)$', font)
-    ax.set_xlim(0, N)
+    ax.set_xlim(1, N)
 
 def plotCounts(ax, result):
-    N = len(result['mpost'])
+    N = len(result['moments'][0])
     if len(result['samples']) > 0:
         n, bins, patches = ax.hist(result['samples'], N, normed=0, facecolor='yellow', alpha=0.8)
         ax.set_ylim(0, ax.get_ylim()[1]+1)
-    ax.set_ylabel('Counts', font)
-    
+
 def plotMultibinEntropy(ax, result):
     N = len(result['multibin_entropy'])
     x = np.arange(0, N+1, 1)
     result['multibin_entropy'].append(0)
     ax.step(x, result['multibin_entropy'], 'b--', where='mid', linewidth=1)
-    ax.set_ylabel(r'$H(\mathcal{B}|E,m_B)$', font)
 
 def plotSpikes(ax, x, timings):
     """Plot trials of spike trains."""
@@ -87,99 +80,138 @@ def plotSpikes(ax, x, timings):
             X.append(val)
             Y.append(i)
     ax.set_xlim(x[0],x[-1])
-    ax.set_ylabel(r'$t$')
-    ax.set_ylabel('Trial')
     ax.plot(X, Y, 'k|')
 
 def plotBinBoundaries(ax, x, result):
     ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
     ax.set_ylim(0,1)
-    ax.set_ylabel(r'$P(\Rsh_i|E)$', font)
 
 def plotBin(ax, x, result):
     """Plot the binning result."""
     N = len(result['moments'][0])
-    if x==None:
-        x = np.arange(0, N, 1)
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
     skew     = statistics.standardizedMoments(result['moments'], 3)
     ax.plot(x, [ a + b for a, b in zip(result['moments'][0], stddev) ], 'k--')
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
-    p = ax.plot(x, result['moments'][0], 'r', label='$P(S_i|E)$')
+    p = ax.plot(x, result['moments'][0], 'r')
     ax.set_xlim(x[0],x[-1])
     [y1,y2] = ax.get_ylim()
     if y1 < 0: y1 = 0
     if y2 > 1: y2 = 1
     ax.set_ylim(y1, y2)
-    ax.set_xlabel('t',  font)
-    ax.set_ylabel(r'$P(S_i|E)$', font)
     return p
 
 def plotMarginal(ax, x, result):
     N = len(result['moments'][0])
-    if x==None:
-        x = np.arange(0, N, 1)
     y = np.linspace(0, 1, len(result['marginals'][0]))
     z = zip(*result['marginals'])
     im = NonUniformImage(ax, interpolation='nearest', cmap=cm.Greys)
     im.set_data(x, y, z)
     ax.images.append(im)
 
-def plotBinning(x, result, options):
-    fig = figure()
-    fig.subplots_adjust(hspace=0.35)
-    ax1 = fig.add_subplot(2,1,1)
-    ax2 = fig.add_subplot(2,1,2)
-    plotBin(ax1, None, result)
-    plotModelPosterior(ax2, result)
-    if result['marginals'] and options['marginal']:
-        plotMarginal(ax1, None, result)
-    if result['multibin_entropy'] and options['multibin_entropy']:
-        plotMultibinEntropy(ax2.twinx(), result)
-    if result['bprob'] and options['bprob']:
-        plotBinBoundaries(ax1.twinx(), x, result)
-    if result['differential_gain'] and options['differential_gain']:
-        plotUtility(ax1.twinx(), result)
-    show()
+# ------------------------------------------------------------------------------
 
-def plotSampling(x, result, gt, options):
+def plotBinning(result, options):
+    x = np.arange(0, len(result['moments'][0]), 1)
+    title = ''
+    preplot  = None
+    postplot = None
+    if options['script']:
+        exec options['script']
+        if not preplot is None:
+            x, title = preplot(result)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
-    ax1 = fig.add_subplot(3,1,1)
-    ax2 = fig.add_subplot(3,1,2)
-    ax3 = fig.add_subplot(3,1,3)
-    title(str(len(result['samples']))+" Samples")
-    p1 = plotBin(ax1, None, result)
-    p2 = plotGroundTruth(ax1.twinx(), gt)
-    legend([p1, p2], ['$P(S_i|E)$', 'Ground Truth'], loc=4, prop=smallfont)
-    plotCounts(ax2, result)
-    plotModelPosterior(ax3, result)
+    ax11 = fig.add_subplot(2,1,1)
+    ax21 = fig.add_subplot(2,1,2)
+    ax12 = ax11.twinx()
+    ax22 = ax21.twinx()
+    p11 = plotBin(ax11, x, result)
+    p21 = plotModelPosterior(ax21, result)
+    p12 = None
+    p22 = None
     if result['marginals'] and options['marginal']:
-        plotMarginal(ax1, None, result)
+        plotMarginal(ax11, x, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
-        plotMultibinEntropy(ax3.twinx(), result)
+        plotMultibinEntropy(ax22, result)
     if result['bprob'] and options['bprob']:
-        plotBinBoundaries(ax1.twinx(), x, result)
+        plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
-        p3 = plotUtility(ax2.twinx(), result)
-        legend([p3], ['$U_x$'], loc=4, prop=smallfont)
+        plotUtility(ax12, x, result)
+    if options['script'] and not postplot is None:
+        postplot([ax11, ax12, ax21, ax22], [p11, p12, p21, p22],
+                 result, options)
     show()
 
 def plotBinningSpikes(x, timings, result, options):
+    title = ''
+    preplot  = None
+    postplot = None
+    if options['script']:
+        exec options['script']
+        if not preplot is None:
+            title = preplot(result)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
-    ax1 = fig.add_subplot(3,1,1)
-    ax2 = fig.add_subplot(3,1,2)
-    ax3 = fig.add_subplot(3,1,3)
-    plotSpikes(ax1, x, timings)
-    plotBin   (ax2, x, result)
-    plotModelPosterior(ax3, result)
+    ax11 = fig.add_subplot(3,1,1, title=title)
+    ax21 = fig.add_subplot(3,1,2)
+    ax31 = fig.add_subplot(3,1,3)
+    ax12 = ax11.twinx()
+    ax22 = ax21.twinx()
+    ax32 = ax31.twinx()
+    p11 = plotSpikes(ax11, x, timings)
+    p21 = plotBin   (ax21, x, result)
+    p31 = plotModelPosterior(ax31, result)
+    p12 = None
+    p22 = None
+    p32 = None
     if result['marginals'] and options['marginal']:
-        plotMarginal(ax2, x, result)
+        plotMarginal(ax21, x, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
-        plotMutibinEntropy(ax3.twinx(), result)
+        p32 = plotMutibinEntropy(ax32, result)
     if result['bprob'] and options['bprob']:
-        plotBinBoundaries(ax1.twinx(), x, result)
+        p12 = plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
-        plotUtility(ax1.twinx(), result)
+        p12 = plotUtility(ax12, result)
+    if options['script'] and not postplot is None:
+        postplot([ax11, ax12, ax21, ax22, ax31, ax32],
+                 [p11, p12, p21, p22, p31, p31],
+                 result, options)
+    show()
+
+def plotSampling(result, gt, options):
+    x = np.arange(0, len(gt), 1)
+    title = ''
+    preplot  = None
+    postplot = None
+    if options['script']:
+        exec options['script']
+        if not preplot is None:
+            x, title = preplot(result)
+    fig = figure()
+    fig.subplots_adjust(hspace=0.35)
+    ax11 = fig.add_subplot(3,1,1, title=title)
+    ax21 = fig.add_subplot(3,1,2)
+    ax31 = fig.add_subplot(3,1,3)
+    ax12 = ax11.twinx()
+    ax22 = ax21.twinx()
+    ax32 = ax31.twinx()
+    p11 = plotBin(ax11, x, result)
+    p12 = plotGroundTruth(ax12, x, gt)
+    p21 = plotCounts(ax21, result)
+    p31 = plotModelPosterior(ax31, result)
+    p22 = None
+    p32 = None
+    if result['marginals'] and options['marginal']:
+        plotMarginal(ax11, x, result)
+    if result['multibin_entropy'] and options['multibin_entropy']:
+        plotMultibinEntropy(ax32, result)
+    if result['bprob'] and options['bprob']:
+        plotBinBoundaries(ax12, x, result)
+    if result['differential_gain'] and options['differential_gain']:
+        p22 = plotUtility(ax22, x, result)
+    if options['script'] and not postplot is None:
+        postplot([ax11, ax12, ax21, ax22, ax31, ax32],
+                 [p11, p12, p21, p22, p31, p31],
+                 result, options)
     show()

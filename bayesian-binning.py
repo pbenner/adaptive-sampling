@@ -158,12 +158,12 @@ def parseConfig(config_file):
         prior     = list(np.repeat(1, N))
         alpha     = config.readAlpha(config_parser, len(counts), 'Counts', int)
         prior     = config.readModelPrior(config_parser, N, 'Counts', int)
+        options['script'] = config.readScript(config_parser, 'Counts', os.path.dirname(config_file))
         result    = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
         else:
-            x = np.arange(0, int(N), 1)
-            vis.plotBinning(x, result, options)
+            vis.plotBinning(result, options)
     if config_parser.has_section('Trials'):
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
@@ -172,6 +172,7 @@ def parseConfig(config_file):
         prior     = list(np.repeat(1, N))
         alpha     = config.readAlpha(config_parser, len(counts), 'Trials', int)
         prior     = config.readModelPrior(config_parser, N, 'Trials', int)
+        options['script'] = config.readScript(config_parser, 'Trials', os.path.dirname(config_file))
         result    = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
@@ -188,6 +189,7 @@ options = {
     'marginal_range'    : (0.0,1.0),
     'n_moments'         : 3,
     'which'             : 0,
+    'script'            : None,
     'load'              : None,
     'save'              : None,
     'verbose'           : False,
