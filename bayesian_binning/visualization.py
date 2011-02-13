@@ -229,7 +229,7 @@ def plotUtilitySeries(result, options):
     utilitypostplot = None
     utility_matrix  = normalizeUtility(result)
     title = ''
-    x = range(1, len(utility_matrix)+1)
+    x = np.array(range(1, len(utility_matrix)+1))
     y = np.array(range(0, len(utility_matrix[0])))
     if options['script']:
         exec options['script']
@@ -238,11 +238,13 @@ def plotUtilitySeries(result, options):
     fig = figure()
     ax = fig.add_subplot(111, title=title)
     z = zip(*utility_matrix)
-    p1 = ax.contourf(x, y, z, np.arange(0,1.1,0.1))
+    p1 = NonUniformImage(ax, interpolation='nearest')
+    p1.set_data(x, y, z)
+    ax.images.append(p1)
     cb = colorbar(p1)
-    z = np.array(result['samples'])
-    ax.scatter(x, z,marker='o',c='b',s=5,zorder=10)
-    ax.set_xlim(min(x), max(x))
-    ax.set_ylim(min(y), max(y))
+    z = [ result['samples'][i] for i in x ]
+    ax.scatter(x, z, marker='o', c='w', s=10, zorder=10, edgecolors='none')
+    ax.set_xlim(min(x)+0.5, max(x)+0.5)
+    ax.set_ylim(min(y)-0.5, max(y)+0.5)
     if options['script'] and not utilitypostplot is None:
         utilitypostplot(ax, p1, cb)

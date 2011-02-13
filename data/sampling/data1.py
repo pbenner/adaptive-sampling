@@ -21,7 +21,7 @@ def postplot(ax, p, result, options):
 
 
 def utilitypreplot(result):
-    x = range(1, len(result['utility'])+1)
+    x = np.array(range(0, len(result['utility'])))
     y = np.array(range(0, len(result['utility'][0])))
     return x, y, ''
 

@@ -157,6 +157,14 @@ def bin(counts, alpha, mprior):
 # sampling
 # ------------------------------------------------------------------------------
 
+def selectItem(gain):
+    if options['strategy'] == 'uniform':
+        return selectRandom(range(0,len(gain)))
+    elif options['strategy'] == 'adaptive':
+        return selectRandom(argmax(gain))
+    else:
+        raise IOError('Unknown strategy: '+options['strategy'])
+
 def experiment(ground_truth, index):
     if ground_truth[index] >= random.uniform(0.0, 1.0):
         return 0 # success
@@ -180,9 +188,9 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         print "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
         result  = bin(counts, alpha, mprior)
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
-        utility.append(gain)
+        utility.append(gain[:])
         for j in range(0, options['blocks']):
-            index   = selectRandom(argmax(gain))
+            index   = selectItem(gain)
             event   = experiment(ground_truth, index)
             samples.append(index)
             counts[event][index] += 1
@@ -232,6 +240,7 @@ options = {
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
     'which'             : 0,
+    'strategy'          : 'adaptive',
     'script'            : None,
     'load'              : None,
     'save'              : None,
@@ -250,7 +259,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
-                      "plot-utility"]
+                      "plot-utility", "strategy="]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -267,6 +276,8 @@ def main():
             options["prombsTest"] = True
         if o == "-n":
             options["samples"] = int(a)
+        if o == "--strategy":
+            options["strategy"] = a
         if o in ("-m", "--marginal"):
             options["marginal"] = True
         if o in ("-r", "--marginal-range"):

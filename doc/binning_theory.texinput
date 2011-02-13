@@ -679,7 +679,7 @@ processing in biological systems\dots
 \section*{Spike train analysis}
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=.9\textwidth]{../data/data8.pdf}
+  \includegraphics[width=.9\textwidth]{../data/binning-spikes/data1.pdf}
   \caption{
     Bayesian analysis of 30 repeated recordings from a neuron ($m_T =
     30$). Time was discretized into intervals of length $\Delta t =
@@ -851,10 +851,10 @@ exchangeable (non-ergodic) sequences, we then have
 \section*{Adaptive sampling}
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=.48\textwidth,page=1]{../data/data12.pdf}
-  \includegraphics[width=.48\textwidth,page=2]{../data/data12.pdf}\\
-  \includegraphics[width=.48\textwidth,page=3]{../data/data12.pdf}
-  \includegraphics[width=.48\textwidth,page=4]{../data/data12.pdf}
+  \includegraphics[width=.48\textwidth,page=1]{../data/sampling/data1.pdf}
+  \includegraphics[width=.48\textwidth,page=2]{../data/sampling/data1.pdf}\\
+  \includegraphics[width=.48\textwidth,page=3]{../data/sampling/data1.pdf}
+  \includegraphics[width=.48\textwidth,page=4]{../data/sampling/data1.pdf}
   \caption{
     Adaptive sampling from a given ground truth.
   }
