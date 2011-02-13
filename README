@@ -2,25 +2,27 @@
 Binning examples
 --------------------------------------------------------------------------------
 
-./bayesian-binning.py -v -b -m data/data2.cfg
-./bayesian-binning.py -m --which=1 data/data2.cfg
+./bayesian-binning.py -v -b -m data/binning/data1.cfg
+./bayesian-binning.py -m --which=1 data/binning/data1.cfg
 
-./bayesian-binning.py -v -b -m data/data8.cfg
+./bayesian-binning.py -v -b -m data/binning-spikes/data1.cfg
 
-./bayesian-binning.py -v -b -m --save=data/data8.result data/data8.cfg
-./bayesian-binning.py -v -b -m --load=data/data8.result data/data8.cfg
+./bayesian-binning.py -v -b -m --save=data/binning-spikes/data1.result data/binning-spikes/data1.cfg
+./bayesian-binning.py -v -b -m --load=data/binning-spikes/data1.result data/binning-spikes/data1.cfg
 
-./bayesian-binning.py -v -b -m -r '(0,0.1)' -s 0.001 --save=data/data8.result data/data8.cfg
+./bayesian-binning.py -v -b -m -r '(0,0.1)' -s 0.001 --save=data/binning-spikes/data1.result data/binning-spikes/data1.cfg
 
 Adaptive sampling examples
 --------------------------------------------------------------------------------
 
-./adaptive-sampling.py -n 10 data/data12.cfg
+./adaptive-sampling.py -n 10 data/sampling/data1.cfg
 
-./adaptive-sampling.py -n  10 -m --save=data/data12.result1 data/data12.cfg
-./adaptive-sampling.py -n  90 -m --load=data/data12.result1 --save=data/data12.result2 data/data12.cfg
-./adaptive-sampling.py -n 100 -m --load=data/data12.result2 --save=data/data12.result3 data/data12.cfg
+./adaptive-sampling.py -n  10 -m --save=data/sampling/data1.result1 data/sampling/data1.cfg
+./adaptive-sampling.py -n  90 -m --load=data/sampling/data1.result1 --save=data/sampling/data1.result2 data/sampling/data1.cfg
+./adaptive-sampling.py -n 100 -m --load=data/sampling/data1.result2 --save=data/sampling/data1.result3 data/sampling/data1.cfg
 
-./adaptive-sampling.py -m --load=data/data12.result3 data/data12.cfg
+./adaptive-sampling.py -m --load=data/sampling/data1.result3 data/sampling/data1.cfg
 
-./adaptive-sampling.py -n 100 -m --plot-utility data/data12.cfg
+./adaptive-sampling.py -n 100 -m --plot-utility data/sampling/data1.cfg
+
+./adaptive-sampling.py -m -n 400 --strategy=uniform --save=data/sampling/data1.result4 data/sampling/data1.cfg

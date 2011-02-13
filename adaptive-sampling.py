@@ -60,7 +60,7 @@ def usage():
     print "       --epsilon=EPSILON          - epsilon for entropy estimations"
     print "   -n  --samples=N                - number of samples"
     print "   -k  --moments=N                - compute the first N>=3 moments"
-    print "       --strategy=STRATEGY        - either uniform or adaptive (default)"
+    print "       --strategy=STRATEGY        - either uniform, uniform-random, or adaptive (default)"
     print "       --which=EVENT              - for which event to compute the binning"
     print
     print "       --plot-utility             - plot utility as a function of sample steps"
@@ -75,6 +75,13 @@ def usage():
 
 # tools
 # ------------------------------------------------------------------------------
+
+def argmin(array):
+    result = []
+    for i in izip(array, xrange(len(array))):
+        if i[0] == min(array):
+            result.append(i[1])
+    return result
 
 def argmax(array):
     result = []
@@ -158,8 +165,10 @@ def bin(counts, alpha, mprior):
 # sampling
 # ------------------------------------------------------------------------------
 
-def selectItem(gain):
+def selectItem(gain, counts):
     if options['strategy'] == 'uniform':
+        return selectRandom(argmin(counts))
+    elif options['strategy'] == 'uniform-random':
         return selectRandom(range(0,len(gain)))
     elif options['strategy'] == 'adaptive':
         return selectRandom(argmax(gain))
@@ -191,7 +200,7 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
-            index   = selectItem(gain)
+            index   = selectItem(gain, map(sum, zip(*counts)))
             event   = experiment(ground_truth, index)
             samples.append(index)
             counts[event][index] += 1
