@@ -60,6 +60,7 @@ def usage():
     print "       --epsilon=EPSILON          - epsilon for entropy estimations"
     print "   -n  --samples=N                - number of samples"
     print "   -k  --moments=N                - compute the first N>=3 moments"
+    print "       --strategy=STRATEGY        - either uniform or adaptive (default)"
     print "       --which=EVENT              - for which event to compute the binning"
     print
     print "       --plot-utility             - plot utility as a function of sample steps"
