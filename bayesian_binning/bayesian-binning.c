@@ -525,6 +525,7 @@ bin_log(
         result->bprob   = gsl_vector_alloc(K);
         result->mpost   = gsl_vector_alloc(K);
         result->differential_gain = gsl_vector_alloc(K);
+        result->effective_counts  = gsl_vector_alloc(K);
         result->multibin_entropy  = gsl_vector_alloc(K);
         prob_t * moments[options->n_moments];
         prob_t * marginals[K];

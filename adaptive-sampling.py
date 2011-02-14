@@ -260,6 +260,7 @@ options = {
     'compare'           : False,
     'bprob'             : False,
     'differential_gain' : True,
+    'effective_counts'  : False,
     'multibin_entropy'  : False,
     'model_posterior'   : False,
     }
