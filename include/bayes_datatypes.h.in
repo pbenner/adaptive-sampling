@@ -45,6 +45,7 @@ typedef struct options {
         int gmp;
         int bprob;
         int differential_gain;
+        int effective_counts;
         int multibin_entropy;
         int which;
         int marginal;
@@ -64,6 +65,7 @@ typedef struct binningResultGSL {
         gsl_vector *bprob;
         gsl_vector *mpost;
         gsl_vector *differential_gain;
+        gsl_vector *effective_counts;
         gsl_vector *multibin_entropy;
 } BinningResultGSL;
 
@@ -73,6 +75,7 @@ typedef struct binningResult{
         Vector *bprob;
         Vector *mpost;
         Vector *differential_gain;
+        Vector *effective_counts;
         Vector *multibin_entropy;
 } BinningResult;
 
