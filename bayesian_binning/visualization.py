@@ -62,7 +62,7 @@ def plotModelPosterior(ax, result):
 def plotEffectiveCounts(ax, xorig, result):
     data = result['effective_counts'][:]
     x = list(xorig[:])
-    x.insert(0, -1)
+    x.insert(0, x[0]-1)
     data.insert(0, 0)
     N = len(data)
     p = ax.step(x, data, 'y--', where='mid', linewidth=1)
@@ -78,10 +78,10 @@ def plotEffectiveCounts(ax, xorig, result):
     ax.set_ylim(0, ax.get_ylim()[1]+1)
     return p
 
-def plotCounts(ax, result):
+def plotCounts(ax, x, result):
     N = len(result['moments'][0])
     if len(result['samples']) > 0:
-        n, bins, patches = ax.hist(result['samples'], N, histtype='stepfilled', range=(-0.5,N-0.5), normed=0, facecolor='yellow', alpha=0.8)
+        n, bins, patches = ax.hist(result['samples'], N, range=(x[0]-0.5,x[-1]+0.5), normed=0, facecolor='yellow', alpha=0.8)
         ax.set_xlim(0, N-1)
         ax.set_ylim(0, ax.get_ylim()[1]+1)
 
@@ -218,7 +218,7 @@ def plotSampling(result, gt, options):
     ax32 = ax31.twinx()
     p11 = plotBin(ax11, x, result)
     p12 = plotGroundTruth(ax12, x, gt)
-    p21 = plotCounts(ax21, result)
+    p21 = plotCounts(ax21, x, result)
     p31 = plotModelPosterior(ax31, result)
     p22 = None
     p32 = None

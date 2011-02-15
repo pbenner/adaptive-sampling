@@ -174,7 +174,7 @@ def selectItem(gain, counts, effective_counts):
     elif options['strategy'] == 'differential-gain':
         return selectRandom(argmax(gain))
     elif options['strategy'] == 'effective-counts':
-        return selectRandom(argmax(gain))
+        return selectRandom(argmin(effective_counts))
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
 
