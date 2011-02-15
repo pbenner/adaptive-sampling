@@ -60,13 +60,14 @@ def usage():
     print "       --epsilon=EPSILON          - epsilon for entropy estimations"
     print "   -n  --samples=N                - number of samples"
     print "   -k  --moments=N                - compute the first N>=3 moments"
-    print "       --strategy=STRATEGY        - either uniform, uniform-random, or adaptive (default)"
+    print "       --strategy=STRATEGY        - uniform, uniform-random, differential-gain (default),"
+    print "                                    or effective-counts"
     print "       --which=EVENT              - for which event to compute the binning"
     print
     print "       --plot-utility             - plot utility as a function of sample steps"
     print
-    print "       --load                     - load result from file"
-    print "       --save                     - save result to file"
+    print "       --load=FILE                - load result from file"
+    print "       --save=FILE                - save result to file"
     print
     print "   -h, --help                     - print help"
     print "   -v, --verbose                  - be verbose"
@@ -165,12 +166,14 @@ def bin(counts, alpha, mprior):
 # sampling
 # ------------------------------------------------------------------------------
 
-def selectItem(gain, counts):
+def selectItem(gain, counts, effective_counts):
     if options['strategy'] == 'uniform':
         return selectRandom(argmin(counts))
     elif options['strategy'] == 'uniform-random':
         return selectRandom(range(0,len(gain)))
-    elif options['strategy'] == 'adaptive':
+    elif options['strategy'] == 'differential-gain':
+        return selectRandom(argmax(gain))
+    elif options['strategy'] == 'effective-counts':
         return selectRandom(argmax(gain))
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
@@ -186,6 +189,10 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
     utility  = []
     marginal = options['marginal']
     options['marginal'] = 0
+    if options['strategy'] == 'differential-gain':
+        options['differential_gain'] = True
+    if options['strategy'] == 'effective-counts':
+        options['effective_counts'] = True
     if result['counts']:
         counts = result['counts']
     else:
@@ -200,7 +207,7 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
-            index   = selectItem(gain, map(sum, zip(*counts)))
+            index   = selectItem(gain, map(sum, zip(*counts)), result['effective_counts'])
             event   = experiment(ground_truth, index)
             samples.append(index)
             counts[event][index] += 1
@@ -250,7 +257,7 @@ options = {
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
     'which'             : 0,
-    'strategy'          : 'adaptive',
+    'strategy'          : 'differential-gain',
     'script'            : None,
     'load'              : None,
     'save'              : None,
@@ -259,7 +266,7 @@ options = {
     'prombsTest'        : False,
     'compare'           : False,
     'bprob'             : False,
-    'differential_gain' : True,
+    'differential_gain' : False,
     'effective_counts'  : False,
     'multibin_entropy'  : False,
     'model_posterior'   : False,

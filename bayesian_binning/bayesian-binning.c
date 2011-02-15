@@ -129,8 +129,7 @@ void computePrior_log(binProblem *bp)
         }
 }
 
-/* P(D|B,m_B)/P(p|m_B) */
-static
+static /* P(E|B) */
 prob_t iec_log(binProblem *bp, int kk, int k)
 {
         unsigned int i;
@@ -140,12 +139,15 @@ prob_t iec_log(binProblem *bp, int kk, int k)
         }
         if (kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
                 // compute marginals
+                // TODO: extend to multinomial case
                 if (bp->fix_prob.which == 0) {
-                        return (c[0]-1)*log(bp->fix_prob.val) + (c[1]-1)*log(1-bp->fix_prob.val)
+                        return (c[0]-1)*log(bp->fix_prob.val)
+                                + (c[1]-1)*log(1-bp->fix_prob.val)
                                 - mbeta_log(bp, bp->alpha);
                 }
                 else {
-                        return (c[0]-1)*log(1-bp->fix_prob.val) + (c[1]-1)*log(bp->fix_prob.val)
+                        return (c[0]-1)*log(1-bp->fix_prob.val)
+                                + (c[1]-1)*log(bp->fix_prob.val)
                                 - mbeta_log(bp, bp->alpha);
                 }
         }
@@ -256,7 +258,6 @@ prob_t singlebinEntropy(binProblem *bp, int i, int j)
                 n   +=  c[k];
         }
         return mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi_int(n) - sum;
-
 }
 
 static
@@ -323,8 +324,49 @@ void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref, Op
 }
 
 static
-void effectiveCounts(binProblem *bp, prob_t *result, prob_t evidence_ref, Options *options)
+prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence)
 {
+        unsigned int i;
+        prob_t ev_log[bp->T];
+        prob_t sum;
+        prob_t f(int i, int j)
+        {
+                if (i <= pos && pos <= j) {
+                        int k, n = 0;
+                        for (k = 0; k < bp->events; k++) {
+                                n += countStatistic(bp, k, i, j);
+                        }
+                        return log(n) + iec_log(bp, i, j);
+                }
+                else {
+                        return iec_log(bp, i, j);
+                }
+        }
+
+        prombs(ev_log, bp->prior_log, &f, bp->T, bp->T-1);
+        sum = -HUGE_VAL;
+        for (i = 0; i < bp->T; i++) {
+                if (gsl_vector_get(bp->mprior, i) > 0) {
+                        prob_t mprior = gsl_vector_get(bp->mprior, i);
+                        if (!isfinite(ev_log[i])) {
+                                return 0;
+                        }
+                        sum = logadd(sum, ev_log[i] + logl(mprior));
+                }
+        }
+        return expl(sum - evidence);
+}
+
+static
+void computeEffectiveCounts(binProblem *bp, prob_t *result, prob_t evidence_ref, Options *options)
+{
+        unsigned int i;
+
+        computePrior_log(bp);
+        for (i = 0; i < bp->T; i++) {
+                notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bp->T);
+                result[i] = effectiveCounts(bp, i, evidence_ref);
+        }
 }
 
 static
@@ -503,7 +545,7 @@ void computeBinning(
         }
         // compute effective counts
         if (options->effective_counts) {
-                effectiveCounts(bp, effective_counts, evidence_ref, options);
+                computeEffectiveCounts(bp, effective_counts, evidence_ref, options);
         }
 }
 

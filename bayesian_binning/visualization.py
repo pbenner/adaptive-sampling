@@ -43,26 +43,46 @@ def plotUtility(ax, x, result):
     return p
 
 def plotModelPosterior(ax, result):
-    N = len(result['mpost'])
+    data = result['mpost'][:]
+    N = len(data)
     x = np.arange(0, N+1, 1)
-    result['mpost'].insert(0, 0)
-    ax.step(x, result['mpost'], 'r--', where='mid', linewidth=1)
+    data.insert(0, 0)
+    ax.step(x, data, 'r--', where='mid', linewidth=1)
     ax.grid(True)
-
     left    = np.array(x[:-1]) + 0.5
     right   = np.array(x[1:])  + 0.5
     bottom  = np.zeros(len(left))
-    top     = bottom + result['mpost'][1:]
+    top     = bottom + data[1:]
     XY      = np.array([[left,left,right,right], [bottom,top,top,bottom]]).T
     barpath = path.Path.make_compound_path_from_polys(XY)
-    patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.8)
+    patch   = patches.PathPatch(barpath, facecolor='green', edgecolor='gray', alpha=0.9)
     ax.add_patch(patch)
     ax.set_xlim(1, N)
+
+def plotEffectiveCounts(ax, xorig, result):
+    data = result['effective_counts'][:]
+    x = list(xorig[:])
+    x.insert(0, -1)
+    data.insert(0, 0)
+    N = len(data)
+    p = ax.step(x, data, 'y--', where='mid', linewidth=1)
+    ax.grid(True)
+    left    = np.array(x[:-1]) + 0.5
+    right   = np.array(x[1:])  + 0.5
+    bottom  = np.zeros(len(left))
+    top     = bottom + data[1:]
+    XY      = np.array([[left,left,right,right], [bottom,top,top,bottom]]).T
+    barpath = path.Path.make_compound_path_from_polys(XY)
+    patch   = patches.PathPatch(barpath, facecolor='yellow', edgecolor='gray', alpha=0.3)
+    ax.add_patch(patch)
+    ax.set_ylim(0, ax.get_ylim()[1]+1)
+    return p
 
 def plotCounts(ax, result):
     N = len(result['moments'][0])
     if len(result['samples']) > 0:
-        n, bins, patches = ax.hist(result['samples'], N, normed=0, facecolor='yellow', alpha=0.8)
+        n, bins, patches = ax.hist(result['samples'], N, histtype='stepfilled', range=(-0.5,N-0.5), normed=0, facecolor='yellow', alpha=0.8)
+        ax.set_xlim(0, N-1)
         ax.set_ylim(0, ax.get_ylim()[1]+1)
 
 def plotMultibinEntropy(ax, result):
@@ -138,6 +158,8 @@ def plotBinning(result, options):
         plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
         plotUtility(ax12, x, result)
+    if result['effective_counts'] and options['effective_counts']:
+        plotEffectiveCounts(ax22, x, result)
     if options['script'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22], [p11, p12, p21, p22],
                  result, options)
@@ -206,8 +228,10 @@ def plotSampling(result, gt, options):
         plotMultibinEntropy(ax32, result)
     if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax12, x, result)
-    if result['differential_gain'] and options['differential_gain']:
+    if result['differential_gain'] and options['strategy'] == 'differential-gain':
         p22 = plotUtility(ax22, x, result)
+    if result['effective_counts'] and options['strategy'] == 'effective-counts':
+        p22 = plotEffectiveCounts(ax22, x, result)
     if options['script'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],

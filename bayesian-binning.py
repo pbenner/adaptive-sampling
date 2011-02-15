@@ -50,6 +50,7 @@ def usage():
     print "   -b                             - compute break probabilities"
     print "   -d                             - compute differential gain"
     print "   -e                             - compute multibin entropies"
+    print "       --effective-counts         - compute effective counts"
     print "   -m  --marginal                 - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
@@ -57,8 +58,8 @@ def usage():
     print "   -k  --moments=N                - compute the first N>=3 moments"
     print "       --which=EVENT              - for which event to compute the binning"
     print
-    print "       --load                     - load result from file"
-    print "       --save                     - save result to file"
+    print "       --load=FILE                - load result from file"
+    print "       --save=FILE                - save result to file"
     print
     print "   -h, --help                     - print help"
     print "   -v, --verbose                  - be verbose"
@@ -199,6 +200,7 @@ options = {
     'compare'           : False,
     'bprob'             : False,
     'differential_gain' : False,
+    'effective_counts'  : False,
     'multibin_entropy'  : False,
     'model_posterior'   : True,
     }
@@ -207,7 +209,8 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
-                      "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest"]
+                      "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
+                      "effective-counts"]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -239,6 +242,8 @@ def main():
             options["bprob"] = True
         if o == "-d":
             options["differential_gain"] = True
+        if o == "--effective-counts":
+            options["effective_counts"] = True
         if o == "-e":
             options["multibin_entropy"] = True
         if o == "--load":
