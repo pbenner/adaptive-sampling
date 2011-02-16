@@ -1,0 +1,313 @@
+% -*- mode: latex -*-
+%
+\section*{Inductive inference of piecewise constant distributions}
+We will now generalize the results of the previous section. Suppose
+that we have $m_T$ measurements (trials) where each of them is a
+sequence $X_i^1 = x_i^1, \dots, X_i^L = x_i^L$ of $L$ discrete events,
+with $x_i^j \in \mathcal{X}$. The sequence could for instance be a
+spike train where time has been discretized into intervals
+$\mathcal{T} = \{t_1, t_2, \dots, t_L\}$ of size $\Delta t$. Then
+$X_i^j$ would indicate whether or not a spike was recorded in the
+$j$th interval (with $\mathcal{X} = \{0,1\}$). We expect that the
+probabilities for an event in general varies over time. However, we
+assume that we can join some proximal intervals because the
+probabilites are nearly the same. The advantage of this strategy is
+that in case we have few measurements we can use the data from several
+intervals to get a better estimate, which we will call sharing
+strength. A well-ordered partition $B$ of $\mathcal{T}$ is a division
+of $\mathcal{T}$ into $m_B$ non-empty, non-overlapping consecutive
+subsets called bins, such that their union covers $\mathcal{T}$. The
+partition class $\Pc(\mathcal{T})$ denotes the collection of all
+well-ordered partitions and $\Pc_{m_B}(\mathcal{T}) \subset
+\Pc(\mathcal{T})$ the subclass of well-ordererd partitions in
+$\Pc(\mathcal{T})$ consisting of exactly $m_B$ different subsets. For
+simplicity we will first assume that we know the number of partitions
+$m_B$. We are interested in the joint probability of the parameters
+$\vec{\Theta} = (\vec{\theta}^b)_{b \in B}$ and a partition $B$ given
+our observations, i.e. we want to compute
+\begin{equation}
+  \begin{split}
+    P(\vec{\Theta},B|E)
+    &= \frac{P(E,\vec{\Theta},B)}{P(E)}\\
+    &= \frac{P(E|\vec{\Theta},B)P(\vec{\Theta},B)}{P(E)}.
+  \end{split}
+\end{equation}
+We assume that events are independent between the bins and therefore
+we can factorize the likelihood and prior such that
+\begin{equation}
+  P(E,\vec{\Theta},B) =
+  \prod_{b\in B} P(E|\vec{\theta}^b,B)P(\vec{\theta}^b,B).
+\end{equation}
+where $\vec{\theta}^b = (\theta^b_x)_{x \in \mathcal{X}}$ denote the
+probabilities of observing event $x \in \mathcal{X}$ in bin $b$.
+For $P(\vec{\theta}^b,B|m_B)$ we choose a non-informative prior
+assumption such that
+\begin{equation}
+  P(\vec{\theta}^b,B) = P(\vec{\theta}^b)P(B),
+\end{equation}
+which means that the prior knowledge about $\vec{\theta}^b$ is
+independent of $B$ and vice versa. Since we have no a priori
+information about the partitions, we choose a prior in an objective
+Bayesian fashion that maximizes the entropy (cf. \cite{Jaynes1957a,
+  Jaynes1957b, Jaynes2003}), i.e.
+\begin{equation}
+  P(B) = \sum_{m_B \in \mathcal{M}} P(B|m_B)P(m_B)
+       = \sum_{m_B \in \mathcal{M}} {L \choose m_B}^{-1}P(m_B),
+\end{equation}
+where $P(m_B)$ denotes the prior for a given model size $m_B$. We will
+usually choose a non-informative prior $1/|\mathcal{M}|$ with
+$\mathcal{M} = \{1, 2, \dots, L\}$ unless we want to select specific
+model sizes. $P(\vec{\theta}^b|m_B)$ is represented by a distribution
+of the Dirichlet familiy as discussed earlier. To compute the evidence
+\begin{equation}
+  \begin{split}
+    P(E)
+    &= \sum_{B\in \mathcal{P}(\mathcal{X})}
+      P(E|B) P(B)\\
+  \end{split}
+\end{equation}
+we have to sum over all possible partitions $B \in
+\mathcal{P}$. Furthermore we have
+\begin{equation}
+  \begin{split}
+    P(E|B)
+    &=
+      \int_{\underbrace{\Delta^K \times \Delta^K \times \dots \times
+          \Delta^K}_{m_B~\text{times}}}
+      P(E|\vec{\Theta},B) P(\vec{\Theta}|B)\mathrm{d}\vec{\Theta}\\
+    &=
+      \prod_{b\in B} \int_{\Delta^K}
+      P(\vec{\theta}^b|\vec{n}^b)
+      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
+  \end{split}
+\end{equation}
+By solving the integrals we get
+\begin{equation}
+  \begin{split}
+    P(E)
+    &= \sum_{B\in \mathcal{P}(\mathcal{T})}
+    P(B)
+    \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
+    \frac{\prod_{x \in
+        \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
+        \mathcal{X}}n^b_x+\alpha^b_x)}\\
+    &=
+    \sum_{B\in \mathcal{P}(\mathcal{T})}
+    P(B)
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
+      \Beta(\vec{\alpha}^b)}
+  \end{split}
+\end{equation}
+which we can compute with the algorithm sketched in lemma
+\ref{prombslemma}. We are also interested in computing the model posterior
+\begin{equation}
+  \begin{split}
+    P(m_B|E)
+    &= \frac{P(E|m_B) P(m_B)}{P(E)}\\
+    &= \frac{P(E|m_B) P(m_B)}{\sum_{m_B \in \mathcal{M}}P(E|m_B) P(m_B)},
+  \end{split}
+\end{equation}
+that tells us how probable a partition into $m_B$ bins is.
+
+\section*{The moment problem and maximum entropy distributions}
+From the Hausdorff moment theorem we know that a probability measure
+on a compact set $[0,1]$ is fully characterized by its moments.  Hence
+we would like to compute the first $n$ raw moments $\mu_i^b(x|E)$ for
+each bin $b \in B$ and event $x \in \mathcal{X}$ by averaging over
+\begin{equation}
+  \begin{split}
+    \mu_i^b(x|E,B)
+    &=
+    \int_{\Delta^{K-1}} (\theta^b_x)^i P(\vec{\theta}^b|E,B)
+    \mathrm{d}\vec{\theta}^b \\
+    &= \frac{P(X_{m_T+1}^b = x, \dots, X_{m_T+i}^b = x,E|B)}{P(E|B)}.
+  \end{split}
+\end{equation}
+That is, we simply have to add $i$ events to our observations and
+recompute the evidence to get the $i$th moment. We therefore get
+\begin{equation}
+  \begin{split}
+    \mu_i^j(x|E)
+    = \frac{\sum_{m_B\in \mathcal{M}}P(X_{m_T+1}^j = x, \dots, X_{m_T+i}^j =
+      x,E|m_B) P(m_B)}{\sum_{m_B\in \mathcal{M}}P(E|m_B) P(m_B)},
+  \end{split}
+\end{equation}
+for the full model where we add an event into the respective bin at
+position $j$. The central moments $\bar{\mu}_i^b$ are given by
+\begin{equation}
+  \begin{split}
+    \bar{\mu}^b_i(x|B) = \int_{\Delta^{K-1}}
+    (\theta^b_x-\mu^b_1(x|E,B))^i
+    P(\vec{\theta}^b|E,B)\mathrm{d}
+    \vec{\theta}^b,
+  \end{split}
+\end{equation}
+which can be computed from the raw moments with the binomial
+transform
+\begin{equation}
+  \begin{split}
+    \bar{\mu}_i = \sum_{k=0}^{i} {i \choose k} (-1)^{i-k}\mu_k(\mu_1)^{i-k}.
+  \end{split}
+\end{equation}
+
+Having computed the first $n$ moments we would like to find the
+corresponding maximum entropy (ME) distribution $p(x)$. Hence we would
+like to compute the following optimization problem
+\begin{equation}
+  \begin{split}
+    \operatorname*{maximize}_{p(x)} ~ H(X) &= - \int p(x)\log p(x) \mathrm{d}x, ~
+    \text{subject to}\\
+    \int x^ip(x) \mathrm{d}x &= \mu'_{i} ~
+    \text{for} ~ i = 1, \dots, n
+  \end{split}
+\end{equation}
+where $\mu'_0 = 1$ is the normalization constraint.
+\begin{equation}
+  L = \int p(x)\log p(x) \mathrm{d}x +
+  \sum_{i=0}^{n}\lambda_0\left[ \int x^ip(x) \mathrm{d}x - \mu'_i \right]
+\end{equation}
+
+\begin{equation}
+  p(x|\vec{\lambda}) = \exp(-1 -\sum_{i=0}^n\lambda_ix^i)
+\end{equation}
+
+\section*{Break Probabilities}
+For the analysis of certain data it is often useful to know where a
+new partition begins. For instance when we want to analyse
+psychometric functions such knowledge could help to clearly define
+changepoints. Also for the analysis of spike trains one often wants to
+distinguish between tonic and phasic regimes of a stimulus response.
+Hence we would like to compute the probability that a break $\Rsh_i$
+occurs at the $i$th interval.
+\begin{equation}
+  \begin{split}
+    P(\Rsh_i|E) =
+    \sum_{B\in \mathcal{I}^i(\mathcal{T})}P(B|E) &=
+      \frac{\sum_{B\in
+          \mathcal{I}^i(\mathcal{T})} P(E|B) P(B)}{\sum_{B\in
+               \mathcal{P}(\mathcal{T})} P(E|B) P(B)}\\
+      &= \frac{\sum_{B\in
+          \mathcal{I}^i(\mathcal{T})} P(E|B) P(B)}{P(E)},
+  \end{split}
+\end{equation}
+where $\mathcal{I}^i(\mathcal{T}) \subseteq
+\mathcal{P}(\mathcal{T})$ denotes the set of partitions that
+have a break at the $i$th interval.
+
+% \section*{Bayesian Hypothesis Testing}
+% Bayes factor
+% \begin{equation}
+%   \begin{split}
+%     K = \frac{P(E|m_1)}{P(E|m_2)}
+%   \end{split}
+% \end{equation}
+
+\section*{Information-theoretic quantities}
+By introducing a random variable $\mathcal{B}$ that represents the
+outcome of a certain partition, we can compute our uncertainty about
+which partition describes the data best, which is given by the Shannon
+entropy
+\begin{equation}
+  \begin{split}
+    \mathrm{H}(&\mathcal{B}|E)\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}P(B|E) \log P(B|E)\\
+    &= -\sum_{B\in \mathcal{P}(\mathcal{X})}\frac{P(E|B)P(B)}{P(E)}
+    \log
+    \frac{P(E|B)P(B)}{P(E)}\\
+%     &= -\sum_{B\in \mathcal{P}(\mathcal{X})}
+%     \frac{P(E|B)P(B)}{\sum_{B\in
+%         \mathcal{P}(\mathcal{X})}P(E|B)P(B)}
+%     \log
+%     \frac{P(E|B)P(B)}{\sum_{B\in
+%         \mathcal{P}(\mathcal{X})}P(E|B)P(B)}\\
+    &=
+    -\frac{1}{P(E)}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    P(B)
+    \prod_{b\in
+      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
+    &\quad\quad\quad
+    \left[
+      \log
+      \frac{P(B)}{P(E)} +
+      \sum_{b \in B}
+      \log
+      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \right]\\
+    &=
+    \frac{1}{P(E)}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    P(B)
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \sum_{b \in B}
+    \left[-\log
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\right]\\
+    &-
+    \frac{1}{P(E)}
+    \sum_{B\in \mathcal{P}(\mathcal{X})}
+    P(B)
+    \log\frac{P(B)}{P(E)}
+    \prod_{b\in B}
+    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+  \end{split}
+\end{equation}
+We use the algorithm sketched in lemma \ref{eprombslemma} to
+approximate the first term of the last expression.
+
+\section*{Finite and partial exchangeability}
+\cite{Pitman1995}, \cite{Jaynes1986}
+
+\section*{Spike train analysis}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=.9\textwidth]{../data/binning-spikes/data1.pdf}
+  \caption{
+    Bayesian analysis of 30 repeated recordings from a neuron ($m_T =
+    30$). Time was discretized into intervals of length $\Delta t =
+    1ms$. Models with up to 20 bins were included in the computation,
+    i.e. $\mathcal{M} = \{1, 2, \dots, 20\}$ and $P(m_B) =
+    1/|\mathcal{M}|$. For the prior we chose $\vec{\alpha} = (1,32)$ for
+    all intervals. The red line in the second plot shows the estimated
+    probability to observe a spike $S_i$ within the $i$th bin of size
+    1ms. The standard deviation is shown as a dashed line. Skews were
+    computed but turned out to be very small (max. $10^{-7}$). Break
+    probabilities $\Rsh_i$ were computed for each interval $i$, shown in
+    green. The third plot shows the model posterior for each $m_B \in
+    \mathcal{M}$. Source code:
+    \url{http://git.debian.org/?p=users/philipp/bayes-toolbox;a=summary}.
+  }
+  \label{fig:1}
+\end{figure}
+When analysing spike trains with the framework discussed above we make
+the assumption that we deal with a Poisson process, i.e. spikes are
+independently generated from a renewal process with exponential
+interspike interval distribution. This assumption is of course
+violated for most recordings, especially for those from higher
+cortical areas such as FEF where interspike intervals are clearly
+gamma distributed\footnote{Since gamma distributed interspike
+intervals can be constructed from a Poisson process by removing every
+$i$th spike it is self-evident that they are a result of inhibition.}
+\footnote{This is another argument against the standard Poisson neuron
+model, which clearly does not capture the essentials of neuronal
+processing.  The main argument is however that although the interspike
+interval distribution in sensory areas looks exponential, it is not a
+characteristic of neuronal processing but of the input statistics.}.
+To at least capture refractory periods the notion of Markov or partial
+exchangeability introduced by de Finetti might be useful.
+
+For an information theoretic analysis of spike trains
+(e.g. \cite{Strong1998}) and receptive field models
+(e.g. \cite{Adelman2003}) it is important to have a good estimate for
+entropies and mutual information. Assuming a Poisson process greatly
+affects the estimate, which is why most approaches try to sample the
+joint probability distribution instead of assuming independence. For
+instance the method presented by \cite{Nemenman2002} (also
+\cite{Nemenman2004}) is based on a Bayesian analysis where a flat
+prior for the entropy distribution is derived. Other methods
+(e.g. \cite{Grassberger1988, Grassberger2008}) merely use a correction
+term for the biased maximum-likelihood estimate and are reported to be
+less successful. An interesting approach to the estimation of
+entropies from the joint distribution could result from the Pitman
+continuum of inductive methods. There might also be a way to represent
+spike trains in form of interspike intervals such that we can use the
+Johnson-Carnap continuum as discussed above.

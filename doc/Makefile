@@ -35,7 +35,7 @@ BIBTEX		= bibtex
 
 TEXINPUTS	= .:../share:../../share:
 
-TEX_OUTPUT	= binning.pdf
+TEX_OUTPUT	= conglomerate.pdf
 
 ## default build rule
 all:

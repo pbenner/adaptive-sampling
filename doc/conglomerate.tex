@@ -306,8 +306,8 @@
 % --------------------------------------------------------------------------
 \begin{document}
 %\newpage
-\input{binning_title.texinput}
-\input{binning_abstract.texinput}
+\input{conglomerate_title.texinput}
+\input{conglomerate_abstract.texinput}
 %\pagestyle{scrheadings}
 %\frontmatter
 %\tableofcontents
@@ -317,7 +317,10 @@
 % main part
 % --------------------------------------------------------------------------
 %\mainmatter
-\input{binning_theory.texinput}
+\input{conglomerate_inference.texinput}
+\input{conglomerate_binning.texinput}
+\input{conglomerate_sampling.texinput}
+\input{conglomerate_dpm.texinput}
 
 % appendices (bibliography, index etc.)
 % --------------------------------------------------------------------------
@@ -325,17 +328,17 @@
 % \appendix
 % \begin{appendices}
 %   % appendices not structured in sections
-%   \input{master-thesis_appendix02.texinput}
-%   \input{master-thesis_appendix01.texinput}
+%   \input{conglomerate_appendix02.texinput}
+%   \input{conglomerate_appendix01.texinput}
 % \end{appendices}
 \begin{subappendices}
-  \input{binning_appendix.texinput}
+  \input{conglomerate_appendix.texinput}
 \end{subappendices}
 % \backmatter
 % \renewcommand{\nomlabel}[1]{\textit{#1}}
 % \printnomenclature[1,3in]
-\bibliography{binning}
+\bibliography{conglomerate}
 %\printindex
-%\input{master-thesis_affirmation.texinput}
+%\input{conglomerate_affirmation.texinput}
 % --------------------------------------------------------------------------
 \end{document}
