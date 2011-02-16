@@ -61,7 +61,7 @@ def usage():
     print "   -n  --samples=N                - number of samples"
     print "   -k  --moments=N                - compute the first N>=3 moments"
     print "       --strategy=STRATEGY        - uniform, uniform-random, differential-gain (default),"
-    print "                                    or effective-counts"
+    print "                                    effective-counts, or variance"
     print "       --which=EVENT              - for which event to compute the binning"
     print
     print "       --plot-utility             - plot utility as a function of sample steps"
@@ -166,7 +166,7 @@ def bin(counts, alpha, mprior):
 # sampling
 # ------------------------------------------------------------------------------
 
-def selectItem(gain, counts, effective_counts):
+def selectItem(gain, counts, result):
     if options['strategy'] == 'uniform':
         return selectRandom(argmin(counts))
     elif options['strategy'] == 'uniform-random':
@@ -174,7 +174,10 @@ def selectItem(gain, counts, effective_counts):
     elif options['strategy'] == 'differential-gain':
         return selectRandom(argmax(gain))
     elif options['strategy'] == 'effective-counts':
-        return selectRandom(argmin(effective_counts))
+        return selectRandom(argmin(result['effective_counts']))
+    elif options['strategy'] == 'variance':
+        stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
+        return selectRandom(argmax(stddev))
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
 
@@ -193,6 +196,8 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         options['differential_gain'] = True
     if options['strategy'] == 'effective-counts':
         options['effective_counts'] = True
+    if options['strategy'] == 'variance':
+        options['n_moments'] = 3
     if result['counts']:
         counts = result['counts']
     else:
@@ -207,7 +212,8 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
-            index   = selectItem(gain, map(sum, zip(*counts)), result['effective_counts'])
+            index   = selectItem(gain, map(sum, zip(*counts)), result)
+            stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
             event   = experiment(ground_truth, index)
             samples.append(index)
             counts[event][index] += 1
