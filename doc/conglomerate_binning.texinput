@@ -78,7 +78,7 @@ we have to sum over all possible partitions $B \in
     &=
       \prod_{b\in B} \int_{\Delta^K}
       P(\vec{\theta}^b|\vec{n}^b)
-      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}^b).
+      \mathrm{d}\Pi_{\valpha}(\vec{\theta}^b).
   \end{split}
 \end{equation}
 By solving the integrals we get
@@ -87,15 +87,15 @@ By solving the integrals we get
     P(E)
     &= \sum_{B\in \mathcal{P}(\mathcal{T})}
     P(B)
-    \prod_{b\in B}\Beta(\vec{\alpha}^b)^{-1}
+    \prod_{b\in B}\Beta(\valpha^b)^{-1}
     \frac{\prod_{x \in
         \mathcal{X}}\Gamma(n_x^b+\alpha^b_x)}{\Gamma(\sum_{x\in
         \mathcal{X}}n^b_x+\alpha^b_x)}\\
     &=
     \sum_{B\in \mathcal{P}(\mathcal{T})}
     P(B)
-    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{
-      \Beta(\vec{\alpha}^b)}
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\valpha^b)}{
+      \Beta(\valpha^b)}
   \end{split}
 \end{equation}
 which we can compute with the algorithm sketched in lemma
@@ -225,30 +225,30 @@ entropy
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \prod_{b\in
-      B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\\
+      B}\frac{\Beta(\vec{n}^b+\valpha^b)}{\Beta(\valpha^b)}\\
     &\quad\quad\quad
     \left[
       \log
       \frac{P(B)}{P(E)} +
       \sum_{b \in B}
       \log
-      \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+      \frac{\Beta(\vec{n}^b+\valpha^b)}{\Beta(\valpha^b)}
     \right]\\
     &=
     \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
-    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \prod_{b\in B}\frac{\Beta(\vec{n}^b+\valpha^b)}{\Beta(\valpha^b)}
     \sum_{b \in B}
     \left[-\log
-    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}\right]\\
+    \frac{\Beta(\vec{n}^b+\valpha^b)}{\Beta(\valpha^b)}\right]\\
     &-
     \frac{1}{P(E)}
     \sum_{B\in \mathcal{P}(\mathcal{X})}
     P(B)
     \log\frac{P(B)}{P(E)}
     \prod_{b\in B}
-    \frac{\Beta(\vec{n}^b+\vec{\alpha}^b)}{\Beta(\vec{\alpha}^b)}
+    \frac{\Beta(\vec{n}^b+\valpha^b)}{\Beta(\valpha^b)}
   \end{split}
 \end{equation}
 We use the algorithm sketched in lemma \ref{eprombslemma} to
@@ -266,7 +266,7 @@ approximate the first term of the last expression.
     30$). Time was discretized into intervals of length $\Delta t =
     1ms$. Models with up to 20 bins were included in the computation,
     i.e. $\mathcal{M} = \{1, 2, \dots, 20\}$ and $P(m_B) =
-    1/|\mathcal{M}|$. For the prior we chose $\vec{\alpha} = (1,32)$ for
+    1/|\mathcal{M}|$. For the prior we chose $\valpha = (1,32)$ for
     all intervals. The red line in the second plot shows the estimated
     probability to observe a spike $S_i$ within the $i$th bin of size
     1ms. The standard deviation is shown as a dashed line. Skews were

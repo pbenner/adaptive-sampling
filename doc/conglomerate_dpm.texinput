@@ -1,3 +1,147 @@
 % -*- mode: latex -*-
 %
+\section*{Dirichlet Process}
+\cite{Ferguson1973}
+\begin{definition}[Dirichlet Process]
+  Let $\Theta$ denote a measurable set with probability measure
+  $G_0$. If $G$ is drawn from a Dirichlet process $\DP(G_0, \alpha)$,
+  then for any finite partition $A_1, \dots A_K$
+  \begin{equation}
+    G(A_1), \dots, G(A_K) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
+  \end{equation}
+  and $P(\theta \in A_i | G) = G(A_i)$, where $\alpha \in \mathbb{R}$
+  is a parameter.
+\end{definition}
+
+For any $A_k$ we have
+\begin{equation}
+  \begin{split}
+    \E[G(A_k)]   &= G_0(A_k)\\
+    \Var[G(A_k)] &= \frac{G_0(A_k)(1-G_0(A_k))}{\alpha + 1}    
+  \end{split}
+\end{equation}
+
+\begin{align*}
+  1
+  &\sim \Dir(\alpha)\\
+%
+  (\pi_1, \pi_2)
+  &\sim \Dir(\alpha/2, \alpha/2)
+  & \pi_1 + \pi_2 &= 1\\
+%
+  (\pi_{11}, \pi_{12}, \pi_{21}, \pi_{22})
+  &\sim \Dir(\alpha/4, \alpha/4, \alpha/4, \alpha/4)
+  &\pi_{i1} + \pi_{i2} &= \pi_i, i = 1,2\\
+%
+  &\,~\vdots\\
+%
+  (\pi_k)_{k=1}^K
+  &\sim \Dir(\alpha/K, \dots, \alpha/K)
+  &\sum_{k=1}^K \pi_k &= 1\\
+%
+  f_G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
+\end{align*}
+
+The posterior $G|\theta$ is as well a Dirichlet process
+\begin{equation}
+  \begin{split}
+    G|\theta &\sim \DP(\alpha + 1, \frac{\alpha G_0 +
+      \delta_\theta}{\alpha + 1})
+  \end{split}
+\end{equation}
+
 \section*{Dirichlet Process Mixtures}
+\begin{equation}
+  \begin{split}
+    x_i | \theta_i  &\sim F(\theta_i)\\
+    \theta_i | G    &\sim G\\
+    G | G_0, \alpha &\sim DP(G_0, \alpha)
+  \end{split}
+\end{equation}
+which can also be expressed as the limit of a finite mixture model
+\begin{equation}
+  \begin{split}
+    x_i | c_i, \vec{\phi}  &\sim F(\phi_{c_i})\\
+    c_i, \vec{p}           &\sim \Dis(p_1, \dots, p_K)\\
+    \phi_c                 &\sim G_0\\
+    \vec{p}                &\sim \Dir(\alpha/K, \dots, \alpha/K)
+  \end{split}
+\end{equation}
+as $K \rightarrow \infty$.
+
+\subsection*{Stick-breaking construction to generate G}
+\cite{Sethuraman1994}
+\begin{equation}
+  \begin{split}
+    \nu_k      &\sim \Beta(1, \alpha)\\
+    \theta^*_k &\sim G_0\\
+    \pi_k(\vec{\nu}) &= \nu_k \prod_{i=1}^{k-1}(1-\nu_i)\\
+    f_G(\theta) &= \sum_{k=1}^{\infty} \pi_k(\vec{\nu})\delta_{\theta_k^*}(\theta)
+  \end{split}
+\end{equation}
+
+\subsection*{P\'olya urn to sample from G}
+\cite{Blackwell1973} showed that
+\begin{equation}
+  \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1} \sim
+  \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1} \delta_{\theta_j}(\theta_i) +
+  \frac{\alpha}{m_T-1+\alpha} f_{G_0}(\theta_i)
+\end{equation}
+which follows from the fact that the Dirichlet process is conjugate to
+itself. It is known as the Blackwell and MacQueen P\'olya urn scheme
+(often described as the Chinese restaurant process)
+
+\section*{Sampling from Dirichlet Process Mixtures}
+Suppose we have an exchangeable sequence of observations $x_1, \dots,
+x_{m_T}$. From exchangeability it follows that
+\begin{equation}
+  \begin{split}
+    \theta_{i} | \vtheta_{-i} &\sim
+    \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1}
+      \delta_{\theta_j}(\theta_i) +
+    \frac{\alpha}{m_T-1+\alpha} f_{G_0}(\theta_i)\\
+    &=
+    P(\theta_i \in \vtheta_{-i})P(\theta_i|\vtheta_{-i}, \theta_i \in
+    \vtheta_{-i}) +
+    P(\theta_i \notin \vtheta_{-i})P(\theta_i|\vtheta_{-i}, \theta_i
+    \notin \vtheta_{-i})
+  \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}
+    P(\theta_i | \vtheta_{-i}, x_i)
+    &= \frac{P(x_i|\vtheta)P(\vtheta)}{P(x_i,\vtheta)}
+     = \frac{P(x_i|\vtheta)P(\vtheta)}{P(x_i|\vtheta_{-i})P(\vtheta_{-i})}\\
+    &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}P(\theta_i|\vtheta_{-i})\\
+    \Rightarrow
+    P(\theta_i | \vtheta_{-i}, x_i)
+    &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}
+       \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
+         \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
+           \alpha} f_{G_0}(\theta_i)
+       \right]\\
+    &= \sum_{j \neq i} b P(x_i|\vtheta) \delta_{\theta_j}(\theta_i) +
+                     b \alpha P(x_i|\theta_i) f_{G_0}(\theta_i),
+       ~ \text{with}\\
+    b &= \frac{1}{P(x_i|\vtheta_{-i})(m_T - 1 + \alpha)}
+  \end{split}
+\end{equation}
+With
+\begin{equation}
+  \begin{split}
+    P(\theta_i | x_i) = \frac{P(x_i,\theta_i)}{P(x_i)} =
+    \frac{P(x_i|\theta_i)P(\theta_i)}{\int P(x_i|\theta)P(\theta) \dd\theta}
+  \end{split}
+\end{equation}
+we can sample from
+\begin{equation}
+  \begin{split}
+    P(\theta_i | \vtheta_{-i}, x_i)
+    &= \sum_{j \neq i} b q_{i,j} \delta_{\theta_j}(\theta_i)
+                   + b r_i P(\theta_i|x_i), ~ \text{with}\\
+    q_{i,j} &= b P(x_i|\theta_j), ~ \text{and}\\
+    r_i    &= b \alpha \int P(x_i|\theta)P(\theta) \dd\theta
+  \end{split}
+\end{equation}
+(cf. \cite{Escobar1994, Escobar1995})

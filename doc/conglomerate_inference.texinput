@@ -4,32 +4,35 @@
 As an extension of logic, Bayesian theory provides us with a framework
 for optimal reasoning about uncertain statements\footnote{Whether or
 not humans do reason in a Bayesian optimal way is for instance debated
-by Gigerenzer et al.}. For an axiomatic justification of the rules of
-probability we use Cox's theorem (cf. \cite{Cox1946, Cox1961,
-Jaynes2003}) as opposed to the axioms proposed by Kolmogorov. In
-Bayesian probability theory, the meaning of probability is of
-epistemic nature. That is, probabilities represent a degree of belief
-about a statement or hypothesis rather than a physical property, which
-also means that probabilities are considered to be subjective. An
-extreme view, introduced by de Finetti, states that probabilities are
-purely subjective and do not exist as physical properties. Other
-viewpoints are less extreme and accept the existence of such
-probabilities. A new approach called objective Bayesian inference,
-which started with \cite{Jaynes1957a, Jaynes1957b}, made the
-assignment of probabilities less subjective in the sense that one
-chooses the maximum entropy distribution given a set of
-observations. From a technical point of view it is of course not
-always easy to compute this distribution called a Gibbs measure
-(cf. \cite{Jaynes1957a}).
+by Gigerenzer et al.}. We use Cox's theorem (cf. \cite{Cox1946,
+Cox1961, Jaynes2003}) to interpret Kolmogorov's axioms
+of probability (cf. \cite{Kolmogorov1933}) as a formal system of
+logic\footnote{\cite{Renyi1955} generalized Kolmogorov's
+axioms such that probability spaces are directly defined through
+conditional probability measure. Is it possible to rewrite Cox's
+theorem to support R\'eyni probability spaces?}. In Bayesian
+probability theory, the meaning of probability is of epistemic
+nature. That is, probabilities represent a degree of belief about a
+statement or hypothesis rather than a physical property, which also
+means that probabilities are considered to be subjective. An extreme
+view, introduced by de Finetti, states that probabilities are purely
+subjective and do not exist as physical properties. Other viewpoints
+are less extreme and accept the existence of such probabilities. A new
+approach called objective Bayesian inference, which started with
+\cite{Jaynes1957a, Jaynes1957b}, made the assignment of probabilities
+less subjective in the sense that one chooses the maximum entropy
+distribution given a set of observations. From a technical point of
+view it is of course not always easy to compute this distribution
+called a Gibbs measure (cf. \cite{Jaynes1957a}).
 
 \section*{Bayesic Definitions}
 A probability space is given as a triple $(\Omega, \mathcal{F}, P)$,
 where $\Omega$ denotes the set of outcomes (or elementary events),
-$\mathcal{F} \subseteq \mathcal{P}(\Omega)$ a set of possible events
-and $P : \mathcal{F} \rightarrow [0,1]$ a probability measure with
-$P(\Omega) = 1$. We define a random variable $X : \Omega \rightarrow
-\mathcal{X} \subseteq \mathbb{R}$ as a measurable map from $(\Omega,
-\mathcal{F})$ to $(\mathcal{X}, \mathcal{F}')$ with
+$\mathcal{F} = \mathcal{B}(\Omega)$ the Borel $\sigma$-algebra of
+possible events and $P : \mathcal{F} \rightarrow [0,1]$ a probability
+measure with $P(\Omega) = 1$. We define a random variable $X : \Omega
+\rightarrow \mathcal{X} \subseteq \mathbb{R}$ as a measurable map from
+$(\Omega, \mathcal{F})$ to $(\mathcal{X}, \mathcal{F}')$ with
 \begin{equation}
   X^{-1}(B) = \{ \omega : X(\omega) \in B \} \in \mathcal{F} ~
   \text{for all} ~ B \in \mathcal{F}'.
@@ -147,7 +150,7 @@ future events given our observations.
   Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
   random variables from a probability space $(\Omega, \mathcal{F}, P)$
   to a measure space $(\mathcal{X}, \mathcal{F}')$. There exists a
-  cumulative distribution $\Pi_{\vec{\alpha}}$ such that the joint mass
+  cumulative distribution $\Pi_{\valpha}$ such that the joint mass
   function $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} =
   x_{m_T})$ has the form
   \begin{equation}
@@ -155,13 +158,13 @@ future events given our observations.
       \label{eq:frt}
       p(x_1, \dots, x_{m_T}) &=
       \int_{\Delta^K} p(x_1, \dots, x_{m_T}|\vec{\theta})
-      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta})\\
+      \mathrm{d} \Pi_{\valpha}(\vec{\theta})\\
       &=
       \int_{\Delta^K}
       \prod_{x \in \mathcal{X}}
       \theta_x^{n_x}
-      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}), ~ \text{with}\\
-      \Pi_{\vec{\alpha}}(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
+      \mathrm{d} \Pi_{\valpha}(\vec{\theta}), ~ \text{with}\\
+      \Pi_{\valpha}(\vec{\theta}) &= \lim\limits_{m_T \rightarrow \infty}
       \Pr \left\{\frac{n_x}{m_T} \le \theta_x : x \in \mathcal{X} \right\},
     \end{split}
   \end{equation}
@@ -171,7 +174,7 @@ future events given our observations.
     \mathcal{X}} \in \mathbb{R}^K : \sum_{x \in \mathcal{X}} \theta_x
   = 1 ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$
   denotes the $K-1$-dimensional probability simplex. If
-  $\Pi_{\vec{\alpha}}$ is a non-decreasing real function we get the
+  $\Pi_{\valpha}$ is a non-decreasing real function we get the
   Riemann-Stieltjes integral.
   (cf. \cite{Finetti1974, Hewitt1955})
 \end{theorem}
@@ -182,14 +185,14 @@ In other words, conditional on $\vec{\theta}$ the joint probability
 mass function $p(x_1, \dots, x_{m_T})$ can be written as an integral
 mixture of multinomial probabilities. Note that for $K=1$ equation
 $\ref{eq:frt}$ computes the $n_x$th moment of
-$\mathrm{d}\Pi_{\vec{\alpha}}$. In Bayesian inference, the limiting
-distribution $\pi_{\vec{\alpha}} = \mathrm{d}\Pi_{\vec{\alpha}} /
+$\mathrm{d}\Pi_{\valpha}$. In Bayesian inference, the limiting
+distribution $\pi_{\valpha} = \mathrm{d}\Pi_{\valpha} /
 \mathrm{d}\vec{\theta}$ is interpreted as a prior distribution. A
-common choice for $\mathrm{d}\Pi_{\vec{\alpha}}$ is a conjugate prior
+common choice for $\mathrm{d}\Pi_{\valpha}$ is a conjugate prior
 which substantially simplifies the computation of the posterior
 distribution. In the following we show how such a prior can be
 justified from inductive principles such that theorem \ref{thr:frm}
-holds for a proper choice of $\vec{\alpha}$.
+holds for a proper choice of $\valpha$.
 
 \begin{theorem}[Johnson-Carnap continuum]
   \label{thr:jcc}
@@ -200,14 +203,14 @@ holds for a proper choice of $\vec{\alpha}$.
   \item[(i)  ] $K = |\mathcal{X}| \ge 3$,
   \item[(ii) ] $P(X_1 = x_1, \dots, X_{m_T} = x_{m_T}) > 0$ for all $x_i \in
     \mathcal{X}$, and
-  \item[(iii)] there exists a sufficient statistic $f_x(n_x,n)$ such
-    that $P(X_{m_T+1} = x_{m_T+1} | \vec{n}(E)) = f_x(n_x,m_T)$, where $\vec{n}(E) =
+  \item[(iii)] there exists a sufficient statistic $g_x(n_x,n)$ such
+    that $P(X_{m_T+1} = x_{m_T+1} | \vec{n}(E)) = g_x(n_x,m_T)$, where $\vec{n}(E) =
     (n_x)_{x \in \mathcal{X}}$.
   \end{itemize}
   Then either the outcomes are independent or there exist positive
   constants $\{\alpha_x : x \in \mathcal{X}\}$ such that for all $n \ge 1$
   \begin{equation}
-    f_x(n_x, m_T) = \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}}
+    g_x(n_x, m_T) = \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}}
       \alpha_{x^*}}.
   \end{equation}
   (cf. \cite{Johnson1932, Zabell1982})
@@ -223,16 +226,16 @@ identifies a unique prior distribution for de Finetti's representation
 theorem.
 \begin{corollary}
   Under the conditions (i-iii) of theorem \ref{thr:jcc} the prior
-  distribution $\mathrm{d}\Pi_{\vec{\alpha}}$ belongs to the \textit{Dirichlet
-    familiy}, i.e.
+  distribution $\mathrm{d}\Pi_{\valpha}$ belongs to the \textit{Dirichlet
+    familiy} $\Dir(\valpha)$ with density $f_{\Dir(\valpha)}$, i.e.
   \begin{equation}
     \begin{split}
-      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}) =
-      \Dir(\vec{\theta};\vec{\alpha})\mathrm{d}\vec{\theta} &=
-      \frac{1}{\Beta(\vec{\alpha})}
+      \mathrm{d}\Pi_{\valpha}(\vec{\theta}) =
+      f_{\Dir(\valpha)}(\vec{\theta})\mathrm{d}\vec{\theta} &=
+      \frac{1}{\Beta(\valpha)}
       \prod_{x \in \mathcal{X}} \theta_x^{\alpha_x -1}
       \mathrm{d}\vec{\theta}, ~ \text{where}\\
-      \Beta(\vec{\alpha}) &= \frac{\prod_{x \in \mathcal{X}}
+      \Beta(\valpha) &= \frac{\prod_{x \in \mathcal{X}}
         \Gamma(\alpha_x)}{\Gamma(\sum_{x
           \in \mathcal{X}}\alpha_x)} =
       \underbrace{\int_{\Delta^K}\prod_{x \in
@@ -247,12 +250,40 @@ theorem.
 \begin{proof}
   Todo
 \end{proof}
+\begin{lemma}[Properties of the Dirichlet distribution]
+  Let $\Xf = (X_1, \dots, X_{m_T}) \sim \Dir(\valpha)$ then
+  \begin{enumerate}
+  \item (Expectation and variance)
+    \begin{equation}
+      \begin{split}
+        \E[X_i]   &= \frac{\alpha_i}{\sum_{j=1}^{m_T}\alpha_j}, ~ \text{and}\\
+        \Var[X_i] &= \frac{\E[X_i](1-E[X_i])}{\sum_{j=1}^{m_T}\alpha_j
+          + 1}
+      \end{split}
+    \end{equation}
+  \item (Pridictive distribution)
+    \begin{equation}
+      P(X_{m_T+1} = x| X_1 = x_1, \dots, X_{m_T} = x_{m_T}) =
+      \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}} \alpha_{x^*}}
+    \end{equation}
+  \item (Aggregation) If $r_1, \dots, r_n$ are integers with $0 < r_1
+    < \dots < r_k = m_T$, then
+    \begin{equation}
+      (\sum_{i=1}^{r_1}X_1, \sum_{i=r_1+1}^{r_2}X_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}X_{m_T}) \sim
+      \Dir(\sum_{i=1}^{r_1}\alpha_1, \sum_{i=r_1+1}^{r_2}\alpha_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}\alpha_{m_T})
+    \end{equation}
+  \end{enumerate}
+  \item ()
+\end{lemma}
+\begin{definition}[Tail-free prior]
+  Todo (cf. \cite{Freedman1963})
+\end{definition}
 To summarize our results, under the symmetry assumptions that we
 introduced about the sequence of observations $E = (X_1, X_2, \dots,
 X_{m_T})$ we are able to state a hypothesis $\mathcal{H}$ in form of the
 parameters $\vec{\theta}$ that represent our beliefs about the
 underlying process. Any knowledge that we have before we look at the
-data is represented in the parameters $\vec{\alpha}$. The probability
+data is represented in the parameters $\valpha$. The probability
 of a hypothesis is then given by
 \begin{equation}
   \begin{split}
@@ -260,39 +291,39 @@ of a hypothesis is then given by
     &= \frac{P(E,\vec{\theta})}{P(E)}
      =
     \frac{P(E|\vec{\theta})
-      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}) /
+      \mathrm{d}\Pi_{\valpha}(\vec{\theta}) /
       \mathrm{d}\vec{\theta}}{
       \int_{\Delta^K}
       P(E|\vec{\theta}')
-      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta}')}\\
+      \mathrm{d}\Pi_{\valpha}(\vec{\theta}')}\\
     &=
-    \Dir(\vec{\theta}; \vec{n}(E)+\vec{\alpha}).
+    f_{\Dir(\vec{n}(E)+\valpha)}(\vec{\theta}).
   \end{split}
 \end{equation}
 The update of our beliefs after seeing the data is therefore a mere
 shift in the parameters of the Dirichlet distribution
-(i.e. $\Dir(\vec{\theta};\vec{\alpha}) \mapsto \Dir(\vec{\theta};
-\vec{n}(E)+\vec{\alpha})$) as it is a conjugate prior to the multinomial
+(i.e. $\Dir(\vec{\theta};\valpha) \mapsto \Dir(\vec{\theta};
+\vec{n}(E)+\valpha)$) as it is a conjugate prior to the multinomial
 distribution. Intuitively, the Dirichlet distribution states our
 belief that the probabilities of $K$ rival events $x \in \mathcal{X}$
 are $(\theta_x)_{x \in \mathcal{X}}$ given that each event has been
 observed $\alpha_x - 1$ times. Since $\vec{\theta} \sim
-\Dir(\vec{\theta}; \vec{n}(E)+\vec{\alpha})$ we can easily compute the
+\Dir(\vec{n}(E)+\valpha)$ we can easily compute the
 expected value of $\vec{\theta}$ given our observations, i.e.
 \begin{equation}
   \begin{split}
     \hat{\theta}_x = \mathrm{E}[\theta_x|E] &=
     \int_{\Delta^{K-1}}\theta_x P(E|\vec{\theta})
-    \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})\\
+    \mathrm{d}\Pi_{\valpha}(\vec{\theta})\\
     &=
     \frac{
       \int_{\Delta^K} P(X_{m_T+1} = x,E|\vec{\theta})
-      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
+      \mathrm{d}\Pi_{\valpha}(\vec{\theta})
     }{
       \int_{\Delta^K} P(E|\vec{\theta})
-      \mathrm{d}\Pi_{\vec{\alpha}}(\vec{\theta})
+      \mathrm{d}\Pi_{\valpha}(\vec{\theta})
     }\\
-    &= f_x(n_x,m_T)
+    &= g_x(n_x,m_T)
     = \frac{n_x + \alpha_x}{m_T + \sum_{x' \in \mathcal{X}} \alpha_{x'}},
   \end{split}
 \end{equation}
@@ -340,7 +371,7 @@ following definition:
   sequence of random variables from a probability space $(\Omega,
   \mathcal{F}, P)$ to a measure space $(\mathcal{X},
   \mathcal{F}')$. There exists a cumulative distribution
-  $\Pi_{\vec{\alpha}}^L$ such that the joint mass function $p(\vec{x}^1,
+  $\Pi_{\valpha}^L$ such that the joint mass function $p(\vec{x}^1,
   \dots, \vec{x}^{L}) = P(\vec{X}^1 = \vec{x}^1, \dots, \vec{X}^L =
   \vec{x}^L)$ has the form
   \begin{equation}
@@ -351,7 +382,7 @@ following definition:
       \prod_{l=1}^L
       p(x^l_1, \dots, x^l_{m_T}|\vec{\theta}^l)
       \right\}
-      \mathrm{d} \Pi_{\vec{\alpha}}^L(\vec{\Theta})\\
+      \mathrm{d} \Pi_{\valpha}^L(\vec{\Theta})\\
       &=
       \int_{\Delta_L^K}
       \left\{
@@ -359,8 +390,8 @@ following definition:
       \prod_{x \in \mathcal{X}}
       (\theta_x^l)^{n_x^l}
       \right\}
-      \mathrm{d} \Pi_{\vec{\alpha}}^L(\vec{\Theta}), ~ \text{with}\\
-      \Pi_{\vec{\alpha}}^L(\vec{\Theta}) &= \lim\limits_{m_T \rightarrow \infty}
+      \mathrm{d} \Pi_{\valpha}^L(\vec{\Theta}), ~ \text{with}\\
+      \Pi_{\valpha}^L(\vec{\Theta}) &= \lim\limits_{m_T \rightarrow \infty}
       \Pr \left\{\frac{n_x^l}{m_T} \le \theta^l_x : x \in \mathcal{X}
         ~ \text{and} ~ l=1,2, \dots, L \right\},
     \end{split}
@@ -374,7 +405,7 @@ following definition:
       \int_{\Delta^K}
       \prod_{x \in \mathcal{X}}
       \theta_x^{n_x^l}
-      \mathrm{d} \Pi_{\vec{\alpha}}(\vec{\theta}),
+      \mathrm{d} \Pi_{\valpha}(\vec{\theta}),
   \end{equation}
   i.e. the classes are independent.
 \end{theorem}
