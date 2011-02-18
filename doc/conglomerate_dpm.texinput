@@ -110,9 +110,10 @@ x_{m_T}$. From exchangeability it follows that
 
 \begin{equation}
   \begin{split}
-    P(\theta_i | \vtheta_{-i}, x_i)
-    &= \frac{P(x_i|\vtheta)P(\vtheta)}{P(x_i,\vtheta)}
-     = \frac{P(x_i|\vtheta)P(\vtheta)}{P(x_i|\vtheta_{-i})P(\vtheta_{-i})}\\
+    P(\theta_i | x_i, \vtheta_{-i})
+    &= \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})}
+%     = \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})P(\vtheta_{-i})}
+     \\
     &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}P(\theta_i|\vtheta_{-i})\\
     \Rightarrow
     P(\theta_i | \vtheta_{-i}, x_i)
