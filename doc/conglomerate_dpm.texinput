@@ -39,7 +39,7 @@ For any $A_k$ we have
   &\sim \Dir(\alpha/K, \dots, \alpha/K)
   &\sum_{k=1}^K \pi_k &= 1\\
 %
-  f_G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
+  G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
 \end{align*}
 
 The posterior $G|\theta$ is as well a Dirichlet process
@@ -76,16 +76,25 @@ as $K \rightarrow \infty$.
     \nu_k      &\sim \Beta(1, \alpha)\\
     \theta^*_k &\sim G_0\\
     \pi_k(\vec{\nu}) &= \nu_k \prod_{i=1}^{k-1}(1-\nu_i)\\
-    f_G(\theta) &= \sum_{k=1}^{\infty} \pi_k(\vec{\nu})\delta_{\theta_k^*}(\theta)
+    G(\theta) &= \sum_{k=1}^{\infty} \pi_k(\vec{\nu})\delta_{\theta_k^*}(\theta)
   \end{split}
 \end{equation}
 
 \subsection*{P\'olya urn to sample from G}
 \cite{Blackwell1973} showed that
 \begin{equation}
-  \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1} \sim
-  \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1} \delta_{\theta_j}(\theta_i) +
-  \frac{\alpha}{m_T-1+\alpha} f_{G_0}(\theta_i)
+  \begin{split}
+    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \exists i ~ \theta_{m_T} = \theta_i &\sim
+    \sum_{j=1}^{m_T-1} \delta_{\theta_j}\\
+%
+    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \forall i ~ \theta_{m_T} \neq \theta_i &\sim
+    G_0\\
+%
+    \Rightarrow ~
+    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1} &\sim
+    \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1} \delta_{\theta_j} +
+    \frac{\alpha}{m_T-1+\alpha} G_0\\
+  \end{split}
 \end{equation}
 which follows from the fact that the Dirichlet process is conjugate to
 itself. It is known as the Blackwell and MacQueen P\'olya urn scheme
@@ -98,8 +107,8 @@ x_{m_T}$. From exchangeability it follows that
   \begin{split}
     \theta_{i} | \vtheta_{-i} &\sim
     \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1}
-      \delta_{\theta_j}(\theta_i) +
-    \frac{\alpha}{m_T-1+\alpha} f_{G_0}(\theta_i)\\
+      \delta_{\theta_j} +
+    \frac{\alpha}{m_T-1+\alpha} G_0\\
     &=
     P(\theta_i \in \vtheta_{-i})P(\theta_i|\vtheta_{-i}, \theta_i \in
     \vtheta_{-i}) +
