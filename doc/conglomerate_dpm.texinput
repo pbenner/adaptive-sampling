@@ -42,11 +42,16 @@ For any $A_k$ we have
   G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
 \end{align*}
 
-The posterior $G|\theta$ is as well a Dirichlet process
+The posterior $G|\theta_1, \dots, \theta_{m_T}$ is as well a Dirichlet
+process
 \begin{equation}
   \begin{split}
-    G|\theta &\sim \DP(\alpha + 1, \frac{\alpha G_0 +
-      \delta_\theta}{\alpha + 1})
+    G|\theta_1, \dots, \theta_{m_T} &\sim
+    \DP\left(
+    \frac{1}{\alpha + m_T} \sum_{i=1}^{m_T}\delta_{\theta_i} +
+    \frac{\alpha}{\alpha + m_T} G_0,
+    \alpha + m_T
+    \right)
   \end{split}
 \end{equation}
 
@@ -55,7 +60,7 @@ The posterior $G|\theta$ is as well a Dirichlet process
   \begin{split}
     x_i | \theta_i  &\sim F(\theta_i)\\
     \theta_i | G    &\sim G\\
-    G | G_0, \alpha &\sim DP(G_0, \alpha)
+    G | G_0, \alpha &\sim \DP(G_0, \alpha)
   \end{split}
 \end{equation}
 which can also be expressed as the limit of a finite mixture model
@@ -108,6 +113,11 @@ itself. $\delta_x$ denotes the Dirac measure defined by
     1 & \text{if} ~ x \in A\\
     0 & \text{otherwise}.
   \end{cases}
+\end{equation}
+De Finetti representation
+\begin{equation}
+  P(\theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, G_o, \alpha) \propto
+  \int \prod_{i=1}^{m_T-1} P(\theta_i|G)P(G|G_0,\alpha)\dd G
 \end{equation}
 It is known as the Blackwell and MacQueen P\'olya urn scheme
 (often described as the Chinese restaurant process)
