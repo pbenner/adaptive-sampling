@@ -77,7 +77,7 @@ we have to sum over all possible partitions $B \in
       P(E|\vec{\Theta},B) P(\vec{\Theta}|B)\mathrm{d}\vec{\Theta}\\
     &=
       \prod_{b\in B} \int_{\Delta^K}
-      P(\vec{\theta}^b|\vec{n}^b)
+      P(\vec{n}^b|\vec{\theta}^b)
       \mathrm{d}\Pi_{\valpha}(\vec{\theta}^b).
   \end{split}
 \end{equation}

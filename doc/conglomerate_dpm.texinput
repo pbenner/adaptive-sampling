@@ -85,7 +85,7 @@ as $K \rightarrow \infty$.
 \begin{equation}
   \begin{split}
     \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \exists i ~ \theta_{m_T} = \theta_i &\sim
-    \sum_{j=1}^{m_T-1} \delta_{\theta_j}\\
+    \frac{1}{m_T - 1} \sum_{j=1}^{m_T-1} \delta_{\theta_j}\\
 %
     \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \forall i ~ \theta_{m_T} \neq \theta_i &\sim
     G_0\\
@@ -94,6 +94,10 @@ as $K \rightarrow \infty$.
     \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1} &\sim
     \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1} \delta_{\theta_j} +
     \frac{\alpha}{m_T-1+\alpha} G_0\\
+%
+    \text{with} ~
+    P(\exists i ~ \theta_{m_T} = \theta_i    | \theta_1, \dots, \theta_{m_T-1}) &= \frac{m_T - 1}{m_T - 1 + \alpha}\\
+    P(\forall i ~ \theta_{m_T} \neq \theta_i | \theta_1, \dots, \theta_{m_T-1}) &= \frac{\alpha }{m_T - 1 + \alpha}\\
   \end{split}
 \end{equation}
 which follows from the fact that the Dirichlet process is conjugate to
@@ -109,11 +113,6 @@ x_{m_T}$. From exchangeability it follows that
     \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1}
       \delta_{\theta_j} +
     \frac{\alpha}{m_T-1+\alpha} G_0\\
-    &=
-    P(\theta_i \in \vtheta_{-i})P(\theta_i|\vtheta_{-i}, \theta_i \in
-    \vtheta_{-i}) +
-    P(\theta_i \notin \vtheta_{-i})P(\theta_i|\vtheta_{-i}, \theta_i
-    \notin \vtheta_{-i})
   \end{split}
 \end{equation}
 
@@ -129,7 +128,7 @@ x_{m_T}$. From exchangeability it follows that
     &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}
        \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
          \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
-           \alpha} f_{G_0}(\theta_i)
+           \alpha} G_0(\theta_i)
        \right]\\
     &= \sum_{j \neq i} b P(x_i|\vtheta) \delta_{\theta_j}(\theta_i) +
                      b \alpha P(x_i|\theta_i) f_{G_0}(\theta_i),

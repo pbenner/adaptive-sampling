@@ -44,16 +44,16 @@ define the expected value as
   E[X] = \int_\Omega X(\omega) \dd P(\omega),
 \end{equation}
 but to compute the integral we need to move to a different space. We
-define $\mu_X = P \circ X^{-1}$ as the measure induced by the random
-variable $X$. For a measurable function $f$ from $(\mathcal{X},
-\mathcal{G})$ to $(\mathbb{R}, \mathcal{R})$ the expectation is given
-by
+define the distribution $\mu_X = P \circ X^{-1}$ as the measure
+induced by the random variable $X$. For a measurable function $f$ from
+$(\mathcal{X}, \mathcal{G})$ to $(\mathbb{R}, \mathcal{R})$ the
+expectation is given by
 \begin{equation}
   \begin{split}
   E_f[X] &= \int_\Omega f(X(\omega)) \dd P(\omega)\\
          &= \int_{\mathcal{G}} f(y) \dd (P \circ X^{-1})\\
-         &= \int_{\mathcal{G}} f(y) \mu(\dd y)\\
-         &= \int_{\mathcal{G}} f(y) \dd \mu(y).
+         &= \int_{\mathcal{G}} f(y) \mu(\dd y)
+          = \int_{\mathcal{G}} f(y) \dd \mu(y).
   \end{split}
 \end{equation}
 The distribution function of a random variable is given by
