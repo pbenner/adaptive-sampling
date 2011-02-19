@@ -279,8 +279,8 @@ theorem.
   \item (Aggregation) If $r_1, \dots, r_n$ are integers with $0 < r_1
     < \dots < r_k = m_T$, then
     \begin{equation}
-      (\sum_{i=1}^{r_1}X_1, \sum_{i=r_1+1}^{r_2}X_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}X_{m_T}) \sim
-      \Dir(\sum_{i=1}^{r_1}\alpha_1, \sum_{i=r_1+1}^{r_2}\alpha_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}\alpha_{m_T})
+      \left(\sum_{i=1}^{r_1}X_1, \sum_{i=r_1+1}^{r_2}X_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}X_{m_T}\right) \sim
+      \Dir\left(\sum_{i=1}^{r_1}\alpha_1, \sum_{i=r_1+1}^{r_2}\alpha_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}\alpha_{m_T}\right)
     \end{equation}
   \item (Multinomial conjugacy) Let $X$ be a random variable that
     takes value $i \in \{1, \dots, L\}$ with probability $\theta_i$,
