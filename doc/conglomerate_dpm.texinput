@@ -101,7 +101,15 @@ as $K \rightarrow \infty$.
   \end{split}
 \end{equation}
 which follows from the fact that the Dirichlet process is conjugate to
-itself. It is known as the Blackwell and MacQueen P\'olya urn scheme
+itself. $\delta_x$ denotes the Dirac measure defined by
+\begin{equation}
+  \delta_x(A) =
+  \begin{cases}
+    1 & \text{if} ~ x \in A\\
+    0 & \text{otherwise}.
+  \end{cases}
+\end{equation}
+It is known as the Blackwell and MacQueen P\'olya urn scheme
 (often described as the Chinese restaurant process)
 
 \section*{Sampling from Dirichlet Process Mixtures}
