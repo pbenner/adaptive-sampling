@@ -297,9 +297,6 @@ theorem.
     with $\delta_i$ denoting the Dirac measure.
   \end{enumerate}
 \end{lemma}
-\begin{definition}[Tail-free prior]
-  Todo (cf. \cite{Freedman1963})
-\end{definition}
 To summarize our results, under the symmetry assumptions that we
 introduced about the sequence of observations $E = (X_1, X_2, \dots,
 X_{m_T})$ we are able to state a hypothesis $\mathcal{H}$ in form of the

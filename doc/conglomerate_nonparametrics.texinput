@@ -10,8 +10,12 @@
   anyone will espouse this view and recommend a procedure for carrying
   it out remains to be seen}{\cite{Robbins1963}}
 
+\begin{definition}[Tail-free prior]
+  Todo (cf. \cite{Freedman1963, Doksum1974})
+\end{definition}
+
 \section*{Dirichlet Process}
-\cite{Ferguson1973}
+Summary: \cite{Ferguson1992}
 \begin{definition}[Dirichlet Process]
   Let $\Theta$ denote a measurable set, $\mathcal{F}$ a
   $\sigma$-algebra of subsets of $\Theta$, and let $G_0$ be a
@@ -22,7 +26,7 @@
   \begin{equation}
     G(A_1), \dots, G(A_K) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
   \end{equation}
-  and $P(\theta \in A_i | G) = G(A_i)$.
+  and $P(\theta \in A_i | G) = G(A_i)$. (cf. \cite{Ferguson1973})
 \end{definition}
 
 \begin{lemma}[Properties of the Dirichlet process]\hfill
