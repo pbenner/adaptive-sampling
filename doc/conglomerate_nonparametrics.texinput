@@ -1,24 +1,61 @@
 % -*- mode: latex -*-
 %
+\section*{Nonparametric Bayesian Inference}
+\cite{Antoniak1974}
+\cquote{A strictly Bayesian approach might be to start out with an
+  \textit{a priori} distribution of probability over the class
+  $\mathcal{F}$ of all possible distributions $F$ $[\dots]$ this
+  could possibly be converted into an \textit{a posteriori}
+  distribution after $X_1, \dots, X_{m_T}$ have been observed. Whether
+  anyone will espouse this view and recommend a procedure for carrying
+  it out remains to be seen}{\cite{Robbins1963}}
+
 \section*{Dirichlet Process}
 \cite{Ferguson1973}
 \begin{definition}[Dirichlet Process]
-  Let $\Theta$ denote a measurable set with probability measure
-  $G_0$. If $G$ is drawn from a Dirichlet process $\DP(G_0, \alpha)$,
-  then for any finite partition $A_1, \dots A_K$
+  Let $\Theta$ denote a measurable set, $\mathcal{F}$ a
+  $\sigma$-algebra of subsets of $\Theta$, and let $G_0$ be a
+  probability measure on $(\Theta, \mathcal{F})$. A random probability
+  measure $G$ is drawn from a Dirichlet process $\DP(G_0, \alpha)$
+  with parameter $\alpha \in \mathbb{R}$ if for any finite partition
+  $A_1, \dots A_K$ of $\theta$
   \begin{equation}
     G(A_1), \dots, G(A_K) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
   \end{equation}
-  and $P(\theta \in A_i | G) = G(A_i)$, where $\alpha \in \mathbb{R}$
-  is a parameter.
+  and $P(\theta \in A_i | G) = G(A_i)$.
 \end{definition}
 
-For any $A_k$ we have
+\begin{lemma}[Properties of the Dirichlet process]\hfill
+  \begin{enumerate}
+  \item
+    Given a set of observations $\theta_1, \dots, \theta_{m_T}$ then the
+    posterior $G|\theta_1, \dots, \theta_{m_T}$ is as well a Dirichlet
+    process, i.e.
+    \begin{equation}
+      \begin{split}
+        G|\theta_1, \dots, \theta_{m_T} &\sim
+        \DP\left(
+        \frac{1}{\alpha + m_T} \sum_{i=1}^{m_T}\delta_{\theta_i} +
+        \frac{\alpha}{\alpha + m_T} G_0,
+        \alpha + m_T
+        \right).
+      \end{split}
+    \end{equation}
+  \item For any $A_k \subset \Theta$ we have
+    \begin{equation}
+      \begin{split}
+        \E[G(A_k)]   &= G_0(A_k),\\
+        \Var[G(A_k)] &= \frac{G_0(A_k)(1-G_0(A_k))}{\alpha + 1}.
+      \end{split}
+    \end{equation}
+  \item If $G \sim DP(G_0, \alpha)$ then $G$ is almost surely discrete.
+  \end{enumerate}
+\end{lemma}
+
+De Finetti representation
 \begin{equation}
-  \begin{split}
-    \E[G(A_k)]   &= G_0(A_k)\\
-    \Var[G(A_k)] &= \frac{G_0(A_k)(1-G_0(A_k))}{\alpha + 1}    
-  \end{split}
+  P(\theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, G_o, \alpha) \propto
+  \int \prod_{i=1}^{m_T-1} P(\theta_i|G)P(G|G_0,\alpha)\dd G
 \end{equation}
 
 \begin{align*}
@@ -42,20 +79,8 @@ For any $A_k$ we have
   G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
 \end{align*}
 
-The posterior $G|\theta_1, \dots, \theta_{m_T}$ is as well a Dirichlet
-process
-\begin{equation}
-  \begin{split}
-    G|\theta_1, \dots, \theta_{m_T} &\sim
-    \DP\left(
-    \frac{1}{\alpha + m_T} \sum_{i=1}^{m_T}\delta_{\theta_i} +
-    \frac{\alpha}{\alpha + m_T} G_0,
-    \alpha + m_T
-    \right)
-  \end{split}
-\end{equation}
-
 \section*{Dirichlet Process Mixtures}
+\cite{Antoniak1974}
 \begin{equation}
   \begin{split}
     x_i | \theta_i  &\sim F(\theta_i)\\
@@ -98,38 +123,33 @@ $\vec{n} = (n_j)_{j=i}^K$ is the count statistic for the $K$ distinct classes.
 \end{equation}
 
 \subsection*{P\'olya urn to sample from G}
-\cite{Blackwell1973} showed that
+\cite{Blackwell1973}
 \begin{equation}
   \begin{split}
     \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \exists i < m_T ~ \theta_{m_T} = \theta_i &\sim
-    \frac{1}{m_T - 1} \sum_{j=1}^{m_T-1} \delta_{\theta_j}\\
-%
+    \underbrace{\frac{1}{m_T - 1} \sum_{j=1}^{m_T-1}
+      \delta_{\theta_j}}_{\text{empirical measure}}\\
+    %
     \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \forall i < m_T ~ \theta_{m_T} \neq \theta_i &\sim
     G_0\\
-%
+    %
     \Rightarrow ~
     \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1} &\sim
     \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1} \delta_{\theta_j} +
     \frac{\alpha}{m_T-1+\alpha} G_0\\
-%
+    %
     \text{with} ~
     P(\exists i ~ \theta_{m_T} = \theta_i    | \theta_1, \dots, \theta_{m_T-1}) &= \frac{m_T - 1}{m_T - 1 + \alpha}\\
-    P(\forall i ~ \theta_{m_T} \neq \theta_i | \theta_1, \dots, \theta_{m_T-1}) &= \frac{\alpha }{m_T - 1 + \alpha}\\
+    P(\forall i ~ \theta_{m_T} \neq \theta_i | \theta_1, \dots, \theta_{m_T-1}) &= \frac{\alpha }{m_T - 1 + \alpha},\\
   \end{split}
 \end{equation}
-which follows from the fact that the Dirichlet process is conjugate to
-itself. $\delta_x$ denotes the Dirac measure defined by
+$\delta_x$ denotes the Dirac measure defined by
 \begin{equation}
   \delta_x(A) =
   \begin{cases}
     1 & \text{if} ~ x \in A\\
     0 & \text{otherwise}.
   \end{cases}
-\end{equation}
-De Finetti representation
-\begin{equation}
-  P(\theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, G_o, \alpha) \propto
-  \int \prod_{i=1}^{m_T-1} P(\theta_i|G)P(G|G_0,\alpha)\dd G
 \end{equation}
 It is known as the Blackwell and MacQueen P\'olya urn scheme
 (often described as the Chinese restaurant process)
