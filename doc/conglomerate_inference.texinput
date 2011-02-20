@@ -45,15 +45,15 @@ define the expected value as
 \end{equation}
 but to compute the integral we need to move to a different space. We
 define the distribution $\mu_X = P \circ X^{-1}$ as the measure
-induced by the random variable $X$. For a measurable function $f$ from
-$(\mathcal{X}, \mathcal{G})$ to $(\mathbb{R}, \mathcal{R})$ the
-expectation is given by
+induced by the random variable $X$, denoted as $X \sim \mu_X$. For a
+measurable function $f$ from $(\mathcal{X}, \mathcal{G})$ to
+$(\mathbb{R}, \mathcal{R})$ the expectation is given by
 \begin{equation}
   \begin{split}
-  E_f[X] &= \int_\Omega f(X(\omega)) \dd P(\omega)\\
-         &= \int_{\mathcal{G}} f(y) \dd (P \circ X^{-1})\\
-         &= \int_{\mathcal{G}} f(y) \mu(\dd y)
-          = \int_{\mathcal{G}} f(y) \dd \mu(y).
+  E_f[X] &= \int_\Omega f(X(\omega)) P(\dd\omega)\\
+         &= \int_{\mathcal{G}} f(y) (P \circ X^{-1})(\dd y)\\
+         &= \int_{\mathcal{G}} f(y) \mu(\dd y).
+%          = \int_{\mathcal{G}} f(y) \dd \mu(y).
   \end{split}
 \end{equation}
 The distribution function of a random variable is given by
@@ -282,17 +282,16 @@ theorem.
       \left(\sum_{i=1}^{r_1}X_1, \sum_{i=r_1+1}^{r_2}X_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}X_{m_T}\right) \sim
       \Dir\left(\sum_{i=1}^{r_1}\alpha_1, \sum_{i=r_1+1}^{r_2}\alpha_2, \dots, \sum_{i=r_{n-1}+1}^{r_n}\alpha_{m_T}\right)
     \end{equation}
-  \item (Multinomial conjugacy) Let $X$ be a random variable that
-    takes value $i \in \{1, \dots, L\}$ with probability $\theta_i$,
-    i.e. $X \sim \Dis(\theta_1, \dots, \theta_L)$, where
-    $(\theta_1, \dots, \theta_L) \sim \Dir(\alpha_1, \dots,
-    \alpha_L)$, then
+  \item (Multinomial conjugacy) Let $X \sim \Dis(\theta_1, \dots,
+    \theta_K)$ be a random variable that takes value $i \in \{1,
+    \dots, K\}$ with probability $\theta_i$ and $(\theta_1, \dots,
+    \theta_K) \sim \Dir(\alpha_1, \dots, \alpha_K)$, then
     \begin{equation}
       \begin{split}
-        X &\sim \Dis\left(\frac{\alpha_1}{\sum_{i=1}^{L} \alpha_i},
-        \dots, \frac{\alpha_L}{\sum_{i=1}^{L} \alpha_i} \right),\\
-        (\theta_1, \dots, \theta_L) | X &\sim \Dir(\alpha_1 +
-        \delta_1(X), \dots, \alpha_L + \delta_L(X)),
+        X &\sim \Dis\left(\frac{\alpha_1}{\sum_{i=1}^{K} \alpha_i},
+        \dots, \frac{\alpha_K}{\sum_{i=1}^{K} \alpha_i} \right),\\
+        (\theta_1, \dots, \theta_K) | X &\sim \Dir(\alpha_1 +
+        \delta_1(X), \dots, \alpha_K + \delta_K(X)),
       \end{split}
     \end{equation}
     with $\delta_i$ denoting the Dirac measure.

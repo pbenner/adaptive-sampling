@@ -52,7 +52,7 @@ Bayesian fashion that maximizes the entropy (cf. \cite{Jaynes1957a,
   Jaynes1957b, Jaynes2003}), i.e.
 \begin{equation}
   P(B) = \sum_{m_B \in \mathcal{M}} P(B|m_B)P(m_B)
-       = \sum_{m_B \in \mathcal{M}} {L \choose m_B}^{-1}P(m_B),
+       = \sum_{m_B \in \mathcal{M}} \binom{L}{m_B}^{-1}P(m_B),
 \end{equation}
 where $P(m_B)$ denotes the prior for a given model size $m_B$. We will
 usually choose a non-informative prior $1/|\mathcal{M}|$ with
@@ -146,7 +146,7 @@ which can be computed from the raw moments with the binomial
 transform
 \begin{equation}
   \begin{split}
-    \bar{\mu}_i = \sum_{k=0}^{i} {i \choose k} (-1)^{i-k}\mu_k(\mu_1)^{i-k}.
+    \bar{\mu}_i = \sum_{k=0}^{i} \binom{i}{k} (-1)^{i-k}\mu_k(\mu_1)^{i-k}.
   \end{split}
 \end{equation}
 
