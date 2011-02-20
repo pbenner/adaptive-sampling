@@ -80,10 +80,11 @@ as $K \rightarrow \infty$.
     &= \frac{P(c_1, \dots, c_i)}{P(c_1, \dots, c_{i-1})}\\
     &= \frac{\int_{\Delta^K}P(c_1, \dots, c_i|\vec{p})\dd \Pi_{\valpha}(\vec{p})}{\int_{\Delta^K}P(c_1, \dots, c_{i-1}|\vec{p})\dd \Pi_{\valpha}(\vec{p})}\\
     &= \frac{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{j=1}^{K}p_j^{n_j(c_1, \dots, c_i)+\alpha/K-1} \dd \vec{p}}{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{j=1}^{K}p_j^{n_j(c_1, \dots, c_{i-1})+\alpha/K-1} \dd \vec{p}}\\
-    &= \frac{\Beta(n_j(c_1, \dots, c_i)+\alpha/K)}{\Beta(n_j(c_1, \dots, c_{i-1})+\alpha/K)}\\
+    &= \frac{\Beta(\vec{n}(c_1, \dots, c_i)+\alpha/K)}{\Beta(\vec{n}(c_1, \dots, c_{i-1})+\alpha/K)}\\
     &= \frac{n_{c_i}(c_1, \dots, c_{i-1}) + \alpha/K}{i - 1 + \alpha}
   \end{split}
 \end{equation}
+$\vec{n} = (n_j)_{j=i}^K$ is the count statistic for the $K$ distinct classes.
 
 \subsection*{Stick-breaking construction to generate G}
 \cite{Sethuraman1994}
@@ -100,10 +101,10 @@ as $K \rightarrow \infty$.
 \cite{Blackwell1973} showed that
 \begin{equation}
   \begin{split}
-    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \exists i ~ \theta_{m_T} = \theta_i &\sim
+    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \exists i < m_T ~ \theta_{m_T} = \theta_i &\sim
     \frac{1}{m_T - 1} \sum_{j=1}^{m_T-1} \delta_{\theta_j}\\
 %
-    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \forall i ~ \theta_{m_T} \neq \theta_i &\sim
+    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \forall i < m_T ~ \theta_{m_T} \neq \theta_i &\sim
     G_0\\
 %
     \Rightarrow ~
@@ -145,26 +146,33 @@ x_{m_T}$. From exchangeability it follows that
   \end{split}
 \end{equation}
 
-\begin{equation}
-  \begin{split}
-    P(\theta_i | x_i, \vtheta_{-i})
-    &= \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})}
-%     = \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})P(\vtheta_{-i})}
-     \\
-    &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}P(\theta_i|\vtheta_{-i})\\
-    \Rightarrow
-    P(\theta_i | \vtheta_{-i}, x_i)
-    &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}
-       \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
-         \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
-           \alpha} G_0(\theta_i)
-       \right]\\
-    &= \sum_{j \neq i} b P(x_i|\vtheta) \delta_{\theta_j}(\theta_i) +
-                     b \alpha P(x_i|\theta_i) f_{G_0}(\theta_i),
-       ~ \text{with}\\
-    b &= \frac{1}{P(x_i|\vtheta_{-i})(m_T - 1 + \alpha)}
-  \end{split}
-\end{equation}
+\begin{align*}
+  P(\theta_i|x_i,\vtheta_{-i})
+  &= \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})}\\
+  % = \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})P(\vtheta_{-i})}
+  % \\
+  % &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}P(\theta_i|\vtheta_{-i})\\
+  % \Rightarrow
+  % P(\theta_i | \vtheta_{-i}, x_i)
+  &= \frac{1}{P(x_i|\vtheta_{-i})}
+  [\\
+    &\quad\frac{i-1}{i-1+\alpha}
+    P(x_i | \vtheta, \exists j \neq i ~ \theta_j = \theta_i)
+    P(\theta_i | \vtheta_{-i}, \exists j \neq i ~ \theta_j = \theta_i)+\\
+    &\quad \frac{\alpha}{i-1+\alpha}
+    P(x_i | \vtheta, \forall j \neq i ~ \theta_j \neq \theta_i)
+    P(\theta_i | \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i)
+  ]\\
+  % &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}
+  % \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
+  %   \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
+  %     \alpha} G_0(\theta_i)
+  % \right]\\
+  &= \sum_{j \neq i} b P(x_i|\theta_j) \delta_{\theta_j}(\theta_i) +
+  b \alpha P(x_i|\theta_i) f_{G_0}(\theta_i),
+  ~ \text{with}\\
+  b &= \frac{1}{P(x_i|\vtheta_{-i})(m_T - 1 + \alpha)}
+\end{align*}
 With
 \begin{equation}
   \begin{split}
