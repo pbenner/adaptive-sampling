@@ -8,7 +8,7 @@
   could possibly be converted into an \textit{a posteriori}
   distribution after $X_1, \dots, X_{m_T}$ have been observed. Whether
   anyone will espouse this view and recommend a procedure for carrying
-  it out remains to be seen}{\cite{Robbins1963}}
+  it out remains to be seen.}{\cite{Robbins1963}}
 
 \begin{definition}[Tail-free prior]
   Todo (cf. \cite{Freedman1963, Doksum1974})
@@ -22,12 +22,24 @@ Summary: \cite{Ferguson1992}
   probability measure on $(\Theta, \mathcal{F})$. A random probability
   measure $G$ is drawn from a Dirichlet process $\DP(G_0, \alpha)$
   with parameter $\alpha \in \mathbb{R}$ if for any finite partition
-  $A_1, \dots A_K$ of $\theta$
+  $A_1, \dots A_K$ of $\Theta$
   \begin{equation}
     G(A_1), \dots, G(A_K) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
   \end{equation}
   and $P(\theta \in A_i | G) = G(A_i)$. (cf. \cite{Ferguson1973})
 \end{definition}
+
+We can extend Theorem~\ref{inf:jcc} to continuous spaces to get a
+sufficient characterization of the Dirichlet process:
+\begin{theorem} Let $\Theta$ denote a measurable set, $A \subset
+  \Theta$ and $G$ any finite measure on $\Theta$ then from
+  \begin{equation}
+    P(X_{m_T+1} \in A | X_1, X_2, \dots, X_{m_T}) = \frac{G(A) +
+      \sum_{i=1}^{m_T} \delta_{X_i}(A)}{G(\Theta) + m_T}
+  \end{equation}
+  it follows that $G$ is a Dirichlet process
+  prior. (cf. \cite{Regazzini1978, Lo1991})
+\end{theorem}
 
 \begin{lemma}[Properties of the Dirichlet process]\hfill
   \begin{enumerate}
@@ -37,7 +49,7 @@ Summary: \cite{Ferguson1992}
     process, i.e.
     \begin{equation}
       \begin{split}
-        G|\theta_1, \dots, \theta_{m_T} &\sim
+        G~ | ~\theta_1, \dots, \theta_{m_T} &\sim
         \DP\left(
         \frac{1}{\alpha + m_T} \sum_{i=1}^{m_T}\delta_{\theta_i} +
         \frac{\alpha}{\alpha + m_T} G_0,
@@ -82,38 +94,39 @@ De Finetti representation
 %
   G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
 \end{align*}
+TODO: Where does this come from?
 
 \section*{Dirichlet Process Mixtures}
 \cite{Antoniak1974}
 \begin{equation}
   \begin{split}
-    x_i | \theta_i  &\sim F(\theta_i)\\
-    \theta_i | G    &\sim G\\
-    G | G_0, \alpha &\sim \DP(G_0, \alpha)
+    x_k ~ | ~ \theta_k  &\sim F(\theta_k)\\
+    \theta_k ~ | ~ G    &\sim G\\
+    G ~ | ~ G_0, \alpha &\sim \DP(G_0, \alpha)
   \end{split}
 \end{equation}
 which can also be expressed as the limit of a finite mixture model
 \begin{equation}
   \begin{split}
-    x_i | c_i, \vec{\phi}  &\sim F(\phi_{c_i})\\
-    c_i | \vec{p}          &\sim \Dis(p_1, \dots, p_K)\\
-    \phi_c                 &\sim G_0\\
-    \vec{p}                &\sim \Dir(\alpha/K, \dots, \alpha/K)
+    x_k ~ | ~ c_k, \vec{\theta}^*   &\sim F(\theta^*_{c_k})\\
+    c_k ~ | ~ \vec{p}               &\sim \Dis(p_1, \dots, p_K)\\
+    \theta^*_c                  &\sim G_0\\
+    \vec{p}                     &\sim \Dir(\alpha/K, \dots, \alpha/K)
   \end{split}
 \end{equation}
 as $K \rightarrow \infty$.
 
 \begin{equation}
   \begin{split}
-    P(c_i | c_1, \dots c_{i-1})
-    &= \frac{P(c_1, \dots, c_i)}{P(c_1, \dots, c_{i-1})}\\
-    &= \frac{\int_{\Delta^K}P(c_1, \dots, c_i|\vec{p})\dd \Pi_{\valpha}(\vec{p})}{\int_{\Delta^K}P(c_1, \dots, c_{i-1}|\vec{p})\dd \Pi_{\valpha}(\vec{p})}\\
-    &= \frac{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{j=1}^{K}p_j^{n_j(c_1, \dots, c_i)+\alpha/K-1} \dd \vec{p}}{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{j=1}^{K}p_j^{n_j(c_1, \dots, c_{i-1})+\alpha/K-1} \dd \vec{p}}\\
-    &= \frac{\Beta(\vec{n}(c_1, \dots, c_i)+\alpha/K)}{\Beta(\vec{n}(c_1, \dots, c_{i-1})+\alpha/K)}\\
-    &= \frac{n_{c_i}(c_1, \dots, c_{i-1}) + \alpha/K}{i - 1 + \alpha}
+    P(c_k | c_1, \dots c_{k-1})
+    &= \frac{P(c_1, \dots, c_k)}{P(c_1, \dots, c_{k-1})}\\
+    &= \frac{\int_{\Delta^K}P(c_1, \dots, c_k|\vec{p})\dd \Pi_{\valpha}(\vec{p})}{\int_{\Delta^K}P(c_1, \dots, c_{k-1}|\vec{p})\dd \Pi_{\valpha}(\vec{p})}\\
+    &= \frac{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{k=1}^{K}p_k^{n_k(c_1, \dots, c_k)+\alpha/K-1} \dd \vec{p}}{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{k=1}^{K}p_k^{n_k(c_1, \dots, c_{k-1})+\alpha/K-1} \dd \vec{p}}\\
+    &= \frac{\Beta(\vec{n}(c_1, \dots, c_k)+\alpha/K)}{\Beta(\vec{n}(c_1, \dots, c_{k-1})+\alpha/K)}\\
+    &= \frac{n_{c_k}(c_1, \dots, c_{k-1}) + \alpha/K}{k - 1 + \alpha}
   \end{split}
 \end{equation}
-$\vec{n} = (n_j)_{j=i}^K$ is the count statistic for the $K$ distinct classes.
+$\vec{n} = (n_k)_{k=i}^K$ is the count statistic for the $K$ distinct classes.
 
 \subsection*{Stick-breaking construction to generate G}
 \cite{Sethuraman1994}
@@ -130,21 +143,21 @@ $\vec{n} = (n_j)_{j=i}^K$ is the count statistic for the $K$ distinct classes.
 \cite{Blackwell1973}
 \begin{equation}
   \begin{split}
-    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \exists i < m_T ~ \theta_{m_T} = \theta_i &\sim
+    \theta_{m_T} ~ | ~ \theta_1, \dots, \theta_{m_T-1}, \exists i < m_T ~ \theta_{m_T} = \theta_i &\sim
     \underbrace{\frac{1}{m_T - 1} \sum_{j=1}^{m_T-1}
       \delta_{\theta_j}}_{\text{empirical measure}}\\
     %
-    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1}, \forall i < m_T ~ \theta_{m_T} \neq \theta_i &\sim
+    \theta_{m_T} ~ | ~ \theta_1, \dots, \theta_{m_T-1}, \forall i < m_T ~ \theta_{m_T} \neq \theta_i &\sim
     G_0\\
     %
     \Rightarrow ~
-    \theta_{m_T} | \theta_1, \dots, \theta_{m_T-1} &\sim
+    \theta_{m_T} ~ | ~ \theta_1, \dots, \theta_{m_T-1} &\sim
     \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1} \delta_{\theta_j} +
     \frac{\alpha}{m_T-1+\alpha} G_0\\
     %
     \text{with} ~
-    P(\exists i ~ \theta_{m_T} = \theta_i    | \theta_1, \dots, \theta_{m_T-1}) &= \frac{m_T - 1}{m_T - 1 + \alpha}\\
-    P(\forall i ~ \theta_{m_T} \neq \theta_i | \theta_1, \dots, \theta_{m_T-1}) &= \frac{\alpha }{m_T - 1 + \alpha},\\
+    P(\exists i ~ \theta_{m_T} = \theta_i    ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &= \frac{m_T - 1}{m_T - 1 + \alpha}\\
+    P(\forall i ~ \theta_{m_T} \neq \theta_i ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &= \frac{\alpha }{m_T - 1 + \alpha},\\
   \end{split}
 \end{equation}
 $\delta_x$ denotes the Dirac measure defined by
@@ -163,7 +176,7 @@ Suppose we have an exchangeable sequence of observations $x_1, \dots,
 x_{m_T}$. From exchangeability it follows that
 \begin{equation}
   \begin{split}
-    \theta_{i} | \vtheta_{-i} &\sim
+    \theta_{i} ~ | ~ \vtheta_{-i} &\sim
     \frac{1}{m_T-1+\alpha} \sum_{j=1}^{m_T-1}
       \delta_{\theta_j} +
     \frac{\alpha}{m_T-1+\alpha} G_0\\
@@ -218,9 +231,9 @@ we can sample from
 
 \begin{equation}
   \begin{split}
-    P(c_i | y_i, \vec{c}_{-i}, \vec{\phi})
-    &= \frac{P(y_i | c_i, \vec{c}_{-i}, \vec{\phi})P(c_i | \vec{c}_{-i}, \vec{\phi})}{P(y_i | \vec{c}_{-i}, \vec{\phi})}\\
-    &= \frac{P(y_i | c_i, \vec{\phi})P(c_i | \vec{c}_{-i})}{P(y_i | \vec{c}_{-i}, \vec{\phi})}\\
-    &= b P(y_i | c_i, \vec{\phi}) \frac{n_{c_i}(\vec{c}_{-i}) + \alpha/K}{i - 1 + \alpha}
+    P(c_i | y_i, \vec{c}_{-i}, \vec{\theta}^*)
+    &= \frac{P(y_i | c_i, \vec{c}_{-i}, \vec{\theta}^*)P(c_i | \vec{c}_{-i}, \vec{\theta}^*)}{P(y_i | \vec{c}_{-i}, \vec{\theta}^*)}\\
+    &= \frac{P(y_i | c_i, \vec{\theta}^*)P(c_i | \vec{c}_{-i})}{P(y_i | \vec{c}_{-i}, \vec{\theta}^*)}\\
+    &= b P(y_i | c_i, \vec{\theta}^*) \frac{n_{c_i}(\vec{c}_{-i}) + \alpha/K}{i - 1 + \alpha}
   \end{split}
 \end{equation}

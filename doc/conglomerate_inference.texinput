@@ -156,7 +156,7 @@ truly the case we would not be able to draw any conclusions about
 future events given our observations.
 
 \begin{theorem}[Generalized de Finetti's representation theorem]
-  \label{thr:frm}
+  \label{inf:frm}
   Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
   random variables from a probability space $(\Omega, \mathcal{F}, P)$
   to a measure space $(\mathcal{X}, \mathcal{G})$. There exists a
@@ -201,11 +201,11 @@ distribution $\pi_{\valpha} = \dd \Pi_{\valpha} /
 common choice for $\dd \Pi_{\valpha}$ is a conjugate prior
 which substantially simplifies the computation of the posterior
 distribution. In the following we show how such a prior can be
-justified from inductive principles such that theorem \ref{thr:frm}
+justified from inductive principles such that theorem \ref{inf:frm}
 holds for a proper choice of $\valpha$.
 
 \begin{theorem}[Johnson-Carnap continuum]
-  \label{thr:jcc}
+  \label{inf:jcc}
   Let $X_1, X_2, \dots$ denote an infinite sequence of random
   variables from a probability space $(\Omega, \mathcal{F}, P)$ to a
   measure space $(\mathcal{X}, \mathcal{G})$. Assume that
@@ -235,7 +235,7 @@ with a sufficient statistic for inductive reasoning, but also
 identifies a unique prior distribution for de Finetti's representation
 theorem.
 \begin{corollary}
-  Under the conditions (i-iii) of theorem \ref{thr:jcc} the prior
+  Under the conditions (i-iii) of theorem \ref{inf:jcc} the prior
   distribution $\dd \Pi_{\valpha}$ belongs to the \textit{Dirichlet
     familiy} $\Dir(\valpha)$ with density $f_{\Dir(\valpha)}$, i.e.
   \begin{equation}
@@ -260,6 +260,9 @@ theorem.
 \begin{proof}
   Todo
 \end{proof}
+The Dirichlet prior can also be obtained by assuming that a
+sequence of observations $X_1, \dots, X_{m_T}$ is neutral
+(cf. \cite{James1980, Walker1999}).
 \begin{lemma}[Properties of the Dirichlet distribution]
   Let $\Xf = (X_1, \dots, X_{m_T}) \sim \Dir(\valpha)$ then
   \begin{enumerate}
@@ -271,9 +274,9 @@ theorem.
           + 1}
       \end{split}
     \end{equation}
-  \item (Pridictive distribution)
+  \item (Predictive distribution)
     \begin{equation}
-      P(X_{m_T+1} = x| X_1 = x_1, \dots, X_{m_T} = x_{m_T}) =
+      P(X_{m_T+1} = x| X_1, X_2 \dots, X_{m_T}) =
       \frac{n_x + \alpha_x}{m_T + \sum_{x^* \in \mathcal{X}} \alpha_{x^*}}
     \end{equation}
   \item (Aggregation) If $r_1, \dots, r_n$ are integers with $0 < r_1
@@ -346,7 +349,7 @@ expected value of $\vec{\theta}$ given our observations, i.e.
     = \frac{n_x + \alpha_x}{m_T + \sum_{x' \in \mathcal{X}} \alpha_{x'}},
   \end{split}
 \end{equation}
-as it was shown in theorem \ref{thr:jcc}. The estimate is known as the
+as it was shown in theorem \ref{inf:jcc}. The estimate is known as the
 \textit{extended Bayes-Laplace rule of succession}. It is equivalent
 to the frequentist's estimate ($\hat{\theta}_x = \frac{n_x}{m_T}$) if
 $\alpha_x = 0 ~ \forall x \in \mathcal{X}$. If $\alpha_x = 1 ~ \forall
