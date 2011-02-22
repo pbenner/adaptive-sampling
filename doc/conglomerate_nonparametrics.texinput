@@ -94,7 +94,7 @@ De Finetti representation
 %
   G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
 \end{align*}
-TODO: Where does this come from?
+\cite{Ishwaran2002}
 
 \section*{Dirichlet Process Mixtures}
 \cite{Antoniak1974}
@@ -184,31 +184,31 @@ x_{m_T}$. From exchangeability it follows that
 \end{equation}
 
 \begin{align*}
-  P(\theta_i|x_i,\vtheta_{-i})
-  &= \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})}\\
-  % = \frac{P(x_i|\theta_i,\vtheta_{-i})P(\theta_i|\vtheta_{-i})}{P(x_i|\vtheta_{-i})P(\vtheta_{-i})}
+  \theta_i ~ | ~ x_i,\vtheta_{-i}
+  &= \frac{(x_i ~ | ~ \theta_i,\vtheta_{-i})(\theta_i ~ | ~ \vtheta_{-i})}{(x_i ~ | ~ \vtheta_{-i})}\\
+  % = \frac{(x_i ~ | ~ \theta_i,\vtheta_{-i})(\theta_i ~ | ~ \vtheta_{-i})}{(x_i ~ | ~ \vtheta_{-i})(\vtheta_{-i})}
   % \\
-  % &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}P(\theta_i|\vtheta_{-i})\\
+  % &= \frac{(x_i ~ | ~ \vtheta)}{(x_i ~ | ~ \vtheta_{-i})}(\theta_i ~ | ~ \vtheta_{-i})\\
   % \Rightarrow
-  % P(\theta_i | \vtheta_{-i}, x_i)
-  &= \frac{1}{P(x_i|\vtheta_{-i})}
+  % (\theta_i  ~ | ~  \vtheta_{-i}, x_i)
+  &= \frac{1}{(x_i ~ | ~ \vtheta_{-i})}
   [\\
     &\quad\frac{i-1}{i-1+\alpha}
-    P(x_i | \vtheta, \exists j \neq i ~ \theta_j = \theta_i)
-    P(\theta_i | \vtheta_{-i}, \exists j \neq i ~ \theta_j = \theta_i)+\\
+    (x_i  ~ | ~  \vtheta, \exists j \neq i ~ \theta_j = \theta_i)
+    (\theta_i  ~ | ~  \vtheta_{-i}, \exists j \neq i ~ \theta_j = \theta_i)+\\
     &\quad \frac{\alpha}{i-1+\alpha}
-    P(x_i | \vtheta, \forall j \neq i ~ \theta_j \neq \theta_i)
-    P(\theta_i | \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i)
+    (x_i  ~ | ~  \vtheta, \forall j \neq i ~ \theta_j \neq \theta_i)
+    (\theta_i  ~ | ~  \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i)
   ]\\
-  % &= \frac{P(x_i|\vtheta)}{P(x_i|\vtheta_{-i})}
+  % &= \frac{(x_i ~ | ~ \vtheta)}{(x_i ~ | ~ \vtheta_{-i})}
   % \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
   %   \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
   %     \alpha} G_0(\theta_i)
   % \right]\\
-  &= \sum_{j \neq i} b P(x_i|\theta_j) \delta_{\theta_j}(\theta_i) +
-  b \alpha P(x_i|\theta_i) f_{G_0}(\theta_i),
+  &= \sum_{j \neq i} b (x_i ~ | ~  \theta_j) \delta_{\theta_j}(\theta_i) +
+  b \alpha (x_i ~ | ~ \theta_i) (\theta_i  ~ | ~  \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i),
   ~ \text{with}\\
-  b &= \frac{1}{P(x_i|\vtheta_{-i})(m_T - 1 + \alpha)}
+  b &= \frac{1}{(x_i ~ | ~ \vtheta_{-i})(m_T - 1 + \alpha)}
 \end{align*}
 With
 \begin{equation}
