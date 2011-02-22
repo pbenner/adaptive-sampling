@@ -10,12 +10,18 @@
   anyone will espouse this view and recommend a procedure for carrying
   it out remains to be seen.}{\cite{Robbins1963}}
 
-\begin{definition}[Tail-free prior]
-  Todo (cf. \cite{Freedman1963, Doksum1974})
+\section*{Dirichlet Process}
+The Dirichlet process was first described with the notion of tail-free
+measures (cf. \cite{Fabius1964}) by \cite{Freedman1963} and it was
+later analyzed in detail by \cite{Ferguson1973, Blackwell1973}.
+\cite{Antoniak1974} introduced Dirichlet process mixtures that
+convolve the random measure with a continuous distribution since
+random measures drawn from a Dirichlet process are discrete. A good
+summary on the topic is provided by \cite{Ferguson1992}.
+\begin{definition}[Tail-free measure]
+  Todo (cf. \cite{Fabius1964, Freedman1963, Doksum1974})
 \end{definition}
 
-\section*{Dirichlet Process}
-Summary: \cite{Ferguson1992}
 \begin{definition}[Dirichlet Process]
   Let $\Theta$ denote a measurable set, $\mathcal{F}$ a
   $\sigma$-algebra of subsets of $\Theta$, and let $G_0$ be a
@@ -24,7 +30,7 @@ Summary: \cite{Ferguson1992}
   with parameter $\alpha \in \mathbb{R}$ if for any finite partition
   $A_1, \dots A_K$ of $\Theta$
   \begin{equation}
-    G(A_1), \dots, G(A_K) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
+    (G(A_1), \dots, G(A_K)) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
   \end{equation}
   and $P(\theta \in A_i | G) = G(A_i)$. (cf. \cite{Ferguson1973})
 \end{definition}
@@ -94,7 +100,19 @@ De Finetti representation
 %
   G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
 \end{align*}
-\cite{Ishwaran2002}
+\begin{theorem}
+  Let
+  \begin{equation}
+    \begin{aligned}
+      (\pi_k)_{k=1}^K &\sim \Dir(\alpha/K, \dots, \alpha/K)\\
+      \theta^*_k ~ | ~ G_0 &\sim G_0
+    \end{aligned}
+    \quad\quad G^K = \sum_{k=1}^{K} \pi_k \delta_{\theta^*_k}
+  \end{equation}
+  then $G^K \codist G$ as $K \rightarrow \infty$, where $G \sim
+  DP(G_0, \alpha)$.
+  (cf. \cite{Ishwaran2002})
+\end{theorem}
 
 \section*{Dirichlet Process Mixtures}
 \cite{Antoniak1974}
