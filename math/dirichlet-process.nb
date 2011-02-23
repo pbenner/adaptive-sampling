@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    297371,       5133]
-NotebookOptionsPosition[    296206,       5090]
-NotebookOutlinePosition[    296562,       5106]
-CellTagsIndexPosition[    296519,       5103]
+NotebookDataLength[    297694,       5143]
+NotebookOptionsPosition[    296490,       5099]
+NotebookOutlinePosition[    296846,       5115]
+CellTagsIndexPosition[    296803,       5112]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -710,6 +710,15 @@ Cell[BoxData[
    3.507444741919703*^9, 3.507444767480236*^9}, {3.507445172443171*^9, 
    3.507445195383356*^9}, 3.507445290460836*^9}]
 }, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"density", "[", 
+   RowBox[{"data_", ",", "F_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "N", "}"}], ","}], "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.5074521124462643`*^9, 3.507452154817062*^9}}],
 
 Cell[CellGroupData[{
 
@@ -5121,19 +5130,20 @@ Cell[CellGroupData[{
 Cell[27969, 595, 785, 12, 30, "Input"],
 Cell[28757, 609, 4811, 101, 202, "Output"]
 }, Open  ]],
+Cell[33583, 713, 281, 7, 50, "Input"],
 Cell[CellGroupData[{
-Cell[33605, 715, 852, 23, 30, "Input"],
-Cell[34460, 740, 26247, 436, 241, "Output"]
+Cell[33889, 724, 852, 23, 30, "Input"],
+Cell[34744, 749, 26247, 436, 241, "Output"]
 }, Open  ]],
-Cell[60722, 1179, 267, 6, 30, "Input"],
+Cell[61006, 1188, 267, 6, 30, "Input"],
 Cell[CellGroupData[{
-Cell[61014, 1189, 423, 8, 30, "Input"],
-Cell[61440, 1199, 116985, 1932, 234, "Output"]
+Cell[61298, 1198, 423, 8, 30, "Input"],
+Cell[61724, 1208, 116985, 1932, 234, "Output"]
 }, Open  ]],
-Cell[178440, 3134, 371, 7, 30, "Input"],
+Cell[178724, 3143, 371, 7, 30, "Input"],
 Cell[CellGroupData[{
-Cell[178836, 3145, 425, 8, 30, "Input"],
-Cell[179264, 3155, 116926, 1932, 234, "Output"]
+Cell[179120, 3154, 425, 8, 30, "Input"],
+Cell[179548, 3164, 116926, 1932, 234, "Output"]
 }, Open  ]]
 }
 ]

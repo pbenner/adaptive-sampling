@@ -160,7 +160,7 @@ future events given our observations.
   Let $X_1, X_2, \dots$ denote an infinitely exchangeable sequence of
   random variables from a probability space $(\Omega, \mathcal{F}, P)$
   to a measure space $(\mathcal{X}, \mathcal{G})$. There exists a
-  cumulative distribution $\Pi_{\valpha}$ such that the joint mass
+  distribution function $\Pi_{\valpha}$ such that the joint mass
   function $p(x_1, \dots, x_{m_T}) = P(X_1 = x_1, \dots, X_{m_T} =
   x_{m_T})$ has the form
   \begin{equation}
@@ -185,8 +185,8 @@ future events given our observations.
   = 1 ~ \text{and} ~ \theta_x \ge 0~\forall x \in \mathcal{X} \}$
   denotes the $K-1$-dimensional probability simplex. If
   $\Pi_{\valpha}$ is a non-decreasing real function we get the
-  Riemann-Stieltjes integral.
-  (cf. \cite{Finetti1974, Hewitt1955})
+  Riemann-Stieltjes integral and we denote its density
+  $f_{\Pi_{\valpha}}$. (cf. \cite{Finetti1974, Hewitt1955})
 \end{theorem}
 \begin{proof}
   Todo
@@ -194,15 +194,13 @@ future events given our observations.
 In other words, conditional on $\vec{\theta}$ the joint probability
 mass function $p(x_1, \dots, x_{m_T})$ can be written as an integral
 mixture of multinomial probabilities. Note that for $K=1$ equation
-$\ref{eq:frt}$ computes the $n_x$th moment of
-$\dd \Pi_{\valpha}$. In Bayesian inference, the limiting
-distribution $\pi_{\valpha} = \dd \Pi_{\valpha} /
-\dd \vec{\theta}$ is interpreted as a prior distribution. A
-common choice for $\dd \Pi_{\valpha}$ is a conjugate prior
-which substantially simplifies the computation of the posterior
-distribution. In the following we show how such a prior can be
-justified from inductive principles such that theorem \ref{inf:frm}
-holds for a proper choice of $\valpha$.
+$\ref{eq:frt}$ computes the $n_x$th moment of $f_{\Pi_{\valpha}}$. In
+Bayesian inference, the limiting distribution function $\Pi_{\valpha}$
+is interpreted as a prior distribution. A common choice for
+$\Pi_{\valpha}$ is a conjugate prior which substantially simplifies
+the computation of the posterior distribution. In the following we
+show how such a prior can be justified from inductive principles such
+that theorem \ref{inf:frm} holds for a proper choice of $\valpha$.
 
 \begin{theorem}[Johnson-Carnap continuum]
   \label{inf:jcc}
@@ -229,15 +227,15 @@ holds for a proper choice of $\valpha$.
   Todo
 \end{proof}
 Note that if $X_1, X_2, \dots$ is exchangeable then $P(X_{m_T+1} =
-x_{m_T+1} | \vec{n}(E)) = P(X_{m_T+1} = x_{m_T+1} | n_x) = f_x(n_x,m_T)$. The
+x_{m_T+1} | \vec{n}(E)) = P(X_{m_T+1} = x_{m_T+1} | n_x) = g_x(n_x,m_T)$. The
 Johnson-Carnap continuum of inductive methods not only provides us
 with a sufficient statistic for inductive reasoning, but also
 identifies a unique prior distribution for de Finetti's representation
 theorem.
 \begin{corollary}
   Under the conditions (i-iii) of theorem \ref{inf:jcc} the prior
-  distribution $\dd \Pi_{\valpha}$ belongs to the \textit{Dirichlet
-    familiy} $\Dir(\valpha)$ with density $f_{\Dir(\valpha)}$, i.e.
+  distribution function $\Pi_{\valpha}$ belongs to the \textit{Dirichlet
+    familiy} $\Dir(\valpha)$ with density $f_{\Dir_{\valpha}}$, i.e.
   \begin{equation}
     \begin{split}
       \dd \Pi_{\valpha}(\vec{\theta}) =
@@ -312,9 +310,9 @@ of a hypothesis is then given by
     P(\vec{\theta}|E)
     &= \frac{P(E,\vec{\theta})}{P(E)}
      =
-    \frac{P(E|\vec{\theta})
-      \dd \Pi_{\valpha}(\vec{\theta}) /
-      \dd \vec{\theta}}{
+    \frac{
+      P(E|\vec{\theta})
+      f_{\Pi_{\valpha}}(\vec{\theta})}{
       \int_{\Delta^K}
       P(E|\vec{\theta}')
       \dd \Pi_{\valpha}(\vec{\theta}')}\\
@@ -392,7 +390,7 @@ following definition:
   Let $(\vec{X}^l)_{l=1}^L$ denote an $L$-fold partially exchangeable
   sequence of random variables from a probability space $(\Omega,
   \mathcal{F}, P)$ to a measure space $(\mathcal{X},
-  \mathcal{G})$. There exists a cumulative distribution
+  \mathcal{G})$. There exists a distribution function
   $\Pi_{\valpha}^L$ such that the joint mass function $p(\vec{x}^1,
   \dots, \vec{x}^{L}) = P(\vec{X}^1 = \vec{x}^1, \dots, \vec{X}^L =
   \vec{x}^L)$ has the form
