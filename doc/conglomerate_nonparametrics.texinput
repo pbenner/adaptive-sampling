@@ -202,31 +202,31 @@ x_{m_T}$. From exchangeability it follows that
 \end{equation}
 
 \begin{align*}
-  \theta_i ~ | ~ x_i,\vtheta_{-i}
-  &= \frac{(x_i ~ | ~ \theta_i,\vtheta_{-i})(\theta_i ~ | ~ \vtheta_{-i})}{(x_i ~ | ~ \vtheta_{-i})}\\
-  % = \frac{(x_i ~ | ~ \theta_i,\vtheta_{-i})(\theta_i ~ | ~ \vtheta_{-i})}{(x_i ~ | ~ \vtheta_{-i})(\vtheta_{-i})}
+  P(\theta_i | x_i,\vtheta_{-i})
+  &= \frac{P(x_i | \theta_i,\vtheta_{-i})P(\theta_i | \vtheta_{-i})}{P(x_i | \vtheta_{-i})}\\
+  % = \frac{(x_i | \theta_i,\vtheta_{-i})(\theta_i | \vtheta_{-i})}{(x_i | \vtheta_{-i})(\vtheta_{-i})}
   % \\
-  % &= \frac{(x_i ~ | ~ \vtheta)}{(x_i ~ | ~ \vtheta_{-i})}(\theta_i ~ | ~ \vtheta_{-i})\\
+  % &= \frac{(x_i | \vtheta)}{(x_i | \vtheta_{-i})}(\theta_i | \vtheta_{-i})\\
   % \Rightarrow
-  % (\theta_i  ~ | ~  \vtheta_{-i}, x_i)
-  &= \frac{1}{(x_i ~ | ~ \vtheta_{-i})}
+  % (\theta_i  |  \vtheta_{-i}, x_i)
+  &= \frac{1}{P(x_i | \vtheta_{-i})}
   [\\
     &\quad\frac{i-1}{i-1+\alpha}
-    (x_i  ~ | ~  \vtheta, \exists j \neq i ~ \theta_j = \theta_i)
-    (\theta_i  ~ | ~  \vtheta_{-i}, \exists j \neq i ~ \theta_j = \theta_i)+\\
+    P(x_i  |  \vtheta, \exists j \neq i ~ \theta_j = \theta_i)
+    P(\theta_i  |  \vtheta_{-i}, \exists j \neq i ~ \theta_j = \theta_i)+\\
     &\quad \frac{\alpha}{i-1+\alpha}
-    (x_i  ~ | ~  \vtheta, \forall j \neq i ~ \theta_j \neq \theta_i)
-    (\theta_i  ~ | ~  \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i)
+    P(x_i  |  \vtheta, \forall j \neq i ~ \theta_j \neq \theta_i)
+    P(\theta_i  |  \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i)
   ]\\
-  % &= \frac{(x_i ~ | ~ \vtheta)}{(x_i ~ | ~ \vtheta_{-i})}
+  % &= \frac{(x_i | \vtheta)}{(x_i | \vtheta_{-i})}
   % \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
   %   \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
   %     \alpha} G_0(\theta_i)
   % \right]\\
-  &= \sum_{j \neq i} b (x_i ~ | ~  \theta_j) \delta_{\theta_j}(\theta_i) +
-  b \alpha (x_i ~ | ~ \theta_i) (\theta_i  ~ | ~  \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i),
+  &= \sum_{j \neq i} b P(x_i |  \theta_j) \delta_{\theta_j}(\theta_i) +
+  b \alpha P(x_i | \theta_i) f_{G_0}(\theta_i),
   ~ \text{with}\\
-  b &= \frac{1}{(x_i ~ | ~ \vtheta_{-i})(m_T - 1 + \alpha)}
+  b &= \frac{1}{P(x_i | \vtheta_{-i})(m_T - 1 + \alpha)}
 \end{align*}
 With
 \begin{equation}
