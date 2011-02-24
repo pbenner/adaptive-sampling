@@ -165,7 +165,7 @@ from which we conclude that
 \begin{equation}
   \begin{aligned}
     P(            &\theta_{m_T} = \theta^*_k    ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &=& ~\frac{n_{\theta^*_k}(\theta_1,\dots, \theta_{m_T-1})}{m_T - 1 + \alpha},\\
-    P(\forall k ~ &\theta_{m_T} \neq \theta_k ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &=& ~\frac{\alpha}{m_T - 1 + \alpha},\\
+    P(\forall k ~ &\theta_{m_T} \neq \theta^*_k ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &=& ~\frac{\alpha}{m_T - 1 + \alpha},\\
   \end{aligned}
 \end{equation}
 where $n_{\theta^*_k}(\theta_1,\dots, \theta_{m_T-1})$ counts the
@@ -280,7 +280,7 @@ we get
   \frac{P(x_i | \theta_i = \theta^*_k, \vtheta_{-i}) P(\theta_i =
     \theta^*_k | \vtheta_{-i})}{P(x_i | \vtheta_{-i})}\\
   &=
-  \underbrace{\frac{1}{P(x_i|\vtheta{-i})}}_{b}
+  \underbrace{\frac{1}{P(x_i|\vtheta_{-i})}}_{b}
   \frac{n_{\theta^*_k}(\vtheta_{-i})}{m_T - 1 + \alpha} P(x_i | \theta^*_k)\\
   %
   P(\forall k ~ \theta_i \neq \theta^*_k | x_i, \vtheta_{-i})
@@ -288,7 +288,7 @@ we get
   \frac{P(x_i | \forall k ~ \theta_i \neq \theta^*_k, \vtheta_{-i})
     P(\forall k ~ \theta_i \neq \theta^*_k | \vtheta_{-i})}{P(x_i | \vtheta_{-i})}\\
   &=
-  \underbrace{\frac{1}{P(x_i|\vtheta{-i})}}_{b}
+  \underbrace{\frac{1}{P(x_i|\vtheta_{-i})}}_{b}
   \frac{\alpha}{m_T - 1 + \alpha} \int P(x_i | \theta) P(\theta) \dd\theta\\
   \end{split}
 \end{equation}
