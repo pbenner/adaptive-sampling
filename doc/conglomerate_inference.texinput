@@ -52,7 +52,7 @@ $(\mathbb{R}, \mathcal{R})$ the expectation is given by
   \begin{split}
   E_f[X] &= \int_\Omega f(X(\omega)) P(\dd\omega)\\
          &= \int_{\mathcal{G}} f(y) (P \circ X^{-1})(\dd y)\\
-         &= \int_{\mathcal{G}} f(y) \mu(\dd y).
+         &= \int_{\mathcal{G}} f(y) \mu_X(\dd y).
 %          = \int_{\mathcal{G}} f(y) \dd \mu(y).
   \end{split}
 \end{equation}

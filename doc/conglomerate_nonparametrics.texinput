@@ -28,7 +28,7 @@ summary on the topic is provided by \cite{Ferguson1992}.
   probability measure on $(\Theta, \mathcal{F})$. A random probability
   measure $G$ is drawn from a Dirichlet process $\DP(G_0, \alpha)$
   with parameter $\alpha \in \mathbb{R}$ if for any finite partition
-  $A_1, \dots A_K$ of $\Theta$
+  $A_1, \dots, A_K$ of $\Theta$
   \begin{equation}
     (G(A_1), \dots, G(A_K)) \sim \Dir(\alpha G_0(A_1), \dots, \alpha G_0(A_K)),
   \end{equation}
@@ -45,6 +45,7 @@ sufficient characterization of the Dirichlet process:
   \end{equation}
   it follows that $G$ is a Dirichlet process
   prior. (cf. \cite{Regazzini1978, Lo1991})
+  \label{nonpara:th1}
 \end{theorem}
 
 \begin{lemma}[Properties of the Dirichlet process]\hfill
@@ -80,26 +81,6 @@ De Finetti representation
   \int \prod_{i=1}^{m_T-1} P(\theta_i|G)P(G|G_0,\alpha)\dd G
 \end{equation}
 
-\begin{align*}
-  1
-  &\sim \Dir(\alpha)\\
-%
-  (\pi_1, \pi_2)
-  &\sim \Dir(\alpha/2, \alpha/2)
-  & \pi_1 + \pi_2 &= 1\\
-%
-  (\pi_{11}, \pi_{12}, \pi_{21}, \pi_{22})
-  &\sim \Dir(\alpha/4, \alpha/4, \alpha/4, \alpha/4)
-  &\pi_{i1} + \pi_{i2} &= \pi_i, i = 1,2\\
-%
-  &\,~\vdots\\
-%
-  (\pi_k)_{k=1}^K
-  &\sim \Dir(\alpha/K, \dots, \alpha/K)
-  &\sum_{k=1}^K \pi_k &= 1\\
-%
-  G(\theta) &= \sum_{k=1}^{\infty} \pi_k \delta_{\theta^*_k}(\theta)
-\end{align*}
 \begin{theorem}
   Let
   \begin{equation}
@@ -112,41 +93,21 @@ De Finetti representation
   then $G^K \codist G$ as $K \rightarrow \infty$, where $G \sim
   DP(G_0, \alpha)$.
   (cf. \cite{Ishwaran2002})
+  \label{nonpara:th2}
 \end{theorem}
 
-\section*{Dirichlet Process Mixtures}
-\cite{Antoniak1974}
-\begin{equation}
-  \begin{split}
-    x_k ~ | ~ \theta_k  &\sim F(\theta_k)\\
-    \theta_k ~ | ~ G    &\sim G\\
-    G ~ | ~ G_0, \alpha &\sim \DP(G_0, \alpha)
-  \end{split}
-\end{equation}
-which can also be expressed as the limit of a finite mixture model
-\begin{equation}
-  \begin{split}
-    x_k ~ | ~ c_k, \vec{\theta}^*   &\sim F(\theta^*_{c_k})\\
-    c_k ~ | ~ \vec{p}               &\sim \Dis(p_1, \dots, p_K)\\
-    \theta^*_c                  &\sim G_0\\
-    \vec{p}                     &\sim \Dir(\alpha/K, \dots, \alpha/K)
-  \end{split}
-\end{equation}
-as $K \rightarrow \infty$.
+\section*{Representations of the Dirichlet Process}
+There are three main representations of the Dirichlet process:
+\begin{enumerate}
+\item The strick-breaking construction generates the random measure
+  $G$,
+\item the Blackwell and MacQueen P\'olya urn is used to generate
+  $\theta_{m_T}$ given $\theta_1, \dots, \theta_{m_T-1}$,
+\item and the Chinese restaurant process, which extends to P\'olya urn
+  scheme for clustering applications.
+\end{enumerate}
 
-\begin{equation}
-  \begin{split}
-    P(c_k | c_1, \dots c_{k-1})
-    &= \frac{P(c_1, \dots, c_k)}{P(c_1, \dots, c_{k-1})}\\
-    &= \frac{\int_{\Delta^K}P(c_1, \dots, c_k|\vec{p})\dd \Pi_{\valpha}(\vec{p})}{\int_{\Delta^K}P(c_1, \dots, c_{k-1}|\vec{p})\dd \Pi_{\valpha}(\vec{p})}\\
-    &= \frac{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{k=1}^{K}p_k^{n_k(c_1, \dots, c_k)+\alpha/K-1} \dd \vec{p}}{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{k=1}^{K}p_k^{n_k(c_1, \dots, c_{k-1})+\alpha/K-1} \dd \vec{p}}\\
-    &= \frac{\Beta(\vec{n}(c_1, \dots, c_k)+\alpha/K)}{\Beta(\vec{n}(c_1, \dots, c_{k-1})+\alpha/K)}\\
-    &= \frac{n_{c_k}(c_1, \dots, c_{k-1}) + \alpha/K}{k - 1 + \alpha}
-  \end{split}
-\end{equation}
-$\vec{n} = (n_k)_{k=i}^K$ is the count statistic for the $K$ distinct classes.
-
-\subsection*{Stick-breaking construction to generate G}
+\subsection*{Stick-breaking construction}
 \cite{Sethuraman1994}
 \begin{equation}
   \begin{split}
@@ -157,7 +118,7 @@ $\vec{n} = (n_k)_{k=i}^K$ is the count statistic for the $K$ distinct classes.
   \end{split}
 \end{equation}
 
-\subsection*{P\'olya urn to sample from G}
+\subsection*{Blackwell and MacQueen P\'olya Urn}
 \cite{Blackwell1973}
 \begin{equation}
   \begin{split}
@@ -177,6 +138,7 @@ $\vec{n} = (n_k)_{k=i}^K$ is the count statistic for the $K$ distinct classes.
     P(\exists i ~ \theta_{m_T} = \theta_i    ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &= \frac{m_T - 1}{m_T - 1 + \alpha}\\
     P(\forall i ~ \theta_{m_T} \neq \theta_i ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &= \frac{\alpha }{m_T - 1 + \alpha},\\
   \end{split}
+  \label{nonpara:bmpu}
 \end{equation}
 $\delta_x$ denotes the Dirac measure defined by
 \begin{equation}
@@ -186,12 +148,75 @@ $\delta_x$ denotes the Dirac measure defined by
     0 & \text{otherwise}.
   \end{cases}
 \end{equation}
-It is known as the Blackwell and MacQueen P\'olya urn scheme
-(often described as the Chinese restaurant process)
+
+\subsection*{Chinese restaurant process}
+We know that $\theta_1, \dots, \theta_{m_T}$ drawn from a Blackwell
+and MacQueen P\'olya urn take on $K < m_T$ values $\theta_1^*, \dots,
+\theta_K^*$. We can therefore rewrite (\ref{nonpara:bmpu}) as
+\begin{equation}
+  \begin{aligned}
+    \theta_{m_T} ~ | ~ \theta_1, \dots, \theta_{m_T-1} &\sim
+    \sum_{k=1}^{K} \frac{n_{\theta^*_k}(\theta_1,\dots, \theta_{m_T-1})}{m_T-1+\alpha}\delta_{\theta^*_k} +
+    \frac{\alpha}{m_T-1+\alpha} G_0,\\
+  \end{aligned}
+  \label{nonpara:chin}
+\end{equation}
+from which we conclude that
+\begin{equation}
+  \begin{aligned}
+    P(            &\theta_{m_T} = \theta^*_k    ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &=& ~\frac{n_{\theta^*_k}(\theta_1,\dots, \theta_{m_T-1})}{m_T - 1 + \alpha},\\
+    P(\forall k ~ &\theta_{m_T} \neq \theta_k ~ | ~ \theta_1, \dots, \theta_{m_T-1}) &=& ~\frac{\alpha}{m_T - 1 + \alpha},\\
+  \end{aligned}
+\end{equation}
+where $n_{\theta^*_k}(\theta_1,\dots, \theta_{m_T-1})$ counts the
+number of occurences of the value $\theta^*_k$ in the sequence
+$\theta_1,\dots, \theta_{m_T-1}$.
+
+\section*{Dirichlet Process Mixtures}
+\cite{Antoniak1974}
+\begin{equation}
+  \begin{aligned}
+    x_i ~ &| ~ \theta_i  &\sim& ~ F(\theta_i)\\
+    \theta_i ~ &| ~ G    &\sim& ~ G \\
+    G ~ &| ~ G_0, \alpha &\sim& ~ \DP(G_0, \alpha)
+  \end{aligned}
+  \label{nonpara:dpm}
+\end{equation}
+From Theorem \ref{nonpara:th2} we know that we can represent
+(\ref{nonpara:dpm}) as the limit of a finite mixture model
+\begin{equation}
+  \begin{aligned}
+    x_i ~ &| ~ c_i, \vec{\theta}^* &\sim& ~ F(\theta^*_{c_i})\\
+    c_i ~ &| ~ \vec{\pi} &\sim& ~ \Dis(\pi_1, \dots, \pi_K)\\
+    \theta^*_k &&\sim& ~ G_0\\
+    (\pi_k)_{k=1}^K &&\sim& ~ \Dir(\alpha/K, \dots, \alpha/K)
+  \end{aligned}
+\end{equation}
+with $K \rightarrow \infty$, that is, we draw $K$ distinct values
+$(\theta^*_k)_{k=1}^K$ from $G_0$ and $c_i$ indicates which of them we
+use to generate $x_i$.
+
+\begin{equation}
+  \begin{split}
+    P(c_{m_T} = c| c_1, \dots c_{m_T-1})
+    &= \frac{P(c_1, \dots, c_{m_T})}{P(c_1, \dots, c_{m_T-1})}\\
+    &= \frac{\int_{\Delta^K}P(c_1, \dots, c_{m_T}|\vec{p})\dd \Pi_{\valpha}(\vec{p})}{\int_{\Delta^K}P(c_1, \dots, c_{m_T-1}|\vec{p})\dd \Pi_{\valpha}(\vec{p})}\\
+    &= \frac{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{k=1}^{K}p_k^{n_k(c_1, \dots, c_{m_T})+\alpha/K-1} \dd \vec{p}}{\int_{\Delta^K} \frac{\Gamma(\alpha)}{\Gamma(\alpha)^K} \prod_{k=1}^{K}p_k^{n_k(c_1, \dots, c_{m_T-1})+\alpha/K-1} \dd \vec{p}}\\
+    &= \frac{\Beta(\vec{n}(c_1, \dots, c_{m_T})+\alpha/K)}{\Beta(\vec{n}(c_1, \dots, c_{m_T-1})+\alpha/K)}\\
+    &= \frac{n_{c}(c_1, \dots, c_{m_T-1}) + \alpha/K}{m_T - 1 + \alpha}\\
+    &\rightarrow \frac{n_{c}(c_1, \dots, c_{m_T-1})}{m_T - 1 + \alpha}
+  \end{split}
+\end{equation}
+as $K \rightarrow \infty$, where $\vec{n} = (n_k)_{k=i}^K$ is the
+count statistic for the $K$ distinct classes.
 
 \section*{Sampling from Dirichlet Process Mixtures}
 Suppose we have an exchangeable sequence of observations $x_1, \dots,
-x_{m_T}$. From exchangeability it follows that
+x_{m_T}$. When we want draw samples of the $\theta_i$ we can use
+either the P\'olya urn scheme (\ref{nonpara:bmpu}) or the
+representation as a Chinese restaurant process
+(\ref{nonpara:chin}). We will first derive the Gibbs sampler for the
+P\'olya urn scheme. From exchangeability it follows that
 \begin{equation}
   \begin{split}
     \theta_{i} ~ | ~ \vtheta_{-i} &\sim
@@ -204,11 +229,6 @@ x_{m_T}$. From exchangeability it follows that
 \begin{align*}
   P(\theta_i | x_i,\vtheta_{-i})
   &= \frac{P(x_i | \theta_i,\vtheta_{-i})P(\theta_i | \vtheta_{-i})}{P(x_i | \vtheta_{-i})}\\
-  % = \frac{(x_i | \theta_i,\vtheta_{-i})(\theta_i | \vtheta_{-i})}{(x_i | \vtheta_{-i})(\vtheta_{-i})}
-  % \\
-  % &= \frac{(x_i | \vtheta)}{(x_i | \vtheta_{-i})}(\theta_i | \vtheta_{-i})\\
-  % \Rightarrow
-  % (\theta_i  |  \vtheta_{-i}, x_i)
   &= \frac{1}{P(x_i | \vtheta_{-i})}
   [\\
     &\quad\frac{i-1}{i-1+\alpha}
@@ -218,11 +238,6 @@ x_{m_T}$. From exchangeability it follows that
     P(x_i  |  \vtheta, \forall j \neq i ~ \theta_j \neq \theta_i)
     P(\theta_i  |  \vtheta_{-i}, \forall j \neq i ~ \theta_j \neq \theta_i)
   ]\\
-  % &= \frac{(x_i | \vtheta)}{(x_i | \vtheta_{-i})}
-  % \left[ \frac{1}{m_T - 1 + \alpha} \sum_{j \neq i}
-  %   \delta_{\theta_j}(\theta_i) + \frac{\alpha}{m_T - 1 +
-  %     \alpha} G_0(\theta_i)
-  % \right]\\
   &= \sum_{j \neq i} b P(x_i |  \theta_j) \delta_{\theta_j}(\theta_i) +
   b \alpha P(x_i | \theta_i) f_{G_0}(\theta_i),
   ~ \text{with}\\
@@ -247,11 +262,34 @@ we can sample from
 \end{equation}
 (cf. \cite{Escobar1994, Escobar1995})
 
+% \begin{equation}
+%   \begin{split}
+%     P(c_i = c| y_i, \vec{c}_{-i}, \vec{\theta}^*)
+%     &= \frac{P(y_i | c_i, \vec{c}_{-i}, \vec{\theta}^*)P(c_i | \vec{c}_{-i}, \vec{\theta}^*)}{P(y_i | \vec{c}_{-i}, \vec{\theta}^*)}\\
+%     &= \frac{P(y_i | c_i, \vec{\theta}^*)P(c_i | \vec{c}_{-i})}{P(y_i | \vec{c}_{-i}, \vec{\theta}^*)}\\
+%     &= b P(y_i | c_i, \vec{\theta}^*) \frac{n_{c}(\vec{c}_{-i}) + \alpha/K}{m_T - 1 + \alpha}
+%   \end{split}
+% \end{equation}
+
+If we instead use the representation as a Chinese restaurant process,
+we get
 \begin{equation}
   \begin{split}
-    P(c_i | y_i, \vec{c}_{-i}, \vec{\theta}^*)
-    &= \frac{P(y_i | c_i, \vec{c}_{-i}, \vec{\theta}^*)P(c_i | \vec{c}_{-i}, \vec{\theta}^*)}{P(y_i | \vec{c}_{-i}, \vec{\theta}^*)}\\
-    &= \frac{P(y_i | c_i, \vec{\theta}^*)P(c_i | \vec{c}_{-i})}{P(y_i | \vec{c}_{-i}, \vec{\theta}^*)}\\
-    &= b P(y_i | c_i, \vec{\theta}^*) \frac{n_{c_i}(\vec{c}_{-i}) + \alpha/K}{i - 1 + \alpha}
+  P(\theta_i = \theta^*_k | x_i, \vtheta_{-i})
+  &=
+  \frac{P(x_i | \theta_i = \theta^*_k, \vtheta_{-i}) P(\theta_i =
+    \theta^*_k | \vtheta_{-i})}{P(x_i | \vtheta_{-i})}\\
+  &=
+  \underbrace{\frac{1}{P(x_i|\vtheta{-i})}}_{b}
+  \frac{n_{\theta^*_k}(\vtheta_{-i})}{m_T - 1 + \alpha} P(x_i | \theta^*_k)\\
+  %
+  P(\forall k ~ \theta_i \neq \theta^*_k | x_i, \vtheta_{-i})
+  &=
+  \frac{P(x_i | \forall k ~ \theta_i \neq \theta^*_k, \vtheta_{-i})
+    P(\forall k ~ \theta_i \neq \theta^*_k | \vtheta_{-i})}{P(x_i | \vtheta_{-i})}\\
+  &=
+  \underbrace{\frac{1}{P(x_i|\vtheta{-i})}}_{b}
+  \frac{\alpha}{m_T - 1 + \alpha} \int P(x_i | \theta) P(\theta) \dd\theta\\
   \end{split}
 \end{equation}
+(cf. \cite{Bush1996})
