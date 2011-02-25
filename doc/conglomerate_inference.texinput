@@ -66,6 +66,27 @@ for which we define the Stieltjes integral as
   = \int_{\mathcal{G}} f(y) \mu(\dd y).
 \end{equation}
 
+\begin{theorem}[Radon-Nikodym]
+  Any absolute continuous measure $\mu_X$ with respect to some
+  positive measure $\mu$ can be represented as
+  \begin{equation}
+    \mu_X(A) = \int_A f_X(x) \mu(\dd x),
+  \end{equation}
+  where $f_X$ is the density for the distribution $\mu_X$. We
+  call $f_X$ the Radon-Nikodym derivative of $\mu_X$ with respect to
+  the carrier measure $\mu$.
+\end{theorem}
+
+\begin{corollary}[Radon-Nikodym representation of Bayes' formula]
+  Given that the  posterior distribution $\mu_{\Theta|E}$ is
+  absolutely continuous with respect to the prior distribution
+  $\mu_{\Theta}$, we can represent Bayes' rule of conditioning as
+  \begin{equation}
+    \frac{\dd \mu_{\Theta|E}}{\dd \mu_{\Theta}} (\theta|E) =
+    \frac{f(E|\theta)}{f(E)}.
+  \end{equation}
+\end{corollary}
+
 \section*{Inference}
 Given a sequence of $m_T$ observations $E = \{X_1, X_2, \dots,
 X_{m_T}\}$ how can we make predictions about future
@@ -353,7 +374,32 @@ to the frequentist's estimate ($\hat{\theta}_x = \frac{n_x}{m_T}$) if
 $\alpha_x = 0 ~ \forall x \in \mathcal{X}$. If $\alpha_x = 1 ~ \forall
 x \in \mathcal{X}$ we get \textit{Laplace's rule of succession}.
 
-\begin{example}[Polya's Urn]
+\begin{example}[Radon-Nikodym derivative for Dirichlet priors]
+  For any $A \subseteq \Delta^K$ the measure of the Dirichlet family is
+  given by
+  \begin{equation}
+    \mu_{Dir(\alpha)} = \frac{1}{\Beta(\alpha)} \int_A \prod_{x \in
+      \mathcal{X}} \theta_x^{\alpha - 1} \dd \vtheta.
+  \end{equation}
+  We can compute the Radon-Nikodym derivative of the Dirichlet
+  posterior with respect to the Dirichlet prior as a carrier measure,
+  given by
+  \begin{equation}
+    \begin{split}
+    \frac{\dd\mu_{Dir(\vec{n}+\valpha)}}{\dd\mu_{Dir(\valpha)}}
+    (\vtheta|E)
+    &=
+    \frac{\prod_{x \in \mathcal{X}} \theta_x^{n_x}}{
+      \frac{1}{\Beta(\valpha)} \int_{\Delta^K} \prod_{x \in \mathcal{X}}
+      \theta_x'^{n_x + \alpha_x - 1}\dd \vtheta'}\\
+    &=
+    \frac{\Beta(\valpha)}{\Beta(\vec{n}+\valpha)} \prod_{x \in
+      \mathcal{X}} \theta_x^{n_x}.
+    \end{split}
+  \end{equation}
+\end{example}
+
+\begin{example}[P\'olya's Urn]
   Suppose we draw white and black balls at random from an urn
   (i.e. $\Omega = \{ \text{white}, \text{black} \}$). Each time we
   draw a ball we put $k$ balls of the same color back into the
