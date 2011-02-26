@@ -52,7 +52,7 @@ sufficient characterization of the Dirichlet process:
   \begin{enumerate}
   \item
     Given a set of observations $\theta_1, \dots, \theta_{m_T}$ then the
-    posterior $G|\theta_1, \dots, \theta_{m_T}$ is as well a Dirichlet
+    posterior $G ~ | ~ \theta_1, \dots, \theta_{m_T}$ is as well a Dirichlet
     process, i.e.
     \begin{equation}
       \begin{split}
@@ -74,6 +74,18 @@ sufficient characterization of the Dirichlet process:
   \item If $G \sim DP(G_0, \alpha)$ then $G$ is almost surely discrete.
   \end{enumerate}
 \end{lemma}
+
+\begin{corollary}
+  Let $\mu_{DP(\alpha G_0 + \delta_\theta, \alpha + 1)}$ denote the
+  posterior distribution of $G ~ | ~ \theta$ with prior measure
+  $\mu_{DP(\alpha G_0, \alpha)}$. We have
+  \begin{equation}
+    \mu_{DP(\alpha G_0, \alpha)}(\theta) = 0 \neq
+    \mu_{DP(\alpha G_0 + \delta_\theta, \alpha + 1)}(\theta),
+  \end{equation}
+  hence the Radon-Nikodym derivative for the Dirichlet process does
+  not exist.
+\end{corollary}
 
 De Finetti representation
 \begin{equation}

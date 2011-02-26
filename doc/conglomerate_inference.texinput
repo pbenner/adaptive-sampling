@@ -68,7 +68,8 @@ for which we define the Stieltjes integral as
 
 \begin{theorem}[Radon-Nikodym]
   Any absolute continuous measure $\mu_X$ with respect to some
-  positive measure $\mu$ can be represented as
+  positive measure $\mu$  ($\mu_X(A) = 0$ whenever $\mu(A) =0$) can be
+  represented as
   \begin{equation}
     \mu_X(A) = \int_A f_X(x) \mu(\dd x),
   \end{equation}
