@@ -39,10 +39,9 @@ typedef struct matrix {
 } Matrix;
 
 typedef struct options {
-        prob_t epsilon;
+        float epsilon;
         int verbose;
         int prombsTest;
-        int gmp;
         int bprob;
         int differential_gain;
         int effective_counts;
@@ -51,8 +50,8 @@ typedef struct options {
         int marginal;
         float marginal_step;
         struct {
-                prob_t from;
-                prob_t to;
+                float from;
+                float to;
         } marginal_range;
         int n_moments;
         int n_marginals;

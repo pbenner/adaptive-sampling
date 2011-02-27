@@ -561,8 +561,14 @@ bin_log(
         if (options->n_moments > 0) {
                 result->moments = gsl_matrix_alloc(options->n_moments, K);
         }
+        else {
+                result->moments = NULL;
+        }
         if (options->marginal) {
                 result->marginals = gsl_matrix_alloc(K, options->n_marginals);
+        }
+        else {
+                result->marginals = NULL;
         }
         result->bprob   = gsl_vector_alloc(K);
         result->mpost   = gsl_vector_alloc(K);
