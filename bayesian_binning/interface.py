@@ -146,8 +146,8 @@ def binning(counts, alpha, prior, options):
      _lib.freeVector(c_prior)
 
      result = \
-     { 'moments'   : getMatrix(tmp.contents.moments)   if tmp.contents.moments   else None,
-       'marginals' : getMatrix(tmp.contents.marginals) if tmp.contents.marginals else None,
+     { 'moments'   : getMatrix(tmp.contents.moments)   if tmp.contents.moments   else [],
+       'marginals' : getMatrix(tmp.contents.marginals) if tmp.contents.marginals else [],
        'bprob'     : getVector(tmp.contents.bprob),
        'mpost'     : getVector(tmp.contents.mpost),
        'differential_gain' : getVector(tmp.contents.differential_gain),
