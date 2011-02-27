@@ -266,8 +266,8 @@ we can sample from
 \begin{equation}
   \begin{split}
     P(\theta_i | \vtheta_{-i}, x_i)
-    &= \sum_{j \neq i} b q_{i,j} \delta_{\theta_j}(\theta_i)
-                   + b r_i P(\theta_i|x_i), ~ \text{with}\\
+    &= \sum_{j \neq i} q_{i,j} \delta_{\theta_j}(\theta_i)
+                   + r_i P(\theta_i|x_i), ~ \text{with}\\
     q_{i,j} &= b P(x_i|\theta_j), ~ \text{and}\\
     r_i    &= b \alpha \int P(x_i|\theta)P(\theta) \dd\theta
   \end{split}
