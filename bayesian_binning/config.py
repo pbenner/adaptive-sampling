@@ -33,16 +33,14 @@ def readMatrix(config, section, option, converter):
             matrix.append([converter(a) for a in line.split(' ')])
     return matrix
 
-def readAlpha(config_parser, n, section, converter):
+def readAlpha(config_parser, events, bins, section, converter):
     alpha = []
     if config_parser.has_option(section, 'alpha'):
-        alpha = readVector(config_parser, section, 'alpha', converter)
-        if len(alpha) < n:
-            raise ValueError("Not enough alpha parameters.")
-        if len(alpha) > n:
-            raise ValueError("Too many alpha parameters.")
+        alpha = readMatrix(config_parser, section, 'alpha', converter)
+        if not len(alpha) == events or not len(alpha[0]) == bins:
+            raise ValueError("Wrong number of alpha parameters.")
     else:
-        alpha = list(np.repeat(1, n))
+        alpha = np.repeat(1, events*bins).reshape(events,bins)
     return alpha
 
 def readModelPrior(config_parser, n, section, converter):

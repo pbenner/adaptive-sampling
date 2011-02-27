@@ -104,8 +104,8 @@ def bin(counts, alpha, mprior):
         return load_config()
     else:
         counts_i = [ map(int, row) for row in counts ]
+        alpha_i  = [ map(int, row) for row in alpha  ]
         mprior_i =   map(float, mprior)
-        alpha_i  =   map(int, alpha)
         return interface.binning(counts_i, alpha_i, mprior_i, options)
 
 # save result

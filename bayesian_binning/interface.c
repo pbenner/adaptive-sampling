@@ -108,15 +108,15 @@ Matrix * fromGslMatrix(const gsl_matrix * matrix)
         return m;
 }
 
-BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *options)
+BinningResult * binning(Matrix *counts, Matrix *alpha, Vector *prior, Options *options)
 {
         gsl_matrix *counts_m = toGslMatrix(counts);
-        gsl_vector *alpha_v  = toGslVector(alpha);
+        gsl_matrix *alpha_m  = toGslMatrix(alpha);
         gsl_vector *prior_v  = toGslVector(prior);
         BinningResultGSL *resultGsl;
         BinningResult    *result = (BinningResult *)malloc(sizeof(BinningResult));
 
-        resultGsl = bin_log(counts_m, alpha_v, prior_v, options);
+        resultGsl = bin_log(counts_m, alpha_m, prior_v, options);
         if (options->n_moments > 0) {
                 result->moments = fromGslMatrix(resultGsl->moments);
         }
@@ -136,7 +136,7 @@ BinningResult * binning(Matrix *counts, Vector *alpha, Vector *prior, Options *o
         result->multibin_entropy  = fromGslVector(resultGsl->multibin_entropy);
 
         gsl_matrix_free(counts_m);
-        gsl_vector_free(alpha_v);
+        gsl_matrix_free(alpha_m);
         gsl_vector_free(prior_v);
         if (options->n_moments > 0) {
                 gsl_matrix_free(resultGsl->moments);

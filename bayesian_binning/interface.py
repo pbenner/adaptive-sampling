@@ -99,7 +99,7 @@ _lib.freeMatrix.restype   = None
 _lib.freeMatrix.argtypes  = [POINTER(MATRIX)]
 
 _lib.binning.restype      = POINTER(BINNING_RESULT)
-_lib.binning.argtypes     = [POINTER(MATRIX), POINTER(VECTOR), POINTER(VECTOR), POINTER(OPTIONS)]
+_lib.binning.argtypes     = [POINTER(MATRIX), POINTER(MATRIX), POINTER(VECTOR), POINTER(OPTIONS)]
 
 # convert datatypes
 # ------------------------------------------------------------------------------
@@ -133,8 +133,8 @@ def getMatrix(c_m):
 def binning(counts, alpha, prior, options):
      c_counts  = _lib.allocMatrix(len(counts), len(counts[0]))
      copyMatrixToC(counts, c_counts)
-     c_alpha   = _lib.allocVector(len(alpha))
-     copyVectorToC(alpha,  c_alpha)
+     c_alpha   = _lib.allocMatrix(len(alpha), len(alpha[0]))
+     copyMatrixToC(alpha,  c_alpha)
      c_prior   = _lib.allocVector(len(prior))
      copyVectorToC(prior,  c_prior)
      c_options = pointer(OPTIONS(options))
@@ -142,7 +142,7 @@ def binning(counts, alpha, prior, options):
      tmp = _lib.binning(c_counts, c_alpha, c_prior, c_options)
 
      _lib.freeMatrix(c_counts)
-     _lib.freeVector(c_alpha)
+     _lib.freeMatrix(c_alpha)
      _lib.freeVector(c_prior)
 
      result = \

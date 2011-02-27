@@ -159,8 +159,8 @@ def loadResult():
 def bin(counts, alpha, mprior):
     """Call the binning library."""
     counts_i = [ map(int, row) for row in counts ]
+    alpha_i  = [ map(int, row) for row in alpha  ]
     mprior_i =   map(float, mprior)
-    alpha_i  =   map(int, alpha)
     return interface.binning(counts_i, alpha_i, mprior_i, options)
 
 # sampling
@@ -238,7 +238,7 @@ def parseConfig(config_file):
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Ground Truth'):
         gt     = config.readVector(config_parser, 'Ground Truth', 'gt', float)
-        alpha  = config.readAlpha(config_parser, 2, 'Ground Truth', int)
+        alpha  = config.readAlpha(config_parser, 2, len(gt), 'Ground Truth', int)
         mprior = config.readModelPrior(config_parser, len(gt), 'Ground Truth', int)
         options['script'] = config.readScript(config_parser, 'Ground Truth', os.path.dirname(config_file))
         result = loadResult()
