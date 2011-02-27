@@ -142,7 +142,7 @@ def binning(counts, alpha, prior, options):
      tmp = _lib.binning(c_counts, c_alpha, c_prior, c_options)
 
      _lib.freeMatrix(c_counts)
-     _lib.freeVector(c_alpha)     
+     _lib.freeVector(c_alpha)
      _lib.freeVector(c_prior)
 
      result = \

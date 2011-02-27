@@ -13,9 +13,6 @@ pkgpython_PYTHON = config.py interface.py statistics.py visualization.py
 
 ## create symbolic link
 all-local: libbayesian-binning.so
-	@echo
-	@echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`pwd`
-	@echo
 
 libbayesian-binning.so:
 	$(LN_S) .libs/libbayesian-binning.so libbayesian-binning.so
