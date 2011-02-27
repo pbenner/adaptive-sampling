@@ -84,8 +84,10 @@ for which we define the Stieltjes integral as
   $\mu_{\Theta}$, we can represent Bayes' rule of conditioning as
   \begin{equation}
     \frac{\dd \mu_{\Theta|E}}{\dd \mu_{\Theta}} (\theta|E) =
-    \frac{f(E|\theta)}{f(E)}.
+    \frac{f(E|\theta)}{f(E)},
   \end{equation}
+  which represents the change in belief in $\theta$ after having
+  observed $E$.
 \end{corollary}
 
 \section*{Inference}
@@ -353,10 +355,10 @@ observed $\alpha_x - 1$ times. Since $\vec{\theta} \sim
 \Dir(\vec{n}(E)+\valpha)$ we can easily compute the
 expected value of $\vec{\theta}$ given our observations, i.e.
 \begin{equation}
-  \begin{split}
-    \hat{\theta}_x = \mathrm{E}[\theta_x|E] &=
-    \int_{\Delta^{K-1}}\theta_x P(E|\vec{\theta})
-    \dd \Pi_{\valpha}(\vec{\theta})\\
+  \begin{aligned}
+    \hat{\theta}_x := \E[\theta_x|E] &=
+    \int_{\Delta^K}\theta_x P(\vec{\theta}|E)
+    \dd \Pi_{\valpha}(\vec{\theta})          &=&~ P(X_{m_T + 1} = x | E)\\
     &=
     \frac{
       \int_{\Delta^K} P(X_{m_T+1} = x,E|\vec{\theta})
@@ -364,10 +366,10 @@ expected value of $\vec{\theta}$ given our observations, i.e.
     }{
       \int_{\Delta^K} P(E|\vec{\theta})
       \dd \Pi_{\valpha}(\vec{\theta})
-    }\\
-    &= g_x(n_x,m_T)
-    = \frac{n_x + \alpha_x}{m_T + \sum_{x' \in \mathcal{X}} \alpha_{x'}},
-  \end{split}
+    }                                       &=&~ \frac{P(X_{m_T + 1} = x, E)}{P(E)}\\
+    &= \frac{n_x + \alpha_x}{m_T + \sum_{x' \in \mathcal{X}} \alpha_{x'}}
+                                            &=&~ g_x(n_x,m_T),
+  \end{aligned}
 \end{equation}
 as it was shown in theorem \ref{inf:jcc}. The estimate is known as the
 \textit{extended Bayes-Laplace rule of succession}. It is equivalent
@@ -379,7 +381,7 @@ x \in \mathcal{X}$ we get \textit{Laplace's rule of succession}.
   For any $A \subseteq \Delta^K$ the measure of the Dirichlet family is
   given by
   \begin{equation}
-    \mu_{Dir(\alpha)} = \frac{1}{\Beta(\alpha)} \int_A \prod_{x \in
+    \mu_{Dir(\alpha)}(A) = \frac{1}{\Beta(\alpha)} \int_A \prod_{x \in
       \mathcal{X}} \theta_x^{\alpha - 1} \dd \vtheta.
   \end{equation}
   We can compute the Radon-Nikodym derivative of the Dirichlet
@@ -392,7 +394,7 @@ x \in \mathcal{X}$ we get \textit{Laplace's rule of succession}.
     &=
     \frac{\prod_{x \in \mathcal{X}} \theta_x^{n_x}}{
       \frac{1}{\Beta(\valpha)} \int_{\Delta^K} \prod_{x \in \mathcal{X}}
-      \theta_x'^{n_x + \alpha_x - 1}\dd \vtheta'}\\
+      \vartheta_x^{n_x + \alpha_x - 1}\dd \vec{\vartheta}}\\
     &=
     \frac{\Beta(\valpha)}{\Beta(\vec{n}+\valpha)} \prod_{x \in
       \mathcal{X}} \theta_x^{n_x}.
