@@ -91,7 +91,7 @@ unsigned int countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
 }
 
 static
-prob_t mbeta_log(binProblem *bp, unsigned int *p)
+prob_t mbeta_log(binProblem *bp, prob_t *p)
 {
         unsigned int i;
         prob_t sum1, sum2;
@@ -149,8 +149,8 @@ static /* P(E|B) */
 prob_t iec_log(binProblem *bp, int kk, int k)
 {
         unsigned int i;
-        unsigned int c[bp->events];
-        unsigned int alpha[bp->events];
+        prob_t c[bp->events];
+        prob_t alpha[bp->events];
         for (i = 0; i < bp->events; i++) {
                 c[i]     = countStatistic(bp, i, kk, k) + countAlpha(bp, i, kk, k);
                 alpha[i] = countAlpha(bp, i, kk, k);
@@ -267,8 +267,8 @@ static
 prob_t singlebinEntropy(binProblem *bp, int i, int j)
 {
         unsigned int k;
-        unsigned int c[bp->events];
         unsigned int n = 0;
+        prob_t c[bp->events];
         prob_t sum = 0;
         for (k = 0; k < bp->events; k++) {
                 c[k] = countStatistic(bp, k, i, j) + countAlpha(bp, k, i, j);
@@ -350,7 +350,8 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence)
         prob_t f(int i, int j)
         {
                 if (i <= pos && pos <= j) {
-                        int k, n = 0;
+                        int k;
+                        prob_t n = 0;
                         for (k = 0; k < bp->events; k++) {
                                 n += countStatistic(bp, k, i, j) + countAlpha(bp, k, i, j);
                         }
