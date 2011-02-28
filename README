@@ -15,7 +15,7 @@ Binning examples
 Adaptive sampling examples
 --------------------------------------------------------------------------------
 
-./adaptive-sampling.py -n 10 data/sampling/data1.cfg
+./adaptive-sampling.py -n  10 -m data/sampling/data1.cfg
 
 ./adaptive-sampling.py -n  10 -m --save=data/sampling/data1.result1 data/sampling/data1.cfg
 ./adaptive-sampling.py -n  90 -m --load=data/sampling/data1.result1 --save=data/sampling/data1.result2 data/sampling/data1.cfg
@@ -26,3 +26,6 @@ Adaptive sampling examples
 ./adaptive-sampling.py -n 100 -m --plot-utility data/sampling/data1.cfg
 
 ./adaptive-sampling.py -m -n 400 --strategy=uniform --save=data/sampling/data1.result4 data/sampling/data1.cfg
+
+./adaptive-sampling.py -n 5 -m --strategy=effective-counts data/sampling/data4.cfg 2>/dev/null
+./adaptive-sampling.py -n 5 -m --strategy=differential-gain data/sampling/data4.cfg 2>/dev/null

@@ -181,14 +181,20 @@ def selectItem(gain, counts, result):
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
 
-def experiment(ground_truth, index):
-    if ground_truth[index] >= random.uniform(0.0, 1.0):
-        return 0 # success
+def experiment(index, data):
+    if data['gt']:
+        if data['gt'][index] >= random.uniform(0.0, 1.0):
+            return 0 # success
+        else:
+            return 1 # failure
     else:
-        return 1 # failure
+        print index
+        ret = None
+        while not ret == 0 and not ret == 1:
+            ret = int(raw_input())
+        return ret
 
-def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
-    n = len(ground_truth)
+def sample(result, data):
     utility  = []
     marginal = options['marginal']
     options['marginal'] = 0
@@ -201,27 +207,28 @@ def sampleFromGroundTruth(ground_truth, result, alpha, mprior):
     if result['counts']:
         counts = result['counts']
     else:
-        counts = [ list(np.repeat(0, n)), list(np.repeat(0, n)) ]
+        counts = [ list(np.repeat(0, data['bins'])),
+                   list(np.repeat(0, data['bins'])) ]
     if result['samples']:
         samples = result['samples']
     else:
         samples = []
     for i in range(0, options['samples']):
-        print "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
-        result  = bin(counts, alpha, mprior)
+        print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
+        result  = bin(counts, data['alpha'], data['mprior'])
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
             index   = selectItem(gain, map(sum, zip(*counts)), result)
             stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-            event   = experiment(ground_truth, index)
+            event   = experiment(index, data)
             samples.append(index)
             counts[event][index] += 1
             gain.pop(index)
     options['model_posterior'] = True
     options['n_moments'] = 3
     options['marginal'] = marginal
-    result = bin(counts, alpha, mprior)
+    result = bin(counts, data['alpha'], data['mprior'])
     result['counts']  = counts
     result['samples'] = samples
     result['utility'] = utility
@@ -234,22 +241,35 @@ def parseConfig(config_file):
     config_parser = ConfigParser.RawConfigParser()
     config_parser.read(config_file)
 
+    data = { 'bins'   : 0,
+             'gt'     : None,
+             'mprior' : None,
+             'alpha'  : None }
+
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Ground Truth'):
-        gt     = config.readVector(config_parser, 'Ground Truth', 'gt', float)
-        alpha  = config.readAlpha(config_parser, 2, len(gt), 'Ground Truth', int)
-        mprior = config.readModelPrior(config_parser, len(gt), 'Ground Truth', int)
+        data['gt']     = config.readVector(config_parser, 'Ground Truth', 'gt', float)
+        data['alpha']  = config.readAlpha(config_parser, 2, len(data['gt']), 'Ground Truth', int)
+        data['mprior'] = config.readModelPrior(config_parser, len(data['gt']), 'Ground Truth', int)
+        data['bins']   = len(data['gt'])
         options['script'] = config.readScript(config_parser, 'Ground Truth', os.path.dirname(config_file))
         result = loadResult()
-        result = sampleFromGroundTruth(gt, result, alpha, mprior)
-        if options['save']:
-            saveResult(result)
-        else:
-            vis.plotSampling(result, gt, options)
-            if options['plot-utility']:
-                vis.plotUtilitySeries(result, options)
-            show()
+        result = sample(result, data)
+    if config_parser.has_section('Experiment'):
+        data['bins']   = int(config_parser.get('Experiment', 'bins'))
+        data['alpha']  = config.readAlpha(config_parser, 2, data['bins'], 'Experiment', int)
+        data['mprior'] = config.readModelPrior(config_parser, data['bins'], 'Experiment', int)
+        options['script'] = config.readScript(config_parser, 'Experiment', os.path.dirname(config_file))
+        result = loadResult()
+        result = sample(result, data)
+    if options['save']:
+        saveResult(result)
+    else:
+        vis.plotSampling(result, options, data)
+        if options['plot-utility']:
+            vis.plotUtilitySeries(result, options, data)
+        show()
 
 # main
 # ------------------------------------------------------------------------------

@@ -110,7 +110,7 @@ def plotBin(ax, x, result):
     """Plot the binning result."""
     N = len(result['moments'][0])
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-    skew     = statistics.standardizedMoments(result['moments'], 3)
+    skew   = statistics.standardizedMoments(result['moments'], 3)
     ax.plot(x, [ a + b for a, b in zip(result['moments'][0], stddev) ], 'k--')
     ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
     p = ax.plot(x, result['moments'][0], 'r')
@@ -199,8 +199,8 @@ def plotBinningSpikes(x, timings, result, options):
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
 
-def plotSampling(result, gt, options):
-    x = np.arange(0, len(gt), 1)
+def plotSampling(result, options, data):
+    x = np.arange(0, data['bins'], 1)
     title = ''
     preplot  = None
     postplot = None
@@ -217,11 +217,13 @@ def plotSampling(result, gt, options):
     ax22 = ax21.twinx()
     ax32 = ax31.twinx()
     p11 = plotBin(ax11, x, result)
-    p12 = plotGroundTruth(ax12, x, gt)
     p21 = plotCounts(ax21, x, result)
     p31 = plotModelPosterior(ax31, result)
+    p12 = None
     p22 = None
     p32 = None
+    if data['gt']:
+        p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['marginals'] and options['marginal']:
         plotMarginal(ax11, x, result)
     if result['multibin_entropy'] and options['multibin_entropy']:
