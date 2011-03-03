@@ -46,9 +46,12 @@ class Data():
         return iter(self.x)
     def __getitem__(self, index):
         return self.x[index]
-    def plotHist(self):
-        hist(self.x, bins=self.N/10)
-        show()
+    def plotHist(self, ax):
+        x = [ [] for i in range(0, self.N) ]
+        for (x_,l_) in zip(self.x, self.labels):
+            x[l_].append(x_)
+        x = filter(lambda x_: not x_ == [], x)
+        ax.hist(x, bins=self.N/10, histtype='barstacked')
 
 class GaussianData(Data):
     def __init__(self):
@@ -102,6 +105,9 @@ class ClassAssignments():
         """Reassign an item to some other class"""
         self.release(item)
         self.assign(item, new_class)
+    def plotHist(self, ax):
+        x = [ self.getItemsByClass(c) for c in self.used_classes ]
+        ax.hist(x, bins=self.data.N/10, histtype='barstacked')
 
 class DPM():
     def __init__(self, data):
@@ -136,6 +142,7 @@ class GaussianDPM(DPM):
     def predictive(self):
         return self.mu_0, self.sig2_0 + self.sig2
     def sample(self, item):
+        old_class = self.cl.getClass(item)
         self.cl.release(item)
         x_i     = self.da.x[item]
         pred    = self.predictive()
@@ -152,18 +159,33 @@ class GaussianDPM(DPM):
         classes      = self.cl.used_classes+[self.cl.free_classes[0]]
         new_class    = randomElem(classes, weights)
         self.cl.assign(item, new_class)
-
+        return not new_class == old_class
 
 class GibbsSampler():
     def __init__(self, dpm):
         self.dpm = dpm
     def run(self, n):
+        self.statistics = []
         items = self.dpm.getItems()
         for i in range(0, n):
+            ret = []
             for item in items:
-                self.dpm.sample(item)
+                ret.append(self.dpm.sample(item))
+            self.statistics.append(float(sum(ret))/len(items))
+    def printResult(self):
         print self.dpm.state()
         print self.dpm.da.labels
+    def plotResult(self):
+        fig = figure()
+        ax1 = fig.add_subplot(2,1,1, title="Data")
+        ax2 = fig.add_subplot(2,1,2, title="Clustering Result")
+        self.dpm.da.plotHist(ax1)
+        self.dpm.cl.plotHist(ax2)
+        fig = figure()
+        ax1 = fig.add_subplot(1,1,1, title="Statistics")
+        ax1.plot(self.statistics)
+        ax1.set_xlabel("iteration")
+        show()
 
 # main
 ################################################################################
@@ -171,4 +193,7 @@ class GibbsSampler():
 def run():
     dpm   = GaussianDPM()
     gibbs = GibbsSampler(dpm)
-    gibbs.run(10)
+    gibbs.run(500)
+    gibbs.plotResult()
+
+run()
