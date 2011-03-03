@@ -27,9 +27,10 @@ def randomElem(list, p):
     """Pick a random element from list with probabilities p"""
     val = rd.random()
     cp  = np.cumsum([0.0]+p)
-    for i in range(0, len(list)-1):
+    for i in range(0, len(list)):
         if cp[i] < val and val <= cp[i+1]:
             return list[i]
+    return list[-1]
 
 # data structures
 ################################################################################
@@ -40,12 +41,13 @@ class Data():
         self.x      = [ elem  for (elem,index) in labeled_x ]
         self.labels = [ index for (elem,index) in labeled_x ]
         self.N      = len(self.x)
+        self.items  = range(0, self.N)
     def __iter__(self):
         return iter(self.x)
     def __getitem__(self, index):
         return self.x[index]
     def plotHist(self):
-        count, bins, ignored = hist(self.x, bins=self.N/10)
+        hist(self.x, bins=self.N/10)
         show()
 
 class GaussianData(Data):
@@ -65,10 +67,10 @@ class ClassAssignments():
     _INIT_NUM_CLASSES = 10
     def __init__(self, data):
         self.data = data
-        self.classes           = [ [] for i in range(0, data.N) ]
-        self.class_assignments = [ 0  for i in range(0, data.N) ]
-        self.used_classes      = range(0, self._INIT_NUM_CLASSES)
-        self.free_classes      = range(self._INIT_NUM_CLASSES, data.N)
+        self.classes           = [ []    for i in range(0, data.N) ]
+        self.class_assignments = [ None  for i in range(0, data.N) ]
+        self.used_classes      = []
+        self.free_classes      = range(0, data.N)
         # randomly assign all items to some class
         for item in range(0, data.N):
             self.assign(item, rd.randint(0, self._INIT_NUM_CLASSES))
@@ -91,6 +93,9 @@ class ClassAssignments():
             self.free_classes.append(old_class)
     def assign(self, item, new_class):
         """Assign an item to some class"""
+        if len(self.classes[new_class]) == 0:
+            self.used_classes.append(new_class)
+            self.free_classes.remove(new_class)
         self.classes[new_class].append(item)
         self.class_assignments[item] = new_class
     def reassign(self, item, new_class):
@@ -98,7 +103,16 @@ class ClassAssignments():
         self.release(item)
         self.assign(item, new_class)
 
-class GaussianDPM():
+class DPM():
+    def __init__(self, data):
+        self.da = data
+        self.cl = ClassAssignments(data)
+    def state(self):
+        return self.cl.class_assignments
+    def getItems(self):
+        return self.da.items
+
+class GaussianDPM(DPM):
     # parameters for the dirichlet process
     alpha  = 1.0
     # parameters for the likelihood
@@ -107,8 +121,8 @@ class GaussianDPM():
     mu_0   = 5.0
     sig2_0 = 0.3
     def __init__(self):
-        self.da = GaussianData()
-        self.cl = ClassAssignments(self.da)
+        data   = GaussianData()
+        DPM.__init__(self, data)
     def predictivePosterior(self, c):
         data   = self.cl.getItemsByClass(c)
         sig2   = self.sig2
@@ -133,17 +147,28 @@ class GaussianDPM():
             weights.append(weight)
         weights.append(float(self.alpha) *
                        normalDensity(*pred)(x_i))
-        weights = map(lambda w: w/sum(weights), weights)
-        print weights
-        print sum(weights)
+        weights_norm = sum(weights)
+        weights      = map(lambda w: w/weights_norm, weights)
+        classes      = self.cl.used_classes+[self.cl.free_classes[0]]
+        new_class    = randomElem(classes, weights)
+        self.cl.assign(item, new_class)
+
+
+class GibbsSampler():
+    def __init__(self, dpm):
+        self.dpm = dpm
+    def run(self, n):
+        items = self.dpm.getItems()
+        for i in range(0, n):
+            for item in items:
+                self.dpm.sample(item)
+        print self.dpm.state()
+        print self.dpm.da.labels
 
 # main
 ################################################################################
 
-da = GaussianData()
-cl = ClassAssignments(da)
-print cl.class_assignments
-print cl.classes
-
-#dpm = GaussianDPM()
-#dpm.sample(1)
+def run():
+    dpm   = GaussianDPM()
+    gibbs = GibbsSampler(dpm)
+    gibbs.run(10)
