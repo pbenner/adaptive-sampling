@@ -15,6 +15,7 @@ pkgpython_PYTHON = config.py interface.py statistics.py visualization.py
 all-local: libbayesian-binning.so
 
 libbayesian-binning.so:
+	$(RM) libbayesian-binning.so
 	$(LN_S) .libs/libbayesian-binning.so libbayesian-binning.so
 
 clean-local:
