@@ -80,7 +80,7 @@ unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
 }
 
 static
-unsigned int countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
+prob_t countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
 {
         if (ks <= ke) {
                 return gsl_matrix_get(bp->alpha_m[event], ks, ke);
@@ -267,7 +267,7 @@ static
 prob_t singlebinEntropy(binProblem *bp, int i, int j)
 {
         unsigned int k;
-        unsigned int n = 0;
+        prob_t n = 0;
         prob_t c[bp->events];
         prob_t sum = 0;
         for (k = 0; k < bp->events; k++) {
