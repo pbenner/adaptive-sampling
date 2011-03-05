@@ -32,22 +32,3 @@ class GibbsSampler():
                 ret += self.dpm.sample(item)
             self.switches.append(float(ret)/len(items))
             self.mean_likelihood.append(self.dpm.meanLikelihood())
-    def printResult(self):
-        print self.dpm.state()
-        print self.dpm.da.labels
-    def plotResult(self):
-        fig = figure()
-        ax1 = fig.add_subplot(2,1,1, title="Data")
-        ax2 = fig.add_subplot(2,1,2, title="Clustering Result")
-        self.dpm.da.plotHist(ax1)
-        self.dpm.cl.plotHist(ax2)
-        fig = figure()
-        ax1 = fig.add_subplot(1,1,1, title="Statistics")
-        ax2 = ax1.twinx()
-        p1  = ax1.plot(self.switches)
-        p2  = ax2.plot(self.mean_likelihood, color='green')
-        ax1.set_ylabel("Mean class switches")
-        ax2.set_ylabel("Mean likelihood")
-        ax1.set_xlabel("iteration")
-        ax1.legend([p1, p2], ["Mean class switches", "Mean likelihood"])
-        show()

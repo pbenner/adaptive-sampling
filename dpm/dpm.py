@@ -15,6 +15,8 @@ from   matplotlib.image    import NonUniformImage
 import matplotlib.patches  as     patches
 import matplotlib.path     as     path
 
+from   statistics import *
+
 # general data structures
 ################################################################################
 
@@ -29,15 +31,9 @@ class Data():
         return iter(self.x)
     def __getitem__(self, index):
         return self.x[index]
-    def plotHist(self, ax):
-        x = [ [] for i in range(0, self.N) ]
-        for (x_,l_) in zip(self.x, self.labels):
-            x[l_].append(x_)
-        x = filter(lambda x_: not x_ == [], x)
-        ax.hist(x, bins=self.N/10, histtype='barstacked')
 
 class ClassAssignments():
-    _INIT_NUM_CLASSES = 10
+    _INIT_NUM_CLASSES = 20
     def __init__(self, data):
         self.data = data
         self.classes           = [ []    for i in range(0, data.N) ]
@@ -75,9 +71,6 @@ class ClassAssignments():
         """Reassign an item to some other class"""
         self.release(item)
         self.assign(item, new_class)
-    def plotHist(self, ax):
-        x = [ self.getXByClass(c) for c in self.used_classes ]
-        ax.hist(x, bins=self.data.N/10, histtype='barstacked')
 
 class DPM():
     # parameters for the dirichlet process
@@ -89,3 +82,21 @@ class DPM():
         return self.cl.class_assignments
     def getItems(self):
         return self.da.items
+    def sample(self, item):
+        """Perform a single sampling step"""
+        old_class = self.cl.getClass(item)
+        self.cl.release(item)
+        x_i     = self.da.x[item]
+        pred    = self.predDist()
+        weights = []
+        for c in self.cl.used_classes:
+            postpred = self.postPredDist(c)
+            weight   = float(self.cl.numItems(c))*postpred(x_i)
+            weights.append(weight)
+        weights.append(float(self.alpha)*pred(x_i))
+        weights_norm = sum(weights)
+        weights      = map(lambda w: w/weights_norm, weights)
+        classes      = self.cl.used_classes+[self.cl.free_classes[0]]
+        new_class    = randomElement(classes, weights)
+        self.cl.assign(item, new_class)
+        return not new_class == old_class

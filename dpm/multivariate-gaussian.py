@@ -25,70 +25,85 @@ from statistics import *
 # Gaussian DPM
 ################################################################################
 
-class GaussianData(Data):
+class MGaussianData(Data):
     def __init__(self):
         K    = 10
-        sig2 = 0.2
-        N    = 50
-        al   = np.cumsum(rd.randint(2,6,10))
-        mu   = 100*mt.dirichlet(al, size=1)[0]
+        N    = 20
+        mu   = 50*rd.rand(K, 2)
+        cov  = [[0.5,0.2],[0.2,0.5]]
         labeled_x = []
         for k in range(0, K):
-            samples = mt.normal(loc=mu[k], scale=sig2, size=N)
+            samples = rd.multivariate_normal(mu[k], cov, N)
             labeled_x.extend([ (elem,k) for elem in samples ])
         Data.__init__(self, labeled_x)
-    def plotHist(self, ax):
+    def plot(self, ax):
         x = [ [] for i in range(0, self.N) ]
         for (x_,l_) in zip(self.x, self.labels):
             x[l_].append(x_)
         x = filter(lambda x_: not x_ == [], x)
-        ax.hist(x, bins=self.N/10, histtype='barstacked')
+        for x_ in x:
+            ax.scatter(*zip(*x_), c=tuple(rd.rand(3)))
 
-class GaussianDPM(DPM):
+class MGaussianDPM(DPM):
     # parameters for the likelihood
-    sig2   = 0.2
+    sig2   = [[0.5,0.2],[0.2,0.5]]
     # parameters for the prior
-    mu_0   = 5.0
-    sig2_0 = 0.3
+    mu_0   =  [1.0,1.0]
+    sig2_0 = [[10.0,5.0],[5.0,10.0]]
     def __init__(self):
-        data   = GaussianData()
+        data   = MGaussianData()
         DPM.__init__(self, data)
     def postPredDist(self, c):
         """Compute posterior predictive distribution"""
-        data   = self.cl.getXByClass(c)
-        sig2   = self.sig2
-        sig2_0 = self.sig2_0
-        mu_0   = self.mu_0
+        data   = np.array(self.cl.getXByClass(c))
+        sig2   = np.array(self.sig2)
+        sig2_0 = np.array(self.sig2_0)
+        sig2_inv   = np.linalg.inv(sig2)
+        sig2_0_inv = np.linalg.inv(sig2_0)
+        mu_0   = np.array(self.mu_0)
         num    = float(len(data))
         mean   = sum(data)/num
-        sig2_n = 1.0/(num/sig2 + 1.0/sig2_0)
-        mu_n   = sig2_n*(mu_0/sig2_0 + num*mean/sig2)
-        return normalDensity(mu_n, sig2_n + sig2)
+        sig2_n = np.linalg.inv(num*sig2_inv + sig2_0_inv)
+        mu_n   = np.dot(sig2_n, np.dot(mu_0,sig2_0_inv) + num*np.dot(mean,sig2_inv))
+        return mNormalDensity(mu_n, sig2_n + sig2)
     def predDist(self):
         """Compute predictive distribution"""
-        return normalDensity(self.mu_0, self.sig2_0 + self.sig2)
+        sig2   = np.array(self.sig2)
+        sig2_0 = np.array(self.sig2_0)
+        mu_0   = np.array(self.mu_0)
+        return mNormalDensity(mu_0, sig2_0 + sig2)
     def meanLikelihood(self):
         classes = self.cl.used_classes
         result  = 0
         for c in classes:
             x  = self.cl.getXByClass(c)
-            mu = float(sum(x))/len(x)
-            result += sum([ normalDensity(mu, self.sig2)(x_) for x_ in x ])/len(x)
+            mu = sum(x)/float(len(x))
+            result += sum([ mNormalDensity(mu, self.sig2)(x_) for x_ in x ])/len(x)
         return result/len(classes)
-    def plotHist(self, ax):
+    def plot(self, ax):
         x = [ self.cl.getXByClass(c) for c in self.cl.used_classes ]
-        ax.hist(x, bins=self.da.N/10, histtype='barstacked')
+        for x_ in x:
+            ax.scatter(*zip(*x_), c=tuple(rd.rand(3)))
+    def plotPrior(self, ax):
+        dx, dy = 0.05, 0.05
+        x = np.arange(0.0, 10.0, dx)
+        y = np.arange(0.0, 10.0, dy)
+        X,Y = np.meshgrid(x, y)
+        Z = biNormalDensity(np.array(self.mu_0), np.array(self.sig2_0))(X, Y)
+        im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
+        im.set_data(x, y, Z)
 
-class GaussianGibbsSampler(GibbsSampler):
+class MGaussianGibbsSampler(GibbsSampler):
     def printResult(self):
         print self.dpm.state()
         print self.dpm.da.labels
     def plotResult(self):
         fig = figure()
         ax1 = fig.add_subplot(2,1,1, title="Data")
-        ax2 = fig.add_subplot(2,1,2, title="Clustering Result")
-        self.dpm.da.plotHist(ax1)
-        self.dpm.plotHist(ax2)
+        ax2 = fig.add_subplot(2,1,2, title="Clustering Result K="+str(len(self.dpm.cl.used_classes)))
+        self.dpm.da.plot(ax1)
+        self.dpm.plotPrior(ax2)
+        self.dpm.plot(ax2)
         fig = figure()
         ax1 = fig.add_subplot(1,1,1, title="Statistics")
         ax2 = ax1.twinx()
@@ -104,9 +119,9 @@ class GaussianGibbsSampler(GibbsSampler):
 ################################################################################
 
 def main():
-    dpm   = GaussianDPM()
-    gibbs = GaussianGibbsSampler(dpm)
-    gibbs.run(10)
+    dpm   = MGaussianDPM()
+    gibbs = MGaussianGibbsSampler(dpm)
+    gibbs.run(5)
     gibbs.plotResult()
 
 if __name__ == "__main__":
