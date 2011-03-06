@@ -272,7 +272,7 @@ prob_t singlebinEntropy(binProblem *bp, int i, int j)
         prob_t sum = 0;
         for (k = 0; k < bp->events; k++) {
                 c[k] = countStatistic(bp, k, i, j) + countAlpha(bp, k, i, j);
-                sum += (c[k] - 1)*gsl_sf_psi_int(c[k]);
+                sum += (c[k] - 1.0)*gsl_sf_psi_int(c[k]);
                 n   +=  c[k];
         }
         return mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi_int(n) - sum;

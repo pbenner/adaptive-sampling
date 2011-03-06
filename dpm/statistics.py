@@ -21,18 +21,11 @@ import matplotlib.path     as     path
 
 def normalDensity(mu, sig2):
     """Returns the normal density"""
-    return (lambda x: 1.0/np.sqrt(2.0 * np.pi * sig2) *
-            np.exp( - (x - mu)**2 / (2 * sig2)))
+    stddev = np.sqrt(sig2)
+    return (lambda x: mlab.normpdf(x, mu, stddev))
 
 def biNormalDensity(mu, cov):
-    return (lambda X, Y:
-                bivariate_normal(X, Y, sigmax=cov[0,0], sigmay=cov[1,1], mux=mu[0], muy=mu[1], sigmaxy=cov[0,1]))
-
-def mNormalDensity(mu, cov):
-    return (lambda x:
-                np.power(np.linalg.det(cov),-0.5) *
-            np.exp(-0.5*mu.shape[0]*np.log(2.0*np.pi)) *
-            np.exp(-0.5*np.dot(np.dot(x-mu.transpose(),np.linalg.inv(cov)),x-mu)))
+    return (lambda X, Y: mlab.bivariate_normal(X, Y, np.sqrt(cov[0,0]), np.sqrt(cov[1,1]), mu[0], mu[1], cov[0,1]))
 
 def mNormalDensity(mu, cov):
     return (lambda x:

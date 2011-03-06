@@ -29,13 +29,16 @@ class MGaussianData(Data):
     def __init__(self):
         K    = 10
         N    = 20
-        mu   = 50*rd.rand(K, 2)
+        mu   = 20*rd.rand(K, 2)
         cov  = [[0.5,0.2],[0.2,0.5]]
         labeled_x = []
         for k in range(0, K):
             samples = rd.multivariate_normal(mu[k], cov, N)
             labeled_x.extend([ (elem,k) for elem in samples ])
         Data.__init__(self, labeled_x)
+        self.K   = K
+        self.mu  = np.array(mu)
+        self.cov = np.array(cov)
     def plot(self, ax):
         x = [ [] for i in range(0, self.N) ]
         for (x_,l_) in zip(self.x, self.labels):
@@ -44,54 +47,70 @@ class MGaussianData(Data):
         for x_ in x:
             ax.scatter(*zip(*x_), c=tuple(rd.rand(3)))
 
+        dx  = (ax.get_xlim()[1] - ax.get_xlim()[0])/200.0
+        dy  = (ax.get_ylim()[1] - ax.get_ylim()[0])/200.0
+        x   = np.arange(ax.get_xlim()[0], ax.get_xlim()[1], dx)
+        y   = np.arange(ax.get_ylim()[0], ax.get_ylim()[1], dy)
+        X,Y = np.meshgrid(x, y)
+        Z   = biNormalDensity(self.mu[0], self.cov)(X,Y)
+        for k in range(1, self.K):
+            Z = Z + biNormalDensity(self.mu[k], self.cov)(X,Y)
+        im  = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
+        im.set_data(x, y, Z)
+        ax.images.append(im)
+
 class MGaussianDPM(DPM):
     # parameters for the likelihood
-    sig2   = [[0.5,0.2],[0.2,0.5]]
+    cov   = np.array([[0.5,0.2],[0.2,0.5]])
+#    cov   = np.array([[0.1,0.01],[0.01,0.1]])
     # parameters for the prior
-    mu_0   =  [1.0,1.0]
-    sig2_0 = [[10.0,5.0],[5.0,10.0]]
+    mu_0  = np.array( [10.0,10.0])
+#    cov_0 = np.array([[0.5,0.2],[0.2,0.5]])
+    cov_0 = np.array([[10.0,5.0],[5.0,10.0]])
     def __init__(self):
         data   = MGaussianData()
         DPM.__init__(self, data)
     def postPredDist(self, c):
         """Compute posterior predictive distribution"""
         data   = np.array(self.cl.getXByClass(c))
-        sig2   = np.array(self.sig2)
-        sig2_0 = np.array(self.sig2_0)
-        sig2_inv   = np.linalg.inv(sig2)
-        sig2_0_inv = np.linalg.inv(sig2_0)
-        mu_0   = np.array(self.mu_0)
+        cov    = self.cov
+        cov_0  = self.cov_0
+        cov_inv   = np.linalg.inv(cov)
+        cov_0_inv = np.linalg.inv(cov_0)
+        mu_0   = self.mu_0
         num    = float(len(data))
         mean   = sum(data)/num
-        sig2_n = np.linalg.inv(num*sig2_inv + sig2_0_inv)
-        mu_n   = np.dot(sig2_n, np.dot(mu_0,sig2_0_inv) + num*np.dot(mean,sig2_inv))
-        return mNormalDensity(mu_n, sig2_n + sig2)
+        cov_n  = np.linalg.inv(num*cov_inv + cov_0_inv)
+        mu_n   = np.dot(cov_n, np.dot(mu_0,cov_0_inv) + num*np.dot(mean,cov_inv))
+        return mNormalDensity(mu_n, cov_n + cov)
     def predDist(self):
         """Compute predictive distribution"""
-        sig2   = np.array(self.sig2)
-        sig2_0 = np.array(self.sig2_0)
-        mu_0   = np.array(self.mu_0)
-        return mNormalDensity(mu_0, sig2_0 + sig2)
+        cov   = self.cov
+        cov_0 = self.cov_0
+        mu_0   = self.mu_0
+        return mNormalDensity(mu_0, cov_0 + cov)
     def meanLikelihood(self):
         classes = self.cl.used_classes
         result  = 0
         for c in classes:
             x  = self.cl.getXByClass(c)
             mu = sum(x)/float(len(x))
-            result += sum([ mNormalDensity(mu, self.sig2)(x_) for x_ in x ])/len(x)
+            result += sum([ mNormalDensity(mu, self.cov)(x_) for x_ in x ])/len(x)
         return result/len(classes)
     def plot(self, ax):
         x = [ self.cl.getXByClass(c) for c in self.cl.used_classes ]
         for x_ in x:
             ax.scatter(*zip(*x_), c=tuple(rd.rand(3)))
     def plotPrior(self, ax):
-        dx, dy = 0.05, 0.05
-        x = np.arange(0.0, 10.0, dx)
-        y = np.arange(0.0, 10.0, dy)
+        dx  = (ax.get_xlim()[1] - ax.get_xlim()[0])/200.0
+        dy  = (ax.get_ylim()[1] - ax.get_ylim()[0])/200.0
+        x   = np.arange(ax.get_xlim()[0], ax.get_xlim()[1], dx)
+        y   = np.arange(ax.get_ylim()[0], ax.get_ylim()[1], dy)
         X,Y = np.meshgrid(x, y)
-        Z = biNormalDensity(np.array(self.mu_0), np.array(self.sig2_0))(X, Y)
-        im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
+        Z   = biNormalDensity(self.mu_0, self.cov_0)(X,Y)
+        im  = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
         im.set_data(x, y, Z)
+        ax.images.append(im)
 
 class MGaussianGibbsSampler(GibbsSampler):
     def printResult(self):
@@ -102,8 +121,8 @@ class MGaussianGibbsSampler(GibbsSampler):
         ax1 = fig.add_subplot(2,1,1, title="Data")
         ax2 = fig.add_subplot(2,1,2, title="Clustering Result K="+str(len(self.dpm.cl.used_classes)))
         self.dpm.da.plot(ax1)
-        self.dpm.plotPrior(ax2)
         self.dpm.plot(ax2)
+#        self.dpm.plotPrior(ax2)
         fig = figure()
         ax1 = fig.add_subplot(1,1,1, title="Statistics")
         ax2 = ax1.twinx()
@@ -121,7 +140,7 @@ class MGaussianGibbsSampler(GibbsSampler):
 def main():
     dpm   = MGaussianDPM()
     gibbs = MGaussianGibbsSampler(dpm)
-    gibbs.run(5)
+    gibbs.run(20)
     gibbs.plotResult()
 
 if __name__ == "__main__":

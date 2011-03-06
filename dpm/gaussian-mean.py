@@ -34,7 +34,7 @@ class GaussianData(Data):
         mu   = 100*mt.dirichlet(al, size=1)[0]
         labeled_x = []
         for k in range(0, K):
-            samples = mt.normal(loc=mu[k], scale=sig2, size=N)
+            samples = mt.normal(loc=mu[k], scale=np.sqrt(sig2), size=N)
             labeled_x.extend([ (elem,k) for elem in samples ])
         Data.__init__(self, labeled_x)
     def plotHist(self, ax):
