@@ -139,7 +139,7 @@ def plotBinning(result, options):
     if options['script']:
         exec options['script']
         if not preplot is None:
-            x, title = preplot(result)
+            x, title = preplot(result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax11 = fig.add_subplot(2,1,1)
@@ -171,7 +171,7 @@ def plotBinningSpikes(x, timings, result, options):
     if options['script']:
         exec options['script']
         if not preplot is None:
-            title = preplot(result)
+            title = preplot(result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax11 = fig.add_subplot(3,1,1, title=title)
@@ -207,7 +207,7 @@ def plotSampling(result, options, data):
     if options['script']:
         exec options['script']
         if not preplot is None:
-            x, title = preplot(result)
+            x, title = preplot(result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax11 = fig.add_subplot(3,1,1, title=title)

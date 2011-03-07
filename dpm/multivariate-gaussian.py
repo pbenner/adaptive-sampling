@@ -140,7 +140,7 @@ class MGaussianGibbsSampler(GibbsSampler):
 def main():
     dpm   = MGaussianDPM()
     gibbs = MGaussianGibbsSampler(dpm)
-    gibbs.run(20)
+    gibbs.run(200)
     gibbs.plotResult()
 
 if __name__ == "__main__":

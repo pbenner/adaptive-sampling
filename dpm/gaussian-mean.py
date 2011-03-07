@@ -106,7 +106,7 @@ class GaussianGibbsSampler(GibbsSampler):
 def main():
     dpm   = GaussianDPM()
     gibbs = GaussianGibbsSampler(dpm)
-    gibbs.run(10)
+    gibbs.run(100)
     gibbs.plotResult()
 
 if __name__ == "__main__":

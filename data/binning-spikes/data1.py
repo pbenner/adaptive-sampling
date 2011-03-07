@@ -1,4 +1,4 @@
-def preplot(result):
+def preplot(result, options):
     return ''
 
 def postplot(ax, p, result, options):

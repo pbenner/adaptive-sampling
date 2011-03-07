@@ -1,4 +1,4 @@
-def preplot(result):
+def preplot(result, options):
     samples = len(result['samples'])
     result['samples'] = np.array(result['samples']) - 17
     x = np.arange(-17, 18, 1)

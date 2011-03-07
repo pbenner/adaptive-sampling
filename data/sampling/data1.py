@@ -1,4 +1,4 @@
-def preplot(result):
+def preplot(result, options):
     x = np.arange(0, 31, 1)
     title = str(len(result['samples']))+" Samples"
     return x, title

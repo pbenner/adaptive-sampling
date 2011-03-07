@@ -1,4 +1,4 @@
-def preplot(result):
+def preplot(result, options):
     x = np.arange(0, len(result['moments'][0]), 1)
     return x, ''
 
