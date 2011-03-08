@@ -60,6 +60,7 @@ def usage():
     print
     print "       --load=FILE                - load result from file"
     print "       --save=FILE                - save result to file"
+    print "       --savefig=FILE             - save figure to file"
     print
     print "   -h, --help                     - print help"
     print "   -v, --verbose                  - be verbose"
@@ -165,7 +166,10 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             vis.plotBinning(result, options)
-            show()
+            if options['savefig']:
+                savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
+            else:
+                show()
     if config_parser.has_section('Trials'):
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
@@ -180,7 +184,10 @@ def parseConfig(config_file):
             saveResult(result)
         else:
             vis.plotBinningSpikes(x, timings, result, options)
-            show()
+            if options['savefig']:
+                savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
+            else:
+                show()
 
 # main
 # ------------------------------------------------------------------------------
@@ -195,6 +202,7 @@ options = {
     'script'            : None,
     'load'              : None,
     'save'              : None,
+    'savefig'           : None,
     'verbose'           : False,
     'prombsTest'        : False,
     'compare'           : False,
@@ -210,7 +218,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
-                      "effective-counts"]
+                      "effective-counts", "savefig="]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -250,6 +258,8 @@ def main():
             options["load"] = a
         if o == "--save":
             options["save"] = a
+        if o == "--savefig":
+            options["savefig"] = a
         if o == "--which":
             options["which"] = int(a)
         if o == "--epsilon":
