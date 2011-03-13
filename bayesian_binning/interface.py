@@ -24,10 +24,14 @@ from ctypes.util import find_library
 # load interface
 # ------------------------------------------------------------------------------
 
-if   find_library(os.path.dirname(__file__)+'/.libs/libbayesian-binning'):
-     _lib = cdll.LoadLibrary(find_library(os.path.dirname(__file__)+'/.libs/libbayesian-binning'))
-elif find_library('libbayesian-binning'):
-     _lib = cdll.LoadLibrary(find_library('libbayesian-binning'))
+if   os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.so'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/libbayesian-binning.so')
+elif os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dylib'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dylib')
+elif os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dll'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/bayesian-binning.dll')
+elif find_library('bayesian-binning'):
+     _lib = cdll.LoadLibrary(find_library('bayesian-binning'))
 else:
      raise OSError("Couldn't find bayesian-binning library.")
 
