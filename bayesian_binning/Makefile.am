@@ -8,18 +8,13 @@ libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h interface
 libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
 libbayesian_binning_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 
+## set python package name
+pkgpythondir = $(pyexecdir)/bayesian_binning
+
 ## compile python files
-pkgpython_PYTHON = config.py interface.py statistics.py visualization.py
-
-## create symbolic link
-all-local: libbayesian-binning.so
-
-libbayesian-binning.so:
-	$(RM) libbayesian-binning.so
-	$(LN_S) .libs/libbayesian-binning.so libbayesian-binning.so
+pkgpython_PYTHON = __init__.py config.py interface.py statistics.py visualization.py
 
 clean-local:
-	$(RM) libbayesian-binning.so
 	$(RM) __init__.pyc
 	$(RM) config.pyc
 	$(RM) interface.pyc

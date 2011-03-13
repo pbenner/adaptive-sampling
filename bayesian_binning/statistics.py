@@ -16,8 +16,11 @@
 
 import math
 
+def fac(n):
+    return n-1 + abs(n-1) and fac(n-1)*n or 1L
+
 def binomial(n,k):
-    return math.factorial(n) / (math.factorial(k)*math.factorial(n-k))
+    return fac(n) / (fac(k)*fac(n-k))
 
 def binomialTransform(moments, n):
     result = math.pow(-moments[0], n)

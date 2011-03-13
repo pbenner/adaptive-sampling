@@ -17,15 +17,19 @@
 import os
 import numpy as np
 import math
-from ctypes import *
+
+from ctypes      import *
+from ctypes.util import find_library
 
 # load interface
 # ------------------------------------------------------------------------------
 
-if os.path.exists(os.path.dirname(__file__)+"/libbayesian-binning.so"):
-     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+"/libbayesian-binning.so")
+if   find_library(os.path.dirname(__file__)+'/.libs/libbayesian-binning'):
+     _lib = cdll.LoadLibrary(find_library(os.path.dirname(__file__)+'/.libs/libbayesian-binning'))
+elif find_library('libbayesian-binning'):
+     _lib = cdll.LoadLibrary(find_library('libbayesian-binning'))
 else:
-     _lib = cdll.LoadLibrary("libbayesian-binning.so")
+     raise OSError("Couldn't find bayesian-binning library.")
 
 # structures
 # ------------------------------------------------------------------------------
