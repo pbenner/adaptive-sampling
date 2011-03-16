@@ -93,10 +93,6 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
   AC_MSG_ERROR([this library is required]))
 
-AC_CHECK_LIB([gmp], [__gmpz_init],,
-  [AC_MSG_WARN([GNU MP not found, see http://gmplib.org/])])
-AM_CONDITIONAL(WITH_GMP, test "x$ac_cv_lib_gmp___gmpz_init" = x""yes)
-
 dnl ,---------------------------- 
 dnl | GETOPT_LONG
 dnl `----------------------------

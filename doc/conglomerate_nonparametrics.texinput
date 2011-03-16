@@ -129,6 +129,8 @@ There are three main representations of the Dirichlet process:
     G(\theta) &= \sum_{k=1}^{\infty} \pi_k(\vec{\nu})\delta_{\theta_k^*}(\theta)
   \end{split}
 \end{equation}
+we say that $(\pi_k)_{k=1}^\infty = \vec{\pi} \sim \GEM(\alpha)$,
+after Griffiths, Engen and McCloskey. 
 
 \subsection*{Blackwell and MacQueen P\'olya Urn}
 \cite{Blackwell1973}
@@ -168,7 +170,9 @@ and MacQueen P\'olya urn take on $K < m_T$ values $\theta_1^*, \dots,
 \begin{equation}
   \begin{aligned}
     \theta_{m_T} ~ | ~ \theta_1, \dots, \theta_{m_T-1} &\sim
-    \sum_{k=1}^{K} \frac{n_{\theta^*_k}(\theta_1,\dots, \theta_{m_T-1})}{m_T-1+\alpha}\delta_{\theta^*_k} +
+    \sum_{k=1}^{K} \underbrace{\frac{n_{\theta^*_k}(\theta_1,\dots,
+        \theta_{m_T-1})}{m_T-1+\alpha}}_{\pi_k ~ \text{as} ~ m_T
+      \rightarrow \infty}\delta_{\theta^*_k} +
     \frac{\alpha}{m_T-1+\alpha} G_0,\\
   \end{aligned}
   \label{nonpara:chin}

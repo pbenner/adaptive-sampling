@@ -271,7 +271,7 @@ theorem.
         \Gamma(\alpha_x)}{\Gamma(\sum_{x
           \in \mathcal{X}}\alpha_x)} =
       \underbrace{\int_{\Delta^K}\prod_{x \in
-          \mathcal{X}} \theta^{\alpha_x-1}
+          \mathcal{X}} \theta_x^{\alpha_x-1}
         \dd \vec{\theta},}_{\text{multinomial Euler
           integral}}
     \end{split}

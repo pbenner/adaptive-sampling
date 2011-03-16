@@ -12,11 +12,8 @@ libbayesian_binning_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 pkgpythondir = $(pyexecdir)/bayesian_binning
 
 ## compile python files
-pkgpython_PYTHON = __init__.py config.py interface.py statistics.py visualization.py
+pkgpython_PYTHON = __init__.py config.py binning.py interface.py sampling.py statistics.py visualization.py
 
+## clean python files
 clean-local:
-	$(RM) __init__.pyc
-	$(RM) config.pyc
-	$(RM) interface.pyc
-	$(RM) visualization.pyc
-	$(RM) statistics.pyc
+	$(RM) *.pyc

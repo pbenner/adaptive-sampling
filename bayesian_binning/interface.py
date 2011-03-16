@@ -33,7 +33,7 @@ elif os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dll'):
 elif find_library('bayesian-binning'):
      _lib = cdll.LoadLibrary(find_library('bayesian-binning'))
 else:
-     raise OSError("Couldn't find bayesian-binning library.")
+     _lib = cdll.LoadLibrary('libbayesian-binning.so')
 
 # structures
 # ------------------------------------------------------------------------------
