@@ -23,19 +23,14 @@ import ConfigParser
 import numpy as np
 import math
 import random
-from itertools import izip
-from matplotlib import *
-from matplotlib.pyplot import *
-import matplotlib.cm as cm
-import matplotlib.mlab as mlab
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.path as path
 
-import bayesian_binning.config as config
-import bayesian_binning.interface as interface
+from itertools         import izip
+from matplotlib.pyplot import show
+
+import bayesian_binning.config        as config
+import bayesian_binning.interface     as interface
 import bayesian_binning.visualization as vis
-import bayesian_binning.statistics as statistics
+import bayesian_binning.statistics    as statistics
 
 # global options
 # ------------------------------------------------------------------------------
@@ -255,6 +250,7 @@ def parseConfig(config_file):
         data['mprior'] = config.readModelPrior(config_parser, len(data['gt']), 'Ground Truth', int)
         data['bins']   = len(data['gt'])
         options['script'] = config.readScript(config_parser, 'Ground Truth', os.path.dirname(config_file))
+        config.readStrategy(config_parser, 'Ground Truth', options)
         result = loadResult()
         result = sample(result, data)
     if config_parser.has_section('Experiment'):
@@ -262,6 +258,7 @@ def parseConfig(config_file):
         data['alpha']  = config.readAlpha(config_parser, 2, data['bins'], 'Experiment', int)
         data['mprior'] = config.readModelPrior(config_parser, data['bins'], 'Experiment', int)
         options['script'] = config.readScript(config_parser, 'Experiment', os.path.dirname(config_file))
+        config.readStrategy(config_parser, 'Experiment', options)
         result = loadResult()
         result = sample(result, data)
     if options['save']:

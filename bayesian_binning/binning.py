@@ -22,16 +22,14 @@ import os
 import ConfigParser
 import numpy as np
 import math
-from itertools import izip
-from matplotlib import *
-from matplotlib.pyplot import *
-import matplotlib.patches as patches
-import matplotlib.path as path
 
-import bayesian_binning.config as config
-import bayesian_binning.interface as interface
+from itertools         import izip
+from matplotlib.pyplot import show
+
+import bayesian_binning.config        as config
+import bayesian_binning.interface     as interface
 import bayesian_binning.visualization as vis
-import bayesian_binning.statistics as statistics
+import bayesian_binning.statistics    as statistics
 
 # global options
 # ------------------------------------------------------------------------------

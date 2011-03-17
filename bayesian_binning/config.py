@@ -33,6 +33,10 @@ def readMatrix(config, section, option, converter):
             matrix.append([converter(a) for a in line.split(' ')])
     return matrix
 
+def readStrategy(config_parser, section, options):
+    if config_parser.has_option(section, 'strategy'):
+        options['strategy'] = config_parser.get(section, 'strategy')
+
 def readAlpha(config_parser, events, bins, section, converter):
     alpha = []
     if config_parser.has_option(section, 'alpha'):
