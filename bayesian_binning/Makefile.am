@@ -8,6 +8,9 @@ libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h interface
 libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
 libbayesian_binning_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 
+## install headers
+nobase_include_HEADERS = bayesian-binning.h
+
 ## set python package name
 pkgpythondir = $(pyexecdir)/bayesian_binning
 
