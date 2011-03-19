@@ -41,7 +41,3 @@ adaptive-sampling.1: adaptive-sampling.xml
 
 bayesian-binning.1: bayesian-binning.xml
 	$(XP) $(DB2MAN) $<
-
-clean-local:
-	$(RM) adaptive-sampling.1
-	$(RM) bayesian-binning.1
