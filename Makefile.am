@@ -37,7 +37,11 @@ bayesian-binning: bayesian-binning.in Makefile
 	chmod +x bayesian-binning
 
 adaptive-sampling.1: adaptive-sampling.xml
-	$(XP) $(DB2MAN) $<
+	if [ -f $(DB2MAN) ]; then   \
+		$(XP) $(DB2MAN) $<; \
+	fi
 
 bayesian-binning.1: bayesian-binning.xml
-	$(XP) $(DB2MAN) $<
+	if [ -f $(DB2MAN) ]; then   \
+		$(XP) $(DB2MAN) $<; \
+	fi
