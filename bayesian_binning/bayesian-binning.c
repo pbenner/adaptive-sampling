@@ -187,22 +187,26 @@ int minM(binProblem *bp)
         return i;
 }
 
+static binProblem *execPrombs_bp;
+static int execPrombs_pos;
+static prob_t execPrombs_f(int i, int j)
+{
+        // include only those bins that don't cover
+        // position pos, which means, that only multi-bins
+        // are included, that have a break at position
+        // pos
+        if (i < execPrombs_pos && execPrombs_pos < j) {
+                return -HUGE_VAL;
+        }
+        return iec_log(execPrombs_bp, i, j);
+}
+
 static
 void execPrombs(binProblem *bp, prob_t *ev_log, int pos)
 {
-        prob_t f(int i, int j)
-        {
-                // include only those bins that don't cover
-                // position pos, which means, that only multi-bins
-                // are included, that have a break at position
-                // pos
-                if (i < pos && pos < j) {
-                        return -HUGE_VAL;
-                }
-                return iec_log(bp, i, j);
-        }
-
-        prombs(ev_log, bp->prior_log, &f, bp->T, minM(bp));
+        execPrombs_bp  = bp;
+        execPrombs_pos = pos;
+        prombs(ev_log, bp->prior_log, &execPrombs_f, bp->T, minM(bp));
 }
 
 static
@@ -278,6 +282,16 @@ prob_t singlebinEntropy(binProblem *bp, int i, int j)
         return mbeta_log(bp, c) + (n - bp->events)*gsl_sf_psi(n) - sum;
 }
 
+static binProblem *differentialEntropy_bp;
+static prob_t differentialEntropy_f(int i, int j)
+{
+        return iec_log(differentialEntropy_bp, i, j);
+}
+static prob_t differentialEntropy_h(int i, int j)
+{
+        return -singlebinEntropy(differentialEntropy_bp, i, j);
+}
+
 static
 prob_t differentialEntropy(binProblem *bp, prob_t evidence)
 {
@@ -285,16 +299,9 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
         prob_t ev_log[bp->T];
         prob_t sum;
         prob_t epsilon = bp->epsilon;
-        prob_t f(int i, int j)
-        {
-                return iec_log(bp, i, j);
-        }
-        prob_t h(int i, int j)
-        {
-                return -singlebinEntropy(bp, i, j);
-        }
 
-        prombsExt(ev_log, bp->prior_log, &f, &h, epsilon, bp->T, bp->T-1);
+        differentialEntropy_bp = bp;
+        prombsExt(ev_log, bp->prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bp->T, bp->T-1);
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
                 if (gsl_vector_get(bp->mprior, i) > 0) {
@@ -341,28 +348,33 @@ void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref, Op
         bp->add_event.which = options->which;
 }
 
+static int effectiveCounts_pos;
+static binProblem *effectiveCounts_bp;
+static prob_t effectiveCounts_f(int i, int j)
+{
+        if (i <= effectiveCounts_pos && effectiveCounts_pos <= j) {
+                int k;
+                prob_t n = 0;
+                for (k = 0; k < effectiveCounts_bp->events; k++) {
+                        n += countStatistic(effectiveCounts_bp, k, i, j) + countAlpha(effectiveCounts_bp, k, i, j);
+                }
+                return log(n) + iec_log(effectiveCounts_bp, i, j);
+        }
+        else {
+                return iec_log(effectiveCounts_bp, i, j);
+        }
+}
+
 static
 prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence)
 {
         unsigned int i;
         prob_t ev_log[bp->T];
         prob_t sum;
-        prob_t f(int i, int j)
-        {
-                if (i <= pos && pos <= j) {
-                        int k;
-                        prob_t n = 0;
-                        for (k = 0; k < bp->events; k++) {
-                                n += countStatistic(bp, k, i, j) + countAlpha(bp, k, i, j);
-                        }
-                        return log(n) + iec_log(bp, i, j);
-                }
-                else {
-                        return iec_log(bp, i, j);
-                }
-        }
 
-        prombs(ev_log, bp->prior_log, &f, bp->T, bp->T-1);
+        effectiveCounts_bp  = bp;
+        effectiveCounts_pos = pos;
+        prombs(ev_log, bp->prior_log, &effectiveCounts_f, bp->T, bp->T-1);
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
                 if (gsl_vector_get(bp->mprior, i) > 0) {
@@ -388,6 +400,17 @@ void computeEffectiveCounts(binProblem *bp, prob_t *result, prob_t evidence_ref,
         }
 }
 
+static binProblem *multibinEntropy_bp;
+static prob_t multibinEntropy_f(int i, int j)
+{
+        return iec_log(multibinEntropy_bp, i, j);
+}
+static prob_t multibinEntropy_h(int i, int j)
+{
+        // - Log[f(b)]
+        return -iec_log(multibinEntropy_bp, i, j);
+}
+
 static
 void computeMultibinEntropy(binProblem *bp, prob_t *result, prob_t evidence)
 {
@@ -398,22 +421,14 @@ void computeMultibinEntropy(binProblem *bp, prob_t *result, prob_t evidence)
         prob_t epsilonb = bp->epsilon*2;
         prob_t result2[bp->T];
         prob_t g[bp->T];
-        prob_t f(int i, int j)
-        {
-                return iec_log(bp, i, j);
-        }
-        prob_t h(int i, int j)
-        {
-                // - Log[f(b)]
-                return -iec_log(bp, i, j);
-        }
 
         for (i = 0; i < bp->T; i++) {
                 g[i] = logl(bp->prior_log[i] - evidence) + bp->prior_log[i];
         }
-        prombsExt(resulta, bp->prior_log, &f, &h, epsilona, bp->T, bp->T-1);
-        prombsExt(resultb, bp->prior_log, &f, &h, epsilonb, bp->T, bp->T-1);
-        prombs(result2, g, &f, bp->T, bp->T-1);
+        multibinEntropy_bp = bp;
+        prombsExt(resulta, bp->prior_log, &multibinEntropy_f, &multibinEntropy_h, epsilona, bp->T, bp->T-1);
+        prombsExt(resultb, bp->prior_log, &multibinEntropy_f, &multibinEntropy_h, epsilonb, bp->T, bp->T-1);
+        prombs(result2, g, &multibinEntropy_f, bp->T, bp->T-1);
 
         for (i = 0; i < bp->T; i++) {
                 prob_t pa = expl(logsub(resulta[i], result2[i]) - evidence);
@@ -459,6 +474,17 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
         }
 }
 
+static binProblem *prombsTest_bp;
+static prob_t prombsTest_f(int i, int j)
+{
+        return iec_log(prombsTest_bp, i, j);
+}
+static prob_t prombsTest_h(int i, int j)
+{
+        // - Log[f(b)]
+        return -iec_log(prombsTest_bp, i, j);
+}
+
 static
 void prombsTest(binProblem *bp)
 {
@@ -468,23 +494,14 @@ void prombsTest(binProblem *bp)
         prob_t sum;
         unsigned int i;
 
-        prob_t f(int i, int j)
-        {
-                return iec_log(bp, i, j);
-        }
-        prob_t h(int i, int j)
-        {
-                // - Log[f(b)]
-                return -iec_log(bp, i, j);
-        }
         // set prior to 1
         for (i = 0; i < bp->T; i++) {
                 bp->prior_log[i] = 0;
         }
         MET("Testing prombs",
-            prombs   (result1, bp->prior_log, &f, bp->T, bp->T-1));
+            prombs   (result1, bp->prior_log, &prombsTest_f, bp->T, bp->T-1));
         MET("Testing prombsExt",
-            prombsExt(result2, bp->prior_log, &f, &h, bp->epsilon, bp->T, bp->T-1));
+            prombsExt(result2, bp->prior_log, &prombsTest_f, &prombsTest_h, bp->epsilon, bp->T, bp->T-1));
 
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {

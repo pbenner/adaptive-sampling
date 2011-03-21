@@ -10,23 +10,27 @@ CLEANFILES        = $(dist_bin_SCRIPTS)
 man1_MANS         = adaptive-sampling.1 bayesian-binning.1
 
 EXTRA_DIST        = adaptive-sampling.in bayesian-binning.in    \
+                    adaptive-sampling.xml bayesian-binning.xml  \
+                    data                                        \
                     debian/control                              \
                     debian/copyright                            \
                     debian/compat                               \
                     debian/changelog                            \
                     debian/libbayesian-binning0-dev.install     \
                     debian/rules                                \
+                    debian/bayesian-binning.examples            \
                     debian/bayesian-binning.install             \
+                    debian/bayesian-binning.README.Debian       \
                     debian/libbayesian-binning0.install         \
                     debian/docs                                 \
+                    debian/adaptive-sampling.examples           \
                     debian/adaptive-sampling.install            \
-                    debian/dirs
-
+                    debian/adaptive-sampling.README.Debian
 
 DB2MAN            = /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
 XP                = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
 
-do_subst = sed	-e 's,[@]pythondir[@],$(pythondir),g'
+do_subst          = sed -e 's,[@]pythondir[@],$(pythondir),g'
 
 adaptive-sampling: adaptive-sampling.in Makefile
 	$(do_subst) < $(srcdir)/adaptive-sampling.in > adaptive-sampling
@@ -45,3 +49,10 @@ bayesian-binning.1: bayesian-binning.xml
 	if [ -f $(DB2MAN) ]; then   \
 		$(XP) $(DB2MAN) $<; \
 	fi
+
+all-local:
+	@echo
+	@echo "You might want to add \`backend : GTKAgg' to"
+	@echo "your .matplotlib/.matplotlibrc"
+	@echo
+

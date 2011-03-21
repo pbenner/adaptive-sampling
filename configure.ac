@@ -76,14 +76,6 @@ AC_CHECK_LIB([hplx], [hstrerror],
 	-lsec])
 
 AC_CHECK_LIB([ucb], [sprintf])
-AC_CHECK_LIB([socket], [connect])
-dnl On Solaris systems gethostbyname() is in libresolv.
-AC_CHECK_LIB([resolv], [gethostbyname],,
-	AC_CHECK_LIB([resolv], [hstrerror]))
-AC_CHECK_LIB([nsl], [gethostbyname])
-AC_CHECK_LIB([c], [dlopen])
-dnl Linux distributes dlopen() in libdl.
-AC_CHECK_LIB([dl], [dlopen])
 dnl Tru64 distributes vasprintf() in -liberty
 AC_CHECK_LIB([iberty], [vasprintf])
 AC_CHECK_LIB([m],[cos],,
@@ -210,8 +202,9 @@ AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
 AX_CFLAGS_GCC_OPTION([-Winline])
 AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 AX_CFLAGS_GCC_OPTION([-Wno-trigraphs])
+AX_CFLAGS_GCC_OPTION([-Wtrampolines])
 AX_CFLAGS_GCC_OPTION([-fPIC])
-AX_CFLAGS_GCC_OPTION([-fnested-functions])
+AX_CFLAGS_GCC_OPTION([-fno-nested-functions])
 
 dnl ,---------------------------- 
 dnl | SUBDIR CONFIGURATION

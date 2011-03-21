@@ -100,6 +100,13 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m
         freeMatrix(ak, L);
 }
 
+static prob_t prombsExt_epsilon;
+static prob_t (*prombsExt_f)(int, int);
+static prob_t (*prombsExt_h)(int, int);
+static prob_t prombsExt_fprime(int i, int j) {
+        return (*prombsExt_f)(i, j) + prombsExt_epsilon*(*prombsExt_h)(i, j);
+}
+
 void prombsExt(
         prob_t *result,
         prob_t *g,
@@ -108,12 +115,12 @@ void prombsExt(
         prob_t epsilon,
         size_t L, size_t m)
 {
-        prob_t fprime(int i, int j) {
-                return (*f)(i, j) + epsilon*(*h)(i, j);
-        }
         size_t i;
         prob_t tmp[L];
-        prombs(result, g, &fprime, L, m);
+        prombsExt_f = f;
+        prombsExt_h = h;
+        prombsExt_epsilon = epsilon;
+        prombs(result, g, &prombsExt_fprime, L, m);
         prombs(tmp, g, f, L, m);
 
         for (i = 0; i < L; i++) {

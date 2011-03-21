@@ -47,7 +47,7 @@
   </refmeta>
   <refnamediv>
     <refname>&dhpackage;</refname>
-    <refpurpose>program to do something</refpurpose>
+    <refpurpose>Bayesian binning of well-ordered data</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
