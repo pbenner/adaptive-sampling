@@ -53,6 +53,6 @@ bayesian-binning.1: bayesian-binning.xml
 all-local:
 	@echo
 	@echo "You might want to add \`backend : GTKAgg' to"
-	@echo "your .matplotlib/.matplotlibrc"
+	@echo "your .matplotlib/matplotlibrc"
 	@echo
 
