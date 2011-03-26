@@ -25,7 +25,7 @@
 #include <bayes_logarithmetic.h>
 
 static
-void logproduct(prob_t *result, prob_t **ak, size_t L, size_t i)
+void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
 {
         prob_t tmp[L], elem;
         size_t j, k;
@@ -38,7 +38,7 @@ void logproduct(prob_t *result, prob_t **ak, size_t L, size_t i)
                 result[j-i] = -HUGE_VAL;
                 for (k = i; k <= j; k++) {
                         if (j < L && k < L) {
-                                elem = ak[k][j];
+                                elem = ak->mat[k][j];
                         }
                         else if (k == j) {
                                 elem = logl(1);
@@ -51,41 +51,20 @@ void logproduct(prob_t *result, prob_t **ak, size_t L, size_t i)
         }
 }
 
-static
-prob_t ** allocMatrix(size_t L) {
-        prob_t **a = (prob_t **)malloc(sizeof(prob_t *) * L);
-        int i;
-
-        for (i = 0; i < L; i++) {
-                a[i] = (prob_t *)malloc(sizeof(prob_t) * L);
-        }
-        return a;
-}
-
-static
-void freeMatrix(prob_t **a, size_t L) {
-        int i;
-
-        for (i = 0; i < L; i++) {
-                free(a[i]);
-        }
-        free(a);
-}
-
 void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m)
 {
-        prob_t **ak = allocMatrix(L);
+        Matrix *ak = allocMatrix(L, L);
         prob_t pr[L];
         size_t i, j;
 
         // initialise A^1 = (a^1_ij)_LxL
         for (j = 0; j < L; j++) {
-                ak[0][j] = (*f)(0, j);
-                pr[j] = ak[0][j];
+                ak->mat[0][j] = (*f)(0, j);
+                pr[j] = ak->mat[0][j];
         }
         for (i = 1; i < L; i++) {
                 for (j = i; j < L; j++) {
-                        ak[i][j] = (*f)(i, j);
+                        ak->mat[i][j] = (*f)(i, j);
                 }
         }
         // compute the products
@@ -97,7 +76,7 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m
                 result[L-1-i] = pr[i] + g[L-1-i];
         }
 
-        freeMatrix(ak, L);
+        freeMatrix(ak);
 }
 
 static prob_t prombsExt_epsilon;

@@ -20,23 +20,13 @@
 
 #include <config.h>
 
-#include <gsl/gsl_matrix.h>
+#include <bayes_linalg.h>
 
+#include <gsl/gsl_matrix.h>
 
 #undef PROB_T
 
 typedef PROB_T prob_t;
-
-typedef struct vector {
-        int size;
-        double *vec;
-} Vector;
-
-typedef struct matrix {
-        int rows;
-        int columns;
-        double **mat;
-} Matrix;
 
 typedef struct options {
         float epsilon;
