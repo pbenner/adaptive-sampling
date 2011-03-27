@@ -1,3 +1,4 @@
+
 [1]dnl -- configure.ac --
 dnl
 dnl Copyright (C) 2010 Philipp Benner
@@ -179,8 +180,14 @@ AC_ARG_ENABLE([longdouble],
 	[],
 	[enable_longdouble=yes])
 AS_IF([test "x$enable_longdouble" = "xyes"],
+	[AC_CHECK_FUNCS([expl logl log1pl], [], [enable_longdouble=no])], [])
+AS_IF([test "x$enable_longdouble" = "xyes"],
 	[AC_DEFINE([PROB_T], [long double], [Use long double to store log probabilities.])],
-	[AC_DEFINE([PROB_T], [double], [Use double to store log probabilities.])])
+	[AC_DEFINE([PROB_T], [double], [Use double to store log probabilities.])
+	 AC_DEFINE([expl], [exp], [Replace expl with exp])
+	 AC_DEFINE([logl], [log], [Replace logl with log])
+	 AC_DEFINE([log1pl], [log1p], [Replace log1pl with log1p])
+	 ])
 
 dnl ,---------------------------- 
 dnl | GCC_OPTIONS
@@ -226,6 +233,15 @@ dnl | PYTHON
 dnl `----------------------------
 
 AM_PATH_PYTHON(2.5)
+
+dnl ,---------------------------- 
+dnl | CYGWIN
+dnl `----------------------------
+
+dnl disable library dependency check on cygwin
+dnl because of problems with -liberty
+AS_IF([test "x$host_os" = "xcygwin"],
+  [deplibs_check_method="pass_all"], [])
 
 dnl ,---------------------------- 
 dnl | AC_OUTPUT

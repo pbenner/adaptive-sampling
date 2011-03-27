@@ -28,12 +28,15 @@ if   os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.so'):
      _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/libbayesian-binning.so')
 elif os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dylib'):
      _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dylib')
-elif os.path.exists(os.path.dirname(__file__)+'/.libs/libbayesian-binning.dll'):
-     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/bayesian-binning.dll')
+elif os.path.exists(os.path.dirname(__file__)+'/.libs/cygbayesian-binning-0.dll'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/cygbayesian-binning-0.dll')
 elif find_library('bayesian-binning'):
      _lib = cdll.LoadLibrary(find_library('bayesian-binning'))
 else:
-     _lib = cdll.LoadLibrary('libbayesian-binning.so.0')
+     try:
+          _lib = cdll.LoadLibrary('libbayesian-binning.so.0')
+     except OSError:
+          _lib = cdll.LoadLibrary('cygbayesian-binning-0.dll')
 
 # structures
 # ------------------------------------------------------------------------------
@@ -106,6 +109,9 @@ _lib._freeVector.argtypes  = [POINTER(VECTOR)]
 _lib._freeMatrix.restype   = None
 _lib._freeMatrix.argtypes  = [POINTER(MATRIX)]
 
+_lib._free.restype         = None
+_lib._free.argtypes        = [POINTER(None)]
+
 _lib.binning.restype       = POINTER(BINNING_RESULT)
 _lib.binning.argtypes      = [POINTER(MATRIX), POINTER(MATRIX), POINTER(VECTOR), POINTER(OPTIONS)]
 
@@ -171,6 +177,6 @@ def binning(counts, alpha, prior, options):
      _lib._freeVector(tmp.contents.differential_gain)
      _lib._freeVector(tmp.contents.effective_counts)
      _lib._freeVector(tmp.contents.multibin_entropy)
-     _lib.free(tmp)
+     _lib._free(tmp)
 
      return result

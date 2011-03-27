@@ -25,11 +25,15 @@ import math
 import random
 
 from itertools         import izip
-from matplotlib.pyplot import show
+try:
+    from matplotlib.pyplot import show
+    import bayesian_binning.visualization as vis
+except ImportError:
+    vis = None
+    print "Warning: Couldn't load matplotlib."
 
 import bayesian_binning.config        as config
 import bayesian_binning.interface     as interface
-import bayesian_binning.visualization as vis
 import bayesian_binning.statistics    as statistics
 
 # global options
@@ -263,7 +267,7 @@ def parseConfig(config_file):
         result = sample(result, data)
     if options['save']:
         saveResult(result)
-    else:
+    elif vis:
         vis.plotSampling(result, options, data)
         if options['plot-utility']:
             vis.plotUtilitySeries(result, options, data)

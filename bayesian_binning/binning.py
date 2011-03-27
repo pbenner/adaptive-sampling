@@ -24,11 +24,15 @@ import numpy as np
 import math
 
 from itertools         import izip
-from matplotlib.pyplot import show
+try:
+    from matplotlib.pyplot import show
+    import bayesian_binning.visualization as vis
+except ImportError:
+    vis = None
+    print "Warning: Couldn't load matplotlib."
 
 import bayesian_binning.config        as config
 import bayesian_binning.interface     as interface
-import bayesian_binning.visualization as vis
 import bayesian_binning.statistics    as statistics
 
 # global options
@@ -162,7 +166,7 @@ def parseConfig(config_file):
         result    = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
-        else:
+        elif vis:
             vis.plotBinning(result, options)
             if options['savefig']:
                 savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
@@ -180,7 +184,7 @@ def parseConfig(config_file):
         result    = bin(counts, alpha, prior)
         if options['save']:
             saveResult(result)
-        else:
+        elif vis:
             vis.plotBinningSpikes(x, timings, result, options)
             if options['savefig']:
                 savefig(options['savefig'], bbox_inches='tight', pad_inches=0)

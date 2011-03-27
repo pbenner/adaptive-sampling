@@ -30,7 +30,8 @@ Vector * _allocVector(int size)              { return allocVector(size); }
 void     _freeVector(Vector *v)              { freeVector(v); }
 Matrix * _allocMatrix(int rows, int columns) { return allocMatrix(rows, columns); }
 void     _freeMatrix(Matrix *m)              { freeMatrix(m); }
-                
+void     _free(void *ptr)                    { free(ptr); }
+
 BinningResult * binning(Matrix *counts, Matrix *alpha, Vector *prior, Options *options)
 {
         gsl_matrix *counts_m = toGslMatrix(counts);

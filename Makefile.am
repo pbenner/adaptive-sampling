@@ -9,9 +9,22 @@ CLEANFILES        = $(dist_bin_SCRIPTS)
 
 man1_MANS         = adaptive-sampling.1 bayesian-binning.1
 
-EXTRA_DIST        = adaptive-sampling.in bayesian-binning.in    \
+EXTRA_DIST        = adaptive-sampling.1 bayesian-binning.1      \
+                    adaptive-sampling.in bayesian-binning.in    \
                     adaptive-sampling.xml bayesian-binning.xml  \
-                    data                                        \
+                    data/binning/*.cfg                          \
+                    data/binning/*.py                           \
+                    data/binning/*.png                          \
+                    data/binning/*.pdf                          \
+                    data/binning-spikes/*.cfg                   \
+                    data/binning-spikes/*.py                    \
+                    data/binning-spikes/*.png                   \
+                    data/binning-spikes/*.pdf                   \
+                    data/binning-spikes/*.result*               \
+                    data/sampling/*.cfg                         \
+                    data/sampling/*.py                          \
+                    data/sampling/*.pdf                         \
+                    data/sampling/*.result*                     \
                     debian/control                              \
                     debian/copyright                            \
                     debian/compat                               \
