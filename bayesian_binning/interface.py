@@ -18,8 +18,7 @@ import os
 import numpy as np
 import math
 
-from ctypes      import *
-from ctypes.util import find_library
+from ctypes import *
 
 # load interface
 # ------------------------------------------------------------------------------
