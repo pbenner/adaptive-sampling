@@ -26,6 +26,7 @@ import math
 from itertools         import izip
 try:
     from matplotlib.pyplot import show
+    from matplotlib.pyplot import savefig
     import bayesian_binning.visualization as vis
 except ImportError:
     vis = None
