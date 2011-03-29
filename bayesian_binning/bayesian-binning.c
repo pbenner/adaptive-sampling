@@ -461,7 +461,7 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
         unsigned int i, j;
 
         for (i = 0; i < bp->T; i++) {
-                notice(NONE, "Computing break probabilities: %.1f%%", (float)100*i/bp->T);
+                notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bp->T);
                 execPrombs(bp, ev_log, i);
                 sum = -HUGE_VAL;
                 for (j = 0; j < bp->T; j++) {
@@ -594,20 +594,12 @@ bin_log(
 {
         size_t K = counts->size2;
         BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
-        if (options->n_moments > 0) {
-                result->moments = gsl_matrix_alloc(options->n_moments, K);
-        }
-        else {
-                result->moments = NULL;
-        }
-        if (options->marginal) {
-                result->marginals = gsl_matrix_alloc(K, options->n_marginals);
-        }
-        else {
-                result->marginals = NULL;
-        }
-        result->bprob   = gsl_vector_alloc(K);
-        result->mpost   = gsl_vector_alloc(K);
+        result->moments   = (options->n_moments ?
+                             gsl_matrix_alloc(options->n_moments, K)   : NULL);
+        result->marginals = (options->marginal  ?
+                             gsl_matrix_alloc(K, options->n_marginals) : NULL);
+        result->bprob             = gsl_vector_alloc(K);
+        result->mpost             = gsl_vector_alloc(K);
         result->differential_gain = gsl_vector_alloc(K);
         result->effective_counts  = gsl_vector_alloc(K);
         result->multibin_entropy  = gsl_vector_alloc(K);
@@ -623,24 +615,23 @@ bin_log(
         binProblem bp;
 
         for (i = 0; i < options->n_moments; i++) {
-                moments[i] = (prob_t *)calloc(K, sizeof(prob_t));
+                moments[i]   = (prob_t *)calloc(K, sizeof(prob_t));
         }
         for (i = 0; i < K; i++) {
                 marginals[i] = (prob_t *)calloc(options->n_marginals, sizeof(prob_t));
         }
-        bzero(bprob,     K*sizeof(prob_t));
-        bzero(mpost,     K*sizeof(prob_t));
-        bzero(prior_log, K*sizeof(prob_t));
+        bzero(bprob,             K*sizeof(prob_t));
+        bzero(mpost,             K*sizeof(prob_t));
+        bzero(prior_log,         K*sizeof(prob_t));
         bzero(differential_gain, K*sizeof(prob_t));
         bzero(effective_counts,  K*sizeof(prob_t));
         bzero(multibin_entropy,  K*sizeof(prob_t));
 
-        verbose       = options->verbose;
-
-        bp.epsilon    = options->epsilon;
-        bp.mprior     = mprior;
-        bp.T          = K;
-        bp.prior_log  = prior_log;
+        verbose            = options->verbose;
+        bp.epsilon         = options->epsilon;
+        bp.mprior          = mprior;
+        bp.T               = K;
+        bp.prior_log       = prior_log;
         bp.add_event.pos   = -1;
         bp.add_event.n     = 0;
         bp.add_event.which = options->which;
@@ -650,8 +641,8 @@ bin_log(
         bp.events          = counts->size1;
         bp.counts          = counts;
         bp.alpha           = alpha;
-        bp.counts_m        = (gsl_matrix  **)malloc(bp.events*sizeof(gsl_matrix *));
-        bp.alpha_m         = (gsl_matrix  **)malloc(bp.events*sizeof(gsl_matrix *));
+        bp.counts_m        = (gsl_matrix **)malloc(bp.events*sizeof(gsl_matrix *));
+        bp.alpha_m         = (gsl_matrix **)malloc(bp.events*sizeof(gsl_matrix *));
         for (i = 0; i < bp.events; i++) {
                 bp.counts_m[i] = gsl_matrix_alloc(K, K);
                 bp.alpha_m[i]  = gsl_matrix_alloc(K, K);
