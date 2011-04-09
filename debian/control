@@ -1,0 +1,70 @@
+Source: bayesian-toolbox
+Section: math
+Priority: extra
+Maintainer: Philipp Benner <philipp@debian.org>
+Build-Depends: cdbs, debhelper (>= 7), autotools-dev, xsltproc, docbook-xsl, libgsl0-dev, python
+Standards-Version: 3.9.1
+Homepage: http://www.mis.mpg.de
+
+Package: bayesian-binning
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, libbayesian-binning0 (>= ${source:Version}), python (>= 2.5), python-matplotlib, python-numpy
+Description: Bayesian binning of well-ordered data
+ This program provides an interface to the Bayesian binning library
+ and uses matplotlib to visualize the results.
+ .
+ The Bayesian binning library is an inference algorithm for data from
+ a set of multinomial distributions that are related through a
+ well-ordering (for instance space or time). Nearby data points are
+ binned together if the parameters of the underlying distributions are
+ inferred to be equal. This allows to increase statistical strength
+ and thereby gives a better estimate of the underlying multinomial
+ parameters.
+ .
+ The package includes several examples for the analysis of neural
+ spike trains and psychometric functions.
+
+Package: adaptive-sampling
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, libbayesian-binning0 (>= ${source:Version}), python (>= 2.5), python-matplotlib, python-numpy
+Description: adaptive sampling for experiments with well-ordered items
+ This program can be used to optimize the sampling (measurement)
+ process with respect to a given utility-measure. Example measures are
+ for instance the expected gain in Shannon information or reduction in
+ variance. All computations are based on the Bayesian binning library,
+ which is an inference algorithm for data from a set of multinomial
+ distributions that are related through a well-ordering (for instance
+ space or time). Nearby data points are binned together if the
+ parameters of the underlying distributions are inferred to be
+ equal. This allows to increase statistical strength and thereby gives
+ a better estimate of the underlying multinomial parameters.
+ .
+ The package includes several examples for sampling psychometric
+ functions.
+
+Package: libbayesian-binning0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgsl0ldbl
+Recommends: python (>= 2.5)
+Description: library providing a Bayesian binning algorithm for well-ordered data
+ The Bayesian binning library is an inference algorithm for data from
+ a set of multinomial distributions that are related through a
+ well-ordering (for instance space or time). Nearby data points are
+ binned together if the parameters of the underlying distributions are
+ inferred to be equal. This allows to increase statistical strength
+ and thereby gives a better estimate of the underlying multinomial
+ parameters.
+
+Package: libbayesian-binning0-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, libbayesian-binning0 (= ${binary:Version}), libgsl0-dev
+Description: library providing a bayesian binning algorithm for well-ordered data
+ The Bayesian binning library is an inference algorithm for data from
+ a set of multinomial distributions that are related through a
+ well-ordering (for instance space or time). Nearby data points are
+ binned together if the parameters of the underlying distributions are
+ inferred to be equal. This allows to increase statistical strength
+ and thereby gives a better estimate of the underlying multinomial
+ parameters.

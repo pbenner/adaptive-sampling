@@ -1,0 +1,6 @@
+usr/lib/libbayesian-binning*.so.*
+usr/lib/python*/site-packages/bayesian_binning/__init__.py
+usr/lib/python*/site-packages/bayesian_binning/interface.py
+usr/lib/python*/site-packages/bayesian_binning/config.py
+usr/lib/python*/site-packages/bayesian_binning/visualization.py
+usr/lib/python*/site-packages/bayesian_binning/statistics.py

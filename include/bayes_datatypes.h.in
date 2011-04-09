@@ -1,0 +1,71 @@
+/* Copyright (C) 2010 Philipp Benner
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifndef DATATYPES_H
+#define DATATYPES_H
+
+#include <config.h>
+
+#include <bayes_linalg.h>
+
+#include <gsl/gsl_matrix.h>
+
+#undef PROB_T
+
+typedef PROB_T prob_t;
+
+typedef struct options {
+        float epsilon;
+        int verbose;
+        int prombsTest;
+        int bprob;
+        int differential_gain;
+        int effective_counts;
+        int multibin_entropy;
+        int which;
+        int marginal;
+        float marginal_step;
+        struct {
+                float from;
+                float to;
+        } marginal_range;
+        int n_moments;
+        int n_marginals;
+        int model_posterior;
+} Options;
+
+typedef struct binningResultGSL {
+        gsl_matrix *moments;
+        gsl_matrix *marginals;
+        gsl_vector *bprob;
+        gsl_vector *mpost;
+        gsl_vector *differential_gain;
+        gsl_vector *effective_counts;
+        gsl_vector *multibin_entropy;
+} BinningResultGSL;
+
+typedef struct binningResult{
+        Matrix *moments;
+        Matrix *marginals;
+        Vector *bprob;
+        Vector *mpost;
+        Vector *differential_gain;
+        Vector *effective_counts;
+        Vector *multibin_entropy;
+} BinningResult;
+
+#endif /* DATATYPES_H */

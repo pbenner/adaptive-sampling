@@ -1,0 +1,7 @@
+adaptive-sampling for Debian
+----------------------------
+
+For old matplotlib versions it is required to add
+`backend : GTKAgg' to .matplotlib/.matplotlibrc.
+
+ -- Philipp Benner <philipp@debian.org>, Sun, 20 Mar 2011 12:23:30 +0000
