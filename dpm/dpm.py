@@ -71,6 +71,11 @@ class ClassAssignments():
         """Reassign an item to some other class"""
         self.release(item)
         self.assign(item, new_class)
+    def plot(self, ax):
+        x = [ self.getXByClass(c) for c in self.used_classes ]
+        for x_ in x:
+            xp, yp = zip(*x_)
+            ax.scatter(xp, yp, c=tuple(rd.rand(3)))
 
 class DPM():
     # parameters for the dirichlet process
