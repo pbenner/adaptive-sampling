@@ -20,9 +20,9 @@
 #include "data.hh"
 
 Data::Data() {
-        N = 0;
+        n = 0;
 }
 
 Data::~Data() {
-        N = 0;
+        n = 0;
 }
