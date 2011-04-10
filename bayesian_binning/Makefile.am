@@ -1,7 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-lt_cv_deplibs_check_method='pass_all'
-
 INCLUDES = -I$(top_srcdir)/include
 
 ## bayesian-binning library
