@@ -254,6 +254,7 @@ AC_CONFIG_FILES([
 	libprombs/Makefile
 	libexception/Makefile
 	bayesian_binning/Makefile
+	dpm/Makefile
 	include/Makefile
  	])
 

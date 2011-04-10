@@ -33,7 +33,7 @@ class MGaussianData(Data):
     def __init__(self):
         K    = 2
         N    = 100
-        mu   = [[1,1],[5,1]]
+        mu   = [[1,1],[3,1]]
         cov  = [[0.5,0.2],[0.2,0.5]]
         labeled_x = []
         for k in range(0, K):
