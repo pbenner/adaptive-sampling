@@ -19,34 +19,18 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <gsl/gsl_vector.h>
+#include <cstdlib>
+#include <ctime>
+
+#include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-#include "cluster.hh"
-#include "dpm.hh"
 #include "statistics.hh"
 
 using namespace std;
 
-DPM::DPM(Data& data) : da(data), cl(da), alpha(1.0) {
-}
-
-DPM::~DPM() {
-}
-
-void DPM::sample(Data::element& element) {
-        cl.release(element);
-        Distribution& pred     = predictive();
-        Distribution& postPred = posteriorPredictive();
-        Cluster::size_type num_clusters = cl.num_clusters();
-        double weights[num_clusters];
-        Cluster::size_type labels[num_clusters];
-
-        for (Cluster::iterator it = cl.begin(); it != cl.end(); it++) {
-                
-        }
-
-        gsl_ran_discrete_t* gdd = gsl_ran_discrete_preproc(num_clusters, weights);
-        gsl_ran_discrete(_r, gdd);
-        gsl_ran_discrete_free(gdd);
+void __dpm_init__() {
+        srand(clock());
+        _r = gsl_rng_alloc (gsl_rng_default);
+        gsl_rng_set(_r, clock());
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,62 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
+
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
 
 #include "data.hh"
 
 Data::Data() {
-        n = 0;
+        shuffle();
 }
 
 Data::~Data() {
-        n = 0;
+
+}
+
+void Data::shuffle() {
+        random_shuffle(elements.begin(), elements.end());
+}
+
+const Data::element& Data::operator[](size_t i) const {
+        return elements[i];
+}
+
+Data::element& Data::operator[](size_t i) {
+        return elements[i];
+}
+
+ostream& operator<< (ostream& o, Data::element const& element) {
+        o << element.tag << ":";
+        if (element.x.size() > 1) o << "(";
+        for (Data::x_t::const_iterator it = element.x.begin(); it != element.x.end(); it++) {
+                if (it != element.x.begin()) {
+                        o << ", ";
+                }
+                o << *it;
+        }
+        if (element.x.size() > 1) o << ")";
+        o << "@" << element.original_cluster;
+
+        return o;
+}
+
+ostream& operator<< (ostream& o, Data const& data) {
+        for (Data::const_iterator it = data.begin(); it != data.end(); it++) {
+                if (it != data.begin()) {
+                        o << ", ";
+                }
+                o << *it;
+        }
+
+        return o;
 }

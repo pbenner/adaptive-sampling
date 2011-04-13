@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,12 +15,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef DPM_HH
+#define DPM_HH
+
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
+
+using namespace std;
+
+#include "data.hh"
+#include "cluster.hh"
+#include "statistics.hh"
 
 class DPM {
 public:
-        DPM();
+        DPM(Data& data);
         ~DPM();
-private:
-        int N;
+
+        void sample(Data::element& element);
+
+        virtual Distribution& posteriorPredictive() {
+                Distribution* dist = new Distribution;
+                return *dist;
+        }
+        virtual Distribution& predictive() {
+                Distribution* dist = new Distribution;
+                return *dist;
+        }
+
+protected:
+        Data da;
+        Cluster cl;
+        float alpha;
 };
+
+#endif /* DPM_HH */
