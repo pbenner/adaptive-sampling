@@ -41,3 +41,20 @@ def randomElement(list, p):
         if cp[i] < val and val <= cp[i+1]:
             return list[i]
     return list[-1]
+
+def main():
+    num   = 10
+    mean  = np.array([2,3])
+    cov   = np.array([[0.5,0.2],[0.2,0.5]])
+    cov_0 = np.array([[10.0,5.0],[5.0,10.0]])
+    cov_inv   = np.linalg.inv(cov)
+    cov_0_inv = np.linalg.inv(cov_0)
+    cov_n = np.linalg.inv(num*cov_inv + cov_0_inv)
+    mu_0  = np.array( [10.0,12.0])
+    mu_n  = np.dot(cov_n, np.dot(mu_0,cov_0_inv) + num*np.dot(mean,cov_inv))
+    print cov_n
+    print np.dot(mu_0,cov_0_inv) + num*np.dot(mean,cov_inv)
+    print mu_n
+
+if __name__ == "__main__":
+    sys.exit(main())

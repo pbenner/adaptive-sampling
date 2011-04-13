@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,25 +15,61 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef DATA_HH
+#define DATA_HH
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <list>
+#include <iostream>
 #include <vector>
 
 using namespace std;
 
-typedef struct {
-        vector<float> x;
-        int label;
-} Element;
-
 class Data {
 public:
+        // constructors and destructors
         Data();
         ~Data();
-private:
-        int n;
-        list<Element> labeled_data;
+
+        // type definitions
+        typedef double type;
+        typedef vector<type> x_t;
+        typedef struct {
+                x_t x;                // value of the element
+                int tag;              // tag to identify the element
+                                      // (used for cluster assignments)
+                int original_cluster; // from which cluster this
+                                      // elemenent was originally sampled
+        } element;
+        typedef vector<element>::size_type size_type;
+
+        typedef vector<element>::iterator iterator;
+        typedef vector<element>::const_iterator const_iterator;
+
+        // iterators
+        iterator begin() { return elements.begin(); }
+        iterator end()   { return elements.end(); }
+
+        const_iterator begin() const { return elements.begin(); }
+        const_iterator end()   const { return elements.end(); }
+
+        // operators
+              element& operator[](size_type i);
+        const element& operator[](size_type i) const;
+
+        friend ostream& operator<< (std::ostream& o, Data const& data);
+
+        // methods
+        size_type size() { return n; }
+        void shuffle();
+
+protected:
+        size_type n;
+        vector<element> elements;
 };
+
+ostream& operator<< (ostream& o, Data::element const& element);
+
+#endif /* DATA_HH */

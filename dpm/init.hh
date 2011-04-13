@@ -15,38 +15,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef INIT_HH
+#define INIT_HH
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_randist.h>
-
-#include "cluster.hh"
-#include "dpm.hh"
-#include "statistics.hh"
-
 using namespace std;
 
-DPM::DPM(Data& data) : da(data), cl(da), alpha(1.0) {
-}
+void __dpm_init__();
 
-DPM::~DPM() {
-}
-
-void DPM::sample(Data::element& element) {
-        cl.release(element);
-        Distribution& pred     = predictive();
-        Distribution& postPred = posteriorPredictive();
-        Cluster::size_type num_clusters = cl.num_clusters();
-        double weights[num_clusters];
-        Cluster::size_type labels[num_clusters];
-
-        for (Cluster::iterator it = cl.begin(); it != cl.end(); it++) {
-                
-        }
-
-        gsl_ran_discrete_t* gdd = gsl_ran_discrete_preproc(num_clusters, weights);
-        gsl_ran_discrete(_r, gdd);
-        gsl_ran_discrete_free(gdd);
-}
+#endif /* INIT_HH */

@@ -215,6 +215,15 @@ AX_CFLAGS_GCC_OPTION([-Wtrampolines])
 AX_CFLAGS_GCC_OPTION([-fPIC])
 AX_CFLAGS_GCC_OPTION([-fno-nested-functions])
 
+AX_CXXFLAGS_GCC_OPTION([-Wall])
+AX_CXXFLAGS_GCC_OPTION([-Wwrite-strings])
+AX_CXXFLAGS_GCC_OPTION([-Winline])
+AX_CXXFLAGS_GCC_OPTION([-Wstrict-prototypes])
+AX_CXXFLAGS_GCC_OPTION([-Wno-trigraphs])
+AX_CXXFLAGS_GCC_OPTION([-Wtrampolines])
+AX_CXXFLAGS_GCC_OPTION([-fPIC])
+AX_CXXFLAGS_GCC_OPTION([-fno-nested-functions])
+
 dnl ,---------------------------- 
 dnl | SUBDIR CONFIGURATION
 dnl `----------------------------
