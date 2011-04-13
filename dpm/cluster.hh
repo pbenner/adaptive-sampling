@@ -77,6 +77,8 @@ public:
                 }
         }
 
+        size_type size() { return used_clusters.size(); }
+
 private:
         static const int _INIT_NUM_CLASSES = 2;
 

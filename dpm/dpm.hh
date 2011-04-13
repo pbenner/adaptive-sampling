@@ -49,11 +49,23 @@ public:
                 Distribution* dist = new Distribution;
                 return *dist;
         }
+        virtual double likelihood(){
+                return 0;
+        }
 
 protected:
         Data da;
         Cluster cl;
         float alpha;
+
+        // distributions
+        Distribution* predictiveDist;
+        Distribution* posteriorPredictiveDist;
+
+        // gibbs sampler history
+        vector<double> hist_switches;
+        vector<double> hist_likelihood;
+        vector<Cluster::size_type> hist_num_clusters;
 };
 
 #endif /* DPM_HH */

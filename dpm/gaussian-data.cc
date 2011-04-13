@@ -36,13 +36,12 @@ GaussianData::GaussianData(gsl_matrix* cov, int _n, int _k) {
         gsl_vector* mu = gsl_vector_alloc(2);
         double sample_x, sample_y;
         int tag = 0;
-        n = _k * _n;
 
         // for every cluster
         for (int i = 0; i < _k; i++) {
                 // generate a new mean
                 gsl_vector_set(mu, 0, 20.0*(double)rand()/RAND_MAX);
-                gsl_vector_set(mu, 0, 20.0*(double)rand()/RAND_MAX);
+                gsl_vector_set(mu, 1, 20.0*(double)rand()/RAND_MAX);
                 BivariateNormal bg(cov, mu);
                 // generate n samples
                 for (int j = 0; j < _n; j++) {

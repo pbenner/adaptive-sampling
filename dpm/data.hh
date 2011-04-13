@@ -62,11 +62,10 @@ public:
         friend ostream& operator<< (std::ostream& o, Data const& data);
 
         // methods
-        size_type size() { return n; }
+        size_type size() { return elements.size(); }
         void shuffle();
 
 protected:
-        size_type n;
         vector<element> elements;
 };
 

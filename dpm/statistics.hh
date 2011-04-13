@@ -39,6 +39,14 @@ public:
         virtual double pdf(double x, double y) { return 0.0; }
         virtual void sample(vector<double>& x) {}
         virtual void sample(double* x, double* y) {}
+        virtual void update(const gsl_matrix* cov,
+                            const gsl_vector* mu) {}
+        virtual void update(const vector<double>& mu, 
+                            const vector<double>& sigma,
+                            double rho) {}
+        virtual void update(double mu_x, double mu_y,
+                            double sigma_x, double sigma_y,
+                            double rho) {}
 };
 
 class BivariateNormal : public Distribution {

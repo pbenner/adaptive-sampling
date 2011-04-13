@@ -25,7 +25,7 @@ int main(void) {
         gsl_matrix_set(cov, 0, 1, 0.2);
         gsl_matrix_set(cov, 1, 0, 0.2);
 
-        GaussianData data(cov, 10, 2);
+        GaussianData data(cov, 10, 4);
         GaussianDPM gdpm(data);
 
         cout << gdpm << endl << endl;
