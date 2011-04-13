@@ -30,12 +30,18 @@ using namespace std;
 
 class DPM {
 public:
+        // constructors and destructors
         DPM(Data& data);
         ~DPM();
 
-        void sample(Data::element& element);
+        // operators
+        friend ostream& operator<< (std::ostream& o, DPM const& dpm);
 
-        virtual Distribution& posteriorPredictive() {
+        // methods
+        bool sample(Data::element& element);
+        void gibbsSample(unsigned int steps);
+
+        virtual Distribution& posteriorPredictive(const Cluster::cluster& cluster) {
                 Distribution* dist = new Distribution;
                 return *dist;
         }

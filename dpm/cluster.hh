@@ -43,15 +43,15 @@ public:
                 cluster_tag_t tag;
         } cluster; 
 
-        typedef vector<cluster>::iterator iterator;
-        typedef vector<cluster>::const_iterator const_iterator;
+        typedef list<cluster*>::iterator iterator;
+        typedef list<cluster*>::const_iterator const_iterator;
 
         // iterators
-        iterator begin() { return clusters.begin(); }
-        iterator end()   { return clusters.end(); }
+        iterator begin() { return used_clusters.begin(); }
+        iterator end()   { return used_clusters.end(); }
 
-        const_iterator begin() const { return clusters.begin(); }
-        const_iterator end()   const { return clusters.end(); }
+        const_iterator begin() const { return used_clusters.begin(); }
+        const_iterator end()   const { return used_clusters.end(); }
 
         // operators
               cluster& operator[](int c);
@@ -65,7 +65,17 @@ public:
         void assign  (Data::element& element, cluster_tag_t cluster_tag);
         void reassign(Data::element& element, cluster_tag_t cluster_tag);
 
-        size_type num_clusters() { return used_clusters.size(); }
+        size_type num_clusters() {
+                return used_clusters.size();
+        }
+        cluster* next_free_cluster() {
+                if (free_clusters.size() >= 1) {
+                        return free_clusters.front();
+                }
+                else {
+                        return NULL;
+                }
+        }
 
 private:
         static const int _INIT_NUM_CLASSES = 2;
@@ -73,8 +83,8 @@ private:
         vector<cluster> clusters;
         vector<size_type> assignments;
         vector<size_type> positions;
-        list<size_type> used_clusters;
-        list<size_type> free_clusters;
+        list<cluster*> used_clusters;
+        list<cluster*> free_clusters;
 };
 
 #endif /* CLUSTER_HH */

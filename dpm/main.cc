@@ -26,27 +26,16 @@ int main(void) {
         gsl_matrix_set(cov, 1, 0, 0.2);
 
         GaussianData data(cov, 10, 2);
-        Cluster clusters(data);
+        GaussianDPM gdpm(data);
 
-        cout << "Data: " << data << endl << endl;
-        cout << clusters;
+        cout << gdpm << endl << endl;
 
-        cout << "---------------------------------"
+        cout << "------------------------------------------------"
              << endl << endl;
 
-        clusters.reassign(*data.begin(), 3);
-        cout << clusters;
-        data.shuffle();
-        cout << clusters;
+        gdpm.gibbsSample(1);
+        cout << gdpm;
 
-        BivariateNormal bn(1, 1, 0.5, 0.5, 0.5);
-        double x, y;
-
-        bn.sample(&x, &y);
-        cout << x << " " << y << endl;
-        cout << bn.pdf(1,1) << endl;
-
-        GaussianDPM gdpm(data);
 
         return 0;
 }

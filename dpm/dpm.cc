@@ -23,6 +23,7 @@
 #include <gsl/gsl_randist.h>
 
 #include "cluster.hh"
+#include "data.hh"
 #include "dpm.hh"
 #include "statistics.hh"
 
@@ -34,19 +35,54 @@ DPM::DPM(Data& data) : da(data), cl(da), alpha(1.0) {
 DPM::~DPM() {
 }
 
-void DPM::sample(Data::element& element) {
+bool DPM::sample(Data::element& element) {
+        Cluster::cluster_tag_t old_class_tag = cl.getClusterTag(element);
         cl.release(element);
         Distribution& pred     = predictive();
-        Distribution& postPred = posteriorPredictive();
         Cluster::size_type num_clusters = cl.num_clusters();
-        double weights[num_clusters];
-        Cluster::size_type labels[num_clusters];
+        double weights[num_clusters+1];
+        Cluster::cluster_tag_t tags[num_clusters+1];
+        double sum = 0;
 
+        // compute weights of existing clusters
+        Cluster::cluster_tag_t i = 0;
         for (Cluster::iterator it = cl.begin(); it != cl.end(); it++) {
-                
+                Distribution& postPred = posteriorPredictive(**it);
+                double num_elements    = (double)(*it)->elements.size();
+                weights[i] = num_elements*postPred.pdf(element.x);
+                tags[i]    = (*it)->tag;
+                // normalization constant
+                sum       += weights[i];
+                i++;
+        }
+        // add the tag of a new class and compute their weight
+        weights[num_clusters] = alpha*pred.pdf(element.x);
+        tags[num_clusters]    = cl.next_free_cluster()->tag;
+
+        // normalize
+        for (i = 0; i < num_clusters+1; i++) {
+                weights[i] /= sum;
         }
 
-        gsl_ran_discrete_t* gdd = gsl_ran_discrete_preproc(num_clusters, weights);
-        gsl_ran_discrete(_r, gdd);
+        // draw a new cluster for the element
+        gsl_ran_discrete_t* gdd = gsl_ran_discrete_preproc(num_clusters+1, weights);
+        i = gsl_ran_discrete(_r, gdd);
         gsl_ran_discrete_free(gdd);
+
+        cl.assign(element, tags[i]);
+
+        return old_class_tag != tags[i];
+}
+
+void DPM::gibbsSample(unsigned int steps) {
+        for (unsigned int i = 0; i < steps; i++) {
+                for (Data::iterator it = da.begin(); it != da.end(); it++) {
+                        sample(*it);
+                }
+        }
+}
+
+ostream& operator<< (ostream& o, DPM const& dpm)
+{
+        return o << dpm.cl;
 }
