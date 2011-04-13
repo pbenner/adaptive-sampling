@@ -98,10 +98,8 @@ void GaussianDPM::inverse(gsl_matrix* src, gsl_matrix* dst) {
         gsl_linalg_LU_invert(__inv_tmp, __inv_perm, dst);
 }
 
-Distribution& GaussianDPM::posteriorPredictive(const Cluster::cluster& cluster) {
+void GaussianDPM::_computeMean(const Cluster::cluster& cluster) {
         double num = cluster.elements.size();
-        gsl_vector_set(_mean, 0, 0);
-        gsl_vector_set(_mean, 1, 0);
 
         // compute cluster mean
         for (Cluster::elements_t::const_iterator it  = cluster.elements.begin();
@@ -111,6 +109,12 @@ Distribution& GaussianDPM::posteriorPredictive(const Cluster::cluster& cluster) 
         }
         gsl_vector_set(_mean, 0, gsl_vector_get(_mean, 0)/num);
         gsl_vector_set(_mean, 1, gsl_vector_get(_mean, 1)/num);
+}
+
+Distribution& GaussianDPM::posteriorPredictive(const Cluster::cluster& cluster) {
+        double num = cluster.elements.size();
+
+        _computeMean(cluster);
 
         // posterior mean
         gsl_matrix_memcpy(cov_n, cov_inv);
@@ -139,4 +143,18 @@ Distribution& GaussianDPM::posteriorPredictive(const Cluster::cluster& cluster) 
 
 Distribution& GaussianDPM::predictive() const {
         return *predictiveDist;
+}
+
+double GaussianDPM::likelihood() {
+        double likelihood = 0;
+        for (Cluster::iterator it = cl.begin(); it != cl.end(); it++) {
+                _computeMean(**it);
+                double cluster_size = (*it)->elements.size();
+                BivariateNormal bg(cov, _mean);
+                for (Cluster::elements_t::iterator is  = (*it)->elements.begin();
+                     is != (*it)->elements.end(); is++) {
+                        likelihood += bg.pdf((*is)->x)/cluster_size;
+                }
+        }
+        return likelihood/cl.size();
 }

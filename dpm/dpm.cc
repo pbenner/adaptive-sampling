@@ -30,6 +30,8 @@
 using namespace std;
 
 DPM::DPM(Data& data) : da(data), cl(da), alpha(1.0) {
+        hist_switches.push_back(0);
+        hist_likelihood.push_back(likelihood());
 }
 
 DPM::~DPM() {
@@ -76,9 +78,15 @@ bool DPM::sample(Data::element& element) {
 
 void DPM::gibbsSample(unsigned int steps) {
         for (unsigned int i = 0; i < steps; i++) {
+                double sum = 0;
                 for (Data::iterator it = da.begin(); it != da.end(); it++) {
-                        sample(*it);
+                        bool switched = sample(*it);
+                        if (switched) sum+=1;
                 }
+                hist_switches.push_back(sum/da.size());
+                hist_likelihood.push_back(likelihood());
+                hist_num_clusters.push_back(cl.size());
+                cout << cl.size() << endl;
         }
 }
 

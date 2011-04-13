@@ -41,6 +41,7 @@ public:
         Distribution& predictive() const;
 
         void inverse(gsl_matrix* src, gsl_matrix* dst);
+        double likelihood();
 
 private:
         // likelihood parameters
@@ -54,18 +55,19 @@ private:
 
         // predictive distribution
         gsl_matrix* predictive_cov;
-        BivariateNormal* predictiveDist;
 
         // posterior predictive distribution
         gsl_matrix* cov_n;
         gsl_vector* mu_n;
         gsl_vector* _mean;
-        BivariateNormal* posteriorPredictiveDist;
 
         // inverse matrices
         gsl_matrix*      __inv_tmp;
         gsl_permutation* __inv_perm;
         int              __inv_s;
+
+        // private methods
+        void _computeMean(const Cluster::cluster& cluster);
 };
 
 #endif /* GAUSSIAN_DPM_HH */
