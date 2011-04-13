@@ -36,7 +36,7 @@ Cluster::Cluster(Data& data)
 
         for (Cluster::size_type i = 0; i < data.size(); i++) {
                 clusters[i].tag = i;
-                free_clusters.push_back(i);
+                free_clusters.push_back(&clusters[i]);
         }
 
         // assign the data to some random clusters
@@ -70,15 +70,15 @@ void Cluster::release(Data::element& element) {
         assignments[element.tag] = -1;
         positions  [element.tag] = -1;
         if (clusters[old_cluster_tag].elements.size() == 0) {
-                used_clusters.remove(old_cluster_tag);
-                free_clusters.push_back(old_cluster_tag);
+                used_clusters.remove(&clusters[old_cluster_tag]);
+                free_clusters.push_back(&clusters[old_cluster_tag]);
         }
 }
 
 void Cluster::assign(Data::element& element, Cluster::cluster_tag_t cluster_tag) {
         if (clusters[cluster_tag].elements.size() == 0) {
-                used_clusters.push_back(cluster_tag);
-                free_clusters.remove(cluster_tag);
+                used_clusters.push_back(&clusters[cluster_tag]);
+                free_clusters.remove(&clusters[cluster_tag]);
         }
         assignments[element.tag] = cluster_tag;
         positions  [element.tag] = clusters[cluster_tag].elements.size();
@@ -94,10 +94,10 @@ ostream& operator<< (ostream& o, Cluster const& clusters)
 {
         for (Cluster::const_iterator it1 = clusters.begin();
              it1 != clusters.end(); it1++) {
-                o << "Cluster: " << (*it1).tag << endl;
-                for (Cluster::elements_t::const_iterator it2 = it1->elements.begin();
-                     it2 != it1->elements.end(); it2++) {
-                        if (it2 != it1->elements.begin()) {
+                o << "Cluster: " << (*it1)->tag << endl;
+                for (Cluster::elements_t::const_iterator it2 = (*it1)->elements.begin();
+                     it2 != (*it1)->elements.end(); it2++) {
+                        if (it2 != (*it1)->elements.begin()) {
                                 o << ", ";
                         }
                         o << **it2;
@@ -106,22 +106,22 @@ ostream& operator<< (ostream& o, Cluster const& clusters)
         }
 
         o << "Used clusters: ";
-        for (list<Cluster::size_type>::const_iterator it = clusters.used_clusters.begin();
+        for (list<Cluster::cluster*>::const_iterator it = clusters.used_clusters.begin();
              it != clusters.used_clusters.end(); it++) {
                 if (it != clusters.used_clusters.begin()) {
                         o << ", ";
                 }
-                o << *it;
+                o << (*it)->tag;
         }
         o << endl;
 
         o << "Free clusters: ";
-        for (list<Cluster::size_type>::const_iterator it = clusters.free_clusters.begin();
+        for (list<Cluster::cluster*>::const_iterator it = clusters.free_clusters.begin();
              it != clusters.free_clusters.end(); it++) {
                 if (it != clusters.free_clusters.begin()) {
                         o << ", ";
                 }
-                o << *it;
+                o << (*it)->tag;
         }
         o << endl;
 

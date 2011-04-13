@@ -35,7 +35,9 @@ extern gsl_rng* _r;
 class Distribution {
 
 public:
+        virtual double pdf(vector<double> x) { return 0.0; }
         virtual double pdf(double x, double y) { return 0.0; }
+        virtual void sample(vector<double>& x) {}
         virtual void sample(double* x, double* y) {}
 };
 
@@ -61,7 +63,9 @@ public:
                     double sigma_x, double sigma_y,
                     double rho);
 
+        double pdf(vector<double> x);
         double pdf(double x, double y);
+        void sample(vector<double>& x);
         void sample(double* x, double* y);
 
 private:

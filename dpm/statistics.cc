@@ -105,9 +105,20 @@ double BivariateNormal::pdf(double x, double y) {
         return gsl_ran_bivariate_gaussian_pdf(x-mu_x, y-mu_y, sigma_x, sigma_y, rho);
 }
 
+double BivariateNormal::pdf(vector<double> x) {
+        
+        return gsl_ran_bivariate_gaussian_pdf(x[0]-mu_x, x[1]-mu_y, sigma_x, sigma_y, rho);
+}
+
 void BivariateNormal::sample(double* x, double* y) {
 
         gsl_ran_bivariate_gaussian(_r, sigma_x, sigma_y, rho, x, y);
         *x += mu_x;
         *y += mu_y;
+}
+
+void BivariateNormal::sample(vector<double>& x) {
+        double y1, y2;
+        sample(&y1, &y2);
+        x[0] = y1; x[1] = y2;
 }
