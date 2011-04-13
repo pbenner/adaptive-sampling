@@ -33,9 +33,8 @@ int main(void) {
         cout << "------------------------------------------------"
              << endl << endl;
 
-        gdpm.gibbsSample(1);
+        gdpm.gibbsSample(10);
         cout << gdpm;
-
 
         return 0;
 }

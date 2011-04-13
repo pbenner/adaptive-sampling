@@ -36,7 +36,7 @@ public:
 
         // type definitions
         typedef vector<Data::element *>::size_type size_type;
-        typedef vector<Data::element *> elements_t;
+        typedef list<Data::element *> elements_t;
         typedef size_type cluster_tag_t;
         typedef struct {
                 elements_t elements;
@@ -82,7 +82,6 @@ private:
 
         vector<cluster> clusters;
         vector<size_type> assignments;
-        vector<size_type> positions;
         list<cluster*> used_clusters;
         list<cluster*> free_clusters;
 };

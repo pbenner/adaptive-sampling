@@ -36,9 +36,9 @@ DPM::~DPM() {
 }
 
 bool DPM::sample(Data::element& element) {
-        Cluster::cluster_tag_t old_class_tag = cl.getClusterTag(element);
+        Cluster::cluster_tag_t old_cluster_tag = cl.getClusterTag(element);
         cl.release(element);
-        Distribution& pred     = predictive();
+        Distribution& pred = predictive();
         Cluster::size_type num_clusters = cl.num_clusters();
         double weights[num_clusters+1];
         Cluster::cluster_tag_t tags[num_clusters+1];
@@ -71,7 +71,7 @@ bool DPM::sample(Data::element& element) {
 
         cl.assign(element, tags[i]);
 
-        return old_class_tag != tags[i];
+        return old_cluster_tag != tags[i];
 }
 
 void DPM::gibbsSample(unsigned int steps) {
