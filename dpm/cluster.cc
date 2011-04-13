@@ -29,8 +29,7 @@ using namespace std;
 
 Cluster::Cluster(Data& data)
         : clusters(data.size()),
-          assignments(data.size()),
-          positions(data.size())
+          assignments(data.size())
 {
         srand(time(0));
 
@@ -66,9 +65,8 @@ Cluster::cluster_tag_t Cluster::getClusterTag(const Data::element& element) cons
 void Cluster::release(Data::element& element) {
         Cluster::size_type old_cluster_tag = assignments[element.tag];
         Cluster::elements_t::iterator it = clusters[old_cluster_tag].elements.begin();
-        clusters[old_cluster_tag].elements.erase(it+positions[element.tag]);
+        clusters[old_cluster_tag].elements.remove(&element);
         assignments[element.tag] = -1;
-        positions  [element.tag] = -1;
         if (clusters[old_cluster_tag].elements.size() == 0) {
                 used_clusters.remove(&clusters[old_cluster_tag]);
                 free_clusters.push_back(&clusters[old_cluster_tag]);
@@ -81,7 +79,6 @@ void Cluster::assign(Data::element& element, Cluster::cluster_tag_t cluster_tag)
                 free_clusters.remove(&clusters[cluster_tag]);
         }
         assignments[element.tag] = cluster_tag;
-        positions  [element.tag] = clusters[cluster_tag].elements.size();
         clusters[cluster_tag].elements.push_back(&element);
 }
 
