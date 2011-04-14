@@ -77,6 +77,20 @@ Bayes::Matrix* _dpm_cluster(unsigned int c) {
         return result;
 }
 
+Bayes::Vector* _dpm_original_tags(unsigned int c) {
+        Cluster::cluster& cl = (*_gdpm)[c];
+        int n = cl.elements.size();
+
+        Bayes::Vector* result = Bayes::allocVector(n);
+        int i = 0;
+        for (Cluster::elements_t::iterator it = cl.elements.begin();
+             it != cl.elements.end(); it++) {
+                result->vec[i] = (double)(*it)->original_cluster;
+        }
+
+        return result;
+}
+
 void _dpm_print() {
         cout << *_gdpm << endl;
 }

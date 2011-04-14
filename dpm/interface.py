@@ -53,50 +53,6 @@ class MATRIX(Structure):
                  ("columns", c_int),
                  ("mat",     POINTER(POINTER(c_double)))]
 
-class MARGINAL_RANGE(Structure):
-     _fields_ = [("from", c_float),
-                 ("to",   c_float)]
-
-class OPTIONS(Structure):
-     _fields_ = [("epsilon",           c_float),
-                 ("verbose",           c_int),
-                 ("prombsTest",        c_int),
-                 ("bprob",             c_int),
-                 ("differential_gain", c_int),
-                 ("effective_counts",  c_int),
-                 ("multibin_entropy",  c_int),
-                 ("which",             c_int),
-                 ("marginal",          c_int),
-                 ("marginal_step",     c_float),
-                 ("marginal_range",    MARGINAL_RANGE),
-                 ("n_moments",         c_int),
-                 ("n_marginals",       c_int),
-                 ("model_posterior",   c_int)]
-     def __init__(self, options):
-          self.which          = c_int(options["which"])
-          self.marginal       = c_int(options["marginal"])
-          self.marginal_step  = c_float(options["marginal_step"])
-          self.marginal_range = MARGINAL_RANGE(*options["marginal_range"])
-          self.n_moments      = c_int(options["n_moments"])
-          self.n_marginals    = c_int(int(math.floor(1.0/options["marginal_step"]) + 1))
-          self.epsilon        = c_float(options["epsilon"])
-          self.verbose        = c_int(1) if options["verbose"]    else c_int(0)
-          self.prombsTest     = c_int(1) if options["prombsTest"] else c_int(0)
-          self.bprob          = c_int(1) if options["bprob"]      else c_int(0)
-          self.differential_gain = c_int(1) if options["differential_gain"] else c_int(0)
-          self.effective_counts  = c_int(1) if options["effective_counts"]  else c_int(0)
-          self.multibin_entropy  = c_int(1) if options["multibin_entropy"]  else c_int(0)
-          self.model_posterior   = c_int(1) if options["model_posterior"]   else c_int(0)
-
-class BINNING_RESULT(Structure):
-     _fields_ = [("moments",           POINTER(MATRIX)),
-                 ("marginals",         POINTER(MATRIX)),
-                 ("bprob",             POINTER(VECTOR)),
-                 ("mpost",             POINTER(VECTOR)),
-                 ("differential_gain", POINTER(VECTOR)),
-                 ("effective_counts",  POINTER(VECTOR)),
-                 ("multibin_entropy",  POINTER(VECTOR))]
-
 # function prototypes
 # ------------------------------------------------------------------------------
 
@@ -120,6 +76,9 @@ _lib._dpm_init.argtypes    = [c_uint, c_uint]
 
 _lib._dpm_num_clusters.restype  = c_uint
 _lib._dpm_num_clusters.argtypes = []
+
+_lib._dpm_original_tags.restype  = POINTER(VECTOR)
+_lib._dpm_original_tags.argtypes = [c_uint]
 
 _lib._dpm_cluster.restype  = POINTER(MATRIX)
 _lib._dpm_cluster.argtypes = [c_uint]
@@ -176,6 +135,12 @@ def dpm_cluster(c):
      cluster = getMatrix(result)
      _lib._freeMatrix(result)
      return cluster
+
+def dpm_original_tags(c):
+     result = _lib._dpm_original_tags(c)
+     tags   = getVector(result)
+     _lib._freeVector(result)
+     return tags
 
 def dpm_sample(n):
      _lib_dpm_sample(n)
