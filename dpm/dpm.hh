@@ -36,10 +36,13 @@ public:
 
         // operators
         friend ostream& operator<< (std::ostream& o, DPM const& dpm);
+              Cluster::cluster& operator[](int c)       { return cl[c]; }
+        const Cluster::cluster& operator[](int c) const { return cl[c]; }
 
         // methods
         bool sample(Data::element& element);
         void gibbsSample(unsigned int steps);
+        Cluster::size_type num_clusters() { return cl.size(); }
 
         virtual Distribution& posteriorPredictive(const Cluster::cluster& cluster) {
                 return *posteriorPredictiveDist;

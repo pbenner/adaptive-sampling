@@ -65,9 +65,6 @@ public:
         void assign  (Data::element& element, cluster_tag_t cluster_tag);
         void reassign(Data::element& element, cluster_tag_t cluster_tag);
 
-        size_type num_clusters() {
-                return used_clusters.size();
-        }
         cluster* next_free_cluster() {
                 if (free_clusters.size() >= 1) {
                         return free_clusters.front();
