@@ -85,8 +85,7 @@ void DPM::gibbsSample(unsigned int steps) {
                         if (switched) sum+=1;
                 }
                 hist_switches.push_back(sum/da.size());
-                hist_likelihood.push_back(likelihood());
-                hist_num_clusters.push_back(cl.size());
+                compute_statistics();
         }
 }
 

@@ -159,3 +159,15 @@ double GaussianDPM::likelihood() {
         }
         return likelihood/cl.size();
 }
+
+void GaussianDPM::compute_statistics() {
+        hist_likelihood.push_back(likelihood());
+        hist_num_clusters.push_back(cl.size());
+        for (Cluster::iterator it = cl.begin(); it != cl.end(); it++) {
+                _computeMean(**it);
+                Data::x_t mean;
+                mean.push_back(gsl_vector_get(_mean, 0));
+                mean.push_back(gsl_vector_get(_mean, 1));
+                hist_mean.push_back(mean);
+        }
+}
