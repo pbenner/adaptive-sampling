@@ -43,6 +43,11 @@ public:
         void inverse(gsl_matrix* src, gsl_matrix* dst);
         double likelihood();
         void compute_statistics();
+        vector<Data::x_t>* cluster_means();
+
+        vector<Data::x_t>& get_hist_means() {
+                return hist_means;
+        }
 
 private:
         // likelihood parameters
@@ -68,7 +73,7 @@ private:
         int              __inv_s;
 
         // means
-        vector<Data::x_t> hist_mean;
+        vector<Data::x_t> hist_means;
 
         // private methods
         void _computeMean(const Cluster::cluster& cluster);

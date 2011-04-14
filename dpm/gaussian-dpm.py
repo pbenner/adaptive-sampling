@@ -28,6 +28,9 @@ from interface  import *
 # Gaussian DPM
 ################################################################################
 
+def biNormalDensity(mu, cov):
+    return (lambda X, Y: mlab.bivariate_normal(X, Y, np.sqrt(cov[0,0]), np.sqrt(cov[1,1]), mu[0], mu[1], cov[0,1]))
+
 class GaussianDPM():
     def __init__(self, n, k):
         dpm_init(n, k)
@@ -38,6 +41,26 @@ class GaussianDPM():
         return dpm_num_clusters()
     def sample(self, n):
         dpm_sample(n)
+    def sampleInteractivelyInit(self, ax):
+        dx  = (ax.get_xlim()[1] - ax.get_xlim()[0])/200.0
+        dy  = (ax.get_ylim()[1] - ax.get_ylim()[0])/200.0
+        self.x = np.arange(ax.get_xlim()[0], ax.get_xlim()[1], dx)
+        self.y = np.arange(ax.get_ylim()[0], ax.get_ylim()[1], dy)
+        self.X, self.Y = np.meshgrid(self.x, self.y)
+        self.cov = np.array([[0.5,0.2],[0.2,0.5]])
+        mu  = np.array(dpm_means())
+        self.Z = biNormalDensity(mu[0], self.cov)(self.X, self.Y)
+        for m in mu:
+            self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
+    def sampleInteractively(self, n, ax):
+        dpm_sample(n)
+        mu  = np.array(dpm_means())
+        for m in mu:
+            self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
+    def hist_means():
+        return dpm_hist_means()
+    def means():
+        return dpm_means()
     def plotData(self, ax):
         num_clusters = dpm_num_clusters()
         for c in range(0, num_clusters):
@@ -47,33 +70,32 @@ class GaussianDPM():
                 ax.scatter(x_, y_, c=self.cluster_colors[c_])
     def plotResult(self, ax):
         num_clusters = dpm_num_clusters()
-#        print
-#        print "number of clusters: "+str(num_clusters)
         for c in range(0, num_clusters):
-#            print "plotting cluster: "+str(c)
-#            print "cluster: "
-#            print dpm_cluster(c)
-#            if (len(dpm_cluster(c)) == 0):
-#                dpm_print()
             x, y = zip(*dpm_cluster(c))
             ax.scatter(x, y, c=self.cluster_colors[c])
             ax.set_title("Clustering Result K="+str(num_clusters))
+    def plotJoint(self, ax):
+        im  = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
+        im.set_data(self.x, self.y, self.Z)
+        ax.images.append(im)
 
 def main():
-    dpm = GaussianDPM(10, 4)
+    dpm = GaussianDPM(40, 10)
     num_clusters = dpm.num_clusters()
 
     fig = figure()
     ax1 = fig.add_subplot(2,1,1, title="Data")
-    ax2 = fig.add_subplot(2,1,2, title="Clustering Result K="+str(num_clusters))
+    ax2 = fig.add_subplot(2,1,2)
     dpm.plotData(ax1)
     dpm.plotResult(ax2)
+    dpm.sampleInteractivelyInit(ax2)
 
     manager = get_current_fig_manager()
     def updatefig(*args):
         try:
-            dpm.sample(1)
+            dpm.sampleInteractively(1, ax2)
             dpm.plotResult(ax2)
+            dpm.plotJoint(ax2)
             manager.canvas.draw()
             return True
         except StopIteration:

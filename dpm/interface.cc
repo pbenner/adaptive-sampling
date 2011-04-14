@@ -92,6 +92,33 @@ Bayes::Vector* _dpm_original_tags(unsigned int c) {
         return result;
 }
 
+Bayes::Matrix* _dpm_hist_means() {
+        vector<Data::x_t>& mean = _gdpm->get_hist_means();
+        unsigned int len = mean.size();
+        Bayes::Matrix* result = Bayes::allocMatrix(len, 2);
+
+        for (unsigned int i = 0; i < len; i++) {
+                result->mat[i][0] = mean[i][0];
+                result->mat[i][1] = mean[i][1];
+        }
+
+        return result;
+}
+
+Bayes::Matrix* _dpm_means() {
+        vector<Data::x_t>* means = _gdpm->cluster_means();
+        unsigned int len = means->size();
+        Bayes::Matrix* result = Bayes::allocMatrix(len, 2);
+
+        for (unsigned int i = 0; i < len; i++) {
+                result->mat[i][0] = (*means)[i][0];
+                result->mat[i][1] = (*means)[i][1];
+        }
+        delete means;
+
+        return result;
+}
+
 void _dpm_print() {
         cout << *_gdpm << endl;
 }
