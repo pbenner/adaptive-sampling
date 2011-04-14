@@ -41,7 +41,7 @@ bool DPM::sample(Data::element& element) {
         Cluster::cluster_tag_t old_cluster_tag = cl.getClusterTag(element);
         cl.release(element);
         Distribution& pred = predictive();
-        Cluster::size_type num_clusters = cl.num_clusters();
+        Cluster::size_type num_clusters = cl.size();
         double weights[num_clusters+1];
         Cluster::cluster_tag_t tags[num_clusters+1];
         double sum = 0;

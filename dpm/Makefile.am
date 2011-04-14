@@ -9,7 +9,7 @@ main_LDADD   = -ldpm
 
 ## dpm library
 lib_LTLIBRARIES  = libdpm.la
-libdpm_la_SOURCES = data.cc data.hh dpm.cc dpm.hh cluster.cc cluster.hh gaussian-data.cc gaussian-data.hh statistics.cc statistics.hh gaussian-dpm.cc gaussian-dpm.hh init.cc init.hh
+libdpm_la_SOURCES = data.cc data.hh dpm.cc dpm.hh cluster.cc cluster.hh gaussian-data.cc gaussian-data.hh statistics.cc statistics.hh gaussian-dpm.cc gaussian-dpm.hh init.cc init.hh interface.cc interface.hh
 libdpm_la_LIBADD  = $(top_builddir)/libexception/libexception.la
 libdpm_la_LDFLAGS = -no-undefined -version-info 0:0:0
 
