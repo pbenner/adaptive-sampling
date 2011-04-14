@@ -32,7 +32,7 @@ class DPM {
 public:
         // constructors and destructors
         DPM(Data& data);
-        ~DPM();
+        virtual ~DPM();
 
         // operators
         friend ostream& operator<< (std::ostream& o, DPM const& dpm);
@@ -53,6 +53,10 @@ public:
         }
         virtual double likelihood() {
                 return 0;
+        }
+        virtual void compute_statistics() {
+                hist_likelihood.push_back(likelihood());
+                hist_num_clusters.push_back(cl.size());
         }
 
 protected:
