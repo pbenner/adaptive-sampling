@@ -15,6 +15,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifndef BAYESIAN_BINNING_H
+#define BAYESIAN_BINNING_H
+
 #include <config.h>
 
 #include <gsl/gsl_errno.h>
@@ -22,3 +25,5 @@
 #include <gsl/gsl_odeiv.h>
 
 extern BinningResultGSL * bin_log(gsl_matrix *counts, gsl_matrix *alpha, gsl_vector *prior, Options *options);
+
+#endif /* BAYESIAN_BINNING */
