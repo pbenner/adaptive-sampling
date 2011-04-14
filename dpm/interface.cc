@@ -92,6 +92,30 @@ Bayes::Vector* _dpm_original_tags(unsigned int c) {
         return result;
 }
 
+Bayes::Vector* _dpm_hist_likelihood() {
+        vector<double>& likelihood = _gdpm->get_hist_likelihood();
+        unsigned int len = likelihood.size();
+        Bayes::Vector* result = Bayes::allocVector(len);
+
+        for (unsigned int i = 0; i < len; i++) {
+                result->vec[i] = likelihood[i];
+        }
+
+        return result;
+}
+
+Bayes::Vector* _dpm_hist_switches() {
+        vector<double>& switches = _gdpm->get_hist_switches();
+        unsigned int len = switches.size();
+        Bayes::Vector* result = Bayes::allocVector(len);
+
+        for (unsigned int i = 0; i < len; i++) {
+                result->vec[i] = switches[i];
+        }
+
+        return result;
+}
+
 Bayes::Matrix* _dpm_hist_means() {
         vector<Data::x_t>& mean = _gdpm->get_hist_means();
         unsigned int len = mean.size();
