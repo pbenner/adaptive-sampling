@@ -85,7 +85,8 @@ Bayes::Vector* _dpm_original_tags(unsigned int c) {
         int i = 0;
         for (Cluster::elements_t::iterator it = cl.elements.begin();
              it != cl.elements.end(); it++) {
-                result->vec[i] = (double)(*it)->original_cluster;
+                result->vec[i] = (double)((*it)->original_cluster);
+                i++;
         }
 
         return result;
