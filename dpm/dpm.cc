@@ -60,6 +60,7 @@ bool DPM::sample(Data::element& element) {
         // add the tag of a new class and compute their weight
         weights[num_clusters] = alpha*pred.pdf(element.x);
         tags[num_clusters]    = cl.next_free_cluster()->tag;
+        sum += weights[num_clusters];
 
         // normalize
         for (i = 0; i < num_clusters+1; i++) {
@@ -86,7 +87,6 @@ void DPM::gibbsSample(unsigned int steps) {
                 hist_switches.push_back(sum/da.size());
                 hist_likelihood.push_back(likelihood());
                 hist_num_clusters.push_back(cl.size());
-                cout << cl.size() << endl;
         }
 }
 
