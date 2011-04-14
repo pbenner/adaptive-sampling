@@ -51,11 +51,17 @@ Cluster::~Cluster() {
 }
 
 Cluster::cluster& Cluster::operator[](int c) {
-        return clusters[c];
+        Cluster::iterator it = begin();
+        for (int i = 0; i < c; i++) { it++; }
+
+        return **it;
 }
 
 const Cluster::cluster& Cluster::operator[](int c) const {
-        return clusters[c];
+        Cluster::const_iterator it = begin();
+        for (int i = 0; i < c; i++) { it++; }
+
+        return **it++;
 }
 
 Cluster::cluster_tag_t Cluster::getClusterTag(const Data::element& element) const {

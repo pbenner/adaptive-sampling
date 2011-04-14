@@ -118,7 +118,7 @@ def getMatrix(c_m):
                m[i].append(c_m.contents.mat[i][j])
      return m
 
-# 
+#
 # ------------------------------------------------------------------------------
 
 def dpm_init(n, k):
@@ -138,12 +138,12 @@ def dpm_cluster(c):
 
 def dpm_original_tags(c):
      result = _lib._dpm_original_tags(c)
-     tags   = getVector(result)
+     tags   = map(int, getVector(result))
      _lib._freeVector(result)
      return tags
 
 def dpm_sample(n):
-     _lib_dpm_sample(n)
+     _lib._dpm_sample(n)
 
 def dpm_free():
-     _lib_dpm_free()
+     _lib._dpm_free()
