@@ -83,6 +83,12 @@ _lib._dpm_original_tags.argtypes = [c_uint]
 _lib._dpm_cluster.restype  = POINTER(MATRIX)
 _lib._dpm_cluster.argtypes = [c_uint]
 
+_lib._dpm_hist_means.restype  = POINTER(MATRIX)
+_lib._dpm_hist_means.argtypes = []
+
+_lib._dpm_means.restype  = POINTER(MATRIX)
+_lib._dpm_means.argtypes = []
+
 _lib._dpm_print.restype    = None
 _lib._dpm_print.argtypes   = []
 
@@ -141,6 +147,18 @@ def dpm_original_tags(c):
      tags   = map(int, getVector(result))
      _lib._freeVector(result)
      return tags
+
+def dpm_hist_means():
+     result  = _lib._dpm_hist_means()
+     means = getMatrix(result)
+     _lib._freeMatrix(result)
+     return means
+
+def dpm_means():
+     result  = _lib._dpm_means()
+     means = getMatrix(result)
+     _lib._freeMatrix(result)
+     return means
 
 def dpm_sample(n):
      _lib._dpm_sample(n)

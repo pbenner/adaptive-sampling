@@ -160,6 +160,19 @@ double GaussianDPM::likelihood() {
         return likelihood/cl.size();
 }
 
+vector<Data::x_t>* GaussianDPM::cluster_means() {
+        vector<Data::x_t>* means = new vector<Data::x_t>();
+
+        for (Cluster::iterator it = cl.begin(); it != cl.end(); it++) {
+                _computeMean(**it);
+                Data::x_t mean;
+                mean.push_back(gsl_vector_get(_mean, 0));
+                mean.push_back(gsl_vector_get(_mean, 1));
+                means->push_back(mean);
+        }
+        return means;
+}
+
 void GaussianDPM::compute_statistics() {
         hist_likelihood.push_back(likelihood());
         hist_num_clusters.push_back(cl.size());
@@ -168,6 +181,6 @@ void GaussianDPM::compute_statistics() {
                 Data::x_t mean;
                 mean.push_back(gsl_vector_get(_mean, 0));
                 mean.push_back(gsl_vector_get(_mean, 1));
-                hist_mean.push_back(mean);
+                hist_means.push_back(mean);
         }
 }
