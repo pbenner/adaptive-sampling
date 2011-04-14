@@ -83,6 +83,12 @@ _lib._dpm_original_tags.argtypes = [c_uint]
 _lib._dpm_cluster.restype  = POINTER(MATRIX)
 _lib._dpm_cluster.argtypes = [c_uint]
 
+_lib._dpm_hist_likelihood.restype  = POINTER(VECTOR)
+_lib._dpm_hist_likelihood.argtypes = []
+
+_lib._dpm_hist_switches.restype  = POINTER(VECTOR)
+_lib._dpm_hist_switches.argtypes = []
+
 _lib._dpm_hist_means.restype  = POINTER(MATRIX)
 _lib._dpm_hist_means.argtypes = []
 
@@ -148,15 +154,27 @@ def dpm_original_tags(c):
      _lib._freeVector(result)
      return tags
 
+def dpm_hist_likelihood():
+     result     = _lib._dpm_hist_likelihood()
+     likelihood = getVector(result)
+     _lib._freeVector(result)
+     return likelihood
+
+def dpm_hist_switches():
+     result   = _lib._dpm_hist_switches()
+     switches = getVector(result)
+     _lib._freeVector(result)
+     return switches
+
 def dpm_hist_means():
-     result  = _lib._dpm_hist_means()
-     means = getMatrix(result)
+     result = _lib._dpm_hist_means()
+     means  = getMatrix(result)
      _lib._freeMatrix(result)
      return means
 
 def dpm_means():
-     result  = _lib._dpm_means()
-     means = getMatrix(result)
+     result = _lib._dpm_means()
+     means  = getMatrix(result)
      _lib._freeMatrix(result)
      return means
 

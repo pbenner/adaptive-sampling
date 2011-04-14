@@ -57,6 +57,7 @@ class GaussianDPM():
         mu  = np.array(dpm_means())
         for m in mu:
             self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
+        self.Z/=2.0
     def hist_means():
         return dpm_hist_means()
     def means():
@@ -102,6 +103,17 @@ def main():
             return False
     gobject.idle_add(updatefig)
 
+    show()
+
+    fig = figure()
+    ax1 = fig.add_subplot(1,1,1, title="Statistics")
+    ax2 = ax1.twinx()
+    p1  = ax1.plot(dpm_hist_switches())
+    p2  = ax2.plot(dpm_hist_likelihood(), color='green')
+    ax1.set_ylabel("Mean class switches")
+    ax2.set_ylabel("Mean likelihood")
+    ax1.set_xlabel("iteration")
+    ax1.legend([p1, p2], ["Mean class switches", "Mean likelihood"])
     show()
 
 if __name__ == "__main__":
