@@ -27,8 +27,8 @@ from statistics import *
 
 class MGaussianData(Data):
     def __init__(self):
-        K    = 10
-        N    = 20
+        K    = 4
+        N    = 10
         mu   = 20*rd.rand(K, 2)
         cov  = [[0.5,0.2],[0.2,0.5]]
         labeled_x = []
@@ -140,8 +140,9 @@ class MGaussianGibbsSampler(GibbsSampler):
 def main():
     dpm   = MGaussianDPM()
     gibbs = MGaussianGibbsSampler(dpm)
-    gibbs.run(200)
+    gibbs.run(10)
     gibbs.plotResult()
+
 
 if __name__ == "__main__":
     sys.exit(main())

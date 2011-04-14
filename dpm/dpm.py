@@ -33,7 +33,7 @@ class Data():
         return self.x[index]
 
 class ClassAssignments():
-    _INIT_NUM_CLASSES = 20
+    _INIT_NUM_CLASSES = 2
     def __init__(self, data):
         self.data = data
         self.classes           = [ []    for i in range(0, data.N) ]
@@ -100,6 +100,7 @@ class DPM():
             weights.append(weight)
         weights.append(float(self.alpha)*pred(x_i))
         weights_norm = sum(weights)
+        print weights
         weights      = map(lambda w: w/weights_norm, weights)
         classes      = self.cl.used_classes+[self.cl.free_classes[0]]
         new_class    = randomElement(classes, weights)

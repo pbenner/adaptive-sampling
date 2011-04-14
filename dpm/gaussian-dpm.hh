@@ -38,7 +38,7 @@ public:
         ~GaussianDPM();
 
         Distribution& posteriorPredictive(const Cluster::cluster& cluster);
-        Distribution& predictive() const;
+        Distribution& predictive();
 
         void inverse(gsl_matrix* src, gsl_matrix* dst);
         double likelihood();

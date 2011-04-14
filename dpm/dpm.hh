@@ -42,14 +42,13 @@ public:
         void gibbsSample(unsigned int steps);
 
         virtual Distribution& posteriorPredictive(const Cluster::cluster& cluster) {
-                Distribution* dist = new Distribution;
-                return *dist;
+                return *posteriorPredictiveDist;
         }
         virtual Distribution& predictive() {
-                Distribution* dist = new Distribution;
-                return *dist;
+                cout << "OLD" << endl;
+                return *predictiveDist;
         }
-        virtual double likelihood(){
+        virtual double likelihood() {
                 return 0;
         }
 

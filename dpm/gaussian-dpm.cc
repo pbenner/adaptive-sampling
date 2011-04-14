@@ -52,7 +52,7 @@ GaussianDPM::GaussianDPM(Data& data) : DPM(data) {
         gsl_matrix_set(cov_0, 1, 0, 5.0);
 
         gsl_vector_set(mu_0, 0, 10);
-        gsl_vector_set(mu_0, 1, 12);
+        gsl_vector_set(mu_0, 1, 10);
 
         // predictive distribution
         gsl_matrix_memcpy(predictive_cov, cov);
@@ -68,8 +68,6 @@ GaussianDPM::GaussianDPM(Data& data) : DPM(data) {
         // initialize distributions
         predictiveDist          = new BivariateNormal(predictive_cov, mu_0);
         posteriorPredictiveDist = new BivariateNormal();
-
-        posteriorPredictive(cl[0]);
 }
 
 GaussianDPM::~GaussianDPM() {
@@ -100,6 +98,9 @@ void GaussianDPM::inverse(gsl_matrix* src, gsl_matrix* dst) {
 
 void GaussianDPM::_computeMean(const Cluster::cluster& cluster) {
         double num = cluster.elements.size();
+        // set _mean to zero
+        gsl_vector_set(_mean, 0, 0);
+        gsl_vector_set(_mean, 1, 0);
 
         // compute cluster mean
         for (Cluster::elements_t::const_iterator it  = cluster.elements.begin();
@@ -116,13 +117,13 @@ Distribution& GaussianDPM::posteriorPredictive(const Cluster::cluster& cluster) 
 
         _computeMean(cluster);
 
-        // posterior mean
+        // posterior covariance
         gsl_matrix_memcpy(cov_n, cov_inv);
         gsl_matrix_scale(cov_n, num);
         gsl_matrix_add(cov_n, cov_inv_0);
         inverse(cov_n, cov_n);
 
-        // posterior covariance
+        // posterior mean
         gsl_vector* tmp1 = gsl_vector_alloc(2);
         gsl_vector* tmp2 = gsl_vector_alloc(2);
 
@@ -141,7 +142,7 @@ Distribution& GaussianDPM::posteriorPredictive(const Cluster::cluster& cluster) 
         return *posteriorPredictiveDist;
 }
 
-Distribution& GaussianDPM::predictive() const {
+Distribution& GaussianDPM::predictive() {
         return *predictiveDist;
 }
 
