@@ -31,8 +31,6 @@ Cluster::Cluster(Data& data)
         : clusters(data.size()),
           assignments(data.size())
 {
-        srand(time(0));
-
         for (Cluster::size_type i = 0; i < data.size(); i++) {
                 clusters[i].tag = i;
                 free_clusters.push_back(&clusters[i]);

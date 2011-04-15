@@ -31,11 +31,11 @@ using namespace std;
 class DPM {
 public:
         // constructors and destructors
-        DPM(Data& data);
+        DPM(Data* data);
         virtual ~DPM();
 
         // operators
-        friend ostream& operator<< (std::ostream& o, DPM const& dpm);
+        friend ostream& operator<<(std::ostream& o, DPM const& dpm);
               Cluster::cluster& operator[](int c)       { return cl[c]; }
         const Cluster::cluster& operator[](int c) const { return cl[c]; }
 
@@ -48,7 +48,6 @@ public:
                 return *posteriorPredictiveDist;
         }
         virtual Distribution& predictive() {
-                cout << "OLD" << endl;
                 return *predictiveDist;
         }
         virtual double likelihood() {
@@ -66,9 +65,9 @@ public:
         }
 
 protected:
-        Data da;
+        Data* da;
         Cluster cl;
-        float alpha;
+        double alpha;
 
         // distributions
         Distribution* predictiveDist;

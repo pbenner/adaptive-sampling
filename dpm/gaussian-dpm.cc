@@ -28,11 +28,11 @@
 using namespace std;
 
 GaussianDPM::GaussianDPM(
-        GaussianData& data,
+        GaussianData* data,
         gsl_matrix* _cov,
         gsl_matrix* _cov_0,
         gsl_vector* _mu_0)
-        : DPM(data), da(data)
+        : DPM(data)
 {
         cov            = gsl_matrix_alloc(2,2);
         cov_0          = gsl_matrix_alloc(2,2);
@@ -85,6 +85,7 @@ GaussianDPM::~GaussianDPM() {
 
         delete(predictiveDist);
         delete(posteriorPredictiveDist);
+        delete(da);
 }
 
 void GaussianDPM::inverse(gsl_matrix* src, gsl_matrix* dst) {
