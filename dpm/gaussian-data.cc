@@ -32,16 +32,27 @@ using namespace std;
 #include "gaussian-data.hh"
 #include "statistics.hh"
 
-GaussianData::GaussianData(gsl_matrix* cov, int _n, int _k) {
+GaussianData::GaussianData(
+        gsl_matrix* cov,
+        gsl_matrix* cov_0,
+        gsl_vector* mu_0,
+        int _n, int _k)
+        : Data()
+{
         gsl_vector* mu = gsl_vector_alloc(2);
         double sample_x, sample_y;
         int tag = 0;
 
+        BivariateNormal bg_0(cov_0, mu_0);
+        Data::x_t _mu;
+        _mu.push_back(0);
+        _mu.push_back(0);
         // for every cluster
         for (int i = 0; i < _k; i++) {
                 // generate a new mean
-                gsl_vector_set(mu, 0, 20.0*(double)rand()/RAND_MAX);
-                gsl_vector_set(mu, 1, 20.0*(double)rand()/RAND_MAX);
+                bg_0.sample(&_mu[0], &_mu[1]);
+                gsl_vector_set(mu, 0, _mu[0]);
+                gsl_vector_set(mu, 1, _mu[1]);
                 BivariateNormal bg(cov, mu);
                 // generate n samples
                 for (int j = 0; j < _n; j++) {
@@ -52,6 +63,8 @@ GaussianData::GaussianData(gsl_matrix* cov, int _n, int _k) {
                         Data::element e = { v, tag++, i };
                         elements.push_back(e);
                 }
+                // save mean
+                means.push_back(_mu);
         }
 }
 

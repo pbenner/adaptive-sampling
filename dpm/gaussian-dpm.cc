@@ -27,7 +27,13 @@
 
 using namespace std;
 
-GaussianDPM::GaussianDPM(Data& data) : DPM(data) {
+GaussianDPM::GaussianDPM(
+        GaussianData& data,
+        gsl_matrix* _cov,
+        gsl_matrix* _cov_0,
+        gsl_vector* _mu_0)
+        : DPM(data), da(data)
+{
         cov            = gsl_matrix_alloc(2,2);
         cov_0          = gsl_matrix_alloc(2,2);
         cov_inv        = gsl_matrix_alloc(2,2);
@@ -40,19 +46,11 @@ GaussianDPM::GaussianDPM(Data& data) : DPM(data) {
         _mean          = gsl_vector_alloc(2);
 
         // likelihood
-        gsl_matrix_set(cov, 0, 0, 0.5);
-        gsl_matrix_set(cov, 1, 1, 0.5);
-        gsl_matrix_set(cov, 0, 1, 0.2);
-        gsl_matrix_set(cov, 1, 0, 0.2);
+        gsl_matrix_memcpy(cov, _cov);
 
         // prior
-        gsl_matrix_set(cov_0, 0, 0, 10.0);
-        gsl_matrix_set(cov_0, 1, 1, 10.0);
-        gsl_matrix_set(cov_0, 0, 1, 5.0);
-        gsl_matrix_set(cov_0, 1, 0, 5.0);
-
-        gsl_vector_set(mu_0, 0, 10);
-        gsl_vector_set(mu_0, 1, 10);
+        gsl_matrix_memcpy(cov_0, _cov_0);
+        gsl_vector_memcpy(mu_0,  _mu_0);
 
         // predictive distribution
         gsl_matrix_memcpy(predictive_cov, cov);

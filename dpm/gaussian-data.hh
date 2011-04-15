@@ -30,8 +30,16 @@ using namespace std;
 
 class GaussianData : public Data {
 public:
-        GaussianData(gsl_matrix* cov, int n, int k);
+        GaussianData(gsl_matrix* cov, gsl_matrix* cov_0, gsl_vector* mu_0,
+                     int n, int k);
         ~GaussianData();
+
+        vector<Data::x_t>* get_means() {
+                return &means;
+        }
+
+private:
+        vector<Data::x_t> means;
 };
 
 #endif /* GAUSSIAN_DATA_HH */

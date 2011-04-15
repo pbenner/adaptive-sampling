@@ -72,7 +72,7 @@ _lib._free.restype         = None
 _lib._free.argtypes        = [POINTER(None)]
 
 _lib._dpm_init.restype     = None
-_lib._dpm_init.argtypes    = [c_uint, c_uint]
+_lib._dpm_init.argtypes    = [POINTER(MATRIX), POINTER(MATRIX), POINTER(VECTOR), c_uint, c_uint]
 
 _lib._dpm_num_clusters.restype  = c_uint
 _lib._dpm_num_clusters.argtypes = []
@@ -94,6 +94,9 @@ _lib._dpm_hist_means.argtypes = []
 
 _lib._dpm_means.restype  = POINTER(MATRIX)
 _lib._dpm_means.argtypes = []
+
+_lib._dpm_original_means.restype  = POINTER(MATRIX)
+_lib._dpm_original_means.argtypes = []
 
 _lib._dpm_print.restype    = None
 _lib._dpm_print.argtypes   = []
@@ -133,8 +136,17 @@ def getMatrix(c_m):
 #
 # ------------------------------------------------------------------------------
 
-def dpm_init(n, k):
-     _lib._dpm_init(n, k)
+def dpm_init(cov, cov_0, mu_0, n, k):
+     c_cov   = _lib._allocMatrix(len(cov), len(cov[0]))
+     c_cov_0 = _lib._allocMatrix(len(cov_0), len(cov_0[0]))
+     c_mu_0  = _lib._allocVector(len(mu_0))
+     copyMatrixToC(cov, c_cov)
+     copyMatrixToC(cov_0, c_cov_0)
+     copyVectorToC(mu_0, c_mu_0)
+     _lib._dpm_init(c_cov, c_cov_0, c_mu_0, n, k)
+     _lib._freeMatrix(c_cov)
+     _lib._freeMatrix(c_cov_0)
+     _lib._freeVector(c_mu_0)
 
 def dpm_print():
      _lib._dpm_print()
@@ -174,6 +186,12 @@ def dpm_hist_means():
 
 def dpm_means():
      result = _lib._dpm_means()
+     means  = getMatrix(result)
+     _lib._freeMatrix(result)
+     return means
+
+def dpm_original_means():
+     result = _lib._dpm_original_means()
      means  = getMatrix(result)
      _lib._freeMatrix(result)
      return means

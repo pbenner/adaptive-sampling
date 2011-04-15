@@ -29,12 +29,14 @@
 #include "dpm.hh"
 #include "cluster.hh"
 #include "statistics.hh"
+#include "gaussian-data.hh"
 
 using namespace std;
 
 class GaussianDPM : public DPM {
 public:
-        GaussianDPM(Data& data);
+        GaussianDPM(GaussianData& data,
+                    gsl_matrix* _cov, gsl_matrix* _cov_0, gsl_vector* _mu_0);
         ~GaussianDPM();
 
         Distribution& posteriorPredictive(const Cluster::cluster& cluster);
@@ -45,11 +47,17 @@ public:
         void compute_statistics();
         vector<Data::x_t>* cluster_means();
 
+        vector<Data::x_t>* get_original_means() {
+                return da.get_means();
+        }
+
         vector<Data::x_t>& get_hist_means() {
                 return hist_means;
         }
 
 private:
+        GaussianData da;
+
         // likelihood parameters
         gsl_matrix* cov;
         gsl_matrix* cov_inv;
