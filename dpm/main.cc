@@ -28,13 +28,10 @@ int main(void) {
         GaussianData data(cov, 10, 4);
         GaussianDPM gdpm(data);
 
-        cout << gdpm << endl << endl;
-
-        cout << "------------------------------------------------"
-             << endl << endl;
-
-        gdpm.gibbsSample(10);
-        cout << gdpm;
+        for (int i = 0; i < 100000; i++) {
+                gdpm.gibbsSample(10);
+                cout << i << endl;
+        }
 
         return 0;
 }
