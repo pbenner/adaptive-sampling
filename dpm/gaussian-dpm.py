@@ -31,9 +31,20 @@ from interface  import *
 def biNormalDensity(mu, cov):
     return (lambda X, Y: mlab.bivariate_normal(X, Y, np.sqrt(cov[0,0]), np.sqrt(cov[1,1]), mu[0], mu[1], cov[0,1]))
 
+def plotGrid(ax):
+    dx  = (ax.get_xlim()[1] - ax.get_xlim()[0])/200.0
+    dy  = (ax.get_ylim()[1] - ax.get_ylim()[0])/200.0
+    x = np.arange(ax.get_xlim()[0], ax.get_xlim()[1], dx)
+    y = np.arange(ax.get_ylim()[0], ax.get_ylim()[1], dy)
+    X, Y = np.meshgrid(x, y)
+    return x, y, X, Y
+
 class GaussianDPM():
     def __init__(self, cov, cov_0, mu_0, n, k):
         dpm_init(cov, cov_0, mu_0, n, k)
+        self.cov   = cov
+        self.cov_0 = cov_0
+        self.mu_0  = mu_0
         self.cluster_colors = [ tuple(rd.rand(3)) for i in range(0, n*k) ]
         self.steps = 0
     def print_clusters(self):
@@ -43,23 +54,25 @@ class GaussianDPM():
     def sample(self, n):
         dpm_sample(n)
         self.steps += 1
-    def hist_means():
+    def hist_means(self):
         return dpm_hist_means()
     def means():
         return dpm_means()
     def plotData(self, ax):
-        num_clusters = dpm_num_clusters()
+        num_clusters = self.num_clusters()
         for c in range(0, num_clusters):
             x, y = zip(*dpm_cluster(c))
             original_tags = dpm_original_tags(c)
             for (x_, y_, c_) in zip(x, y, original_tags):
                 ax.scatter(x_, y_, c=self.cluster_colors[c_])
         original_means = dpm_original_means()
-        Z = biNormalDensity(original_means[0], self.cov)(self.X, self.Y)
+        mu  = np.array(dpm_means())
+        x, y, X, Y = plotGrid(ax)
+        Z = biNormalDensity(original_means[0], self.cov)(X, Y)
         for m in original_means[1:]:
-            Z = Z + biNormalDensity(m, self.cov)(self.X, self.Y)
+            Z = Z + biNormalDensity(m, self.cov)(X, Y)
         im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
-        im.set_data(self.x, self.y, Z)
+        im.set_data(x, y, Z)
         ax.images.append(im)
     def plotResult(self, ax):
         num_clusters = dpm_num_clusters()
@@ -67,10 +80,6 @@ class GaussianDPM():
             x, y = zip(*dpm_cluster(c))
             ax.scatter(x, y, c=self.cluster_colors[c])
             ax.set_title("Clustering Result K="+str(num_clusters)+", N="+str(self.steps))
-    def plotJoint(self, ax):
-        im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
-        im.set_data(self.x, self.y, self.Z)
-        ax.images.append(im)
     def plotStatistics(self, ax1):
         ax2 = ax1.twinx()
         p1  = ax1.plot(dpm_hist_switches())
@@ -84,16 +93,11 @@ class InteractiveGDPM(GaussianDPM):
     def __init__(self, cov, cov_0, mu_0, n, k, ax):
         GaussianDPM.__init__(self, cov, cov_0, mu_0, n, k)
         self.plotResult(ax)
-        dx  = (ax.get_xlim()[1] - ax.get_xlim()[0])/200.0
-        dy  = (ax.get_ylim()[1] - ax.get_ylim()[0])/200.0
-        self.x = np.arange(ax.get_xlim()[0], ax.get_xlim()[1], dx)
-        self.y = np.arange(ax.get_ylim()[0], ax.get_ylim()[1], dy)
-        self.X, self.Y = np.meshgrid(self.x, self.y)
-        self.cov = np.array([[0.5,0.2],[0.2,0.5]])
         mu  = np.array(dpm_means())
-        self.Z = biNormalDensity(mu[0], self.cov)(self.X, self.Y)
+        x, y, X, Y = plotGrid(ax)
+        self.Z = biNormalDensity(mu[0], self.cov)(X, Y)
         for m in mu[1:]:
-            self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
+            self.Z = (self.Z + biNormalDensity(m, self.cov)(X,Y))
         manager = get_current_fig_manager()
         def updatefig(*args):
             try:
@@ -106,12 +110,17 @@ class InteractiveGDPM(GaussianDPM):
             except StopIteration:
                 return False
         gobject.idle_add(updatefig)
-
+    def plotJoint(self, ax):
+        x, y, X, Y = plotGrid(ax)
+        im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
+        im.set_data(x, y, self.Z)
+        ax.images.append(im)
     def sampleInteractively(self, n, ax):
         self.sample(n)
+        x, y, X, Y = plotGrid(ax)
         mu  = np.array(dpm_means())
         for m in mu:
-            self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
+            self.Z = (self.Z + biNormalDensity(m, self.cov)(X,Y))
         self.Z*=float(self.steps-1)/float(self.steps)
 
 def main():

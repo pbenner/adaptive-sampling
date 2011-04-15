@@ -50,12 +50,12 @@ void _dpm_init(
         unsigned int n,
         unsigned int k)
 {
-         __dpm_init__();
-         gsl_matrix *cov   = toGslMatrix(_cov);
-         gsl_matrix *cov_0 = toGslMatrix(_cov_0);
-         gsl_vector *mu_0  = toGslVector(_mu_0);
+        __dpm_init__();
+        gsl_matrix *cov   = toGslMatrix(_cov);
+        gsl_matrix *cov_0 = toGslMatrix(_cov_0);
+        gsl_vector *mu_0  = toGslVector(_mu_0);
 
-         GaussianData data(cov, cov_0, mu_0, n, k);
+        GaussianData* data = new GaussianData(cov, cov_0, mu_0, n, k);
         _gdpm = new GaussianDPM(data, cov, cov_0, mu_0);
 
         gsl_matrix_free(cov);
