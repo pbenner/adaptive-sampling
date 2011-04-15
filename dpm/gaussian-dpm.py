@@ -32,8 +32,8 @@ def biNormalDensity(mu, cov):
     return (lambda X, Y: mlab.bivariate_normal(X, Y, np.sqrt(cov[0,0]), np.sqrt(cov[1,1]), mu[0], mu[1], cov[0,1]))
 
 class GaussianDPM():
-    def __init__(self, n, k):
-        dpm_init(n, k)
+    def __init__(self, cov, cov_0, mu_0, n, k):
+        dpm_init(cov, cov_0, mu_0, n, k)
         self.cluster_colors = [ tuple(rd.rand(3)) for i in range(0, n*k) ]
         self.steps = 0
     def print_clusters(self):
@@ -54,6 +54,13 @@ class GaussianDPM():
             original_tags = dpm_original_tags(c)
             for (x_, y_, c_) in zip(x, y, original_tags):
                 ax.scatter(x_, y_, c=self.cluster_colors[c_])
+        original_means = dpm_original_means()
+        Z = biNormalDensity(original_means[0], self.cov)(self.X, self.Y)
+        for m in original_means[1:]:
+            Z = Z + biNormalDensity(m, self.cov)(self.X, self.Y)
+        im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
+        im.set_data(self.x, self.y, Z)
+        ax.images.append(im)
     def plotResult(self, ax):
         num_clusters = dpm_num_clusters()
         for c in range(0, num_clusters):
@@ -74,8 +81,8 @@ class GaussianDPM():
         ax1.legend([p1, p2], ["Mean class switches", "Mean likelihood"])
 
 class InteractiveGDPM(GaussianDPM):
-    def __init__(self, n, k, ax):
-        GaussianDPM.__init__(self, n, k)
+    def __init__(self, cov, cov_0, mu_0, n, k, ax):
+        GaussianDPM.__init__(self, cov, cov_0, mu_0, n, k)
         self.plotResult(ax)
         dx  = (ax.get_xlim()[1] - ax.get_xlim()[0])/200.0
         dy  = (ax.get_ylim()[1] - ax.get_ylim()[0])/200.0
@@ -85,7 +92,7 @@ class InteractiveGDPM(GaussianDPM):
         self.cov = np.array([[0.5,0.2],[0.2,0.5]])
         mu  = np.array(dpm_means())
         self.Z = biNormalDensity(mu[0], self.cov)(self.X, self.Y)
-        for m in mu:
+        for m in mu[1:]:
             self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
         manager = get_current_fig_manager()
         def updatefig(*args):
@@ -105,20 +112,26 @@ class InteractiveGDPM(GaussianDPM):
         mu  = np.array(dpm_means())
         for m in mu:
             self.Z = (self.Z + biNormalDensity(m, self.cov)(self.X,self.Y))
-        self.Z/=2.0
+        self.Z*=float(self.steps-1)/float(self.steps)
 
 def main():
-    fig = figure()
-    ax1 = fig.add_subplot(2,1,1, title="Data")
-    ax2 = fig.add_subplot(2,1,2)
-    dpm = InteractiveGDPM(40, 10, ax2)
+    # parameters for the likelihood
+    cov   = np.array([[0.5,0.2],[0.2,0.5]])
+    # parameters for the prior
+    mu_0  = np.array( [10.0,10.0])
+    cov_0 = np.array([[10.0,5.0],[5.0,10.0]])
+
+    fig1 = figure()
+    ax1  = fig1.add_subplot(2,1,1, title="Data")
+    ax2  = fig1.add_subplot(2,1,2)
+    dpm  = InteractiveGDPM(cov, cov_0, mu_0, 40, 10, ax2)
     dpm.plotData(ax1)
     dpm.plotResult(ax2)
     show()
 
-    fig = figure()
-    ax  = fig.add_subplot(1,1,1, title="Statistics")
-    dpm.plotStatistics(ax)
+    fig2 = figure()
+    ax3  = fig2.add_subplot(1,1,1, title="Statistics")
+    dpm.plotStatistics(ax3)
     show()
 
 if __name__ == "__main__":

@@ -100,7 +100,6 @@ class DPM():
             weights.append(weight)
         weights.append(float(self.alpha)*pred(x_i))
         weights_norm = sum(weights)
-        print weights
         weights      = map(lambda w: w/weights_norm, weights)
         classes      = self.cl.used_classes+[self.cl.free_classes[0]]
         new_class    = randomElement(classes, weights)

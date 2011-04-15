@@ -43,17 +43,24 @@ Bayes::Matrix * _allocMatrix(int rows, int columns) { return Bayes::allocMatrix(
 void            _freeMatrix(Bayes::Matrix *m)       { Bayes::freeMatrix(m); }
 void            _free(void *ptr)                    { free(ptr); }
 
-void _dpm_init(unsigned int n, unsigned int k) {
-        __dpm_init__();
+void _dpm_init(
+        Bayes::Matrix* _cov,
+        Bayes::Matrix* _cov_0,
+        Bayes::Vector* _mu_0,
+        unsigned int n,
+        unsigned int k)
+{
+         __dpm_init__();
+         gsl_matrix *cov   = toGslMatrix(_cov);
+         gsl_matrix *cov_0 = toGslMatrix(_cov_0);
+         gsl_vector *mu_0  = toGslVector(_mu_0);
 
-        gsl_matrix* cov = gsl_matrix_alloc(2,2);
-        gsl_matrix_set(cov, 0, 0, 0.5);
-        gsl_matrix_set(cov, 1, 1, 0.5);
-        gsl_matrix_set(cov, 0, 1, 0.2);
-        gsl_matrix_set(cov, 1, 0, 0.2);
+         GaussianData data(cov, cov_0, mu_0, n, k);
+        _gdpm = new GaussianDPM(data, cov, cov_0, mu_0);
 
-        GaussianData data(cov, n, k);
-        _gdpm = new GaussianDPM(data);
+        gsl_matrix_free(cov);
+        gsl_matrix_free(cov_0);
+        gsl_vector_free(mu_0);
 }
 
 unsigned int _dpm_num_clusters() {
@@ -139,6 +146,19 @@ Bayes::Matrix* _dpm_means() {
                 result->mat[i][1] = (*means)[i][1];
         }
         delete means;
+
+        return result;
+}
+
+Bayes::Matrix* _dpm_original_means() {
+        vector<Data::x_t>* means = _gdpm->get_original_means();
+        unsigned int len = means->size();
+        Bayes::Matrix* result = Bayes::allocMatrix(len, 2);
+
+        for (unsigned int i = 0; i < len; i++) {
+                result->mat[i][0] = (*means)[i][0];
+                result->mat[i][1] = (*means)[i][1];
+        }
 
         return result;
 }
