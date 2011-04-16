@@ -45,6 +45,7 @@ class GaussianDPM():
         self.cov   = cov
         self.cov_0 = cov_0
         self.mu_0  = mu_0
+        self.pi    = pi
         self.cluster_colors = [ tuple(rd.rand(3)) for i in range(0, n*len(pi)) ]
         self.steps = 0
     def print_clusters(self):
@@ -68,9 +69,9 @@ class GaussianDPM():
         original_means = dpm_original_means()
         mu  = np.array(dpm_means())
         x, y, X, Y = plotGrid(ax)
-        Z = biNormalDensity(original_means[0], self.cov)(X, Y)
-        for m in original_means[1:]:
-            Z = Z + biNormalDensity(m, self.cov)(X, Y)
+        Z = self.pi[0]*biNormalDensity(original_means[0], self.cov)(X, Y)
+        for pi, m in zip(self.pi[1:], original_means[1:]):
+            Z = Z + pi*biNormalDensity(m, self.cov)(X, Y)
         im = NonUniformImage(ax, interpolation='bilinear', cmap=cm.gray)
         im.set_data(x, y, Z)
         ax.images.append(im)
@@ -88,16 +89,23 @@ class GaussianDPM():
         ax2.set_ylabel("Likelihood")
         ax1.set_xlabel("iteration")
         ax1.legend([p1, p2], ["Mean class switches", "Mean likelihood"])
+    def weights(self):
+        num_clusters = dpm_num_clusters()
+        w = np.zeros(num_clusters)
+        for c in range(0, num_clusters):
+            w[c] = float(len(dpm_cluster(c)))
+        return w/sum(w)
 
 class InteractiveGDPM(GaussianDPM):
-    def __init__(self, cov, cov_0, mu_0, n, k, ax):
-        GaussianDPM.__init__(self, cov, cov_0, mu_0, n, k)
+    def __init__(self, cov, cov_0, mu_0, n, pi, ax):
+        GaussianDPM.__init__(self, cov, cov_0, mu_0, n, pi)
         self.plotResult(ax)
         mu  = np.array(dpm_means())
         x, y, X, Y = plotGrid(ax)
-        self.Z = biNormalDensity(mu[0], self.cov)(X, Y)
-        for m in mu[1:]:
-            self.Z = (self.Z + biNormalDensity(m, self.cov)(X,Y))
+        weights = self.weights()
+        self.Z = weights[0]*biNormalDensity(mu[0], self.cov)(X, Y)
+        for w, m in zip(weights[1:], mu[1:]):
+            self.Z = (self.Z + w*biNormalDensity(m, self.cov)(X,Y))
         manager = get_current_fig_manager()
         def updatefig(*args):
             try:
@@ -119,8 +127,9 @@ class InteractiveGDPM(GaussianDPM):
         self.sample(n)
         x, y, X, Y = plotGrid(ax)
         mu  = np.array(dpm_means())
-        for m in mu:
-            self.Z = (self.Z + biNormalDensity(m, self.cov)(X,Y))
+        weights = self.weights()
+        for w, m in zip(weights, mu):
+            self.Z = (self.Z + w*biNormalDensity(m, self.cov)(X,Y))
         self.Z*=float(self.steps-1)/float(self.steps)
 
 def main():
@@ -130,7 +139,7 @@ def main():
     mu_0  = np.array( [10.0,10.0])
     cov_0 = np.array([[10.0,5.0],[5.0,10.0]])
     # parameters for drawing the data
-    n     = 500
+    n     = 300
     pi    = mt.dirichlet([10, 3, 1, 1, 1, 1, 1, 2, 4, 19, 3])
 
     fig1  = figure()
