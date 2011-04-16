@@ -166,7 +166,10 @@ Bayes::Matrix* _dpm_original_means() {
 void _dpm_append_data(int n) {
         // fix cluster assignments after
         // appending data
-        _gdpm->get_data().append_data(n);
+        GaussianData& da = _gdpm->get_data();
+        Cluster& cl      = _gdpm->get_clusters();
+        da.append_data(n);
+        cl.append_data(da);
 }
 
 void _dpm_print() {

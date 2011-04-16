@@ -38,7 +38,7 @@ Cluster::Cluster(Data& data)
 
         // assign the data to some random clusters
         for (Cluster::size_type i = 0; i < data.size(); i++) {
-                int c = rand() % _INIT_NUM_CLASSES;
+                Cluster::cluster_tag_t c = rand() % _INIT_NUM_CLASSES;
                 Data::element& e = data[i];
                 assign(e, c);
         }
@@ -59,7 +59,7 @@ const Cluster::cluster& Cluster::operator[](int c) const {
         Cluster::const_iterator it = begin();
         for (int i = 0; i < c; i++) { it++; }
 
-        return **it++;
+        return **it;
 }
 
 Cluster::cluster_tag_t Cluster::getClusterTag(const Data::element& element) const {

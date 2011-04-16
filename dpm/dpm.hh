@@ -57,6 +57,12 @@ public:
                 hist_likelihood.push_back(likelihood());
                 hist_num_clusters.push_back(cl.size());
         }
+        virtual Data& get_data() {
+                return *da;
+        }
+        Cluster& get_clusters() {
+                return cl;
+        }
         vector<double>& get_hist_switches() {
                 return hist_switches;
         }
