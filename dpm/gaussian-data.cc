@@ -27,6 +27,8 @@
 
 using namespace std;
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 #include <gsl/gsl_matrix.h>
 
 #include "gaussian-data.hh"
@@ -36,7 +38,7 @@ GaussianData::GaussianData(
         gsl_matrix* cov,
         gsl_matrix* cov_0,
         gsl_vector* mu_0,
-        int _n, int _k)
+        int n, double* pi, size_t k)
         : Data()
 {
         gsl_vector* mu = gsl_vector_alloc(2);
@@ -48,24 +50,28 @@ GaussianData::GaussianData(
         _mu.push_back(0);
         _mu.push_back(0);
         // for every cluster
-        for (int i = 0; i < _k; i++) {
+        for (size_t i = 0; i < k; i++) {
                 // generate a new mean
                 bg_0.sample(&_mu[0], &_mu[1]);
-                gsl_vector_set(mu, 0, _mu[0]);
-                gsl_vector_set(mu, 1, _mu[1]);
-                BivariateNormal bg(cov, mu);
-                // generate n samples
-                for (int j = 0; j < _n; j++) {
-                        bg.sample(&sample_x, &sample_y);
-                        vector<double> v;
-                        v.push_back(sample_x);
-                        v.push_back(sample_y);
-                        Data::element e = { v, tag++, i };
-                        elements.push_back(e);
-                }
                 // save mean
                 means.push_back(_mu);
         }
+
+        gsl_ran_discrete_t* gdd = gsl_ran_discrete_preproc(k, pi);
+        // generate n samples
+        for (int j = 0; j < n; j++) {
+                int i = gsl_ran_discrete(_r, gdd);
+                gsl_vector_set(mu, 0, means[i][0]);
+                gsl_vector_set(mu, 1, means[i][1]);
+                BivariateNormal bg(cov, mu);
+                bg.sample(&sample_x, &sample_y);
+                vector<double> v;
+                v.push_back(sample_x);
+                v.push_back(sample_y);
+                Data::element e = { v, tag++, i };
+                elements.push_back(e);
+        }
+        gsl_ran_discrete_free(gdd);
 }
 
 GaussianData::~GaussianData() {
