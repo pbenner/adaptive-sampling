@@ -38,8 +38,14 @@ public:
                 return &means;
         }
 
+        void append_data(int n);
+
 private:
         vector<Data::x_t> means;
+
+        size_t k;
+        double *pi;
+        gsl_matrix* cov;
 };
 
 #endif /* GAUSSIAN_DATA_HH */

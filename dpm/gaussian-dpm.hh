@@ -47,10 +47,12 @@ public:
         void compute_statistics();
         vector<Data::x_t>* cluster_means();
 
-        vector<Data::x_t>* get_original_means() {
-                return static_cast<GaussianData *>(da)->get_means();
+        GaussianData& get_data() {
+                return *static_cast<GaussianData *>(da);
         }
-
+        Cluster& get_clusters() {
+                return cl;
+        }
         vector<Data::x_t>& get_hist_means() {
                 return hist_means;
         }

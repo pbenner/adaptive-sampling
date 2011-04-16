@@ -101,6 +101,9 @@ _lib._dpm_original_means.argtypes = []
 _lib._dpm_print.restype    = None
 _lib._dpm_print.argtypes   = []
 
+_lib._dpm_append_data.restype   = None
+_lib._dpm_append_data.argtypes  = []
+
 _lib._dpm_sample.restype   = None
 _lib._dpm_sample.argtypes  = []
 
@@ -201,6 +204,9 @@ def dpm_original_means():
 
 def dpm_sample(n):
      _lib._dpm_sample(n)
+
+def dpm_append_data(n):
+     _lib._dpm_append_data(n)
 
 def dpm_free():
      _lib._dpm_free()

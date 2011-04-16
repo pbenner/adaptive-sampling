@@ -27,6 +27,8 @@
 
 using namespace std;
 
+#include <string.h>
+
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_matrix.h>
@@ -35,17 +37,18 @@ using namespace std;
 #include "statistics.hh"
 
 GaussianData::GaussianData(
-        gsl_matrix* cov,
+        gsl_matrix* _cov,
         gsl_matrix* cov_0,
         gsl_vector* mu_0,
-        int n, double* pi, size_t k)
-        : Data()
+        int n, double* _pi, size_t _k)
+        : Data(), k(_k),
+          pi((double *)malloc(k*sizeof(double))),
+          cov(gsl_matrix_alloc(_cov->size1, _cov->size2))
 {
-        gsl_vector* mu = gsl_vector_alloc(2);
-        double sample_x, sample_y;
-        int tag = 0;
-
         BivariateNormal bg_0(cov_0, mu_0);
+        gsl_matrix_memcpy(cov, _cov);
+        memcpy(pi, _pi, k*sizeof(double));
+
         Data::x_t _mu;
         _mu.push_back(0);
         _mu.push_back(0);
@@ -56,8 +59,16 @@ GaussianData::GaussianData(
                 // save mean
                 means.push_back(_mu);
         }
+        append_data(n);
+}
+
+void GaussianData::append_data(int n) {
 
         gsl_ran_discrete_t* gdd = gsl_ran_discrete_preproc(k, pi);
+        gsl_vector* mu = gsl_vector_alloc(2);
+        double sample_x, sample_y;
+        int tag = elements.size();
+
         // generate n samples
         for (int j = 0; j < n; j++) {
                 int i = gsl_ran_discrete(_r, gdd);
@@ -75,5 +86,6 @@ GaussianData::GaussianData(
 }
 
 GaussianData::~GaussianData() {
-
+        free(pi);
+        gsl_matrix_free(cov);
 }
