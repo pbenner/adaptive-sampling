@@ -22,6 +22,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <sys/time.h>
+
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
@@ -30,7 +32,11 @@
 using namespace std;
 
 void __dpm_init__() {
-        srand(clock());
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        time_t seed = tv.tv_sec*tv.tv_usec;
+
+        srand(seed);
         _r = gsl_rng_alloc (gsl_rng_default);
-        gsl_rng_set(_r, clock());
+        gsl_rng_set(_r, seed);
 }
