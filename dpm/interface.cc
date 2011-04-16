@@ -151,7 +151,7 @@ Bayes::Matrix* _dpm_means() {
 }
 
 Bayes::Matrix* _dpm_original_means() {
-        vector<Data::x_t>* means = _gdpm->get_original_means();
+        vector<Data::x_t>* means = _gdpm->get_data().get_means();
         unsigned int len = means->size();
         Bayes::Matrix* result = Bayes::allocMatrix(len, 2);
 
@@ -161,6 +161,12 @@ Bayes::Matrix* _dpm_original_means() {
         }
 
         return result;
+}
+
+void _dpm_append_data(int n) {
+        // fix cluster assignments after
+        // appending data
+        _gdpm->get_data().append_data(n);
 }
 
 void _dpm_print() {
