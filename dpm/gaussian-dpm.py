@@ -110,6 +110,7 @@ class InteractiveGDPM(GaussianDPM):
         def updatefig(*args):
             try:
                 ax.cla()
+                dpm_append_data(100)
                 self.sampleInteractively(1, ax)
                 self.plotResult(ax)
                 self.plotJoint(ax)

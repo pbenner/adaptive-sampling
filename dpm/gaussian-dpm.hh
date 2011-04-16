@@ -50,9 +50,6 @@ public:
         GaussianData& get_data() {
                 return *static_cast<GaussianData *>(da);
         }
-        Cluster& get_clusters() {
-                return cl;
-        }
         vector<Data::x_t>& get_hist_means() {
                 return hist_means;
         }

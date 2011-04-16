@@ -64,6 +64,7 @@ public:
         void release (Data::element& element);
         void assign  (Data::element& element, cluster_tag_t cluster_tag);
         void reassign(Data::element& element, cluster_tag_t cluster_tag);
+        void append_data(Data& data);
 
         cluster* next_free_cluster() {
                 if (free_clusters.size() >= 1) {
