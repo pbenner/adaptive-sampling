@@ -40,12 +40,12 @@ def plotGrid(ax):
     return x, y, X, Y
 
 class GaussianDPM():
-    def __init__(self, cov, cov_0, mu_0, n, k):
-        dpm_init(cov, cov_0, mu_0, n, k)
+    def __init__(self, cov, cov_0, mu_0, n, pi):
+        dpm_init(cov, cov_0, mu_0, n, pi)
         self.cov   = cov
         self.cov_0 = cov_0
         self.mu_0  = mu_0
-        self.cluster_colors = [ tuple(rd.rand(3)) for i in range(0, n*k) ]
+        self.cluster_colors = [ tuple(rd.rand(3)) for i in range(0, n*len(pi)) ]
         self.steps = 0
     def print_clusters(self):
         dpm_print()
@@ -129,11 +129,14 @@ def main():
     # parameters for the prior
     mu_0  = np.array( [10.0,10.0])
     cov_0 = np.array([[10.0,5.0],[5.0,10.0]])
+    # parameters for drawing the data
+    n     = 500
+    pi    = mt.dirichlet([10, 3, 1, 1, 1, 1, 1, 2, 4, 19, 3])
 
-    fig1 = figure()
-    ax1  = fig1.add_subplot(2,1,1, title="Data")
-    ax2  = fig1.add_subplot(2,1,2)
-    dpm  = InteractiveGDPM(cov, cov_0, mu_0, 40, 10, ax2)
+    fig1  = figure()
+    ax1   = fig1.add_subplot(2,1,1, title="Data")
+    ax2   = fig1.add_subplot(2,1,2)
+    dpm   = InteractiveGDPM(cov, cov_0, mu_0, n, pi, ax2)
     dpm.plotData(ax1)
     dpm.plotResult(ax2)
     show()

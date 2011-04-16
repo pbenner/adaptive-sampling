@@ -31,7 +31,7 @@ using namespace std;
 class GaussianData : public Data {
 public:
         GaussianData(gsl_matrix* cov, gsl_matrix* cov_0, gsl_vector* mu_0,
-                     int n, int k);
+                     int n, double* pi, size_t k);
         ~GaussianData();
 
         vector<Data::x_t>* get_means() {

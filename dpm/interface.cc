@@ -48,14 +48,14 @@ void _dpm_init(
         Bayes::Matrix* _cov_0,
         Bayes::Vector* _mu_0,
         unsigned int n,
-        unsigned int k)
+        Bayes::Vector* _pi)
 {
         __dpm_init__();
         gsl_matrix *cov   = toGslMatrix(_cov);
         gsl_matrix *cov_0 = toGslMatrix(_cov_0);
         gsl_vector *mu_0  = toGslVector(_mu_0);
 
-        GaussianData* data = new GaussianData(cov, cov_0, mu_0, n, k);
+        GaussianData* data = new GaussianData(cov, cov_0, mu_0, n, _pi->vec, _pi->size);
         _gdpm = new GaussianDPM(data, cov, cov_0, mu_0);
 
         gsl_matrix_free(cov);
