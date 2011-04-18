@@ -69,7 +69,6 @@ void GaussianData::append_data(int n) {
         double sample_x, sample_y;
         int tag = elements.size();
 
-        cout << "TAG: " << tag << endl;
         // generate n samples
         for (int j = 0; j < n; j++) {
                 int i = gsl_ran_discrete(_r, gdd);
