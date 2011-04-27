@@ -54,6 +54,7 @@ def usage():
     print "   -b                             - compute break probabilities"
     print "       --blocks=N                 - sample in blocks of N measurements"
     print "   -d                             - compute differential gain"
+    print "       --lapsing=p                - specify a lapsing probability"
     print "   -m  --marginal                 - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
@@ -184,6 +185,13 @@ def selectItem(gain, counts, result):
 
 def experiment(index, data):
     if data['gt']:
+        # lapsing
+        if options['lapsing'] >= random.uniform(0.0, 1.0):
+            if 0.5 >= random.uniform(0.0, 1.0):
+                return 0 # success
+            else:
+                return 1 # failure
+        # real psychometric function
         if data['gt'][index] >= random.uniform(0.0, 1.0):
             return 0 # success
         else:
@@ -289,6 +297,7 @@ options = {
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
     'which'             : 0,
+    'lapsing'           : 0.0,
     'strategy'          : 'differential-gain',
     'script'            : None,
     'load'              : None,
@@ -310,7 +319,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
-                      "plot-utility", "strategy=", "savefig="]
+                      "plot-utility", "strategy=", "savefig=", "lapsing="]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -346,6 +355,8 @@ def main():
             return 0
         if o == "-b":
             options["bprob"] = True
+        if o == "--lapsing":
+            options["lapsing"] = float(a)
         if o == "-d":
             options["differential_gain"] = True
         if o == "-e":
