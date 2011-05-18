@@ -172,6 +172,11 @@ def bin(counts, alpha, mprior):
 # ------------------------------------------------------------------------------
 
 def selectItem(gain, counts, result):
+    if options['filter']:
+        gainFilter = None
+        exec options['filter']
+        if not gainFilter is None:
+            gain = gainFilter(gain, counts, result)
     if options['strategy'] == 'uniform':
         return selectRandom(argmin(counts))
     elif options['strategy'] == 'uniform-random':
@@ -266,6 +271,7 @@ def parseConfig(config_file):
         data['mprior'] = config.readModelPrior(config_parser, len(data['gt']), 'Ground Truth', int)
         data['bins']   = len(data['gt'])
         options['script'] = config.readScript(config_parser, 'Ground Truth', os.path.dirname(config_file))
+        options['filter'] = config.readFilter(config_parser, 'Ground Truth', os.path.dirname(config_file))
         config.readStrategy(config_parser, 'Ground Truth', options)
         result = loadResult()
         result = sample(result, data)
@@ -274,6 +280,7 @@ def parseConfig(config_file):
         data['alpha']  = config.readAlpha(config_parser, 2, data['bins'], 'Experiment', int)
         data['mprior'] = config.readModelPrior(config_parser, data['bins'], 'Experiment', int)
         options['script'] = config.readScript(config_parser, 'Experiment', os.path.dirname(config_file))
+        options['filter'] = config.readFilter(config_parser, 'Experiment', os.path.dirname(config_file))
         config.readStrategy(config_parser, 'Experiment', options)
         result = loadResult()
         result = sample(result, data)
@@ -302,6 +309,7 @@ options = {
     'which'             : 0,
     'lapsing'           : 0.0,
     'strategy'          : 'differential-gain',
+    'filter'            : None,
     'script'            : None,
     'load'              : None,
     'save'              : None,

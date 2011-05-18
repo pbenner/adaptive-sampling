@@ -67,3 +67,13 @@ def readScript(config_parser, section, dir):
         return str
     else:
         return None
+
+def readFilter(config_parser, section, dir):
+    if config_parser.has_option(section, 'filter'):
+        file = config_parser.get(section, 'filter')
+        f = open(os.path.abspath(dir)+'/'+file, 'r')
+        str = f.read()
+        f.close()
+        return str
+    else:
+        return None
