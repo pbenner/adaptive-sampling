@@ -91,6 +91,28 @@ run_sampling() {
     adaptive-sampling -m -n 250 --save=simulation8-08.result simulation8.cfg
     adaptive-sampling -m -n 250 --save=simulation8-09.result simulation8.cfg
     adaptive-sampling -m -n 250 --save=simulation8-10.result simulation8.cfg
+
+    adaptive-sampling -m -n 250 --save=simulation9-01.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-02.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-03.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-04.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-05.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-06.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-07.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-08.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-09.result simulation9.cfg
+    adaptive-sampling -m -n 250 --save=simulation9-10.result simulation9.cfg
+
+    adaptive-sampling -m -n 250 --save=simulation10-01.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-02.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-03.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-04.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-05.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-06.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-07.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-08.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-09.result simulation10.cfg
+    adaptive-sampling -m -n 250 --save=simulation10-10.result simulation10.cfg
 }
 
 generate_plots() {
@@ -205,6 +227,34 @@ generate_plots() {
     adaptive-sampling -m --load=simulation8-10.result --savefig=simulation8-10.pdf simulation8.cfg
 
     pdftk simulation8-prior.pdf simulation8-??.pdf cat output simulation8.pdf
+
+    adaptive-sampling -m --savefig=simulation9-prior.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-01.result --savefig=simulation9-01.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-02.result --savefig=simulation9-02.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-03.result --savefig=simulation9-03.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-04.result --savefig=simulation9-04.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-05.result --savefig=simulation9-05.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-06.result --savefig=simulation9-06.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-07.result --savefig=simulation9-07.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-08.result --savefig=simulation9-08.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-09.result --savefig=simulation9-09.pdf simulation9.cfg
+    adaptive-sampling -m --load=simulation9-10.result --savefig=simulation9-10.pdf simulation9.cfg
+
+    pdftk simulation9-prior.pdf simulation9-??.pdf cat output simulation9.pdf
+
+    adaptive-sampling -m --savefig=simulation10-prior.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-01.result --savefig=simulation10-01.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-02.result --savefig=simulation10-02.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-03.result --savefig=simulation10-03.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-04.result --savefig=simulation10-04.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-05.result --savefig=simulation10-05.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-06.result --savefig=simulation10-06.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-07.result --savefig=simulation10-07.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-08.result --savefig=simulation10-08.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-09.result --savefig=simulation10-09.pdf simulation10.cfg
+    adaptive-sampling -m --load=simulation10-10.result --savefig=simulation10-10.pdf simulation10.cfg
+
+    pdftk simulation10-prior.pdf simulation10-??.pdf cat output simulation10.pdf
 }
 
 case "$1" in

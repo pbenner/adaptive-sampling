@@ -19,6 +19,7 @@
 import os.path
 import numpy as np
 import ConfigParser
+import re
 
 def readVector(config, section, option, converter):
     vector_str = config.get(section, option)
@@ -52,10 +53,26 @@ def readModelPrior(config_parser, n, section, converter):
     mprior = list(np.repeat(1, n))
     if config_parser.has_option(section, 'mprior'):
         mprior = list(np.repeat(0, n))
-        models = readVector(config_parser, section, 'mprior', converter)
-        num_models = len(models)
-        for model in models:
-            mprior[model-1] = 1.0/num_models
+        models = readVector(config_parser, section, 'mprior', str)
+        num_models  = len(models)
+        free_models = 0
+        p_sum  = 0.0
+        for elem in models:
+            m = re.search('([0-9]+)(?::([0-9.e-]+))?', elem)
+            i = int(m.group(1))
+            p = m.group(2)
+            if p:
+                p_sum += float(p)
+            else:
+                free_models += 1
+        for elem in models:
+            m = re.search('([0-9]+)(?::([0-9.e-]+))?', elem)
+            i = int(m.group(1))
+            p = m.group(2)
+            if p:
+                mprior[i-1] = float(p)
+            else:
+                mprior[i-1] = (1.0-p_sum)/free_models
     return mprior
 
 def readScript(config_parser, section, dir):
