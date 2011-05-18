@@ -31,6 +31,9 @@ try:
 except ImportError:
     vis = None
     print "Warning: Couldn't load matplotlib."
+except RuntimeError:
+    vis = None
+    print "Warning: No x11 available, couldn't load matplotlib."
 
 import bayesian_binning.config        as config
 import bayesian_binning.interface     as interface
