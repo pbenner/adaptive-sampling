@@ -99,8 +99,8 @@ def plotSpikes(ax, x, timings):
         for val in timings[i]:
             X.append(val)
             Y.append(i)
-    ax.set_xlim(x[0],x[-1])
     ax.plot(X, Y, 'k|')
+    ax.set_xlim(x[0],x[-1])
 
 def plotBinBoundaries(ax, x, result):
     ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
@@ -171,7 +171,7 @@ def plotBinningSpikes(x, timings, result, options):
     if options['script']:
         exec options['script']
         if not preplot is None:
-            title = preplot(result, options)
+            x, timings, title = preplot(x, timings, result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax11 = fig.add_subplot(3,1,1, title=title)
