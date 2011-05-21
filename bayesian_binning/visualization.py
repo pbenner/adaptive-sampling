@@ -105,6 +105,7 @@ def plotSpikes(ax, x, timings):
 def plotBinBoundaries(ax, x, result):
     ax.plot(x[1:-1], result['bprob'][1:-1], 'g')
     ax.set_ylim(0,1)
+    ax.set_xlim(x[0],x[-1])
 
 def plotBin(ax, x, result):
     """Plot the binning result."""

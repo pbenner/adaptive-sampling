@@ -139,9 +139,13 @@ def computeFailures(successes, trials):
         raise ValueError("Number of trials is smaller than some counts.")
     return failures
 
-def timingsToCounts(timings, binsize):
-    MIN       = min(map(min, timings))
-    MAX       = max(map(max, timings))
+def timingsToCounts(timings, binsize, srange):
+    if srange == None:
+        MIN   = min(map(min, timings))
+        MAX   = max(map(max, timings))
+    else:
+        MIN   = srange[0]
+        MAX   = srange[1]
     N         = int(math.ceil(float(MAX-MIN)/binsize))
     successes = list(np.repeat(0, N+1))
     x         = range(MIN, MAX+binsize, binsize)
@@ -179,7 +183,10 @@ def parseConfig(config_file):
     if config_parser.has_section('Trials'):
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
-        x, counts = timingsToCounts(timings, binsize)
+        srange    = None
+        if config_parser.has_option('Trials', 'range'):
+            srange = config.readVector(config_parser, 'Trials', 'range', int)
+        x, counts = timingsToCounts(timings, binsize, srange)
         N         = len(counts[0])
         prior     = list(np.repeat(1, N))
         alpha     = config.readAlpha(config_parser, len(counts), N, 'Trials', int)
