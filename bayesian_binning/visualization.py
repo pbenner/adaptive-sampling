@@ -125,8 +125,8 @@ def plotBin(ax, x, result):
 def plotMarginal(ax, x, result):
     N = len(result['moments'][0])
     y = np.linspace(0, 1, len(result['marginals'][0]))
-    z = zip(*result['marginals'])
-    im = NonUniformImage(ax, interpolation='nearest', cmap=cm.Greys)
+    z = np.log(1+np.array(zip(*result['marginals'])))
+    im = NonUniformImage(ax, norm=Normalize(0,5,clip=True), interpolation='nearest', cmap=cm.Greys)
     im.set_data(x, y, z)
     ax.images.append(im)
 
