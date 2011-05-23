@@ -107,7 +107,7 @@ def plotBinBoundaries(ax, x, result):
     ax.set_ylim(0,1)
     ax.set_xlim(x[0],x[-1])
 
-def plotBin(ax, x, result):
+def plotMoments(ax, x, result):
     """Plot the binning result."""
     N = len(result['moments'][0])
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
@@ -119,6 +119,20 @@ def plotBin(ax, x, result):
     [y1,y2] = ax.get_ylim()
     if y1 < 0: y1 = 0
     if y2 > 1: y2 = 1
+    ax.set_ylim(y1, y2)
+    return p
+
+def plotSpikeRate(ax, x, result, dt):
+    """Plot the binning result."""
+    N = len(result['moments'][0])
+    stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
+    skew   = statistics.standardizedMoments(result['moments'], 3)
+    ax.plot(x, [ (a + b)/dt for a, b in zip(result['moments'][0], stddev) ], 'k--')
+    ax.plot(x, [ (a - b)/dt for a, b in zip(result['moments'][0], stddev) ], 'k--')
+    p = ax.plot(x, map(lambda x: x/dt, result['moments'][0]), 'r')
+    ax.set_xlim(x[0],x[-1])
+    [y1,y2] = ax.get_ylim()
+    if y1 < 0: y1 = 0
     ax.set_ylim(y1, y2)
     return p
 
@@ -147,7 +161,7 @@ def plotBinning(result, options):
     ax21 = fig.add_subplot(2,1,2)
     ax12 = ax11.twinx()
     ax22 = ax21.twinx()
-    p11 = plotBin(ax11, x, result)
+    p11 = plotMoments(ax11, x, result)
     p21 = plotModelPosterior(ax21, result)
     p12 = None
     p22 = None
@@ -166,13 +180,14 @@ def plotBinning(result, options):
                  result, options)
 
 def plotBinningSpikes(x, timings, result, options):
+    dt    = 1.0
     title = ''
     preplot  = None
     postplot = None
     if options['script']:
         exec options['script']
         if not preplot is None:
-            x, timings, title = preplot(x, timings, result, options)
+            x, dt, timings, title = preplot(x, timings, result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
     ax11 = fig.add_subplot(3,1,1, title=title)
@@ -182,7 +197,7 @@ def plotBinningSpikes(x, timings, result, options):
     ax22 = ax21.twinx()
     ax32 = ax31.twinx()
     p11 = plotSpikes(ax11, x, timings)
-    p21 = plotBin   (ax21, x, result)
+    p21 = plotSpikeRate(ax21, x, result, dt)
     p31 = plotModelPosterior(ax31, result)
     p12 = None
     p22 = None
@@ -217,7 +232,7 @@ def plotSampling(result, options, data):
     ax12 = ax11.twinx()
     ax22 = ax21.twinx()
     ax32 = ax31.twinx()
-    p11 = plotBin(ax11, x, result)
+    p11 = plotMoments(ax11, x, result)
     p21 = plotCounts(ax21, x, result)
     p31 = plotModelPosterior(ax31, result)
     p12 = None
