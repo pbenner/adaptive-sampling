@@ -51,17 +51,23 @@ void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
         }
 }
 
+// result: array where the result is saved
+// g: contains the prior P(m_B) for m_B = 1,...,L
+// L: the number of inputs (maximal number of bins)
+// m: the maximal number of bins in a multibin
 void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m)
 {
         Matrix *ak = allocMatrix(L, L);
         prob_t pr[L];
         size_t i, j;
 
-        // initialise A^1 = (a^1_ij)_LxL
+        // initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL
         for (j = 0; j < L; j++) {
                 ak->mat[0][j] = (*f)(0, j);
                 pr[j] = ak->mat[0][j];
         }
+        // pr is now initialized to
+        // pr = [f(0,1), f(0,2), ..., f(0,L)]
         for (i = 1; i < L; i++) {
                 for (j = i; j < L; j++) {
                         ak->mat[i][j] = (*f)(i, j);
@@ -72,7 +78,12 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m
                 logproduct(pr, ak, L, i+1);
         }
         // save result
-        for (i = 0; i < L; i++) {
+        for (i = 0; i < L-m-1; i++) {
+                // models with i>m were not computed, store a zero
+                result[L-1-i] = -HUGE_VAL;
+        }
+        for (i = L-m-1; i < L; i++) {
+                // the actual results are saved here
                 result[L-1-i] = pr[i] + g[L-1-i];
         }
 
