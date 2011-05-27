@@ -22,6 +22,7 @@ import os
 import ConfigParser
 import numpy as np
 import math
+import socket
 import random
 
 from itertools         import izip
@@ -70,6 +71,8 @@ def usage():
     print
     print "       --plot-utility             - plot utility as a function of sample steps"
     print
+    print "       --port=PORT                - connect to port from a matlab server for data collection"
+    print
     print "       --load=FILE                - load result from file"
     print "       --save=FILE                - save result to file"
     print "       --savefig=FILE             - save figure to file"
@@ -100,6 +103,18 @@ def selectRandom(array):
     length = len(array)-1
     index  = random.randint(0, length)
     return array[index]
+
+def close_msocket(m_socket):
+    m_socket.send('9999\n')
+    m_socket.shutdown(1)
+    m_socket.close()
+
+def open_msocket():
+    msocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    msocket.connect(('localhost', options['port']))
+    if verbose:
+        print "Connected to localhost on port: " + str(options['port'])
+    return msocket
 
 # save result
 # ------------------------------------------------------------------------------
@@ -191,7 +206,7 @@ def selectItem(gain, counts, result):
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
 
-def experiment(index, data):
+def experiment(index, data, msocket):
     if data['gt']:
         # lapsing
         if options['lapsing'] >= random.uniform(0.0, 1.0):
@@ -205,16 +220,27 @@ def experiment(index, data):
         else:
             return 1 # failure
     else:
-        print index
-        ret = None
-        while not ret == 0 and not ret == 1:
-            ret = int(raw_input())
-        return ret
+        if options['port']:
+            msocket.send(str(index) + '\n')
+            ret = None
+            while not ret == 0 and not ret == 1:
+                ret = int(msocket.recv(1))
+            if verbose:
+                print str(index) + ' answer: ' + str(ret)
+        else:
+            print index
+            ret = None
+            while not ret == 0 and not ret == 1:
+                ret = int(raw_input())
+    return ret
 
 def sample(result, data):
     utility  = []
     marginal = options['marginal']
+    msocket  = None
     options['marginal'] = 0
+    if options['port']:
+        msocket = open_msocket()
     if options['strategy'] == 'differential-gain':
         options['differential_gain'] = True
     if options['strategy'] == 'effective-counts':
@@ -238,7 +264,7 @@ def sample(result, data):
         for j in range(0, options['blocks']):
             index   = selectItem(gain, map(sum, zip(*counts)), result)
             stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-            event   = experiment(index, data)
+            event   = experiment(index, data, msocket)
             samples.append(index)
             counts[event][index] += 1
             gain.pop(index)
@@ -249,6 +275,8 @@ def sample(result, data):
     result['counts']  = counts
     result['samples'] = samples
     result['utility'] = utility
+    if options['port']:
+        close_msocket(msocket)
     return result
 
 # parse config
@@ -309,6 +337,7 @@ options = {
     'which'             : 0,
     'lapsing'           : 0.0,
     'strategy'          : 'differential-gain',
+    'port'              : None,
     'filter'            : None,
     'script'            : None,
     'load'              : None,
@@ -330,7 +359,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
-                      "plot-utility", "strategy=", "savefig=", "lapsing="]
+                      "plot-utility", "strategy=", "savefig=", "lapsing=", "port="]
         opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -374,6 +403,8 @@ def main():
             options["multibin_entropy"] = True
         if o == "--load":
             options["load"] = a
+        if o == "--port":
+            options["port"] = int(a)
         if o == "--save":
             options["save"] = a
         if o == "--savefig":
