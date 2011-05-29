@@ -85,6 +85,36 @@ def readScript(config_parser, section, dir):
     else:
         return None
 
+def defaultAlpha(alpha_v):
+    K = len(alpha_v)
+    L = len(alpha_v[0])
+    alpha = np.zeros([K, L, L])
+    for ks in range(0, L):
+        for ke in range(ks, L):
+            c = np.zeros(K)
+            for i in range(ks, ke+1):
+                for j in range(0, K):
+                    c[j] += alpha_v[j][i] / float(ke - ks + 1)
+            for j in range(0, K):
+                alpha[j][ks][ke] = c[j]
+    return alpha
+
+
+def getParameters(config_parser, section, dir):
+    if config_parser.has_option(section, 'parameters'):
+        # read script
+        file = config_parser.get(section, 'parameters')
+        f = open(os.path.abspath(dir)+'/'+file, 'r')
+        script = f.read()
+        f.close()
+
+        parameters = None
+        exec script
+        if not parameters is None:
+            return parameters()
+    else:
+        return None
+
 def readFilter(config_parser, section, dir):
     if config_parser.has_option(section, 'filter'):
         file = config_parser.get(section, 'filter')

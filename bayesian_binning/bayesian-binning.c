@@ -43,14 +43,12 @@ typedef struct {
         // number of timesteps
         unsigned int T;
         unsigned int events;
-        gsl_matrix  *counts;
-        gsl_vector  *mprior;   // P(m_B)
         prob_t *prior_log;     // P(p,B|m_B)
-        // hyperparameters
-        gsl_matrix *alpha;
-        // internal data
-        gsl_matrix **counts_m;
-        gsl_matrix **alpha_m;
+        // counts and parameters
+        gsl_matrix **counts;
+        gsl_matrix **alpha;
+        gsl_vector  *beta;     // P(m_B)
+        gsl_matrix  *gamma;
         struct {
                 int pos;
                 int n;
@@ -68,11 +66,11 @@ unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
 {
         if (bp->add_event.which == event &&
             ks <= bp->add_event.pos && bp->add_event.pos <= ke) {
-                return gsl_matrix_get(bp->counts_m[event], ks, ke) +
+                return gsl_matrix_get(bp->counts[event], ks, ke) +
                         bp->add_event.n;
         }
         else if (ks <= ke) {
-                return gsl_matrix_get(bp->counts_m[event], ks, ke);
+                return gsl_matrix_get(bp->counts[event], ks, ke);
         }
         else {
                 return 0;
@@ -83,7 +81,7 @@ static
 prob_t countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
 {
         if (ks <= ke) {
-                return gsl_matrix_get(bp->alpha_m[event], ks, ke);
+                return gsl_matrix_get(bp->alpha[event], ks, ke);
         }
         else {
                 return 0;
@@ -104,36 +102,6 @@ prob_t mbeta_log(binProblem *bp, prob_t *p)
         }
 
         return sum2 - gsl_sf_lngamma(sum1);
-}
-
-static
-void computeCountStatistics(binProblem *bp)
-{
-        int ks, ke, i, j;
-        unsigned int c[bp->events];
-        prob_t       d[bp->events];
-
-        for (ks = 0; ks < bp->T; ks++) {
-                for (ke = ks; ke < bp->T; ke++) {
-                        // set all counts to zero
-                        for (j = 0; j < bp->events; j++) {
-                                c[j] = 0;
-                                d[j] = 0;
-                        }
-                        // count
-                        for (i = ks; i <= ke; i++) {
-                                for (j = 0; j < bp->events; j++) {
-                                        c[j] += gsl_matrix_get(bp->counts, j, i);
-                                        d[j] += gsl_matrix_get(bp->alpha,  j, i)/(ke - ks + 1);
-                                }
-                        }
-                        // save result
-                        for (j = 0; j < bp->events; j++) {
-                                gsl_matrix_set(bp->counts_m[j], ks, ke, c[j]);
-                                gsl_matrix_set(bp->alpha_m[j],  ks, ke, d[j]);
-                        }
-                }
-        }
 }
 
 static
@@ -180,7 +148,7 @@ int minM(binProblem *bp)
 {
         int i;
         for (i = bp->T-1; i>0; i--) {
-                if (gsl_vector_get(bp->mprior, i) > 0) {
+                if (gsl_vector_get(bp->beta, i) > 0) {
                         return i;
                 }
         }
@@ -218,9 +186,9 @@ prob_t computeEvidence(binProblem *bp, prob_t *ev_log)
         execPrombs(bp, ev_log, -1);
         sum = -HUGE_VAL;
         for (j = 0; j < bp->T; j++) {
-                if (gsl_vector_get(bp->mprior, j) > 0) {
-                        prob_t mprior = gsl_vector_get(bp->mprior, j);
-                        sum = logadd(sum, ev_log[j] + logl(mprior));
+                if (gsl_vector_get(bp->beta, j) > 0) {
+                        prob_t beta = gsl_vector_get(bp->beta, j);
+                        sum = logadd(sum, ev_log[j] + logl(beta));
                 }
         }
         return sum;
@@ -304,12 +272,12 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
         prombsExt(ev_log, bp->prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bp->T, bp->T-1);
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
-                if (gsl_vector_get(bp->mprior, i) > 0) {
-                        prob_t mprior = gsl_vector_get(bp->mprior, i);
+                if (gsl_vector_get(bp->beta, i) > 0) {
+                        prob_t beta = gsl_vector_get(bp->beta, i);
                         if (!isfinite(ev_log[i])) {
                                 return 0;
                         }
-                        sum = logadd(sum, ev_log[i] + logl(mprior));
+                        sum = logadd(sum, ev_log[i] + logl(beta));
                 }
         }
         return -expl(sum - evidence);
@@ -377,12 +345,12 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence)
         prombs(ev_log, bp->prior_log, &effectiveCounts_f, bp->T, bp->T-1);
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
-                if (gsl_vector_get(bp->mprior, i) > 0) {
-                        prob_t mprior = gsl_vector_get(bp->mprior, i);
+                if (gsl_vector_get(bp->beta, i) > 0) {
+                        prob_t beta = gsl_vector_get(bp->beta, i);
                         if (!isfinite(ev_log[i])) {
                                 return 0;
                         }
-                        sum = logadd(sum, ev_log[i] + logl(mprior));
+                        sum = logadd(sum, ev_log[i] + logl(beta));
                 }
         }
         return expl(sum - evidence);
@@ -443,9 +411,9 @@ void computeModelPosteriors(binProblem *bp, prob_t *ev_log, prob_t *mpost, prob_
         unsigned int j;
 
         for (j = 0; j < bp->T; j++) {
-                if (gsl_vector_get(bp->mprior, j) > 0) {
-                        prob_t mprior = gsl_vector_get(bp->mprior, j);
-                        mpost[j] = expl(ev_log[j] + logl(mprior) - P_D);
+                if (gsl_vector_get(bp->beta, j) > 0) {
+                        prob_t beta = gsl_vector_get(bp->beta, j);
+                        mpost[j] = expl(ev_log[j] + logl(beta) - P_D);
                 }
                 else {
                         mpost[j] = 0;
@@ -465,9 +433,9 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
                 execPrombs(bp, ev_log, i);
                 sum = -HUGE_VAL;
                 for (j = 0; j < bp->T; j++) {
-                        if (gsl_vector_get(bp->mprior, j) > 0) {
-                                prob_t mprior = gsl_vector_get(bp->mprior, j);
-                                sum = logadd(sum, ev_log[j] + logl(mprior));
+                        if (gsl_vector_get(bp->beta, j) > 0) {
+                                prob_t beta = gsl_vector_get(bp->beta, j);
+                                sum = logadd(sum, ev_log[j] + logl(beta));
                         }
                 }
                 bprob[i] = expl(sum - P_D);
@@ -587,12 +555,14 @@ void computeBinning(
 
 BinningResultGSL *
 bin_log(
-        gsl_matrix *counts,
-        gsl_matrix *alpha,
-        gsl_vector *mprior,
+        size_t events,
+        gsl_matrix **counts,
+        gsl_matrix **alpha,
+        gsl_vector  *beta,
+        gsl_matrix  *gamma,
         Options *options)
 {
-        size_t K = counts->size2;
+        size_t K = counts[0]->size2;
         BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
         result->moments   = (options->n_moments ?
                              gsl_matrix_alloc(options->n_moments, K)   : NULL);
@@ -629,7 +599,7 @@ bin_log(
 
         verbose            = options->verbose;
         bp.epsilon         = options->epsilon;
-        bp.mprior          = mprior;
+        bp.beta            = beta;
         bp.T               = K;
         bp.prior_log       = prior_log;
         bp.add_event.pos   = -1;
@@ -638,16 +608,11 @@ bin_log(
         bp.fix_prob.pos    = -1;
         bp.fix_prob.val    = 0;
         bp.fix_prob.which  = options->which;
-        bp.events          = counts->size1;
+        bp.events          = events;
         bp.counts          = counts;
         bp.alpha           = alpha;
-        bp.counts_m        = (gsl_matrix **)malloc(bp.events*sizeof(gsl_matrix *));
-        bp.alpha_m         = (gsl_matrix **)malloc(bp.events*sizeof(gsl_matrix *));
-        for (i = 0; i < bp.events; i++) {
-                bp.counts_m[i] = gsl_matrix_alloc(K, K);
-                bp.alpha_m[i]  = gsl_matrix_alloc(K, K);
-        }
-        computeCountStatistics(&bp);
+        bp.beta            = beta;
+        bp.gamma           = gamma;
         if (options->prombsTest) {
                 prombsTest(&bp);
         }
@@ -669,18 +634,12 @@ bin_log(
                 gsl_vector_set(result->multibin_entropy,  i, multibin_entropy[i]);
         }
 
-        for (i = 0; i < bp.events; i++) {
-                gsl_matrix_free(bp.counts_m[i]);
-                gsl_matrix_free(bp.alpha_m[i]);
-        }
         for (i = 0; i < options->n_moments; i++) {
                 free(moments[i]);
         }
         for (i = 0; i < K; i++) {
                 free(marginals[i]);
         }
-        free(bp.counts_m);
-        free(bp.alpha_m);
 
         return result;
 }

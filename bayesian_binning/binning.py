@@ -105,15 +105,16 @@ def load_config():
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(counts, alpha, mprior):
+def bin(events, counts, alpha, beta, gamma):
     """Call the binning library."""
     if options['load']:
         return load_config()
     else:
-        counts_i = [ map(int, row) for row in counts ]
-        alpha_i  = [ map(int, row) for row in alpha  ]
-        mprior_i =   map(float, mprior)
-        return interface.binning(counts_i, alpha_i, mprior_i, options)
+#        counts_i = [ map(int, row) for row in counts ]
+#        alpha_i  = [ map(int, row) for row in alpha  ]
+#        mprior_i =   map(float, mprior)
+#        return interface.binning(counts_i, alpha_i, mprior_i, options)
+        return interface.binning(events, counts, alpha, beta, gamma, options)
 
 # save result
 # ------------------------------------------------------------------------------
@@ -165,13 +166,12 @@ def parseConfig(config_file):
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Counts'):
-        counts    = config.readMatrix(config_parser, 'Counts', 'counts', int)
-        N         = len(counts[0])
-        prior     = list(np.repeat(1, N))
-        alpha     = config.readAlpha(config_parser, len(counts), N, 'Counts', int)
-        prior     = config.readModelPrior(config_parser, N, 'Counts', int)
+        counts = config.readMatrix(config_parser, 'Counts', 'counts', int)
+        K      = len(counts)
+        L      = len(counts[0])
+        alpha, beta, gamma = config.getParameters(config_parser, 'Counts', os.path.dirname(config_file))
         options['script'] = config.readScript(config_parser, 'Counts', os.path.dirname(config_file))
-        result    = bin(counts, alpha, prior)
+        result = bin(K, statistics.countStatistic(counts), alpha, beta, gamma)
         if options['save']:
             saveResult(result)
         elif vis:
