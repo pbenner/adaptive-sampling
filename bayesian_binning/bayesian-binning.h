@@ -24,6 +24,6 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-extern BinningResultGSL * bin_log(gsl_matrix *counts, gsl_matrix *alpha, gsl_vector *prior, Options *options);
+extern BinningResultGSL * bin_log(size_t events, gsl_matrix **counts, gsl_matrix **alpha, gsl_vector *beta, gsl_matrix *gamma, Options *options);
 
 #endif /* BAYESIAN_BINNING */

@@ -15,6 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import math
+import numpy as np
 
 def fac(n):
     return n-1 + abs(n-1) and fac(n-1)*n or 1L
@@ -35,3 +36,31 @@ def standardizedMoments(moments, n):
     m2 = centralMoments(moments, 2)
     mn = centralMoments(moments, n)
     return [ mu / math.pow(math.sqrt(var), n) for var, mu in zip(m2, mn) ]
+
+def countStatistic(events):
+    K = len(events)
+    L = len(events[0])
+    counts = np.zeros([K, L, L])
+    for ks in range(0, L):
+        for ke in range(ks, L):
+            c = np.zeros(K)
+            for i in range(ks, ke+1):
+                for j in range(0, K):
+                    c[j] += events[j][i]
+            for j in range(0, K):
+                counts[j][ks][ke] = c[j]
+    return counts
+
+def defaultAlpha(alpha_v):
+    K = len(alpha_v)
+    L = len(alpha_v[0])
+    alpha = np.zeros([K, L, L])
+    for ks in range(0, L):
+        for ke in range(ks, L):
+            c = np.zeros(K)
+            for i in range(ks, ke+1):
+                for j in range(0, K):
+                    c[j] += alpha_v[j][i] / float(ke - ks + 1)
+            for j in range(0, K):
+                alpha[j][ks][ke] = c[j]
+    return alpha

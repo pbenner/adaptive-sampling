@@ -25,7 +25,7 @@
 #include <bayes_datatypes.h>
 #include <bayes_linalg.h>
 
-extern BinningResult * binning(Matrix *counts, Matrix *alpha, Vector *prior, Options *options);
+extern BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options);
 
 #endif /* INTERFACE_H */
 

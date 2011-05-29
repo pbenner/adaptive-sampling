@@ -116,7 +116,7 @@ _lib._free.restype         = None
 _lib._free.argtypes        = [POINTER(None)]
 
 _lib.binning.restype       = POINTER(BINNING_RESULT)
-_lib.binning.argtypes      = [POINTER(MATRIX), POINTER(MATRIX), POINTER(VECTOR), POINTER(OPTIONS)]
+_lib.binning.argtypes      = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
 # convert datatypes
 # ------------------------------------------------------------------------------
@@ -147,20 +147,32 @@ def getMatrix(c_m):
 # 
 # ------------------------------------------------------------------------------
 
-def binning(counts, alpha, prior, options):
-     c_counts  = _lib._allocMatrix(len(counts), len(counts[0]))
-     copyMatrixToC(counts, c_counts)
-     c_alpha   = _lib._allocMatrix(len(alpha), len(alpha[0]))
-     copyMatrixToC(alpha,  c_alpha)
-     c_prior   = _lib._allocVector(len(prior))
-     copyVectorToC(prior,  c_prior)
+def binning(events, counts, alpha, beta, gamma, options):
+     print counts
+     print alpha
+     print beta
+     print gamma
+
+     c_counts = (events*POINTER(MATRIX))()
+     c_alpha  = (events*POINTER(MATRIX))()
+     for i in range(0, events):
+          c_counts[i]  = _lib._allocMatrix(len(counts[i]), len(counts[i][0]))
+          copyMatrixToC(counts[i], c_counts[i])
+          c_alpha[i]   = _lib._allocMatrix(len(alpha[i]), len(alpha[i][0]))
+          copyMatrixToC(alpha[i],  c_alpha[i])
+     c_beta  = _lib._allocVector(len(beta))
+     copyVectorToC(beta,  c_beta)
+     c_gamma = _lib._allocMatrix(len(gamma), len(gamma[0]))
+     copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
-     tmp = _lib.binning(c_counts, c_alpha, c_prior, c_options)
+     tmp = _lib.binning(events, c_counts, c_alpha, c_beta, c_gamma, c_options)
 
-     _lib._freeMatrix(c_counts)
-     _lib._freeMatrix(c_alpha)
-     _lib._freeVector(c_prior)
+     for i in range(0, events):
+          _lib._freeMatrix(c_counts[i])
+          _lib._freeMatrix(c_alpha[i])
+     _lib._freeVector(c_beta)
+     _lib._freeMatrix(c_gamma)
 
      result = \
      { 'moments'   : getMatrix(tmp.contents.moments)   if tmp.contents.moments   else [],

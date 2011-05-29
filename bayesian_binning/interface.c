@@ -32,15 +32,23 @@ Matrix * _allocMatrix(int rows, int columns) { return allocMatrix(rows, columns)
 void     _freeMatrix(Matrix *m)              { freeMatrix(m); }
 void     _free(void *ptr)                    { free(ptr); }
 
-BinningResult * binning(Matrix *counts, Matrix *alpha, Vector *prior, Options *options)
+BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options)
 {
-        gsl_matrix *counts_m = toGslMatrix(counts);
-        gsl_matrix *alpha_m  = toGslMatrix(alpha);
-        gsl_vector *prior_v  = toGslVector(prior);
+        size_t i;
+
+        // allocate gsl matrices
+        gsl_matrix **counts_m = (gsl_matrix **)malloc(events*sizeof(gsl_matrix *));
+        gsl_matrix **alpha_m  = (gsl_matrix **)malloc(events*sizeof(gsl_matrix *));
+        for (i = 0; i < events; i++) {
+                counts_m[i] = toGslMatrix(counts[i]);
+                alpha_m[i]  = toGslMatrix(alpha[i]);
+        }
+        gsl_vector *beta_v  = toGslVector(beta);
+        gsl_matrix *gamma_m = toGslMatrix(gamma);
         BinningResultGSL *resultGsl;
         BinningResult    *result = (BinningResult *)malloc(sizeof(BinningResult));
 
-        resultGsl = bin_log(counts_m, alpha_m, prior_v, options);
+        resultGsl = bin_log(events, counts_m, alpha_m, beta_v, gamma_m, options);
         if (options->n_moments > 0) {
                 result->moments = fromGslMatrix(resultGsl->moments);
         }
@@ -59,9 +67,13 @@ BinningResult * binning(Matrix *counts, Matrix *alpha, Vector *prior, Options *o
         result->effective_counts  = fromGslVector(resultGsl->effective_counts);
         result->multibin_entropy  = fromGslVector(resultGsl->multibin_entropy);
 
-        gsl_matrix_free(counts_m);
-        gsl_matrix_free(alpha_m);
-        gsl_vector_free(prior_v);
+        // free gsl matrices
+        for (i = 0; i < events; i++) {
+                gsl_matrix_free(counts_m[i]);
+                gsl_matrix_free(alpha_m[i]);
+        }
+        gsl_vector_free(beta_v);
+        gsl_matrix_free(gamma_m);
         if (options->n_moments > 0) {
                 gsl_matrix_free(resultGsl->moments);
         }
