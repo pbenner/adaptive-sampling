@@ -120,6 +120,10 @@ prob_t iec_log(binProblem *bp, int kk, int k)
         unsigned int i;
         prob_t c[bp->events];
         prob_t alpha[bp->events];
+        prob_t gamma = gsl_matrix_get(bp->gamma, kk, k);
+        if (gamma == 0) {
+                return -HUGE_VAL;
+        }
         for (i = 0; i < bp->events; i++) {
                 c[i]     = countStatistic(bp, i, kk, k) + countAlpha(bp, i, kk, k);
                 alpha[i] = countAlpha(bp, i, kk, k);
@@ -128,18 +132,18 @@ prob_t iec_log(binProblem *bp, int kk, int k)
                 // compute marginals
                 // TODO: extend to multinomial case
                 if (bp->fix_prob.which == 0) {
-                        return (c[0]-1)*log(bp->fix_prob.val)
-                                + (c[1]-1)*log(1-bp->fix_prob.val)
+                        return logl(gamma) + (c[0]-1)*logl(bp->fix_prob.val)
+                                + (c[1]-1)*logl(1-bp->fix_prob.val)
                                 - mbeta_log(bp, alpha);
                 }
                 else {
-                        return (c[0]-1)*log(1-bp->fix_prob.val)
+                        return logl(gamma) + (c[0]-1)*log(1-bp->fix_prob.val)
                                 + (c[1]-1)*log(bp->fix_prob.val)
                                 - mbeta_log(bp, alpha);
                 }
         }
         else {
-                return mbeta_log(bp, c) - mbeta_log(bp, alpha);
+                return logl(gamma) + (mbeta_log(bp, c) - mbeta_log(bp, alpha));
         }
 }
 

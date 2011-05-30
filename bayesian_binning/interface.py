@@ -145,6 +145,7 @@ def getMatrix(c_m):
 # ------------------------------------------------------------------------------
 
 def binning(events, counts, alpha, beta, gamma, options):
+     c_events = c_int(events)
      c_counts = (events*POINTER(MATRIX))()
      c_alpha  = (events*POINTER(MATRIX))()
      for i in range(0, events):
@@ -158,7 +159,7 @@ def binning(events, counts, alpha, beta, gamma, options):
      copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
-     tmp = _lib.binning(events, c_counts, c_alpha, c_beta, c_gamma, c_options)
+     tmp = _lib.binning(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
 
      for i in range(0, events):
           _lib._freeMatrix(c_counts[i])
