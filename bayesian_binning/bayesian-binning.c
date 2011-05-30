@@ -295,7 +295,6 @@ void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref, Op
         prob_t evidence;
         prob_t evidence_log_tmp[bp->T];
 
-        computeModelPrior_log(bp);
         entropy = differentialEntropy(bp, evidence_ref);
 
         bp->add_event.n = 1;
@@ -363,7 +362,6 @@ void computeEffectiveCounts(binProblem *bp, prob_t *result, prob_t evidence_ref,
 {
         unsigned int i;
 
-        computeModelPrior_log(bp);
         for (i = 0; i < bp->T; i++) {
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bp->T);
                 result[i] = effectiveCounts(bp, i, evidence_ref);
@@ -464,8 +462,9 @@ void computeBinning(
         prob_t evidence_log_tmp[bp->T];
         unsigned int i, j;
 
-        // compute evidence P(D)
+        // compute the model prior once for all computations
         computeModelPrior_log(bp);
+        // compute evidence P(D)
         evidence_ref = computeEvidence(bp, evidence_log_tmp);
         // compute model posteriors P(m_B|D)
         if (options->model_posterior) {
