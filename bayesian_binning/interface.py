@@ -148,11 +148,6 @@ def getMatrix(c_m):
 # ------------------------------------------------------------------------------
 
 def binning(events, counts, alpha, beta, gamma, options):
-     print counts
-     print alpha
-     print beta
-     print gamma
-
      c_counts = (events*POINTER(MATRIX))()
      c_alpha  = (events*POINTER(MATRIX))()
      for i in range(0, events):

@@ -151,8 +151,8 @@ def plotBinning(result, options):
     title = ''
     preplot  = None
     postplot = None
-    if options['script']:
-        exec options['script']
+    if options['visualization']:
+        exec options['visualization']
         if not preplot is None:
             x, title = preplot(result, options)
     fig = figure()
@@ -175,7 +175,7 @@ def plotBinning(result, options):
         plotUtility(ax12, x, result)
     if result['effective_counts'] and options['effective_counts']:
         plotEffectiveCounts(ax22, x, result)
-    if options['script'] and not postplot is None:
+    if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22], [p11, p12, p21, p22],
                  result, options)
 
@@ -184,8 +184,8 @@ def plotBinningSpikes(x, timings, result, options):
     title = ''
     preplot  = None
     postplot = None
-    if options['script']:
-        exec options['script']
+    if options['visualization']:
+        exec options['visualization']
         if not preplot is None:
             x, dt, timings, title = preplot(x, timings, result, options)
     fig = figure()
@@ -210,18 +210,18 @@ def plotBinningSpikes(x, timings, result, options):
         p12 = plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
         p12 = plotUtility(ax12, result)
-    if options['script'] and not postplot is None:
+    if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
 
 def plotSampling(result, options, data):
-    x = np.arange(0, data['bins'], 1)
+    x = np.arange(0, data['L'], 1)
     title = ''
     preplot  = None
     postplot = None
-    if options['script']:
-        exec options['script']
+    if options['visualization']:
+        exec options['visualization']
         if not preplot is None:
             x, title = preplot(result, options)
     fig = figure()
@@ -250,7 +250,7 @@ def plotSampling(result, options, data):
         p22 = plotUtility(ax22, x, result)
     if result['effective_counts'] and options['strategy'] == 'effective-counts':
         p22 = plotEffectiveCounts(ax22, x, result)
-    if options['script'] and not postplot is None:
+    if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
@@ -273,8 +273,8 @@ def plotUtilitySeries(result, options):
     title = ''
     x = np.array(range(1, len(utility_matrix)+1))
     y = np.array(range(0, len(utility_matrix[0])))
-    if options['script']:
-        exec options['script']
+    if options['visualization']:
+        exec options['visualization']
         if not utilitypreplot is None:
             x, y, title = utilitypreplot(result)
     fig = figure()
@@ -288,5 +288,5 @@ def plotUtilitySeries(result, options):
     ax.scatter(x, z, marker='o', c='w', s=10, zorder=10, edgecolors='none')
     ax.set_xlim(min(x)+0.5, max(x)+0.5)
     ax.set_ylim(min(y)-0.5, max(y)+0.5)
-    if options['script'] and not utilitypostplot is None:
+    if options['visualization'] and not utilitypostplot is None:
         utilitypostplot(ax, p1, cb)

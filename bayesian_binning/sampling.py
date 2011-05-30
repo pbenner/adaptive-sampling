@@ -176,12 +176,14 @@ def loadResult():
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(counts, alpha, mprior):
+def bin(counts_v, data):
     """Call the binning library."""
-    counts_i = [ map(int, row) for row in counts ]
-    alpha_i  = [ map(int, row) for row in alpha  ]
-    mprior_i =   map(float, mprior)
-    return interface.binning(counts_i, alpha_i, mprior_i, options)
+    events = len(counts_v)
+    counts = statistics.countStatistic(counts_v)
+    alpha  = data['alpha']
+    beta   = data['beta']
+    gamma  = data['gamma']
+    return interface.binning(events, counts, alpha, beta, gamma, options)
 
 # sampling
 # ------------------------------------------------------------------------------
@@ -250,15 +252,15 @@ def sample(result, data):
     if result['counts']:
         counts = result['counts']
     else:
-        counts = [ list(np.repeat(0, data['bins'])),
-                   list(np.repeat(0, data['bins'])) ]
+        counts = [ list(np.repeat(0, data['L'])),
+                   list(np.repeat(0, data['L'])) ]
     if result['samples']:
         samples = result['samples']
     else:
         samples = []
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
-        result  = bin(counts, data['alpha'], data['mprior'])
+        result  = bin(counts, data)
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
@@ -271,7 +273,7 @@ def sample(result, data):
     options['model_posterior'] = True
     options['n_moments'] = 3
     options['marginal'] = marginal
-    result = bin(counts, data['alpha'], data['mprior'])
+    result = bin(counts, data)
     result['counts']  = counts
     result['samples'] = samples
     result['utility'] = utility
@@ -286,29 +288,31 @@ def parseConfig(config_file):
     config_parser = ConfigParser.RawConfigParser()
     config_parser.read(config_file)
 
-    data = { 'bins'   : 0,
-             'gt'     : None,
-             'mprior' : None,
-             'alpha'  : None }
+    data = { 'K'     : 2,
+             'L'     : 0,
+             'gt'    : None,
+             'alpha' : None,
+             'beta'  : None,
+             'gamma' : None }
 
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Ground Truth'):
-        data['gt']     = config.readVector(config_parser, 'Ground Truth', 'gt', float)
-        data['alpha']  = config.readAlpha(config_parser, 2, len(data['gt']), 'Ground Truth', int)
-        data['mprior'] = config.readModelPrior(config_parser, len(data['gt']), 'Ground Truth', int)
-        data['bins']   = len(data['gt'])
-        options['script'] = config.readScript(config_parser, 'Ground Truth', os.path.dirname(config_file))
+        options['visualization'] = config.readVisualization(config_parser, 'Ground Truth', os.path.dirname(config_file))
         options['filter'] = config.readFilter(config_parser, 'Ground Truth', os.path.dirname(config_file))
+        data['gt']  = config.readVector(config_parser, 'Ground Truth', 'gt', float)
+        data['L']   = len(data['gt'])
+        data['alpha'], data['beta'], data['gamma'] = \
+            config.getParameters(config_parser, 'Ground Truth', os.path.dirname(config_file), data['K'], data['L'])
         config.readStrategy(config_parser, 'Ground Truth', options)
         result = loadResult()
         result = sample(result, data)
     if config_parser.has_section('Experiment'):
-        data['bins']   = int(config_parser.get('Experiment', 'bins'))
-        data['alpha']  = config.readAlpha(config_parser, 2, data['bins'], 'Experiment', int)
-        data['mprior'] = config.readModelPrior(config_parser, data['bins'], 'Experiment', int)
-        options['script'] = config.readScript(config_parser, 'Experiment', os.path.dirname(config_file))
+        options['visualization'] = config.readVisualization(config_parser, 'Experiment', os.path.dirname(config_file))
         options['filter'] = config.readFilter(config_parser, 'Experiment', os.path.dirname(config_file))
+        data['L'] = int(config_parser.get('Experiment', 'bins'))
+        data['alpha'], data['beta'], data['gamma'] = \
+            config.getParameters(config_parser, 'Experiment', os.path.dirname(config_file), data['K'], data['L'])
         config.readStrategy(config_parser, 'Experiment', options)
         result = loadResult()
         result = sample(result, data)
@@ -339,7 +343,7 @@ options = {
     'strategy'          : 'differential-gain',
     'port'              : None,
     'filter'            : None,
-    'script'            : None,
+    'visualization'     : None,
     'load'              : None,
     'save'              : None,
     'savefig'           : None,
