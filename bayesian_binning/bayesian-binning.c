@@ -368,43 +368,6 @@ void computeEffectiveCounts(binProblem *bp, prob_t *result, prob_t evidence_ref,
         }
 }
 
-static binProblem *multibinEntropy_bp;
-static prob_t multibinEntropy_f(int i, int j)
-{
-        return iec_log(multibinEntropy_bp, i, j);
-}
-static prob_t multibinEntropy_h(int i, int j)
-{
-        // - Log[f(b)]
-        return -iec_log(multibinEntropy_bp, i, j);
-}
-
-static
-void computeMultibinEntropy(binProblem *bp, prob_t *result, prob_t evidence)
-{
-        size_t i;
-        prob_t resulta[bp->T];
-        prob_t resultb[bp->T];
-        prob_t epsilona = bp->epsilon;
-        prob_t epsilonb = bp->epsilon*2;
-        prob_t result2[bp->T];
-        prob_t g[bp->T];
-
-        for (i = 0; i < bp->T; i++) {
-                g[i] = logl(bp->prior_log[i] - evidence) + bp->prior_log[i];
-        }
-        multibinEntropy_bp = bp;
-        prombsExt(resulta, bp->prior_log, &multibinEntropy_f, &multibinEntropy_h, epsilona, bp->T, bp->T-1);
-        prombsExt(resultb, bp->prior_log, &multibinEntropy_f, &multibinEntropy_h, epsilonb, bp->T, bp->T-1);
-        prombs(result2, g, &multibinEntropy_f, bp->T, bp->T-1);
-
-        for (i = 0; i < bp->T; i++) {
-                prob_t pa = expl(logsub(resulta[i], result2[i]) - evidence);
-                prob_t pb = expl(logsub(resultb[i], result2[i]) - evidence);
-                result[i] = pa - (pb-pa)/(epsilonb-epsilona)*epsilona;
-        }
-}
-
 static
 void computeModelPosteriors(binProblem *bp, prob_t *ev_log, prob_t *mpost, prob_t P_D)
 {
@@ -495,7 +458,6 @@ void computeBinning(
         prob_t *mpost,
         prob_t *differential_gain,
         prob_t *effective_counts,
-        prob_t *multibin_entropy,
         Options *options)
 {
         prob_t evidence_ref;
@@ -528,10 +490,6 @@ void computeBinning(
         // break probability
         if (options->bprob) {
                 computeBreakProbabilities(bp, bprob, evidence_ref);
-        }
-        // compute the multibin entropy
-        if (options->multibin_entropy) {
-                computeMultibinEntropy(bp, multibin_entropy, evidence_ref);
         }
         // for each timestep compute the first n moments
         if (options->n_moments > 0) {
@@ -572,14 +530,12 @@ bin_log(
         result->mpost             = gsl_vector_alloc(K);
         result->differential_gain = gsl_vector_alloc(K);
         result->effective_counts  = gsl_vector_alloc(K);
-        result->multibin_entropy  = gsl_vector_alloc(K);
         prob_t * moments[options->n_moments];
         prob_t * marginals[K];
         prob_t bprob[K];
         prob_t mpost[K];
         prob_t differential_gain[K];
         prob_t effective_counts[K];
-        prob_t multibin_entropy[K];
         prob_t prior_log[K];
         unsigned int i, j;
         binProblem bp;
@@ -595,7 +551,6 @@ bin_log(
         bzero(prior_log,         K*sizeof(prob_t));
         bzero(differential_gain, K*sizeof(prob_t));
         bzero(effective_counts,  K*sizeof(prob_t));
-        bzero(multibin_entropy,  K*sizeof(prob_t));
 
         verbose            = options->verbose;
         bp.epsilon         = options->epsilon;
@@ -617,7 +572,7 @@ bin_log(
                 prombsTest(&bp);
         }
         computeBinning(&bp, moments, marginals, bprob, mpost, differential_gain,
-                       effective_counts, multibin_entropy, options);
+                       effective_counts, options);
         for (i = 0; i <= bp.T-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
@@ -631,7 +586,6 @@ bin_log(
                 gsl_vector_set(result->mpost, i, mpost[i]);
                 gsl_vector_set(result->differential_gain, i, differential_gain[i]);
                 gsl_vector_set(result->effective_counts,  i, effective_counts[i]);
-                gsl_vector_set(result->multibin_entropy,  i, multibin_entropy[i]);
         }
 
         for (i = 0; i < options->n_moments; i++) {
