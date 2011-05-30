@@ -105,11 +105,12 @@ prob_t mbeta_log(binProblem *bp, prob_t *p)
 }
 
 static
-void computePrior_log(binProblem *bp)
+void computeModelPrior_log(binProblem *bp)
 {
         unsigned int m_b;
         for (m_b = 0; m_b < bp->T; m_b++) {
-                bp->prior_log[m_b] = -gsl_sf_lnchoose(bp->T-1, m_b);
+                bp->prior_log[m_b] = -gsl_sf_lnchoose(bp->T-1, m_b) +
+                        logl(gsl_vector_get(bp->beta, m_b));
         }
 }
 
@@ -187,8 +188,7 @@ prob_t computeEvidence(binProblem *bp, prob_t *ev_log)
         sum = -HUGE_VAL;
         for (j = 0; j < bp->T; j++) {
                 if (gsl_vector_get(bp->beta, j) > 0) {
-                        prob_t beta = gsl_vector_get(bp->beta, j);
-                        sum = logadd(sum, ev_log[j] + logl(beta));
+                        sum = logadd(sum, ev_log[j]);
                 }
         }
         return sum;
@@ -273,11 +273,10 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
                 if (gsl_vector_get(bp->beta, i) > 0) {
-                        prob_t beta = gsl_vector_get(bp->beta, i);
                         if (!isfinite(ev_log[i])) {
                                 return 0;
                         }
-                        sum = logadd(sum, ev_log[i] + logl(beta));
+                        sum = logadd(sum, ev_log[i]);
                 }
         }
         return -expl(sum - evidence);
@@ -292,7 +291,7 @@ void differentialUtility(binProblem *bp, prob_t *result, prob_t evidence_ref, Op
         prob_t evidence;
         prob_t evidence_log_tmp[bp->T];
 
-        computePrior_log(bp);
+        computeModelPrior_log(bp);
         entropy = differentialEntropy(bp, evidence_ref);
 
         bp->add_event.n = 1;
@@ -346,11 +345,10 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence)
         sum = -HUGE_VAL;
         for (i = 0; i < bp->T; i++) {
                 if (gsl_vector_get(bp->beta, i) > 0) {
-                        prob_t beta = gsl_vector_get(bp->beta, i);
                         if (!isfinite(ev_log[i])) {
                                 return 0;
                         }
-                        sum = logadd(sum, ev_log[i] + logl(beta));
+                        sum = logadd(sum, ev_log[i]);
                 }
         }
         return expl(sum - evidence);
@@ -361,7 +359,7 @@ void computeEffectiveCounts(binProblem *bp, prob_t *result, prob_t evidence_ref,
 {
         unsigned int i;
 
-        computePrior_log(bp);
+        computeModelPrior_log(bp);
         for (i = 0; i < bp->T; i++) {
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bp->T);
                 result[i] = effectiveCounts(bp, i, evidence_ref);
@@ -375,8 +373,7 @@ void computeModelPosteriors(binProblem *bp, prob_t *ev_log, prob_t *mpost, prob_
 
         for (j = 0; j < bp->T; j++) {
                 if (gsl_vector_get(bp->beta, j) > 0) {
-                        prob_t beta = gsl_vector_get(bp->beta, j);
-                        mpost[j] = expl(ev_log[j] + logl(beta) - P_D);
+                        mpost[j] = expl(ev_log[j] - P_D);
                 }
                 else {
                         mpost[j] = 0;
@@ -397,8 +394,7 @@ void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
                 sum = -HUGE_VAL;
                 for (j = 0; j < bp->T; j++) {
                         if (gsl_vector_get(bp->beta, j) > 0) {
-                                prob_t beta = gsl_vector_get(bp->beta, j);
-                                sum = logadd(sum, ev_log[j] + logl(beta));
+                                sum = logadd(sum, ev_log[j]);
                         }
                 }
                 bprob[i] = expl(sum - P_D);
@@ -465,7 +461,7 @@ void computeBinning(
         unsigned int i, j;
 
         // compute evidence P(D)
-        computePrior_log(bp);
+        computeModelPrior_log(bp);
         evidence_ref = computeEvidence(bp, evidence_log_tmp);
         // compute model posteriors P(m_B|D)
         if (options->model_posterior) {
