@@ -50,7 +50,7 @@ verbose = False
 def usage():
     """Print usage."""
     print
-    print "bayesian-binning.py [option]... FILE "
+    print "bayesian-binning [option]... FILE "
     print
     print "Options:"
     print "   -b                             - compute break probabilities"

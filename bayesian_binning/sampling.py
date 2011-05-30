@@ -52,7 +52,7 @@ verbose = False
 def usage():
     """Print usage."""
     print
-    print "adaptive-sampling.py [option]... FILE "
+    print "adaptive-sampling [option]... FILE "
     print
     print "Options:"
     print "   -b                             - compute break probabilities"
