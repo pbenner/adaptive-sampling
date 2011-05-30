@@ -21,6 +21,11 @@ import numpy as np
 import ConfigParser
 import re
 
+import bayesian_binning.statistics    as statistics
+
+## functions for reading config options
+################################################################################
+
 def readVector(config, section, option, converter):
     vector_str = config.get(section, option)
     vector     = map(converter, vector_str.split(' '))
@@ -48,44 +53,14 @@ def readAlpha(config_parser, events, bins, section, converter):
         alpha = np.repeat(1, events*bins).reshape(events,bins)
     return alpha
 
-def readModelPrior(config_parser, n, section, converter):
-    models = []
-    mprior = list(np.repeat(1, n))
-    if config_parser.has_option(section, 'mprior'):
-        mprior = list(np.repeat(0, n))
-        models = readVector(config_parser, section, 'mprior', str)
-        num_models  = len(models)
-        free_models = 0
-        p_sum  = 0.0
-        for elem in models:
-            m = re.search('([0-9]+)(?::([0-9.e-]+))?', elem)
-            i = int(m.group(1))
-            p = m.group(2)
-            if p:
-                p_sum += float(p)
-            else:
-                free_models += 1
-        for elem in models:
-            m = re.search('([0-9]+)(?::([0-9.e-]+))?', elem)
-            i = int(m.group(1))
-            p = m.group(2)
-            if p:
-                mprior[i-1] = float(p)
-            else:
-                mprior[i-1] = (1.0-p_sum)/free_models
-    return mprior
+def readCounts(config_parser, section):
+    counts = readMatrix(config_parser, section, 'counts', float)
+    return statistics.countStatistic(counts)
 
-def readScript(config_parser, section, dir):
-    if config_parser.has_option(section, 'script'):
-        file = config_parser.get(section, 'script')
-        f = open(os.path.abspath(dir)+'/'+file, 'r')
-        str = f.read()
-        f.close()
-        return str
-    else:
-        return None
+## helper functions for setting prior parameters
+################################################################################
 
-def defaultAlpha(alpha_v):
+def generate_alpha(alpha_v):
     K = len(alpha_v)
     L = len(alpha_v[0])
     alpha = np.zeros([K, L, L])
@@ -99,28 +74,56 @@ def defaultAlpha(alpha_v):
                 alpha[j][ks][ke] = c[j]
     return alpha
 
+def generate_beta(beta_v, num_models):
+    if beta_v == []:
+        return np.ones(num_models)/num_models
+    beta = np.zeros(num_models)
+    free_models = 0.0
+    p_sum = 0.0
+    for elem in beta_v:
+        if isinstance(elem, tuple):
+            p_sum += elem[1]
+        else:
+            free_models += 1.0
+    for elem in beta_v:
+        if isinstance(elem, tuple):
+            beta[elem[0]-1] = float(elem[1])
+        else:
+            beta[elem-1] = (1.0-p_sum)/free_models
+    return beta
 
-def getParameters(config_parser, section, dir):
-    if config_parser.has_option(section, 'parameters'):
-        # read script
-        file = config_parser.get(section, 'parameters')
-        f = open(os.path.abspath(dir)+'/'+file, 'r')
-        script = f.read()
-        f.close()
+def generate_gamma(num_models):
+    gamma = np.ones([num_models, num_models])
+    return np.triu(gamma)
 
-        parameters = None
-        exec script
-        if not parameters is None:
-            return parameters()
-    else:
-        return None
+## read additional scripts
+################################################################################
 
-def readFilter(config_parser, section, dir):
-    if config_parser.has_option(section, 'filter'):
-        file = config_parser.get(section, 'filter')
+def readScript(config_parser, section, dir, name):
+    if config_parser.has_option(section, name):
+        file = config_parser.get(section, name)
         f = open(os.path.abspath(dir)+'/'+file, 'r')
         str = f.read()
         f.close()
         return str
     else:
         return None
+
+def getParameters(config_parser, section, dir, K, L):
+    script = readScript(config_parser, section, dir, 'parameters')
+    if script:
+        parameters = None
+        exec script
+        if not parameters is None:
+            return parameters(K, L)
+    else:
+        alpha = generate_alpha(np.ones([K, L]))
+        beta  = generate_beta([], L)
+        gamma = generate_gamma(L)
+        return alpha, beta, gamma
+
+def readFilter(config_parser, section, dir):
+    return readScript(config_parser, section, dir, 'filter')
+
+def readVisualization(config_parser, section, dir):
+    return readScript(config_parser, section, dir, 'visualization')

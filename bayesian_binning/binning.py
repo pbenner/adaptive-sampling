@@ -105,15 +105,12 @@ def load_config():
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(events, counts, alpha, beta, gamma):
+def bin(counts, alpha, beta, gamma):
     """Call the binning library."""
     if options['load']:
         return load_config()
     else:
-#        counts_i = [ map(int, row) for row in counts ]
-#        alpha_i  = [ map(int, row) for row in alpha  ]
-#        mprior_i =   map(float, mprior)
-#        return interface.binning(counts_i, alpha_i, mprior_i, options)
+        events = len(counts)
         return interface.binning(events, counts, alpha, beta, gamma, options)
 
 # save result
@@ -157,7 +154,7 @@ def timingsToCounts(timings, binsize, srange):
     trials    = len(timings)
     failures  = computeFailures(successes, trials)
     counts    = [successes, failures]
-    return x, counts
+    return x, statistics.countStatistic(counts)
 
 def parseConfig(config_file):
     config_parser = ConfigParser.RawConfigParser()
@@ -166,12 +163,11 @@ def parseConfig(config_file):
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Counts'):
-        counts = config.readMatrix(config_parser, 'Counts', 'counts', int)
-        K      = len(counts)
-        L      = len(counts[0])
-        alpha, beta, gamma = config.getParameters(config_parser, 'Counts', os.path.dirname(config_file))
-        options['script'] = config.readScript(config_parser, 'Counts', os.path.dirname(config_file))
-        result = bin(K, statistics.countStatistic(counts), alpha, beta, gamma)
+        options['visualization'] = config.readVisualization(config_parser, 'Counts', os.path.dirname(config_file))
+        counts = config.readCounts(config_parser, 'Counts')
+        K, L   = len(counts), len(counts[0])
+        alpha, beta, gamma = config.getParameters(config_parser, 'Counts', os.path.dirname(config_file), K, L)
+        result = bin(counts, alpha, beta, gamma)
         if options['save']:
             saveResult(result)
         elif vis:
@@ -181,18 +177,16 @@ def parseConfig(config_file):
             else:
                 show()
     if config_parser.has_section('Trials'):
+        options['visualization'] = config.readVisualization(config_parser, 'Trials', os.path.dirname(config_file))
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
         srange    = None
         if config_parser.has_option('Trials', 'range'):
             srange = config.readVector(config_parser, 'Trials', 'range', int)
         x, counts = timingsToCounts(timings, binsize, srange)
-        N         = len(counts[0])
-        prior     = list(np.repeat(1, N))
-        alpha     = config.readAlpha(config_parser, len(counts), N, 'Trials', int)
-        prior     = config.readModelPrior(config_parser, N, 'Trials', int)
-        options['script'] = config.readScript(config_parser, 'Trials', os.path.dirname(config_file))
-        result    = bin(counts, alpha, prior)
+        K, L   = len(counts), len(counts[0])
+        alpha, beta, gamma = config.getParameters(config_parser, 'Trials', os.path.dirname(config_file), K, L)
+        result    = bin(counts, alpha, beta, gamma)
         if options['save']:
             saveResult(result)
         elif vis:
@@ -212,7 +206,7 @@ options = {
     'marginal_range'    : (0.0,1.0),
     'n_moments'         : 3,
     'which'             : 0,
-    'script'            : None,
+    'visualization'     : None,
     'load'              : None,
     'save'              : None,
     'savefig'           : None,

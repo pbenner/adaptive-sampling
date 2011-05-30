@@ -50,17 +50,3 @@ def countStatistic(events):
             for j in range(0, K):
                 counts[j][ks][ke] = c[j]
     return counts
-
-def defaultAlpha(alpha_v):
-    K = len(alpha_v)
-    L = len(alpha_v[0])
-    alpha = np.zeros([K, L, L])
-    for ks in range(0, L):
-        for ke in range(ks, L):
-            c = np.zeros(K)
-            for i in range(ks, ke+1):
-                for j in range(0, K):
-                    c[j] += alpha_v[j][i] / float(ke - ks + 1)
-            for j in range(0, K):
-                alpha[j][ks][ke] = c[j]
-    return alpha
