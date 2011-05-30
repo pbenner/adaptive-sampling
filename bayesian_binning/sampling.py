@@ -158,7 +158,6 @@ def loadResult():
             'counts'    : counts,
             'samples'   : samples,
             'utility'   : [],
-            'multibin_entropy'  : [],
             'differential_gain' : [] }
     else:
         result = {
@@ -169,7 +168,6 @@ def loadResult():
             'counts'    : [],
             'samples'   : [],
             'utility'   : [],
-            'multibin_entropy'  : [],
             'differential_gain' : [] }
     return result
 
@@ -354,7 +352,6 @@ options = {
     'bprob'             : False,
     'differential_gain' : False,
     'effective_counts'  : False,
-    'multibin_entropy'  : False,
     'model_posterior'   : False,
     }
 
@@ -364,7 +361,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
                       "plot-utility", "strategy=", "savefig=", "lapsing=", "port="]
-        opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:n:bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -403,8 +400,6 @@ def main():
             options["lapsing"] = float(a)
         if o == "-d":
             options["differential_gain"] = True
-        if o == "-e":
-            options["multibin_entropy"] = True
         if o == "--load":
             options["load"] = a
         if o == "--port":

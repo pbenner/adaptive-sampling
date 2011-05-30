@@ -65,7 +65,6 @@ BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *
         result->mpost   = fromGslVector(resultGsl->mpost);
         result->differential_gain = fromGslVector(resultGsl->differential_gain);
         result->effective_counts  = fromGslVector(resultGsl->effective_counts);
-        result->multibin_entropy  = fromGslVector(resultGsl->multibin_entropy);
 
         // free gsl matrices
         for (i = 0; i < events; i++) {
@@ -84,7 +83,6 @@ BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *
         gsl_vector_free(resultGsl->mpost);
         gsl_vector_free(resultGsl->differential_gain);
         gsl_vector_free(resultGsl->effective_counts);
-        gsl_vector_free(resultGsl->multibin_entropy);
         free(resultGsl);
 
         return result;

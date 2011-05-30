@@ -55,7 +55,6 @@ def usage():
     print "Options:"
     print "   -b                             - compute break probabilities"
     print "   -d                             - compute differential gain"
-    print "   -e                             - compute multibin entropies"
     print "       --effective-counts         - compute effective counts"
     print "   -m  --marginal                 - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
@@ -89,16 +88,11 @@ def load_config():
         bprob = config.readVector(config_parser, 'Result', 'bprob',     float)
     else:
         bprob     = []
-    if config_parser.has_option('Result', 'multibin_entropy'):
-        multibin_entropy = config.readVector(config_parser, 'Result', 'multibin_entropy', float)
-    else:
-        multibin_entropy = []
     result = {
         'moments'   : moments,
         'marginals' : marginals,
         'bprob'     : bprob,
         'mpost'     : mpost,
-        'multibin_entropy'  : multibin_entropy,
         'differential_gain' : [] }
     return result
 
@@ -123,7 +117,6 @@ def saveResult(result):
     config.set('Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
     config.set('Result', 'bprob',   " ".join(map(str, result['bprob'])))
     config.set('Result', 'mpost',   " ".join(map(str, result['mpost'])))
-    config.set('Result', 'multibin_entropy', " ".join(map(str, result['multibin_entropy'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
 
@@ -216,7 +209,6 @@ options = {
     'bprob'             : False,
     'differential_gain' : False,
     'effective_counts'  : False,
-    'multibin_entropy'  : False,
     'model_posterior'   : True,
     }
 
@@ -226,7 +218,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
                       "effective-counts", "savefig="]
-        opts, tail = getopt.getopt(sys.argv[1:], "demr:s:k:bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -259,8 +251,6 @@ def main():
             options["differential_gain"] = True
         if o == "--effective-counts":
             options["effective_counts"] = True
-        if o == "-e":
-            options["multibin_entropy"] = True
         if o == "--load":
             options["load"] = a
         if o == "--save":

@@ -85,12 +85,6 @@ def plotCounts(ax, x, result):
         ax.set_xlim(0, N-1)
         ax.set_ylim(0, ax.get_ylim()[1]+1)
 
-def plotMultibinEntropy(ax, result):
-    N = len(result['multibin_entropy'])
-    x = np.arange(0, N+1, 1)
-    result['multibin_entropy'].append(0)
-    ax.step(x, result['multibin_entropy'], 'b--', where='mid', linewidth=1)
-
 def plotSpikes(ax, x, timings):
     """Plot trials of spike trains."""
     X = []
@@ -167,8 +161,6 @@ def plotBinning(result, options):
     p22 = None
     if result['marginals'] and options['marginal']:
         plotMarginal(ax11, x, result)
-    if result['multibin_entropy'] and options['multibin_entropy']:
-        plotMultibinEntropy(ax22, result)
     if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
@@ -204,8 +196,6 @@ def plotBinningSpikes(x, timings, result, options):
     p32 = None
     if result['marginals'] and options['marginal']:
         plotMarginal(ax21, x, result)
-    if result['multibin_entropy'] and options['multibin_entropy']:
-        p32 = plotMutibinEntropy(ax32, result)
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
@@ -242,8 +232,6 @@ def plotSampling(result, options, data):
         p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['marginals'] and options['marginal']:
         plotMarginal(ax11, x, result)
-    if result['multibin_entropy'] and options['multibin_entropy']:
-        plotMultibinEntropy(ax32, result)
     if result['bprob'] and options['bprob']:
         plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['strategy'] == 'differential-gain':

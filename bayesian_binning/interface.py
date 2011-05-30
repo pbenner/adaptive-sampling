@@ -64,7 +64,6 @@ class OPTIONS(Structure):
                  ("bprob",             c_int),
                  ("differential_gain", c_int),
                  ("effective_counts",  c_int),
-                 ("multibin_entropy",  c_int),
                  ("which",             c_int),
                  ("marginal",          c_int),
                  ("marginal_step",     c_float),
@@ -85,7 +84,6 @@ class OPTIONS(Structure):
           self.bprob          = c_int(1) if options["bprob"]      else c_int(0)
           self.differential_gain = c_int(1) if options["differential_gain"] else c_int(0)
           self.effective_counts  = c_int(1) if options["effective_counts"]  else c_int(0)
-          self.multibin_entropy  = c_int(1) if options["multibin_entropy"]  else c_int(0)
           self.model_posterior   = c_int(1) if options["model_posterior"]   else c_int(0)
 
 class BINNING_RESULT(Structure):
@@ -94,8 +92,7 @@ class BINNING_RESULT(Structure):
                  ("bprob",             POINTER(VECTOR)),
                  ("mpost",             POINTER(VECTOR)),
                  ("differential_gain", POINTER(VECTOR)),
-                 ("effective_counts",  POINTER(VECTOR)),
-                 ("multibin_entropy",  POINTER(VECTOR))]
+                 ("effective_counts",  POINTER(VECTOR))]
 
 # function prototypes
 # ------------------------------------------------------------------------------
@@ -175,8 +172,7 @@ def binning(events, counts, alpha, beta, gamma, options):
        'bprob'     : getVector(tmp.contents.bprob),
        'mpost'     : getVector(tmp.contents.mpost),
        'differential_gain' : getVector(tmp.contents.differential_gain),
-       'effective_counts'  : getVector(tmp.contents.effective_counts),
-       'multibin_entropy'  : getVector(tmp.contents.multibin_entropy) }
+       'effective_counts'  : getVector(tmp.contents.effective_counts) }
 
      if tmp.contents.moments:
           _lib._freeMatrix(tmp.contents.moments)
@@ -186,7 +182,6 @@ def binning(events, counts, alpha, beta, gamma, options):
      _lib._freeVector(tmp.contents.mpost)
      _lib._freeVector(tmp.contents.differential_gain)
      _lib._freeVector(tmp.contents.effective_counts)
-     _lib._freeVector(tmp.contents.multibin_entropy)
      _lib._free(tmp)
 
      return result
