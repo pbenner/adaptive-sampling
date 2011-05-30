@@ -1,5 +1,5 @@
 def preplot(x, timings, result, options):
-    return x, timings, ''
+    return x, 1, timings, ''
 
 def postplot(ax, p, result, options):
     [ax11, ax12, ax21, ax22, ax31, ax32] = ax 
