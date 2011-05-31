@@ -109,8 +109,13 @@ void computeModelPrior_log(binProblem *bp)
 {
         unsigned int m_b;
         for (m_b = 0; m_b < bp->T; m_b++) {
-                bp->prior_log[m_b] = -gsl_sf_lnchoose(bp->T-1, m_b) +
-                        logl(gsl_vector_get(bp->beta, m_b));
+                if (gsl_vector_get(bp->beta, m_b) == 0) {
+                        bp->prior_log[m_b] = -HUGE_VAL;
+                }
+                else {
+                        bp->prior_log[m_b] = -gsl_sf_lnchoose(bp->T-1, m_b) +
+                                logl(gsl_vector_get(bp->beta, m_b));
+                }
         }
 }
 
