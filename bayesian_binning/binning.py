@@ -23,21 +23,18 @@ import ConfigParser
 import numpy as np
 import math
 
-from itertools         import izip
-try:
-    from matplotlib.pyplot import show
-    from matplotlib.pyplot import savefig
-    import bayesian_binning.visualization as vis
-except ImportError:
-    vis = None
-    print "Warning: Couldn't load matplotlib."
-except RuntimeError:
-    vis = None
-    print "Warning: No x11 available, couldn't load matplotlib."
+from itertools import izip
 
-import bayesian_binning.config        as config
-import bayesian_binning.interface     as interface
-import bayesian_binning.statistics    as statistics
+def importMatplotlib(backend=None):
+    global vis
+    from matplotlib import use
+    if backend:
+        use(backend)
+    import bayesian_binning.visualization as vis
+
+import bayesian_binning.config     as config
+import bayesian_binning.interface  as interface
+import bayesian_binning.statistics as statistics
 
 # global options
 # ------------------------------------------------------------------------------
@@ -163,11 +160,16 @@ def parseConfig(config_file):
         result = bin(counts, alpha, beta, gamma)
         if options['save']:
             saveResult(result)
-        elif vis:
-            vis.plotBinning(result, options)
+        else:
             if options['savefig']:
+                importMatplotlib('Agg')
+                from matplotlib.pyplot import savefig
+                vis.plotBinning(result, options)
                 savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
             else:
+                importMatplotlib()
+                from matplotlib.pyplot import show
+                vis.plotBinning(result, options)
                 show()
     if config_parser.has_section('Trials'):
         options['visualization'] = config.readVisualization(config_parser, 'Trials', os.path.dirname(config_file))
@@ -182,11 +184,16 @@ def parseConfig(config_file):
         result    = bin(counts, alpha, beta, gamma)
         if options['save']:
             saveResult(result)
-        elif vis:
-            vis.plotBinningSpikes(x, timings, result, options)
+        else:
             if options['savefig']:
+                importMatplotlib('Agg')
+                from matplotlib.pyplot import savefig
+                vis.plotBinningSpikes(x, timings, result, options)
                 savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
             else:
+                importMatplotlib()
+                from matplotlib.pyplot import show
+                vis.plotBinningSpikes(x, timings, result, options)
                 show()
 
 # main

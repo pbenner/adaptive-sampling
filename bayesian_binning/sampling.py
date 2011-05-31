@@ -25,17 +25,14 @@ import math
 import socket
 import random
 
-from itertools         import izip
-try:
-    from matplotlib.pyplot import show
-    from matplotlib.pyplot import savefig
+from itertools import izip
+
+def importMatplotlib(backend=None):
+    global vis
+    from matplotlib import use
+    if backend:
+        use(backend)
     import bayesian_binning.visualization as vis
-except ImportError:
-    vis = None
-    print "Warning: Couldn't load matplotlib."
-except RuntimeError:
-    vis = None
-    print "Warning: No x11 available, couldn't load matplotlib."
 
 import bayesian_binning.config        as config
 import bayesian_binning.interface     as interface
@@ -262,9 +259,9 @@ def sample(result, data):
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
-            index   = selectItem(gain, map(sum, zip(*counts)), result)
+            index  = selectItem(gain, map(sum, zip(*counts)), result)
             stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-            event   = experiment(index, data, msocket)
+            event  = experiment(index, data, msocket)
             samples.append(index)
             counts[event][index] += 1
             gain.pop(index)
@@ -316,13 +313,18 @@ def parseConfig(config_file):
         result = sample(result, data)
     if options['save']:
         saveResult(result)
-    elif vis:
-        vis.plotSampling(result, options, data)
-        if options['plot-utility']:
-            vis.plotUtilitySeries(result, options, data)
+    else:
         if options['savefig']:
+            importMatplotlib('Agg')
+            from matplotlib.pyplot import savefig
+            vis.plotSampling(result, options, data)
             savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
         else:
+            importMatplotlib()
+            from matplotlib.pyplot import show
+            vis.plotSampling(result, options, data)
+            if options['plot-utility']:
+                vis.plotUtilitySeries(result, options, data)
             show()
 
 # main

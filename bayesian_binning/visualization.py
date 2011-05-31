@@ -16,13 +16,21 @@
 
 import math
 import numpy as np
-from matplotlib import *
-from matplotlib.pyplot import *
-from matplotlib.image import NonUniformImage
-import matplotlib.patches as patches
-import matplotlib.path as path
 
 import statistics
+
+try:
+    from matplotlib import *
+    from matplotlib.pyplot import *
+    from matplotlib.image import NonUniformImage
+    import matplotlib.patches as patches
+    import matplotlib.path as path
+except ImportError:
+    print "Error: Couldn't load matplotlib."
+    exit(1)
+except RuntimeError:
+    print "Error: No x11 available."
+    exit(1)
 
 font = {'family'     : 'serif',
         'weight'     : 'normal',

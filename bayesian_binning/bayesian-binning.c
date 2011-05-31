@@ -88,6 +88,21 @@ prob_t countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
         }
 }
 
+static inline
+prob_t sumModels(binProblem *bp, prob_t *ev_log)
+{
+        // sum up the vector returned by prombs
+        prob_t sum = -HUGE_VAL;
+        int i;
+
+        for (i = 0; i < bp->T; i++) {
+                if (gsl_vector_get(bp->beta, i) > 0) {
+                        sum = logadd(sum, ev_log[i]);
+                }
+        }
+        return sum;
+}
+
 static
 prob_t mbeta_log(binProblem *bp, prob_t *p)
 {
@@ -190,17 +205,9 @@ void execPrombs(binProblem *bp, prob_t *ev_log, int pos)
 static
 prob_t computeEvidence(binProblem *bp, prob_t *ev_log)
 {
-        prob_t sum;
-        unsigned int j;
-
         execPrombs(bp, ev_log, -1);
-        sum = -HUGE_VAL;
-        for (j = 0; j < bp->T; j++) {
-                if (gsl_vector_get(bp->beta, j) > 0) {
-                        sum = logadd(sum, ev_log[j]);
-                }
-        }
-        return sum;
+
+        return sumModels(bp, ev_log);
 }
 
 static
@@ -272,23 +279,13 @@ static prob_t differentialEntropy_h(int i, int j)
 static
 prob_t differentialEntropy(binProblem *bp, prob_t evidence)
 {
-        unsigned int i;
         prob_t ev_log[bp->T];
-        prob_t sum;
         prob_t epsilon = bp->epsilon;
 
         differentialEntropy_bp = bp;
         prombsExt(ev_log, bp->prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bp->T, bp->T-1);
-        sum = -HUGE_VAL;
-        for (i = 0; i < bp->T; i++) {
-                if (gsl_vector_get(bp->beta, i) > 0) {
-                        if (!isfinite(ev_log[i])) {
-                                return 0;
-                        }
-                        sum = logadd(sum, ev_log[i]);
-                }
-        }
-        return -expl(sum - evidence);
+
+        return -expl(sumModels(bp, ev_log) - evidence);
 }
 
 static
@@ -343,23 +340,13 @@ static prob_t effectiveCounts_f(int i, int j)
 static
 prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence)
 {
-        unsigned int i;
         prob_t ev_log[bp->T];
-        prob_t sum;
 
         effectiveCounts_bp  = bp;
         effectiveCounts_pos = pos;
         prombs(ev_log, bp->prior_log, &effectiveCounts_f, bp->T, bp->T-1);
-        sum = -HUGE_VAL;
-        for (i = 0; i < bp->T; i++) {
-                if (gsl_vector_get(bp->beta, i) > 0) {
-                        if (!isfinite(ev_log[i])) {
-                                return 0;
-                        }
-                        sum = logadd(sum, ev_log[i]);
-                }
-        }
-        return expl(sum - evidence);
+
+        return expl(sumModels(bp, ev_log) - evidence);
 }
 
 static
@@ -392,19 +379,13 @@ static
 void computeBreakProbabilities(binProblem *bp, prob_t *bprob, prob_t P_D)
 {
         prob_t ev_log[bp->T];
-        prob_t sum;
-        unsigned int i, j;
+        unsigned int i;
 
         for (i = 0; i < bp->T; i++) {
                 notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bp->T);
                 execPrombs(bp, ev_log, i);
-                sum = -HUGE_VAL;
-                for (j = 0; j < bp->T; j++) {
-                        if (gsl_vector_get(bp->beta, j) > 0) {
-                                sum = logadd(sum, ev_log[j]);
-                        }
-                }
-                bprob[i] = expl(sum - P_D);
+
+                bprob[i] = expl(sumModels(bp, ev_log) - P_D);
         }
 }
 
