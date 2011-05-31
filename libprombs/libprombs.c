@@ -84,7 +84,12 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m
         }
         for (i = L-m-1; i < L; i++) {
                 // the actual results are saved here
-                result[L-1-i] = pr[i] + g[L-1-i];
+                if (g[L-1-i] == -HUGE_VAL) {
+                        result[L-1-i] = -HUGE_VAL;
+                }
+                else {
+                        result[L-1-i] = pr[i] + g[L-1-i];
+                }
         }
 
         freeMatrix(ak);
