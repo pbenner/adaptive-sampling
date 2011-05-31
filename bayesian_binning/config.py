@@ -63,15 +63,13 @@ def readCounts(config_parser, section):
 def generate_alpha(alpha_v):
     K = len(alpha_v)
     L = len(alpha_v[0])
+    ones  = np.ones(L, dtype=float)
     alpha = np.zeros([K, L, L])
-    for ks in range(0, L):
-        for ke in range(ks, L):
-            c = np.zeros(K)
-            for i in range(ks, ke+1):
-                for j in range(0, K):
-                    c[j] += alpha_v[j][i] / float(ke - ks + 1)
-            for j in range(0, K):
-                alpha[j][ks][ke] = c[j]
+    for k in range(0, K):
+        alpha[k] = np.triu(np.outer(ones,alpha_v[k])).cumsum(axis=1)
+        for i in range(L):
+            for j in range(i,L):
+                alpha[k][i,j] /= float(j-i+1)
     return alpha
 
 def generate_beta(beta_v, num_models):

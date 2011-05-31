@@ -40,13 +40,8 @@ def standardizedMoments(moments, n):
 def countStatistic(events):
     K = len(events)
     L = len(events[0])
+    ones   = np.ones(L, dtype=float)
     counts = np.zeros([K, L, L])
-    for ks in range(0, L):
-        for ke in range(ks, L):
-            c = np.zeros(K)
-            for i in range(ks, ke+1):
-                for j in range(0, K):
-                    c[j] += events[j][i]
-            for j in range(0, K):
-                counts[j][ks][ke] = c[j]
+    for k in range(0, K):
+        counts[k] = np.triu(np.outer(ones,events[k])).cumsum(axis=1)
     return counts
