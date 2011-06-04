@@ -119,6 +119,12 @@ void prombsExt(
         prombs(tmp, g, f, L, m);
 
         for (i = 0; i < L; i++) {
-                result[i] = logsub(result[i], tmp[i]) - logl(epsilon);
+                if (result[i] != tmp[i]) {
+                        result[i] = logsub(result[i], tmp[i]) - logl(epsilon);
+                }
+                else {
+                        // this can happen if all counts are zero
+                        result[i] = -HUGE_VAL;
+                }
         }
 }
