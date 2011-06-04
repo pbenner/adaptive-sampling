@@ -281,11 +281,18 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence)
 {
         prob_t ev_log[bp->T];
         prob_t epsilon = bp->epsilon;
+        prob_t sum;
 
         differentialEntropy_bp = bp;
         prombsExt(ev_log, bp->prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bp->T, bp->T-1);
 
-        return -expl(sumModels(bp, ev_log) - evidence);
+        sum = sumModels(bp, ev_log);
+        if (sum == -HUGE_VAL) {
+                return 0.0;
+        }
+        else {
+                return -expl(sumModels(bp, ev_log) - evidence);
+        }
 }
 
 static
