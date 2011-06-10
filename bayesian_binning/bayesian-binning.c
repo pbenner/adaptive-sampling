@@ -245,13 +245,15 @@ prob_t singlebinEntropy(binProblem *bp, int i, int j)
         return mbeta_log(c) + (n - bd.events)*gsl_sf_psi(n) - sum;
 }
 
-static prob_t differentialEntropy_f(int i, int j, void *data)
+static
+prob_t differentialEntropy_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
         return iec_log(bp, i, j);
 }
-static prob_t differentialEntropy_h(int i, int j, void *data)
+static
+prob_t differentialEntropy_h(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
@@ -280,7 +282,8 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         }
 }
 
-static prob_t effectiveCounts_f(int i, int j, void *data)
+static
+prob_t effectiveCounts_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
@@ -307,7 +310,8 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         return expl(sumModels(ev_log) - evidence_ref);
 }
 
-static prob_t breakProb_f(int i, int j, void *data)
+static
+prob_t breakProb_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
@@ -505,13 +509,15 @@ void computeMarginal(
 // Simple prombs test
 ////////////////////////////////////////////////////////////////////////////////
 
-static prob_t prombsTest_f(int i, int j, void *data)
+static
+prob_t prombsTest_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
         return iec_log(bp, i, j);
 }
-static prob_t prombsTest_h(int i, int j, void *data)
+static
+prob_t prombsTest_h(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
