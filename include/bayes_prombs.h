@@ -21,13 +21,13 @@
 
 #include <bayes_datatypes.h>
 
-extern void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int), size_t L, size_t m);
+extern void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
 extern void prombsExt(
         prob_t *result,
         prob_t *g,
-        prob_t (*f)(int, int),
-        prob_t (*h)(int, int),
+        prob_t (*f)(int, int, void*),
+        prob_t (*h)(int, int, void*),
         prob_t epsilon,
-        size_t L, size_t m);
+        size_t L, size_t m, void *data);
 
 #endif /* _PROMBS_H_ */

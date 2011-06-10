@@ -58,11 +58,17 @@ typedef struct {
 
 // mutable data, local to each thread
 typedef struct {
+        // break probability
+        int bprob_pos;
+        // effective counts
+        int counts_pos;
+        // moments
         struct {
                 int pos;
                 int n;
                 int which;
         } add_event;
+        // marginals
         struct {
                 int pos;
                 prob_t val;
@@ -187,6 +193,8 @@ int minM()
 static
 void binProblemInit(binProblem *bp, Options *options)
 {
+        bp->bprob_pos       = -1;
+        bp->counts_pos      = -1;
         bp->add_event.pos   = -1;
         bp->add_event.n     = 0;
         bp->add_event.which = options->which;
@@ -199,32 +207,30 @@ void binProblemInit(binProblem *bp, Options *options)
 // Prombs
 ////////////////////////////////////////////////////////////////////////////////
 
-static binProblem *execPrombs_bp;
-static int execPrombs_pos;
-static prob_t execPrombs_f(int i, int j)
+static prob_t execPrombs_f(int i, int j, void *data)
 {
+        binProblem *bp = (binProblem *)data;
+
         // include only those bins that don't cover
         // position pos, which means, that only multi-bins
         // are included, that have a break at position
         // pos
-        if (i < execPrombs_pos && execPrombs_pos < j) {
+        if (i < bp->bprob_pos && bp->bprob_pos < j) {
                 return -HUGE_VAL;
         }
-        return iec_log(execPrombs_bp, i, j);
+        return iec_log(bp, i, j);
 }
 
 static
-void execPrombs(binProblem *bp, prob_t *ev_log, int pos)
+void execPrombs(binProblem *bp, prob_t *ev_log)
 {
-        execPrombs_bp  = bp;
-        execPrombs_pos = pos;
-        prombs(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM());
+        prombs(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM(), (void *)bp);
 }
 
 static
 prob_t evidence(binProblem *bp, prob_t *ev_log)
 {
-        execPrombs(bp, ev_log, -1);
+        execPrombs(bp, ev_log);
 
         return sumModels(ev_log);
 }
@@ -236,22 +242,27 @@ prob_t singlebinEntropy(binProblem *bp, int i, int j)
         prob_t n = 0;
         prob_t c[bd.events];
         prob_t sum = 0;
+
         for (k = 0; k < bd.events; k++) {
                 c[k] = countStatistic(bp, k, i, j) + countAlpha(k, i, j);
                 sum += (c[k] - 1.0)*gsl_sf_psi(c[k]);
                 n   +=  c[k];
         }
+
         return mbeta_log(c) + (n - bd.events)*gsl_sf_psi(n) - sum;
 }
 
-static binProblem *differentialEntropy_bp;
-static prob_t differentialEntropy_f(int i, int j)
+static prob_t differentialEntropy_f(int i, int j, void *data)
 {
-        return iec_log(differentialEntropy_bp, i, j);
+        binProblem *bp = (binProblem *)data;
+
+        return iec_log(bp, i, j);
 }
-static prob_t differentialEntropy_h(int i, int j)
+static prob_t differentialEntropy_h(int i, int j, void *data)
 {
-        return -singlebinEntropy(differentialEntropy_bp, i, j);
+        binProblem *bp = (binProblem *)data;
+
+        return -singlebinEntropy(bp, i, j);
 }
 
 static
@@ -265,8 +276,7 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         bp->add_event.pos   = i;
         bp->add_event.which = j;
 
-        differentialEntropy_bp = bp;
-        prombsExt(ev_log, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bd.T, bd.T-1);
+        prombsExt(ev_log, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bd.T, bd.T-1, (void *)bp);
 
         sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
@@ -277,20 +287,20 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         }
 }
 
-static int effectiveCounts_pos;
-static binProblem *effectiveCounts_bp;
-static prob_t effectiveCounts_f(int i, int j)
+static prob_t effectiveCounts_f(int i, int j, void *data)
 {
-        if (i <= effectiveCounts_pos && effectiveCounts_pos <= j) {
+        binProblem *bp = (binProblem *)data;
+
+        if (i <= bp->counts_pos && bp->counts_pos <= j) {
                 int k;
                 prob_t n = 0;
                 for (k = 0; k < bd.events; k++) {
-                        n += countStatistic(effectiveCounts_bp, k, i, j) + countAlpha(k, i, j);
+                        n += countStatistic(NULL, k, i, j) + countAlpha(k, i, j);
                 }
-                return log(n) + iec_log(effectiveCounts_bp, i, j);
+                return log(n) + iec_log(NULL, i, j);
         }
         else {
-                return iec_log(effectiveCounts_bp, i, j);
+                return iec_log(NULL, i, j);
         }
 }
 static
@@ -298,9 +308,8 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
 {
         prob_t ev_log[bd.T];
 
-        effectiveCounts_bp  = bp;
-        effectiveCounts_pos = pos;
-        prombs(ev_log, bd.prior_log, &effectiveCounts_f, bd.T, bd.T-1);
+        bp->counts_pos = pos;
+        prombs(ev_log, bd.prior_log, &effectiveCounts_f, bd.T, bd.T-1, (void *)bp);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -399,7 +408,8 @@ void computeBreakProbabilities(
 
         for (i = 0; i < bd.T; i++) {
                 notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bd.T);
-                execPrombs(&bp, ev_log, i);
+                bp.bprob_pos = i;
+                execPrombs(&bp, ev_log);
 
                 bprob[i] = expl(sumModels(ev_log) - evidence_ref);
         }
@@ -482,17 +492,19 @@ void computeMarginal(
 // Simple prombs test
 ////////////////////////////////////////////////////////////////////////////////
 
-static binProblem *prombsTest_bp;
-static prob_t prombsTest_f(int i, int j)
+static prob_t prombsTest_f(int i, int j, void *data)
 {
-        return iec_log(prombsTest_bp, i, j);
-}
-static prob_t prombsTest_h(int i, int j)
-{
-        // - Log[f(b)]
-        return -iec_log(prombsTest_bp, i, j);
-}
+        binProblem *bp = (binProblem *)data;
 
+        return iec_log(bp, i, j);
+}
+static prob_t prombsTest_h(int i, int j, void *data)
+{
+        binProblem *bp = (binProblem *)data;
+
+        // - Log[f(b)]
+        return -iec_log(bp, i, j);
+}
 static
 void prombsTest()
 {
@@ -507,9 +519,9 @@ void prombsTest()
                 bd.prior_log[i] = 0;
         }
         MET("Testing prombs",
-            prombs   (result1, bd.prior_log, &prombsTest_f, bd.T, bd.T-1));
+            prombs   (result1, bd.prior_log, &prombsTest_f, bd.T, bd.T-1, NULL));
         MET("Testing prombsExt",
-            prombsExt(result2, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.epsilon, bd.T, bd.T-1));
+            prombsExt(result2, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.epsilon, bd.T, bd.T-1, NULL));
 
         sum = -HUGE_VAL;
         for (i = 0; i < bd.T; i++) {
