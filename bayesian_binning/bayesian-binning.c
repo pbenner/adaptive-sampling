@@ -43,8 +43,6 @@
 
 // data that has to be immutable
 typedef struct {
-        // precision for entropy estimates
-        prob_t epsilon;
         // number of timesteps
         unsigned int T;
         unsigned int events;
@@ -265,14 +263,13 @@ static
 prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_ref)
 {
         prob_t ev_log[bd.T];
-        prob_t epsilon = bd.epsilon;
         prob_t sum;
 
         bp->add_event.n     = n;
         bp->add_event.pos   = i;
         bp->add_event.which = j;
 
-        prombsExt(ev_log, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bd.T, bd.T-1, (void *)bp);
+        prombsExt(ev_log, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, bd.T-1, (void *)bp);
 
         sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
@@ -541,7 +538,7 @@ void prombsTest()
         MET("Testing prombs",
             prombs   (result1, bd.prior_log, &prombsTest_f, bd.T, bd.T-1, NULL));
         MET("Testing prombsExt",
-            prombsExt(result2, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.epsilon, bd.T, bd.T-1, NULL));
+            prombsExt(result2, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.T, bd.T-1, NULL));
 
         sum = -HUGE_VAL;
         for (i = 0; i < bd.T; i++) {
@@ -665,8 +662,9 @@ bin_log(
         bzero(differential_gain, K*sizeof(prob_t));
         bzero(effective_counts,  K*sizeof(prob_t));
 
+        prombs_init(options->epsilon);
+
         verbose            = options->verbose;
-        bd.epsilon         = options->epsilon;
         bd.beta            = beta;
         bd.T               = K;
         bd.prior_log       = prior_log;

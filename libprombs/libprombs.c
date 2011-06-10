@@ -24,6 +24,12 @@
 #include <bayes_datatypes.h>
 #include <bayes_logarithmetic.h>
 
+static prob_t prombsExt_epsilon = 0.0001;
+
+void prombs_init(prob_t epsilon) {
+        prombsExt_epsilon = epsilon;
+}
+
 static
 void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
 {
@@ -51,6 +57,24 @@ void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
         }
 }
 
+static inline
+void init_f(Matrix *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
+{
+        size_t i, j;
+
+        // initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL
+        for (j = 0; j < L; j++) {
+                ak->mat[0][j] = (*f)(0, j, data);
+        }
+        // pr is now initialized to
+        // pr = [f(0,1), f(0,2), ..., f(0,L)]
+        for (i = 1; i < L; i++) {
+                for (j = i; j < L; j++) {
+                        ak->mat[i][j] = (*f)(i, j, data);
+                }
+        }
+}
+
 // result: array where the result is saved
 // g: contains the prior P(m_B) for m_B = 1,...,L
 // L: the number of inputs (maximal number of bins)
@@ -61,18 +85,12 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, s
         prob_t pr[L];
         size_t i, j;
 
-        // initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL
+        // init
+        init_f(ak, f, L, data);
         for (j = 0; j < L; j++) {
-                ak->mat[0][j] = (*f)(0, j, data);
                 pr[j] = ak->mat[0][j];
         }
-        // pr is now initialized to
-        // pr = [f(0,1), f(0,2), ..., f(0,L)]
-        for (i = 1; i < L; i++) {
-                for (j = i; j < L; j++) {
-                        ak->mat[i][j] = (*f)(i, j, data);
-                }
-        }
+
         // compute the products
         for (i = 0; i < m; i++) {
                 logproduct(pr, ak, L, i+1);
@@ -95,7 +113,6 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, s
         freeMatrix(ak);
 }
 
-static prob_t prombsExt_epsilon;
 static prob_t (*prombsExt_f)(int, int, void*);
 static prob_t (*prombsExt_h)(int, int, void*);
 static prob_t prombsExt_fprime(int i, int j, void *data) {
@@ -107,7 +124,6 @@ void prombsExt(
         prob_t *g,
         prob_t (*f)(int, int, void*), // on log scale
         prob_t (*h)(int, int, void*), // on normal scale
-        prob_t epsilon,
         size_t L,
         size_t m,
         void *data)
@@ -116,13 +132,12 @@ void prombsExt(
         prob_t tmp[L];
         prombsExt_f = f;
         prombsExt_h = h;
-        prombsExt_epsilon = epsilon;
         prombs(result, g, &prombsExt_fprime, L, m, data);
         prombs(tmp, g, f, L, m, data);
 
         for (i = 0; i < L; i++) {
                 if (result[i] != tmp[i]) {
-                        result[i] = logsub(result[i], tmp[i]) - logl(epsilon);
+                        result[i] = logsub(result[i], tmp[i]) - logl(prombsExt_epsilon);
                 }
                 else {
                         // this can happen if all counts are zero
