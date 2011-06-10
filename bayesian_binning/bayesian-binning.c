@@ -211,13 +211,6 @@ static prob_t execPrombs_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
-        // include only those bins that don't cover
-        // position pos, which means, that only multi-bins
-        // are included, that have a break at position
-        // pos
-        if (i < bp->bprob_pos && bp->bprob_pos < j) {
-                return -HUGE_VAL;
-        }
         return iec_log(bp, i, j);
 }
 
@@ -314,6 +307,30 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         return expl(sumModels(ev_log) - evidence_ref);
 }
 
+static prob_t breakProb_f(int i, int j, void *data)
+{
+        binProblem *bp = (binProblem *)data;
+
+        // include only those bins that don't cover
+        // position pos, which means, that only multi-bins
+        // are included, that have a break at position
+        // pos
+        if (i < bp->bprob_pos && bp->bprob_pos < j) {
+                return -HUGE_VAL;
+        }
+        return iec_log(bp, i, j);
+}
+static
+prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
+{
+        prob_t ev_log[bd.T];
+
+        bp->bprob_pos = pos;
+        prombs(ev_log, bd.prior_log, &breakProb_f, bd.T, bd.T-1, (void *)bp);
+
+        return expl(sumModels(ev_log) - evidence_ref);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Utility functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -403,15 +420,11 @@ void computeBreakProbabilities(
         Options *options)
 {
         binProblem bp; binProblemInit(&bp, options);
-        prob_t ev_log[bd.T];
         unsigned int i;
 
         for (i = 0; i < bd.T; i++) {
                 notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bd.T);
-                bp.bprob_pos = i;
-                execPrombs(&bp, ev_log);
-
-                bprob[i] = expl(sumModels(ev_log) - evidence_ref);
+                bprob[i] = breakProb(&bp, i, evidence_ref);
         }
 }
 
