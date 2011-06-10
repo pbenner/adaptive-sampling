@@ -207,7 +207,8 @@ void binProblemInit(binProblem *bp, Options *options)
 // Prombs
 ////////////////////////////////////////////////////////////////////////////////
 
-static prob_t execPrombs_f(int i, int j, void *data)
+static
+prob_t execPrombs_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
