@@ -79,7 +79,7 @@ static binData bd;
 static
 unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
 {
-        if (bp->add_event.which == event &&
+        if (bp != NULL && bp->add_event.which == event &&
             ks <= bp->add_event.pos && bp->add_event.pos <= ke) {
                 return gsl_matrix_get(bd.counts[event], ks, ke) +
                         bp->add_event.n;
@@ -93,7 +93,7 @@ unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
 }
 
 static
-prob_t countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
+prob_t countAlpha(unsigned int event, int ks, int ke)
 {
         if (ks <= ke) {
                 return gsl_matrix_get(bd.alpha[event], ks, ke);
@@ -108,7 +108,7 @@ prob_t countAlpha(binProblem *bp, unsigned int event, int ks, int ke)
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline
-prob_t sumModels(binProblem *bp, prob_t *ev_log)
+prob_t sumModels(prob_t *ev_log)
 {
         // sum up the vector returned by prombs
         prob_t sum = -HUGE_VAL;
@@ -123,7 +123,7 @@ prob_t sumModels(binProblem *bp, prob_t *ev_log)
 }
 
 static
-prob_t mbeta_log(binProblem *bp, prob_t *p)
+prob_t mbeta_log(prob_t *p)
 {
         unsigned int i;
         prob_t sum1, sum2;
@@ -149,31 +149,31 @@ prob_t iec_log(binProblem *bp, int kk, int k)
                 return -HUGE_VAL;
         }
         for (i = 0; i < bd.events; i++) {
-                c[i]     = countStatistic(bp, i, kk, k) + countAlpha(bp, i, kk, k);
-                alpha[i] = countAlpha(bp, i, kk, k);
+                c[i]     = countStatistic(bp, i, kk, k) + countAlpha(i, kk, k);
+                alpha[i] = countAlpha(i, kk, k);
         }
-        if (kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
+        if (bp != NULL && kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
                 // compute marginals
                 // TODO: extend to multinomial case
                 if (bp->fix_prob.which == 0) {
                         return logl(gamma) + (c[0]-1)*logl(bp->fix_prob.val)
                                 + (c[1]-1)*logl(1-bp->fix_prob.val)
-                                - mbeta_log(bp, alpha);
+                                - mbeta_log(alpha);
                 }
                 else {
                         return logl(gamma) + (c[0]-1)*log(1-bp->fix_prob.val)
                                 + (c[1]-1)*log(bp->fix_prob.val)
-                                - mbeta_log(bp, alpha);
+                                - mbeta_log(alpha);
                 }
         }
         else {
-                return logl(gamma) + (mbeta_log(bp, c) - mbeta_log(bp, alpha));
+                return logl(gamma) + (mbeta_log(c) - mbeta_log(alpha));
         }
 }
 
 /* Find the smallest m_B for which the prior P(m_B) is nonzero. */
 static
-int minM(binProblem *bp)
+int minM()
 {
         int i;
         for (i = bd.T-1; i>0; i--) {
@@ -218,7 +218,7 @@ void execPrombs(binProblem *bp, prob_t *ev_log, int pos)
 {
         execPrombs_bp  = bp;
         execPrombs_pos = pos;
-        prombs(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM(bp));
+        prombs(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM());
 }
 
 static
@@ -226,7 +226,7 @@ prob_t evidence(binProblem *bp, prob_t *ev_log)
 {
         execPrombs(bp, ev_log, -1);
 
-        return sumModels(bp, ev_log);
+        return sumModels(ev_log);
 }
 
 static
@@ -237,11 +237,11 @@ prob_t singlebinEntropy(binProblem *bp, int i, int j)
         prob_t c[bd.events];
         prob_t sum = 0;
         for (k = 0; k < bd.events; k++) {
-                c[k] = countStatistic(bp, k, i, j) + countAlpha(bp, k, i, j);
+                c[k] = countStatistic(bp, k, i, j) + countAlpha(k, i, j);
                 sum += (c[k] - 1.0)*gsl_sf_psi(c[k]);
                 n   +=  c[k];
         }
-        return mbeta_log(bp, c) + (n - bd.events)*gsl_sf_psi(n) - sum;
+        return mbeta_log(c) + (n - bd.events)*gsl_sf_psi(n) - sum;
 }
 
 static binProblem *differentialEntropy_bp;
@@ -268,12 +268,12 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         differentialEntropy_bp = bp;
         prombsExt(ev_log, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, epsilon, bd.T, bd.T-1);
 
-        sum = sumModels(bp, ev_log);
+        sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
                 return 0.0;
         }
         else {
-                return -expl(sumModels(bp, ev_log) - evidence_ref);
+                return -expl(sumModels(ev_log) - evidence_ref);
         }
 }
 
@@ -285,7 +285,7 @@ static prob_t effectiveCounts_f(int i, int j)
                 int k;
                 prob_t n = 0;
                 for (k = 0; k < bd.events; k++) {
-                        n += countStatistic(effectiveCounts_bp, k, i, j) + countAlpha(effectiveCounts_bp, k, i, j);
+                        n += countStatistic(effectiveCounts_bp, k, i, j) + countAlpha(k, i, j);
                 }
                 return log(n) + iec_log(effectiveCounts_bp, i, j);
         }
@@ -302,7 +302,7 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         effectiveCounts_pos = pos;
         prombs(ev_log, bd.prior_log, &effectiveCounts_f, bd.T, bd.T-1);
 
-        return expl(sumModels(bp, ev_log) - evidence_ref);
+        return expl(sumModels(ev_log) - evidence_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +401,7 @@ void computeBreakProbabilities(
                 notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bd.T);
                 execPrombs(&bp, ev_log, i);
 
-                bprob[i] = expl(sumModels(&bp, ev_log) - evidence_ref);
+                bprob[i] = expl(sumModels(ev_log) - evidence_ref);
         }
 }
 
@@ -569,7 +569,7 @@ void computeBinning(
         }
         // compute moments
         if (options->marginal) {
-                computeMarginal(moments, evidence_ref, options);
+                computeMarginal(marginals, evidence_ref, options);
         }
         // compute break probability
         if (options->bprob) {
