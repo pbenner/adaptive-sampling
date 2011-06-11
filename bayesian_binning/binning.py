@@ -61,6 +61,7 @@ def usage():
     print "       --which=EVENT              - for which event to compute the binning"
     print
     print "       --threads=THREADS          - number of threads [default: 1]"
+    print "       --stacksize=BYTES          - thread stack size [default: 256*1024]"
     print
     print "       --load=FILE                - load result from file"
     print "       --save=FILE                - save result to file"
@@ -209,6 +210,7 @@ options = {
     'n_moments'         : 3,
     'which'             : 0,
     'threads'           : 1,
+    'stacksize'         : 256*1024,
     'visualization'     : None,
     'load'              : None,
     'save'              : None,
@@ -227,7 +229,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
-                      "effective-counts", "savefig=", "threads="]
+                      "effective-counts", "savefig=", "threads=", "stacksize="]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -274,6 +276,12 @@ def main():
         if o == "--threads":
             if int(a) >= 1:
                 options["threads"] = int(a)
+            else:
+                usage()
+                return 0
+        if o == "--stacksize":
+            if int(a) >= 1:
+                options["stacksize"] = int(a)
             else:
                 usage()
                 return 0

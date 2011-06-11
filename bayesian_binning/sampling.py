@@ -71,6 +71,7 @@ def usage():
     print "       --port=PORT                - connect to port from a matlab server for data collection"
     print
     print "       --threads=THREADS          - number of threads [default: 1]"
+    print "       --stacksize=BYTES          - thread stack size [default: 256*1024]"
     print
     print "       --load=FILE                - load result from file"
     print "       --save=FILE                - save result to file"
@@ -343,6 +344,7 @@ options = {
     'which'             : 0,
     'lapsing'           : 0.0,
     'threads'           : 1,
+    'stacksize'         : 256*1024,
     'strategy'          : 'differential-gain',
     'port'              : None,
     'filter'            : None,
@@ -366,7 +368,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
                       "plot-utility", "strategy=", "savefig=", "lapsing=", "port=",
-                      "threads=" ]
+                      "threads=", "stacksize=" ]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -423,6 +425,12 @@ def main():
         if o == "--threads":
             if int(a) >= 1:
                 options["threads"] = int(a)
+            else:
+                usage()
+                return 0
+        if o == "--stacksize":
+            if int(a) >= 1:
+                options["stacksize"] = int(a)
             else:
                 usage()
                 return 0
