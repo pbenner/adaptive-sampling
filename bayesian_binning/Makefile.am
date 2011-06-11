@@ -5,7 +5,8 @@ INCLUDES = -I$(top_srcdir)/include
 ## bayesian-binning library
 lib_LTLIBRARIES  = libbayesian-binning.la
 libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h interface.c interface.h
-libbayesian_binning_la_LIBADD  = $(top_builddir)/libexception/libexception.la
+libbayesian_binning_la_LIBADD  = $(LIB_PTHREAD)
+libbayesian_binning_la_LIBADD += $(top_builddir)/libexception/libexception.la
 libbayesian_binning_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 libbayesian_binning_la_LDFLAGS = -no-undefined -version-info 0:0:0
 

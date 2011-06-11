@@ -90,6 +90,8 @@ AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
 AC_CHECK_LIB([pthread], [pthread_create], LIB_PTHREAD="-lpthread",
   AC_MSG_ERROR([this library is required]))
 
+AC_SUBST(LIB_PTHREAD)
+
 dnl ,---------------------------- 
 dnl | GETOPT_LONG
 dnl `----------------------------

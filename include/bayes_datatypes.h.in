@@ -33,6 +33,7 @@ typedef struct options {
         int verbose;
         int prombsTest;
         int bprob;
+        int threads;
         int differential_gain;
         int effective_counts;
         int which;
