@@ -184,7 +184,7 @@ static
 int minM()
 {
         int i;
-        for (i = bd.T-1; i>0; i--) {
+        for (i = bd.T-1; i > 0; i--) {
                 if (gsl_vector_get(bd.beta, i) > 0) {
                         return i;
                 }
@@ -280,7 +280,7 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         bp->add_event.pos   = i;
         bp->add_event.which = j;
 
-        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, bd.T-1, (void *)bp);
+        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, minM()-1, (void *)bp);
 
         sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
@@ -314,7 +314,7 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         prob_t ev_log[bd.T];
 
         bp->counts_pos = pos;
-        prombs(ev_log, bp->ak, bd.prior_log, &effectiveCounts_f, bd.T, bd.T-1, (void *)bp);
+        prombs(ev_log, bp->ak, bd.prior_log, &effectiveCounts_f, bd.T, minM(), (void *)bp);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -339,7 +339,7 @@ prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         prob_t ev_log[bd.T];
 
         bp->bprob_pos = pos;
-        prombs(ev_log, bp->ak, bd.prior_log, &breakProb_f, bd.T, bd.T-1, (void *)bp);
+        prombs(ev_log, bp->ak, bd.prior_log, &breakProb_f, bd.T, minM(), (void *)bp);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -669,9 +669,9 @@ void prombsTest()
                 bd.prior_log[i] = 0;
         }
         MET("Testing prombs",
-            prombs   (result1, ak, bd.prior_log, &prombsTest_f, bd.T, bd.T-1, NULL));
+            prombs   (result1, ak, bd.prior_log, &prombsTest_f, bd.T, minM(), NULL));
         MET("Testing prombsExt",
-            prombsExt(result2, ak, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.T, bd.T-1, NULL));
+            prombsExt(result2, ak, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.T, minM(), NULL));
 
         sum = -HUGE_VAL;
         for (i = 0; i < bd.T; i++) {
