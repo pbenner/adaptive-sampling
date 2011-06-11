@@ -42,6 +42,8 @@
 // Data structures
 ////////////////////////////////////////////////////////////////////////////////
 
+#define NUM_THREADS 2
+
 // data that has to be immutable
 typedef struct {
         // number of timesteps
@@ -442,27 +444,30 @@ void computeBreakProbabilities(
         prob_t evidence_ref,
         Options *options)
 {
-        binProblem bp; binProblemInit(&bp, options);
-        unsigned int i, rc;
+        unsigned int i, j, rc;
 
-        pthread_t threads[bd.T];
-        pthread_data_bprob data[bd.T];
+        binProblem bp[NUM_THREADS];
+        pthread_t threads[NUM_THREADS];
+        pthread_data_bprob data[NUM_THREADS];
 
-        for (i = 0; i < bd.T; i++) {
-                notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bd.T);
-                data[i].bp = &bp;
-                data[i].i = i;
-                data[i].bprob = bprob;
-                data[i].evidence_ref = evidence_ref;
-                rc = pthread_create(&threads[i], NULL, computeBreakProbabilities_thread, (void *)&data[i]);
-                if (rc) {
-                        std_err(NONE, "Couldn't create thread.");
+        for (i = 0; i < bd.T; i += NUM_THREADS) {
+                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.T);
+                        binProblemInit(&bp[j], options);
+                        data[j].bp = &bp[j];
+                        data[j].i = i+j;
+                        data[j].bprob = bprob;
+                        data[j].evidence_ref = evidence_ref;
+                        rc = pthread_create(&threads[j], NULL, computeBreakProbabilities_thread, (void *)&data[j]);
+                        if (rc) {
+                                std_err(NONE, "Couldn't create thread.");
+                        }
                 }
-        }
-        for (i = 0; i < bd.T; i++) {
-                rc = pthread_join(threads[i], NULL);
-                if (rc) {
-                        std_err(NONE, "Couldn't join thread.");
+                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+                        rc = pthread_join(threads[j], NULL);
+                        if (rc) {
+                                std_err(NONE, "Couldn't join thread.");
+                        }
                 }
         }
 }
@@ -513,7 +518,7 @@ void * computeMoments_thread(void* data_)
         int i = data->i, j;
         prob_t **moments = data->moments;
         prob_t evidence_ref = data->evidence_ref;
-        Options *options = options;
+        Options *options = data->options;
 
         // Moments
         for (j = 0; j < options->n_moments; j++) {
@@ -528,28 +533,31 @@ void computeMoments(
         prob_t evidence_ref,
         Options *options)
 {
-        binProblem bp; binProblemInit(&bp, options);
-        unsigned int i, rc;
+        int i, j, rc;
 
-        pthread_t threads[bd.T];
-        pthread_data_moments data[bd.T];
+        binProblem bp[NUM_THREADS];
+        pthread_t threads[NUM_THREADS];
+        pthread_data_moments data[NUM_THREADS];
 
-        for (i = 0; i < bd.T; i++) {
-                notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bd.T);
-                data[i].bp = &bp;
-                data[i].i = i;
-                data[i].moments = moments;
-                data[i].evidence_ref = evidence_ref;
-                data[i].options = options;
-                rc = pthread_create(&threads[i], NULL, computeMoments_thread, (void *)&data[i]);
-                if (rc) {
-                        std_err(NONE, "Couldn't create thread.");
+        for (i = 0; i < bd.T; i += NUM_THREADS) {
+                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.T);
+                        binProblemInit(&bp[j], options);
+                        data[j].bp = &bp[j];
+                        data[j].i = i+j;
+                        data[j].moments = moments;
+                        data[j].evidence_ref = evidence_ref;
+                        data[j].options = options;
+                        rc = pthread_create(&threads[j], NULL, computeMoments_thread, (void *)&data[j]);
+                        if (rc) {
+                                std_err(NONE, "Couldn't create thread.");
+                        }
                 }
-        }
-        for (i = 0; i < bd.T; i++) {
-                rc = pthread_join(threads[i], NULL);
-                if (rc) {
-                        std_err(NONE, "Couldn't join thread.");
+                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+                        rc = pthread_join(threads[j], NULL);
+                        if (rc) {
+                                std_err(NONE, "Couldn't join thread.");
+                        }
                 }
         }
 }
@@ -561,7 +569,7 @@ void computeMarginal(
         Options *options)
 {
         binProblem bp; binProblemInit(&bp, options);
-        unsigned int i, j;
+        int i, j;
 
         for (i = 0; i < bd.T; i++) {
                 notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bd.T);
