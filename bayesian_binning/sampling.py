@@ -70,6 +70,8 @@ def usage():
     print
     print "       --port=PORT                - connect to port from a matlab server for data collection"
     print
+    print "       --threads=THREADS          - number of threads [default: 1]"
+    print
     print "       --load=FILE                - load result from file"
     print "       --save=FILE                - save result to file"
     print "       --savefig=FILE             - save figure to file"
@@ -340,6 +342,7 @@ options = {
     'marginal_range'    : (0.0,1.0),
     'which'             : 0,
     'lapsing'           : 0.0,
+    'threads'           : 1,
     'strategy'          : 'differential-gain',
     'port'              : None,
     'filter'            : None,
@@ -362,7 +365,8 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
-                      "plot-utility", "strategy=", "savefig=", "lapsing=", "port="]
+                      "plot-utility", "strategy=", "savefig=", "lapsing=", "port=",
+                      "threads=" ]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -416,6 +420,12 @@ def main():
             options["epsilon"] = float(a)
         if o == "--plot-utility":
             options["plot-utility"] = True
+        if o == "--threads":
+            if int(a) >= 1:
+                options["threads"] = int(a)
+            else:
+                usage()
+                return 0
     if len(tail) != 1:
         usage()
         return 1

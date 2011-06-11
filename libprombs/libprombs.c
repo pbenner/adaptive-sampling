@@ -79,9 +79,15 @@ void init_f(Matrix *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
 // g: contains the prior P(m_B) for m_B = 1,...,L
 // L: the number of inputs (maximal number of bins)
 // m: the maximal number of bins in a multibin
-void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data)
+void prombs(
+        prob_t *result,
+        Matrix *ak,
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
+        size_t L,
+        size_t m,
+        void *data)
 {
-        Matrix *ak = allocMatrix(L, L);
         prob_t pr[L];
         size_t i, j;
 
@@ -109,8 +115,6 @@ void prombs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, s
                         result[L-1-i] = pr[i] + g[L-1-i];
                 }
         }
-
-        freeMatrix(ak);
 }
 
 static prob_t (*prombsExt_f)(int, int, void*);
@@ -121,6 +125,7 @@ static prob_t prombsExt_fprime(int i, int j, void *data) {
 
 void prombsExt(
         prob_t *result,
+        Matrix *ak,
         prob_t *g,
         prob_t (*f)(int, int, void*), // on log scale
         prob_t (*h)(int, int, void*), // on normal scale
@@ -132,8 +137,8 @@ void prombsExt(
         prob_t tmp[L];
         prombsExt_f = f;
         prombsExt_h = h;
-        prombs(result, g, &prombsExt_fprime, L, m, data);
-        prombs(tmp, g, f, L, m, data);
+        prombs(result, ak, g, &prombsExt_fprime, L, m, data);
+        prombs(tmp, ak, g, f, L, m, data);
 
         for (i = 0; i < L; i++) {
                 if (result[i] != tmp[i]) {

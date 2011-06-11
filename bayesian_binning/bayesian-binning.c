@@ -42,8 +42,6 @@
 // Data structures
 ////////////////////////////////////////////////////////////////////////////////
 
-#define NUM_THREADS 40
-
 // data that has to be immutable
 typedef struct {
         // number of timesteps
@@ -59,6 +57,8 @@ typedef struct {
 
 // mutable data, local to each thread
 typedef struct {
+        // temporary memory for prombs
+        Matrix *ak;
         // break probability
         int bprob_pos;
         // effective counts
@@ -194,6 +194,7 @@ int minM()
 static
 void binProblemInit(binProblem *bp, Options *options)
 {
+        bp->ak              = allocMatrix(bd.T, bd.T);
         bp->bprob_pos       = -1;
         bp->counts_pos      = -1;
         bp->add_event.pos   = -1;
@@ -202,6 +203,12 @@ void binProblemInit(binProblem *bp, Options *options)
         bp->fix_prob.pos    = -1;
         bp->fix_prob.val    = 0;
         bp->fix_prob.which  = options->which;
+}
+
+static
+void binProblemFree(binProblem *bp)
+{
+        freeMatrix(bp->ak);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +226,7 @@ prob_t execPrombs_f(int i, int j, void *data)
 static
 void execPrombs(binProblem *bp, prob_t *ev_log)
 {
-        prombs(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM(), (void *)bp);
+        prombs(ev_log, bp->ak, bd.prior_log, &execPrombs_f, bd.T, minM(), (void *)bp);
 }
 
 static
@@ -272,7 +279,7 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         bp->add_event.pos   = i;
         bp->add_event.which = j;
 
-        prombsExt(ev_log, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, bd.T-1, (void *)bp);
+        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, bd.T-1, (void *)bp);
 
         sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
@@ -306,7 +313,7 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         prob_t ev_log[bd.T];
 
         bp->counts_pos = pos;
-        prombs(ev_log, bd.prior_log, &effectiveCounts_f, bd.T, bd.T-1, (void *)bp);
+        prombs(ev_log, bp->ak, bd.prior_log, &effectiveCounts_f, bd.T, bd.T-1, (void *)bp);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -331,7 +338,7 @@ prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
         prob_t ev_log[bd.T];
 
         bp->bprob_pos = pos;
-        prombs(ev_log, bd.prior_log, &breakProb_f, bd.T, bd.T-1, (void *)bp);
+        prombs(ev_log, bp->ak, bd.prior_log, &breakProb_f, bd.T, bd.T-1, (void *)bp);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -398,6 +405,8 @@ void computeEffectiveCounts(
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd.T);
                 result[i] = effectiveCounts(&bp, i, evidence_ref);
         }
+
+        binProblemFree(&bp);
 }
 
 static
@@ -446,29 +455,35 @@ void computeBreakProbabilities(
 {
         unsigned int i, j, rc;
 
-        binProblem bp[NUM_THREADS];
-        pthread_t threads[NUM_THREADS];
-        pthread_data_bprob data[NUM_THREADS];
+        binProblem bp[options->threads];
+        pthread_t threads[options->threads];
+        pthread_data_bprob data[options->threads];
 
-        for (i = 0; i < bd.T; i += NUM_THREADS) {
-                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+        for (j = 0; j < options->threads; j++) {
+                binProblemInit(&bp[j], options);
+                data[j].bp = &bp[j];
+                data[j].bprob = bprob;
+                data[j].evidence_ref = evidence_ref;
+        }
+        for (i = 0; i < bd.T; i += options->threads) {
+                for (j = 0; j < options->threads && i+j < bd.T; j++) {
                         notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.T);
                         binProblemInit(&bp[j], options);
-                        data[j].bp = &bp[j];
                         data[j].i = i+j;
-                        data[j].bprob = bprob;
-                        data[j].evidence_ref = evidence_ref;
                         rc = pthread_create(&threads[j], NULL, computeBreakProbabilities_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
                 }
-                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+                for (j = 0; j < options->threads && i+j < bd.T; j++) {
                         rc = pthread_join(threads[j], NULL);
                         if (rc) {
                                 std_err(NONE, "Couldn't join thread.");
                         }
                 }
+        }
+        for (j = 0; j < options->threads; j++) {
+                binProblemFree(&bp[j]);
         }
 }
 
@@ -500,6 +515,8 @@ void computeDifferentialUtility(
                 }
                 result[i] = entropy - result[i];
         }
+
+        binProblemFree(&bp);
 }
 
 typedef struct {
@@ -535,30 +552,36 @@ void computeMoments(
 {
         int i, j, rc;
 
-        binProblem bp[NUM_THREADS];
-        pthread_t threads[NUM_THREADS];
-        pthread_data_moments data[NUM_THREADS];
+        binProblem bp[options->threads];
+        pthread_t threads[options->threads];
+        pthread_data_moments data[options->threads];
 
-        for (i = 0; i < bd.T; i += NUM_THREADS) {
-                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+        for (j = 0; j < options->threads; j++) {
+                binProblemInit(&bp[j], options);
+                data[j].bp = &bp[j];
+                data[j].moments = moments;
+                data[j].evidence_ref = evidence_ref;
+                data[j].options = options;
+        }
+        for (i = 0; i < bd.T; i += options->threads) {
+                for (j = 0; j < options->threads && i+j < bd.T; j++) {
                         notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.T);
                         binProblemInit(&bp[j], options);
-                        data[j].bp = &bp[j];
                         data[j].i = i+j;
-                        data[j].moments = moments;
-                        data[j].evidence_ref = evidence_ref;
-                        data[j].options = options;
                         rc = pthread_create(&threads[j], NULL, computeMoments_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
                 }
-                for (j = 0; j < NUM_THREADS && i+j < bd.T; j++) {
+                for (j = 0; j < options->threads && i+j < bd.T; j++) {
                         rc = pthread_join(threads[j], NULL);
                         if (rc) {
                                 std_err(NONE, "Couldn't join thread.");
                         }
                 }
+        }
+        for (j = 0; j < options->threads; j++) {
+                binProblemFree(&bp[j]);
         }
 }
 
@@ -585,6 +608,8 @@ void computeMarginal(
                         }
                 }
         }
+
+        binProblemFree(&bp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -614,15 +639,16 @@ void prombsTest()
         prob_t result2[bd.T];
         prob_t sum;
         unsigned int i;
+        Matrix *ak = allocMatrix(bd.T, bd.T);
 
         // set prior to 1
         for (i = 0; i < bd.T; i++) {
                 bd.prior_log[i] = 0;
         }
         MET("Testing prombs",
-            prombs   (result1, bd.prior_log, &prombsTest_f, bd.T, bd.T-1, NULL));
+            prombs   (result1, ak, bd.prior_log, &prombsTest_f, bd.T, bd.T-1, NULL));
         MET("Testing prombsExt",
-            prombsExt(result2, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.T, bd.T-1, NULL));
+            prombsExt(result2, ak, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.T, bd.T-1, NULL));
 
         sum = -HUGE_VAL;
         for (i = 0; i < bd.T; i++) {
@@ -637,6 +663,8 @@ void prombsTest()
                 sum = logadd(sum, result2[i]);
         }
         (void)printf("prombsExt: %.10f\n", (double)sum);
+
+        freeMatrix(ak);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -700,6 +728,8 @@ void computeBinning(
         if (options->effective_counts) {
                 computeEffectiveCounts(effective_counts, evidence_ref, options);
         }
+
+        binProblemFree(&bp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

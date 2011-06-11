@@ -60,6 +60,8 @@ def usage():
     print "   -k  --moments=N                - compute the first N>=3 moments"
     print "       --which=EVENT              - for which event to compute the binning"
     print
+    print "       --threads=THREADS          - number of threads [default: 1]"
+    print
     print "       --load=FILE                - load result from file"
     print "       --save=FILE                - save result to file"
     print "       --savefig=FILE             - save figure to file"
@@ -206,6 +208,7 @@ options = {
     'marginal_range'    : (0.0,1.0),
     'n_moments'         : 3,
     'which'             : 0,
+    'threads'           : 1,
     'visualization'     : None,
     'load'              : None,
     'save'              : None,
@@ -224,7 +227,7 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
-                      "effective-counts", "savefig="]
+                      "effective-counts", "savefig=", "threads="]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -268,6 +271,12 @@ def main():
             options["which"] = int(a)
         if o == "--epsilon":
             options["epsilon"] = float(a)
+        if o == "--threads":
+            if int(a) >= 1:
+                options["threads"] = int(a)
+            else:
+                usage()
+                return 0
     if len(tail) != 1:
         usage()
         return 1
