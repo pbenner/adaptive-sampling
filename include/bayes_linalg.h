@@ -18,6 +18,8 @@
 #ifndef LINALG_H
 #define LINALG_H
 
+#include <errno.h>
+
 #include <gsl/gsl_matrix.h>
 
 typedef struct vector {
@@ -34,22 +36,45 @@ typedef struct matrix {
 static inline
 Vector * allocVector(int size) {
         Vector *v  = (Vector *)malloc(sizeof(Vector));
+        if (v == NULL) {
+                goto err;
+        }
         v->vec     = (double *)malloc(sizeof(double) * size);
+        if (v->vec == NULL) {
+                goto err;
+        }
         v->size    = size;
         return v;
+
+err:
+        perror("allocVector");
+        exit(EXIT_FAILURE);
 }
 
 static inline
 Matrix * allocMatrix(int rows, int columns) {
         Matrix *m  = (Matrix * )malloc(sizeof(Matrix));
+        if (m == NULL) {
+                goto err;
+        }
         m->mat     = (double **)malloc(sizeof(double *) * rows);
+        if (m->mat == NULL) {
+                goto err;
+        }
         m->rows    = rows;
         m->columns = columns;
         int i;
         for (i = 0; i < rows; i++) {
                 m->mat[i] = (double *)malloc(sizeof(double) * columns);
+                if (m->mat[i] == NULL) {
+                        goto err;
+                }
         }
         return m;
+
+err:
+        perror("allocVector");
+        exit(EXIT_FAILURE);
 }
 
 static inline
