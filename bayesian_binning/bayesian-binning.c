@@ -22,6 +22,7 @@
 #include <strings.h>
 #include <math.h>
 #include <pthread.h>
+#include <limits.h>
 
 #include <bayes_exception.h>
 #include <bayes_logarithmetic.h>
@@ -460,7 +461,12 @@ void computeBreakProbabilities(
         pthread_data_bprob data[options->threads];
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
+        if (options->stacksize < PTHREAD_STACK_MIN) {
+                pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN);
+        }
+        else {
+                pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
+        }
 
         for (j = 0; j < options->threads; j++) {
                 binProblemInit(&bp[j], options);
@@ -560,7 +566,12 @@ void computeMoments(
         pthread_data_moments data[options->threads];
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
+        if (options->stacksize < PTHREAD_STACK_MIN) {
+                pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN);
+        }
+        else {
+                pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
+        }
 
         for (j = 0; j < options->threads; j++) {
                 binProblemInit(&bp[j], options);
