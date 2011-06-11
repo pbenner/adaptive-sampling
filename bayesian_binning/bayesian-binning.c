@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <math.h>
+#include <pthread.h>
 
 #include <bayes_exception.h>
 #include <bayes_logarithmetic.h>
@@ -415,6 +416,26 @@ void computeModelPosteriors(
         }
 }
 
+typedef struct {
+        binProblem *bp;
+        int i;
+        prob_t *bprob;
+        prob_t evidence_ref;
+} pthread_data_bprob;
+
+static
+void * computeBreakProbabilities_thread(void* data_)
+{
+        pthread_data_bprob *data  = (pthread_data_bprob *)data_;
+        binProblem *bp = data->bp;
+        int i = data->i;
+        prob_t *bprob = data->bprob;
+        prob_t evidence_ref = data->evidence_ref;
+
+        bprob[i] = breakProb(bp, i, evidence_ref);
+        return NULL;
+}
+
 static
 void computeBreakProbabilities(
         prob_t *bprob,
@@ -422,11 +443,27 @@ void computeBreakProbabilities(
         Options *options)
 {
         binProblem bp; binProblemInit(&bp, options);
-        unsigned int i;
+        unsigned int i, rc;
+
+        pthread_t threads[bd.T];
+        pthread_data_bprob data[bd.T];
 
         for (i = 0; i < bd.T; i++) {
                 notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+1)/bd.T);
-                bprob[i] = breakProb(&bp, i, evidence_ref);
+                data[i].bp = &bp;
+                data[i].i = i;
+                data[i].bprob = bprob;
+                data[i].evidence_ref = evidence_ref;
+                rc = pthread_create(&threads[i], NULL, computeBreakProbabilities_thread, (void *)&data[i]);
+                if (rc) {
+                        std_err(NONE, "Couldn't create thread.");
+                }
+        }
+        for (i = 0; i < bd.T; i++) {
+                rc = pthread_join(threads[i], NULL);
+                if (rc) {
+                        std_err(NONE, "Couldn't join thread.");
+                }
         }
 }
 
@@ -460,6 +497,31 @@ void computeDifferentialUtility(
         }
 }
 
+typedef struct {
+        binProblem *bp;
+        int i;
+        prob_t **moments;
+        prob_t evidence_ref;
+        Options *options;
+} pthread_data_moments;
+
+static
+void * computeMoments_thread(void* data_)
+{
+        pthread_data_moments *data  = (pthread_data_moments *)data_;
+        binProblem *bp = data->bp;
+        int i = data->i, j;
+        prob_t **moments = data->moments;
+        prob_t evidence_ref = data->evidence_ref;
+        Options *options = options;
+
+        // Moments
+        for (j = 0; j < options->n_moments; j++) {
+                moments[j][i] = moment(bp, j+1, i, evidence_ref);
+        }
+        return NULL;
+}
+
 static
 void computeMoments(
         prob_t **moments,
@@ -467,13 +529,27 @@ void computeMoments(
         Options *options)
 {
         binProblem bp; binProblemInit(&bp, options);
-        unsigned int i, j;
+        unsigned int i, rc;
+
+        pthread_t threads[bd.T];
+        pthread_data_moments data[bd.T];
 
         for (i = 0; i < bd.T; i++) {
                 notice(NONE, "Computing moments... %.1f%%", (float)100*(i+1)/bd.T);
-                // Moments
-                for (j = 0; j < options->n_moments; j++) {
-                        moments[j][i] = moment(&bp, j+1, i, evidence_ref);
+                data[i].bp = &bp;
+                data[i].i = i;
+                data[i].moments = moments;
+                data[i].evidence_ref = evidence_ref;
+                data[i].options = options;
+                rc = pthread_create(&threads[i], NULL, computeMoments_thread, (void *)&data[i]);
+                if (rc) {
+                        std_err(NONE, "Couldn't create thread.");
+                }
+        }
+        for (i = 0; i < bd.T; i++) {
+                rc = pthread_join(threads[i], NULL);
+                if (rc) {
+                        std_err(NONE, "Couldn't join thread.");
                 }
         }
 }

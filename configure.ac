@@ -87,6 +87,8 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
   AC_MSG_ERROR([this library is required]))
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
   AC_MSG_ERROR([this library is required]))
+AC_CHECK_LIB([pthread], [pthread_create], LIB_PTHREAD="-lpthread",
+  AC_MSG_ERROR([this library is required]))
 
 dnl ,---------------------------- 
 dnl | GETOPT_LONG
@@ -150,7 +152,7 @@ dnl | HEADERS
 dnl `----------------------------
 
 HEADERS_TO_CHECK="stdarg.h dlfcn.h dirent.h netinet/in.h sys/ioctl.h
-									arpa/inet.h netdb.h syslog.h signal.h"
+									arpa/inet.h netdb.h syslog.h signal.h pthread.h"
 
 AC_CHECK_HEADERS($HEADERS_TO_CHECK,,
 	AC_MSG_ERROR([this header is required]))
