@@ -331,7 +331,7 @@ prob_t breakProb_f(int i, int j, void *data)
         if (i < bp->bprob_pos && bp->bprob_pos < j) {
                 return -HUGE_VAL;
         }
-        return iec_log(bp, i, j);
+        return iec_log(NULL, i, j);
 }
 static
 prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
