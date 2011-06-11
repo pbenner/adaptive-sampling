@@ -34,6 +34,7 @@ typedef struct options {
         int prombsTest;
         int bprob;
         int threads;
+        int stacksize;
         int differential_gain;
         int effective_counts;
         int which;

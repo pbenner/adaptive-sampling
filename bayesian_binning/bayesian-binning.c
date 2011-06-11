@@ -458,6 +458,9 @@ void computeBreakProbabilities(
         binProblem bp[options->threads];
         pthread_t threads[options->threads];
         pthread_data_bprob data[options->threads];
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
 
         for (j = 0; j < options->threads; j++) {
                 binProblemInit(&bp[j], options);
@@ -470,7 +473,7 @@ void computeBreakProbabilities(
                         notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.T);
                         binProblemInit(&bp[j], options);
                         data[j].i = i+j;
-                        rc = pthread_create(&threads[j], NULL, computeBreakProbabilities_thread, (void *)&data[j]);
+                        rc = pthread_create(&threads[j], &attr, computeBreakProbabilities_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
@@ -555,6 +558,9 @@ void computeMoments(
         binProblem bp[options->threads];
         pthread_t threads[options->threads];
         pthread_data_moments data[options->threads];
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
 
         for (j = 0; j < options->threads; j++) {
                 binProblemInit(&bp[j], options);
@@ -568,7 +574,7 @@ void computeMoments(
                         notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.T);
                         binProblemInit(&bp[j], options);
                         data[j].i = i+j;
-                        rc = pthread_create(&threads[j], NULL, computeMoments_thread, (void *)&data[j]);
+                        rc = pthread_create(&threads[j], &attr, computeMoments_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }

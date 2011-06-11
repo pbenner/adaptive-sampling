@@ -63,6 +63,7 @@ class OPTIONS(Structure):
                  ("prombsTest",        c_int),
                  ("bprob",             c_int),
                  ("threads",           c_int),
+                 ("stacksize",         c_int),
                  ("differential_gain", c_int),
                  ("effective_counts",  c_int),
                  ("which",             c_int),
@@ -75,6 +76,7 @@ class OPTIONS(Structure):
      def __init__(self, options):
           self.which          = c_int(options["which"])
           self.threads        = c_int(options["threads"])
+          self.stacksize      = c_int(options["stacksize"])
           self.marginal       = c_int(options["marginal"])
           self.marginal_step  = c_float(options["marginal_step"])
           self.marginal_range = MARGINAL_RANGE(*options["marginal_range"])
