@@ -42,7 +42,7 @@
 // Data structures
 ////////////////////////////////////////////////////////////////////////////////
 
-#define NUM_THREADS 2
+#define NUM_THREADS 40
 
 // data that has to be immutable
 typedef struct {
