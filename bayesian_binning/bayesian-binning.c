@@ -472,7 +472,7 @@ void computeBreakProbabilities(
                 }
         }
 
-        for (j = 0; j < options->threads; j++) {
+        for (j = 0; j < options->threads && j < bd.T; j++) {
                 binProblemInit(&bp[j], options);
                 data[j].bp = &bp[j];
                 data[j].bprob = bprob;
@@ -494,7 +494,7 @@ void computeBreakProbabilities(
                         }
                 }
         }
-        for (j = 0; j < options->threads; j++) {
+        for (j = 0; j < options->threads && j < bd.T; j++) {
                 binProblemFree(&bp[j]);
         }
 }
@@ -580,7 +580,7 @@ void computeMoments(
                 }
         }
 
-        for (j = 0; j < options->threads; j++) {
+        for (j = 0; j < options->threads && j < bd.T; j++) {
                 binProblemInit(&bp[j], options);
                 data[j].bp = &bp[j];
                 data[j].moments = moments;
@@ -603,7 +603,7 @@ void computeMoments(
                         }
                 }
         }
-        for (j = 0; j < options->threads; j++) {
+        for (j = 0; j < options->threads && j < bd.T; j++) {
                 binProblemFree(&bp[j]);
         }
 }
