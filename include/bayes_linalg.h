@@ -73,7 +73,7 @@ Matrix * allocMatrix(int rows, int columns) {
         return m;
 
 err:
-        perror("allocVector");
+        perror("allocMatrix");
         exit(EXIT_FAILURE);
 }
 
