@@ -462,10 +462,14 @@ void computeBreakProbabilities(
         pthread_attr_t attr;
         pthread_attr_init(&attr);
         if (options->stacksize < PTHREAD_STACK_MIN) {
-                pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN);
+                if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
+                        std_warn(NONE, "Couldn't set stack size.");
+                }
         }
         else {
-                pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
+                if (pthread_attr_setstacksize (&attr, (size_t)options->stacksize) != 0) {
+                        std_warn(NONE, "Couldn't set stack size.");
+                }
         }
 
         for (j = 0; j < options->threads; j++) {
@@ -477,7 +481,6 @@ void computeBreakProbabilities(
         for (i = 0; i < bd.T; i += options->threads) {
                 for (j = 0; j < options->threads && i+j < bd.T; j++) {
                         notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.T);
-                        binProblemInit(&bp[j], options);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, computeBreakProbabilities_thread, (void *)&data[j]);
                         if (rc) {
@@ -567,10 +570,14 @@ void computeMoments(
         pthread_attr_t attr;
         pthread_attr_init(&attr);
         if (options->stacksize < PTHREAD_STACK_MIN) {
-                pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN);
+                if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
+                        std_warn(NONE, "Couldn't set stack size.");
+                }
         }
         else {
-                pthread_attr_setstacksize (&attr, (size_t)options->stacksize);
+                if (pthread_attr_setstacksize (&attr, (size_t)options->stacksize) != 0) {
+                        std_warn(NONE, "Couldn't set stack size.");
+                }
         }
 
         for (j = 0; j < options->threads; j++) {
@@ -583,7 +590,6 @@ void computeMoments(
         for (i = 0; i < bd.T; i += options->threads) {
                 for (j = 0; j < options->threads && i+j < bd.T; j++) {
                         notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.T);
-                        binProblemInit(&bp[j], options);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, computeMoments_thread, (void *)&data[j]);
                         if (rc) {
