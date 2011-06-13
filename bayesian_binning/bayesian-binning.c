@@ -280,7 +280,7 @@ prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_
         bp->add_event.pos   = i;
         bp->add_event.which = j;
 
-        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, minM()-1, (void *)bp);
+        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, minM(), (void *)bp);
 
         sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
