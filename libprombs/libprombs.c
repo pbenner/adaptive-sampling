@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <bayes_datatypes.h>
-#include <bayes_logarithmetic.h>
+#include <bayes/datatypes.h>
+#include <bayes/logarithmetic.h>
 
 static prob_t prombsExt_epsilon = 0.0001;
 

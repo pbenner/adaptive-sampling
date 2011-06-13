@@ -4,4 +4,4 @@
 include_HEADERS = 
 
 ## include headers in distribution
-EXTRA_DIST = bayes_linalg.h bayes_datatypes.h bayes_exception.h bayes_logarithmetic.h bayes_prombs.h gnugetopt.h
+EXTRA_DIST = bayes/linalg.h bayes/datatypes.h bayes/exception.h bayes/logarithmetic.h bayes/prombs.h gnugetopt.h

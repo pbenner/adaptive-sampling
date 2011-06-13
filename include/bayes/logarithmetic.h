@@ -20,7 +20,7 @@
 
 #include <math.h>
 
-#include <bayes_datatypes.h>
+#include <bayes/datatypes.h>
 
 /* Log Sum of Exponentials Algorithm */
 

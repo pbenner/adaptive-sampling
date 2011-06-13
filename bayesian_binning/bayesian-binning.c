@@ -24,10 +24,10 @@
 #include <pthread.h>
 #include <limits.h>
 
-#include <bayes_exception.h>
-#include <bayes_logarithmetic.h>
-#include <bayes_prombs.h>
-#include <bayes_datatypes.h>
+#include <bayes/exception.h>
+#include <bayes/logarithmetic.h>
+#include <bayes/prombs.h>
+#include <bayes/datatypes.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
