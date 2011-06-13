@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#include <bayes_linalg.h>
+#include <bayes/linalg.h>
 
 #include <gsl/gsl_matrix.h>
 

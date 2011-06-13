@@ -22,7 +22,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-#include <bayes_linalg.h>
+#include <bayes/linalg.h>
 
 
 #endif /* INTERFACE_HH */

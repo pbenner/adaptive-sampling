@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <bayes_exception.h>
-#include <bayes_linalg.h>
+#include <bayes/exception.h>
+#include <bayes/linalg.h>
 
 #include "interface.h"
 #include "bayesian-binning.h"

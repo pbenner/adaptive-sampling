@@ -260,7 +260,7 @@ dnl ,----------------------------
 dnl | AC_OUTPUT
 dnl `----------------------------
 
-AC_CONFIG_HEADER([config.h:config.h.in include/bayes_datatypes.h:include/bayes_datatypes.h.in])
+AC_CONFIG_HEADER([config.h:config.h.in include/bayes/datatypes.h:include/bayes/datatypes.h.in])
 AC_CONFIG_FILES([
 	Makefile
 	version.h

@@ -22,8 +22,8 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-#include <bayes_datatypes.h>
-#include <bayes_linalg.h>
+#include <bayes/datatypes.h>
+#include <bayes/linalg.h>
 
 extern BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options);
 

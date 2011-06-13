@@ -23,7 +23,7 @@
 
 namespace Bayes {
         extern "C" {
-#include <bayes_linalg.h>
+#include <bayes/linalg.h>
         }
 }
 
