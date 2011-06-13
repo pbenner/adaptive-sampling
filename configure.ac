@@ -1,4 +1,3 @@
-
 [1]dnl -- configure.ac --
 dnl
 dnl Copyright (C) 2010 Philipp Benner
