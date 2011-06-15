@@ -84,6 +84,7 @@ vstd_warn(int mode, const char *msg, va_list az)
 		(void)vfprintf(stderr, msg, az);
 	}
 	(void)fprintf(stderr, "\n");
+        (void)fflush(stderr);
 
 	return;
 }
@@ -117,9 +118,11 @@ vstd_notice(int mode, const char *msg, va_list az)
 		(void)vprintf(msg, az);
 	}
 	(void)printf("\n");
+        (void)fflush(stdout);
 
 	return;
 }
+
 
 void
 std_notice(int mode, const char *msg, ...)
@@ -187,6 +190,7 @@ vstd_err(int mode, const char *msg, va_list az)
 		(void)vfprintf(stderr, msg, az);
 	}
 	(void)fprintf(stderr, "\n");
+        (void)fflush(stderr);
 
 	exit(exit_code);
 
