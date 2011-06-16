@@ -63,12 +63,7 @@ void init_f(Matrix *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
         size_t i, j;
 
         // initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL
-        for (j = 0; j < L; j++) {
-                ak->mat[0][j] = (*f)(0, j, data);
-        }
-        // pr is now initialized to
-        // pr = [f(0,1), f(0,2), ..., f(0,L)]
-        for (i = 1; i < L; i++) {
+        for (i = 0; i < L; i++) {
                 for (j = i; j < L; j++) {
                         ak->mat[i][j] = (*f)(i, j, data);
                 }
