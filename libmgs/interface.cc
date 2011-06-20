@@ -68,8 +68,8 @@ void sample_bin(
                                 Bayes::logadd(result[bins2->size()-1], sum2);
                 }
         }
-        free(bins1);
-        free(bins2);
+        delete(bins1);
+        delete(bins2);
 }
 
 static
