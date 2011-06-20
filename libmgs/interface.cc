@@ -112,7 +112,7 @@ void mgs(
                 sample_multibin(result, g, f, data, mb);
         }
 
-        free(mb);
+        delete(mb);
 }
 
 }
