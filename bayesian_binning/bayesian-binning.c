@@ -198,10 +198,10 @@ static
 void binProblemInit(binProblem *bp, Options *options)
 {
         if (options->sample) {
-                bp->ak      = allocMatrix(bd.T, bd.T);
+                bp->ak      = NULL;
         }
         else {
-                bp->ak      = NULL;
+                bp->ak      = allocMatrix(bd.T, bd.T);
         }
         bp->bprob_pos       = -1;
         bp->counts_pos      = -1;
