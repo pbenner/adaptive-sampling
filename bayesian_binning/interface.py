@@ -67,6 +67,7 @@ class OPTIONS(Structure):
                  ("differential_gain", c_int),
                  ("effective_counts",  c_int),
                  ("which",             c_int),
+                 ("sample",            c_int),
                  ("marginal",          c_int),
                  ("marginal_step",     c_float),
                  ("marginal_range",    MARGINAL_RANGE),
@@ -77,6 +78,7 @@ class OPTIONS(Structure):
           self.which          = c_int(options["which"])
           self.threads        = c_int(options["threads"])
           self.stacksize      = c_int(options["stacksize"])
+          self.sample         = c_int(options["sample"])
           self.marginal       = c_int(options["marginal"])
           self.marginal_step  = c_float(options["marginal_step"])
           self.marginal_range = MARGINAL_RANGE(*options["marginal_range"])

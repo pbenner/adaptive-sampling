@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2010, 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,12 @@
 #include <math.h>
 #include <pthread.h>
 #include <limits.h>
+#include <sys/time.h>
 
 #include <bayes/exception.h>
 #include <bayes/logarithmetic.h>
 #include <bayes/prombs.h>
+#include <bayes/mgs.h>
 #include <bayes/datatypes.h>
 
 #include <gsl/gsl_errno.h>
@@ -231,9 +233,25 @@ void execPrombs(binProblem *bp, prob_t *ev_log)
 }
 
 static
-prob_t evidence(binProblem *bp, prob_t *ev_log)
+void execMgs(binProblem *bp, prob_t *ev_log, size_t N)
 {
-        execPrombs(bp, ev_log);
+        mgs(N, ev_log, bd.prior_log, &execPrombs_f, bd.T, (void *)bp);
+}
+
+static
+prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
+{
+        if (options->sample) {
+//                execPrombs(bp, ev_log);
+                prob_t result1 = sumModels(ev_log);
+                execMgs(bp, ev_log, options->sample);
+                prob_t result2 = sumModels(ev_log);
+                printf("prombs: %Lf, mgs: %Lf, err: %Lf\n", result1, result2,
+                       result1 - result2);
+        }
+        else {
+                execPrombs(bp, ev_log);
+        }
 
         return sumModels(ev_log);
 }
@@ -353,14 +371,15 @@ prob_t moment(
         binProblem *bp,
         unsigned int nth,
         unsigned int pos,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        Options *options)
 {
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.T];
 
         bp->add_event.pos = pos;
         bp->add_event.n   = nth;
-        evidence_log      = evidence(bp, evidence_log_tmp);
+        evidence_log      = evidence(bp, evidence_log_tmp, options);
         bp->add_event.pos = -1;
         bp->add_event.n   = 0;
 
@@ -373,7 +392,8 @@ prob_t marginal(
         int pos,
         prob_t val,
         int which,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        Options *options)
 {
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.T];
@@ -381,7 +401,7 @@ prob_t marginal(
         bp->fix_prob.pos   = pos;
         bp->fix_prob.val   = val;
         bp->fix_prob.which = which;
-        evidence_log       = evidence(bp, evidence_log_tmp);
+        evidence_log       = evidence(bp, evidence_log_tmp, options);
         bp->fix_prob.pos   = -1;
         bp->fix_prob.val   =  0;
         bp->fix_prob.which =  0;
@@ -519,7 +539,7 @@ void computeDifferentialUtility(
                 // recompute the evidence
                 result[i] = 0;
                 for (j = 0; j < bd.events; j++) {
-                        evidence_log = evidence(&bp, evidence_log_tmp);
+                        evidence_log = evidence(&bp, evidence_log_tmp, options);
                         // expected entropy for event j
                         expected_entropy = differentialEntropy(&bp, 1, i, j, evidence_log);
                         // initialize sum
@@ -551,7 +571,7 @@ void * computeMoments_thread(void* data_)
 
         // Moments
         for (j = 0; j < options->n_moments; j++) {
-                moments[j][i] = moment(bp, j+1, i, evidence_ref);
+                moments[j][i] = moment(bp, j+1, i, evidence_ref, options);
         }
         return NULL;
 }
@@ -624,7 +644,7 @@ void computeMarginal(
                         prob_t p = j*options->marginal_step;
                         if (options->marginal_range.from <= p &&
                             options->marginal_range.to   >= p) {
-                                marginals[i][j] = marginal(&bp, i, p, options->which, evidence_ref);
+                                marginals[i][j] = marginal(&bp, i, p, options->which, evidence_ref, options);
                         }
                         else {
                                 marginals[i][j] = 0;
@@ -726,7 +746,7 @@ void computeBinning(
         // compute the model prior once for all computations
         computeModelPrior();
         // compute evidence P(D)
-        evidence_ref = evidence(&bp, evidence_log_tmp);
+        evidence_ref = evidence(&bp, evidence_log_tmp, options);
         // compute model posteriors P(m_B|D)
         if (options->model_posterior) {
                 computeModelPosteriors(evidence_log_tmp, mpost, evidence_ref);
@@ -759,6 +779,14 @@ void computeBinning(
 // Library entry point, initializes data structures
 ////////////////////////////////////////////////////////////////////////////////
 
+void __init_rand__() {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        time_t seed = tv.tv_sec*tv.tv_usec;
+
+        srand(seed);
+}
+
 BinningResultGSL *
 bin_log(
         size_t events,
@@ -786,6 +814,8 @@ bin_log(
         prob_t effective_counts[K];
         prob_t prior_log[K];
         unsigned int i, j;
+
+        __init_rand__();
 
         for (i = 0; i < options->n_moments; i++) {
                 moments[i]   = (prob_t *)calloc(K, sizeof(prob_t));

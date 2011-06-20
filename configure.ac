@@ -264,6 +264,7 @@ AC_CONFIG_FILES([
 	Makefile
 	version.h
 	libprombs/Makefile
+	libmgs/Makefile
 	libexception/Makefile
 	bayesian_binning/Makefile
 	dpm/Makefile

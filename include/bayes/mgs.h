@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _PROMBS_H_
-#define _PROMBS_H_
+#ifndef _MGS_H_
+#define _MGS_H_
 
 #include <bayes/datatypes.h>
 
-extern void prombs_init(prob_t epsilon);
-extern void prombs(prob_t *result, Matrix *ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
-extern void prombsExt(
-        prob_t *result,
-        Matrix *ak,
-        prob_t *g,
-        prob_t (*f)(int, int, void*),
-        prob_t (*h)(int, int, void*),
-        size_t L, size_t m, void *data);
+extern void mgs(size_t N, prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
 
-#endif /* _PROMBS_H_ */
+#endif /* _MGS_H_ */
