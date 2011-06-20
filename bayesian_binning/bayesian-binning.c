@@ -197,7 +197,12 @@ int minM()
 static
 void binProblemInit(binProblem *bp, Options *options)
 {
-        bp->ak              = allocMatrix(bd.T, bd.T);
+        if (options->sample) {
+                bp->ak      = allocMatrix(bd.T, bd.T);
+        }
+        else {
+                bp->ak      = NULL;
+        }
         bp->bprob_pos       = -1;
         bp->counts_pos      = -1;
         bp->add_event.pos   = -1;
@@ -211,7 +216,9 @@ void binProblemInit(binProblem *bp, Options *options)
 static
 void binProblemFree(binProblem *bp)
 {
-        freeMatrix(bp->ak);
+        if (bp->ak) {
+                freeMatrix(bp->ak);
+        }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +253,7 @@ prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
                 prob_t result1 = sumModels(ev_log);
                 execMgs(bp, ev_log, options->sample);
                 prob_t result2 = sumModels(ev_log);
-                printf("prombs: %Lf, mgs: %Lf, err: %Lf\n", result1, result2,
+                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf\n", result1, result2,
                        result1 - result2);
         }
         else {
