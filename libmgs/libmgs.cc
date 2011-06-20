@@ -145,5 +145,5 @@ Multibin::print_bins()
                 printf("(%lu, %lu)\n", (unsigned long)(*it).from, (unsigned long)(*it).to);
         }
 
-        free(bins);
+        delete(bins);
 }
