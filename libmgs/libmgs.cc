@@ -15,6 +15,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include "libmgs.hh"
@@ -140,7 +142,7 @@ Multibin::print_bins()
         list<bin_t>* bins = this->get_bins();
 
         for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
-                printf("(%d, %d)\n", (*it).from, (*it).to);
+                printf("(%lu, %lu)\n", (unsigned long)(*it).from, (unsigned long)(*it).to);
         }
 
         free(bins);
