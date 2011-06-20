@@ -253,7 +253,7 @@ prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
                 prob_t result1 = sumModels(ev_log);
                 execMgs(bp, ev_log, options->sample);
                 prob_t result2 = sumModels(ev_log);
-                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf\n", result1, result2,
+                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf", result1, result2,
                        result1 - result2);
         }
         else {
