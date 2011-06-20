@@ -203,11 +203,17 @@ AC_ARG_ENABLE([debug],
 	[],
 	[enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"],
-  [AX_CFLAGS_GCC_OPTION([-g])
+  [AX_CFLAGS_GCC_OPTION([-p])
+	 AX_CFLAGS_GCC_OPTION([-g])
    AX_CFLAGS_GCC_OPTION([-ggdb])
+	 AX_CXXFLAGS_GCC_OPTION([-p])
+	 AX_CXXFLAGS_GCC_OPTION([-g])
+   AX_CXXFLAGS_GCC_OPTION([-ggdb])
 	 CFLAGS="$CFLAGS -DDEBUG"],
   [AX_CFLAGS_GCC_OPTION([-O3])
-   AX_CFLAGS_GCC_OPTION([-ffast-math])])
+   AX_CFLAGS_GCC_OPTION([-ffast-math])
+	 AX_CXXFLAGS_GCC_OPTION([-O3])
+   AX_CXXFLAGS_GCC_OPTION([-ffast-math])])
 
 AX_CFLAGS_GCC_OPTION([-Wall])
 AX_CFLAGS_GCC_OPTION([-Wwrite-strings])
