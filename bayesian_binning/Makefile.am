@@ -8,7 +8,10 @@ libbayesian_binning_la_SOURCES = bayesian-binning.c bayesian-binning.h interface
 libbayesian_binning_la_LIBADD  = $(LIB_PTHREAD)
 libbayesian_binning_la_LIBADD += $(top_builddir)/libexception/libexception.la
 libbayesian_binning_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
+libbayesian_binning_la_LIBADD += $(top_builddir)/libmgs/libmgs.la
 libbayesian_binning_la_LDFLAGS = -no-undefined -version-info 0:0:0
+# Dummy C++ source to cause C++ linking.
+nodist_EXTRA_libbayesian_binning_la_SOURCES = dummy.cxx	
 
 ## install headers
 nobase_include_HEADERS = bayesian-binning.h
