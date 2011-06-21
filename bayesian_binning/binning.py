@@ -57,7 +57,7 @@ def usage():
     print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
     print "       --epsilon=EPSILON          - epsilon for entropy estimations"
-    print "   -k  --moments=N                - compute the first N>=3 moments"
+    print "   -k  --moments=N                - compute the first N>=2 moments"
     print "       --which=EVENT              - for which event to compute the binning"
     print "       --algorithm=NAME           - select an algorithm [prombstree, default: prombs]"
     print
@@ -209,7 +209,7 @@ options = {
     'marginal'          : 0,
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
-    'n_moments'         : 3,
+    'n_moments'         : 2,
     'which'             : 0,
     'threads'           : 1,
     'stacksize'         : 256*1024,
@@ -251,7 +251,7 @@ def main():
         if o in ("-s", "--marginal-step"):
             options["marginal_step"] = float(a)
         if o in ("-k", "--moments"):
-            if int(a) >= 3:
+            if int(a) >= 2:
                 options["n_moments"] = int(a)
             else:
                 usage()

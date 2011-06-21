@@ -61,7 +61,7 @@ def usage():
     print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
     print "       --epsilon=EPSILON          - epsilon for entropy estimations"
     print "   -n  --samples=N                - number of samples"
-    print "   -k  --moments=N                - compute the first N>=3 moments"
+    print "   -k  --moments=N                - compute the first N>=2 moments"
     print "       --strategy=STRATEGY        - uniform, uniform-random, differential-gain (default),"
     print "                                    effective-counts, or variance"
     print "       --which=EVENT              - for which event to compute the binning"
@@ -246,7 +246,7 @@ def sample(result, data):
     if options['strategy'] == 'effective-counts':
         options['effective_counts'] = True
     if options['strategy'] == 'variance':
-        options['n_moments'] = 3
+        options['n_moments'] = 2
     if result['counts']:
         counts = result['counts']
     else:
@@ -269,7 +269,7 @@ def sample(result, data):
             counts[event][index] += 1
             gain.pop(index)
     options['model_posterior'] = True
-    options['n_moments'] = 3
+    options['n_moments'] = 2
     options['marginal'] = marginal
     result = bin(counts, data)
     result['counts']  = counts
@@ -395,7 +395,7 @@ def main():
         if o in ("-s", "--marginal-step"):
             options["marginal_step"] = float(a)
         if o in ("-k", "--moments"):
-            if int(a) >= 3:
+            if int(a) >= 2:
                 options["n_moments"] = int(a)
             else:
                 usage()
