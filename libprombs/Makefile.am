@@ -5,4 +5,4 @@ INCLUDES = -I$(top_srcdir)/include
 ## library
 noinst_LTLIBRARIES = libprombs.la
 
-libprombs_la_SOURCES = libprombs.c
+libprombs_la_SOURCES = libprombs.c libprombstree.c

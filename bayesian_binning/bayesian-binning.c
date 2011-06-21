@@ -28,7 +28,6 @@
 #include <bayes/exception.h>
 #include <bayes/logarithmetic.h>
 #include <bayes/prombs.h>
-#include <bayes/mgs.h>
 #include <bayes/datatypes.h>
 
 #include <gsl/gsl_errno.h>
@@ -197,7 +196,7 @@ int minM()
 static
 void binProblemInit(binProblem *bp, Options *options)
 {
-        if (options->sample) {
+        if (options->algorithm == 1) {
                 bp->ak      = NULL;
         }
         else {
@@ -240,21 +239,21 @@ void execPrombs(binProblem *bp, prob_t *ev_log)
 }
 
 static
-void execMgs(binProblem *bp, prob_t *ev_log, size_t N)
+void execPrombsTree(binProblem *bp, prob_t *ev_log)
 {
-        mgs(N, ev_log, bd.prior_log, &execPrombs_f, bd.T, (void *)bp);
+        prombs_tree(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM(), (void *)bp);
 }
 
 static
 prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
 {
-        if (options->sample) {
+        if (options->algorithm == 1) {
 //                execPrombs(bp, ev_log);
-                prob_t result1 = sumModels(ev_log);
-                execMgs(bp, ev_log, options->sample);
-                prob_t result2 = sumModels(ev_log);
-                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf", result1, result2,
-                       result1 - result2);
+//                prob_t result1 = sumModels(ev_log);
+                execPrombsTree(bp, ev_log);
+//                prob_t result2 = sumModels(ev_log);
+//                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf", result1, result2,
+//                       result1 - result2);
         }
         else {
                 execPrombs(bp, ev_log);

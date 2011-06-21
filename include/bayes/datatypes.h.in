@@ -38,7 +38,7 @@ typedef struct options {
         int differential_gain;
         int effective_counts;
         int which;
-        int sample;
+        int algorithm;
         int marginal;
         float marginal_step;
         struct {
