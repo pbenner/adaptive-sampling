@@ -22,6 +22,7 @@
 
 extern void prombs_init(prob_t epsilon);
 extern void prombs(prob_t *result, Matrix *ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
+extern void prombs_tree(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
 extern void prombsExt(
         prob_t *result,
         Matrix *ak,

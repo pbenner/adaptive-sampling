@@ -338,7 +338,7 @@ options = {
     'samples'           : 0,
     'epsilon'           : 0.00001,
     'n_moments'         : 0,
-    'sample'            : 0,
+    'algorithm'         : 0,
     'marginal'          : 0,
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
