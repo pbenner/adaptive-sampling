@@ -22,17 +22,38 @@
 #include <stdint.h>
 #include <math.h>
 
+#include <gsl/gsl_permutation.h>
+
 #include "libmgs.hh"
 
 extern "C" {
 
-#include <gsl/gsl_permutation.h>
+static Multibin** __multibins__;
+
+static
+void evaluate(
+        Bayes::prob_t *result,
+        Bayes::prob_t *g,
+        Bayes::prob_t (*f)(int, int, void*),
+        void *data,
+        Multibin* mb)
+{
+        list<bin_t>* bins = mb->get_bins();
+        Bayes::prob_t sum = 0;
+        for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
+                sum += (*f)((*it).from, (*it).to, data);
+        }
+        sum += g[bins->size()-1];
+
+        result[bins->size()-1] =
+                Bayes::logadd(result[bins->size()-1], sum);
+
+        delete(bins);
+}
 
 static
 void sample_bin(
         size_t pos,
-        Bayes::prob_t *result,
-        Bayes::prob_t *counts,
         Bayes::prob_t *g,
         Bayes::prob_t (*f)(int, int, void*),
         void *data,
@@ -44,45 +65,33 @@ void sample_bin(
 
         Bayes::prob_t sum1 = 0;
         for (list<bin_t>::iterator it = bins1->begin(); it != bins1->end(); it++) {
+                printf("Hello1: %lu:%lu\n", (long unsigned int)(*it).from, (long unsigned int)(*it).to);
                 sum1 += (*f)((*it).from, (*it).to, data);
+                printf("Hello2\n");
         }
-        Bayes::prob_t result1 = sum1;
         sum1 += g[bins1->size()-1];
 
         Bayes::prob_t sum2 = 0;
         for (list<bin_t>::iterator it = bins2->begin(); it != bins2->end(); it++) {
                 sum2 += (*f)((*it).from, (*it).to, data);
         }
-        Bayes::prob_t result2 = sum2;
         sum2 += g[bins2->size()-1];
 
+        // sample
         Bayes::prob_t post = expl(sum1 - Bayes::logadd(sum1, sum2));
-
         if (r < post) {
                 // use multibin 1
                 mb->switch_break(pos);
-                if (result) {
-                        result[bins1->size()-1] =
-                                Bayes::logadd(result[bins1->size()-1], result1);
-                        counts[bins1->size()-1]++;
-                }
         }
-        else {
-                // use multibin 2
-                if (result) {
-                        result[bins2->size()-1] =
-                                Bayes::logadd(result[bins2->size()-1], result2);
-                        counts[bins2->size()-1]++;
-                }
-        }
+        // else:
+        // use multibin 2
+
         delete(bins1);
         delete(bins2);
 }
 
 static
 void sample_multibin(
-        Bayes::prob_t *result,
-        Bayes::prob_t *counts,
         Bayes::prob_t *g,
         Bayes::prob_t (*f)(int, int, void*),
         void *data,
@@ -91,11 +100,36 @@ void sample_multibin(
         size_t pos;
 
         for (pos = 0; pos < mb->get_n_breaks(); pos++) {
-                sample_bin(pos, result, counts, g, f, data, mb);
+                sample_bin(pos, g, f, data, mb);
         }
 }
 
 void mgs(
+        Bayes::prob_t *result,
+        Bayes::prob_t *g,
+        Bayes::prob_t (*f)(int, int, void*),
+        size_t L,
+        void *data)
+{
+        size_t N;
+        size_t i;
+
+        for (i = 0; i < L; i++) {
+                result[i] = -HUGE_VAL;
+        }
+
+        // evaluate samples
+        for (N = 0; __multibins__[N]; N++) {
+                evaluate(result, g, f, data, __multibins__[i]);
+        }
+        for (i = 0; i < L; i++) {
+                if (result[i] != -HUGE_VAL) {
+                        result[i] -= logl(N);
+                }
+        }
+}
+
+void mgs_init(
         size_t N,
         Bayes::prob_t *result,
         Bayes::prob_t *g,
@@ -103,31 +137,36 @@ void mgs(
         size_t L,
         void *data)
 {
-        Multibin *mb = new Multibin(L);
-        Bayes::prob_t counts[L];
+        __multibins__    = (Multibin**)malloc((N+1)*sizeof(Multibin*));
+        __multibins__[N] = (Multibin*)NULL;
+
+        L = 16;
+        printf("L: %u\n", (unsigned int)L);
+        printf("N: %u\n", (unsigned int)N);
+
         size_t i;
 
-        for (i = 0; i < L; i++) {
-                result[i] = -HUGE_VAL;
-                counts[i] = -HUGE_VAL;
-        }
-
         // burn in
-        for (i = 0; i < 100; i++) {
-                sample_multibin(NULL, NULL, g, f, data, mb);
+        __multibins__[0] = new Multibin(L);
+        for (i = 0; i < 200; i++) {
+                sample_multibin(g, f, data, __multibins__[0]);
         }
 
         // sample
-        for (i = 0; i < N; i++) {
-                sample_multibin(result, counts, g, f, data, mb);
+        for (i = 1; i < N; i++) {
+                __multibins__[i] = __multibins__[i-1]->copy();
+                sample_multibin(g, f, data, __multibins__[i]);
         }
-        for (i = 0; i < L; i++) {
-                if (counts[i] != -HUGE_VAL) {
-                        result[i] -= logl(N);
-                }
-        }
+}
 
-        delete(mb);
+void mgs_free()
+{
+        size_t i;
+
+        for (i = 0; __multibins__[i]; i++) {
+                delete(__multibins__[i]);
+        }
+        free(__multibins__);
 }
 
 }

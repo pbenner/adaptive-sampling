@@ -44,8 +44,10 @@ typedef struct {
 class Multibin {
 public:
          Multibin(size_t L);
+         Multibin(Multibin* mb, uint32_t* breaks);
         ~Multibin();
 
+        Multibin* copy();
         void insert_break(size_t i);
         void remove_break(size_t i);
         void switch_break(size_t i);
@@ -55,10 +57,12 @@ public:
 
         list<bin_t>* get_bins();
         size_t get_n_breaks();
+        size_t get_n_bins();
 
 private:
         size_t n;        // length of breaks[]
         size_t n_breaks; // number of possible breaks
+        size_t n_bins;   // current number of bins
         uint32_t* breaks;
 };
 

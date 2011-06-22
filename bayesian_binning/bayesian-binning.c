@@ -249,7 +249,7 @@ void execPrombsTree(binProblem *bp, prob_t *ev_log)
 static
 void execMgs(binProblem *bp, prob_t *ev_log)
 {
-        mgs(10000, ev_log, bd.prior_log, &execPrombs_f, bd.T, (void *)bp);
+        mgs(ev_log, bd.prior_log, &execPrombs_f, bd.T, (void *)bp);
 }
 
 static
@@ -759,6 +759,11 @@ void computeBinning(
 
         // compute the model prior once for all computations
         computeModelPrior();
+        // init sampler
+        if (options->algorithm == 1) {
+                printf("T: %u\n", bd.T);
+                mgs_init(10000, bd.prior_log, &execPrombs_f, (size_t)bd.T, (void *)&bp);
+        }
         // compute evidence P(D)
         evidence_ref = evidence(&bp, evidence_log_tmp, options);
         // compute model posteriors P(m_B|D)
@@ -786,6 +791,9 @@ void computeBinning(
                 computeEffectiveCounts(effective_counts, evidence_ref, options);
         }
 
+        if (options->algorithm == 1) {
+                mgs_free();
+        }
         binProblemFree(&bp);
 }
 
