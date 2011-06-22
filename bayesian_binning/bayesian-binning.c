@@ -27,6 +27,7 @@
 
 #include <bayes/exception.h>
 #include <bayes/logarithmetic.h>
+#include <bayes/mgs.h>
 #include <bayes/prombs.h>
 #include <bayes/datatypes.h>
 
@@ -197,7 +198,8 @@ static
 void binProblemInit(binProblem *bp, Options *options)
 {
         if (options->algorithm == 1) {
-                bp->ak      = NULL;
+//                bp->ak      = NULL;
+                bp->ak      = allocMatrix(bd.T, bd.T);
         }
         else {
                 bp->ak      = allocMatrix(bd.T, bd.T);
@@ -245,15 +247,21 @@ void execPrombsTree(binProblem *bp, prob_t *ev_log)
 }
 
 static
+void execMgs(binProblem *bp, prob_t *ev_log)
+{
+        mgs(10000, ev_log, bd.prior_log, &execPrombs_f, bd.T, (void *)bp);
+}
+
+static
 prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
 {
         if (options->algorithm == 1) {
-//                execPrombs(bp, ev_log);
-//                prob_t result1 = sumModels(ev_log);
-                execPrombsTree(bp, ev_log);
-//                prob_t result2 = sumModels(ev_log);
-//                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf", result1, result2,
-//                       result1 - result2);
+                execPrombs(bp, ev_log);
+                prob_t result1 = sumModels(ev_log);
+                execMgs(bp, ev_log);
+                prob_t result2 = sumModels(ev_log);
+                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf", result1, result2,
+                       result1 - result2);
         }
         else {
                 execPrombs(bp, ev_log);

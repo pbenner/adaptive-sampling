@@ -26,10 +26,13 @@
 
 extern "C" {
 
+#include <gsl/gsl_permutation.h>
+
 static
 void sample_bin(
         size_t pos,
         Bayes::prob_t *result,
+        Bayes::prob_t *counts,
         Bayes::prob_t *g,
         Bayes::prob_t (*f)(int, int, void*),
         void *data,
@@ -43,12 +46,14 @@ void sample_bin(
         for (list<bin_t>::iterator it = bins1->begin(); it != bins1->end(); it++) {
                 sum1 += (*f)((*it).from, (*it).to, data);
         }
+        Bayes::prob_t result1 = sum1;
         sum1 += g[bins1->size()-1];
 
         Bayes::prob_t sum2 = 0;
         for (list<bin_t>::iterator it = bins2->begin(); it != bins2->end(); it++) {
                 sum2 += (*f)((*it).from, (*it).to, data);
         }
+        Bayes::prob_t result2 = sum2;
         sum2 += g[bins2->size()-1];
 
         Bayes::prob_t post = expl(sum1 - Bayes::logadd(sum1, sum2));
@@ -58,14 +63,16 @@ void sample_bin(
                 mb->switch_break(pos);
                 if (result) {
                         result[bins1->size()-1] =
-                                Bayes::logadd(result[bins1->size()-1], sum1);
+                                Bayes::logadd(result[bins1->size()-1], result1);
+                        counts[bins1->size()-1]++;
                 }
         }
         else {
                 // use multibin 2
                 if (result) {
                         result[bins2->size()-1] =
-                                Bayes::logadd(result[bins2->size()-1], sum2);
+                                Bayes::logadd(result[bins2->size()-1], result2);
+                        counts[bins2->size()-1]++;
                 }
         }
         delete(bins1);
@@ -75,6 +82,7 @@ void sample_bin(
 static
 void sample_multibin(
         Bayes::prob_t *result,
+        Bayes::prob_t *counts,
         Bayes::prob_t *g,
         Bayes::prob_t (*f)(int, int, void*),
         void *data,
@@ -83,7 +91,7 @@ void sample_multibin(
         size_t pos;
 
         for (pos = 0; pos < mb->get_n_breaks(); pos++) {
-                sample_bin(pos, result, g, f, data, mb);
+                sample_bin(pos, result, counts, g, f, data, mb);
         }
 }
 
@@ -96,20 +104,27 @@ void mgs(
         void *data)
 {
         Multibin *mb = new Multibin(L);
+        Bayes::prob_t counts[L];
         size_t i;
 
         for (i = 0; i < L; i++) {
                 result[i] = -HUGE_VAL;
+                counts[i] = -HUGE_VAL;
         }
 
         // burn in
         for (i = 0; i < 100; i++) {
-                sample_multibin(NULL, g, f, data, mb);
+                sample_multibin(NULL, NULL, g, f, data, mb);
         }
 
         // sample
         for (i = 0; i < N; i++) {
-                sample_multibin(result, g, f, data, mb);
+                sample_multibin(result, counts, g, f, data, mb);
+        }
+        for (i = 0; i < L; i++) {
+                if (counts[i] != -HUGE_VAL) {
+                        result[i] -= logl(N);
+                }
         }
 
         delete(mb);
