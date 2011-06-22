@@ -18,8 +18,8 @@
 #ifndef _MGS_H_
 #define _MGS_H_
 
-#include <bayes/datatypes.h>
-
-extern void mgs(size_t N, prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
+extern void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
+extern void mgs_init(size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
+extern void mgs_free();
 
 #endif /* _MGS_H_ */

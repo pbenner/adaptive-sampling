@@ -28,6 +28,7 @@ Multibin::Multibin(size_t L)
 
         this->n = n;
         this->n_breaks = L-1;
+        this->n_bins   = 1;
         this->breaks   = (uint32_t*)malloc(n*sizeof(uint32_t));
 
         for (i = 0; i < n; i++) {
@@ -35,9 +36,31 @@ Multibin::Multibin(size_t L)
         }
 }
 
+Multibin::Multibin(Multibin* mb, uint32_t* breaks)
+{
+        size_t L = mb->get_n_breaks()+1;
+        size_t n = (L-2)%32 ? (L-2)/32+1 : (L-2)/32;
+        size_t i;
+
+        this->n = n;
+        this->n_breaks = L-1;
+        this->breaks   = (uint32_t*)malloc(n*sizeof(uint32_t));
+        this->n_bins   = get_n_bins();
+
+        for (i = 0; i < n; i++) {
+                this->breaks[i] = breaks[i];
+        }
+}
+
 Multibin::~Multibin()
 {
         free(this->breaks);
+}
+
+Multibin*
+Multibin::copy()
+{
+        return new Multibin(this, this->breaks);
 }
 
 void
@@ -49,6 +72,7 @@ Multibin::insert_break(size_t i)
 
                 if ((this->breaks[n] & m) == 0) {
                         this->breaks[n] += m;
+                        this->n_bins++;
                 }
         }
 }
@@ -62,6 +86,7 @@ Multibin::remove_break(size_t i)
 
                 if (this->breaks[n] & m) {
                         this->breaks[n] -= m;
+                        this->n_bins--;
                 }
         }
 }
@@ -105,8 +130,8 @@ Multibin::print()
 list<bin_t>*
 Multibin::get_bins()
 {
-        size_t from =  0;
-        size_t to   = -1;
+        size_t from = 0;
+        size_t to   = 0;
         size_t i;
         list<bin_t>* bins = new list<bin_t>();
 
@@ -134,6 +159,12 @@ size_t
 Multibin::get_n_breaks()
 {
         return this->n_breaks;
+}
+
+size_t
+Multibin::get_n_bins()
+{
+        return this->n_bins;
 }
 
 void
