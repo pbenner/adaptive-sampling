@@ -161,7 +161,7 @@ void evaluate(
                 for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
                         sum += (*f)((*it).from, (*it).to, data);
                 }
-                sum += g[bins->size()-1];
+//                sum += g[bins->size()-1];
 
                 result[bins->size()-1] =
                         Bayes::logadd(result[bins->size()-1], sum);
