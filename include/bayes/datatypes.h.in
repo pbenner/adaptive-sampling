@@ -39,6 +39,7 @@ typedef struct options {
         int effective_counts;
         int which;
         int algorithm;
+        int samples[2];
         int marginal;
         float marginal_step;
         struct {

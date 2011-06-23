@@ -197,12 +197,11 @@ int minM()
 static
 void binProblemInit(binProblem *bp, Options *options)
 {
-        if (options->algorithm == 1) {
-//                bp->ak      = NULL;
+        if (options->algorithm == 0) {
                 bp->ak      = allocMatrix(bd.T, bd.T);
         }
         else {
-                bp->ak      = allocMatrix(bd.T, bd.T);
+                bp->ak      = NULL;
         }
         bp->bprob_pos       = -1;
         bp->counts_pos      = -1;
@@ -255,18 +254,18 @@ void execMgs(binProblem *bp, prob_t *ev_log)
 static
 prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
 {
-        if (options->algorithm == 1) {
+        switch (options->algorithm) {
+        default:
+        case 0:
                 execPrombs(bp, ev_log);
-                prob_t result1 = sumModels(ev_log);
+                break;
+        case 1:
+                execPrombsTree(bp, ev_log);
+                break;
+        case 2:
                 execMgs(bp, ev_log);
-                prob_t result2 = sumModels(ev_log);
-                notice(NONE, "prombs: %Lf, mgs: %Lf, err: %Lf", result1, result2,
-                       result1 - result2);
+                break;
         }
-        else {
-                execPrombs(bp, ev_log);
-        }
-
         return sumModels(ev_log);
 }
 
@@ -366,12 +365,23 @@ prob_t breakProb_f(int i, int j, void *data)
         return iec_log(NULL, i, j);
 }
 static
-prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
+prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref, Options* options)
 {
         prob_t ev_log[bd.T];
 
         bp->bprob_pos = pos;
-        prombs(ev_log, bp->ak, bd.prior_log, &breakProb_f, bd.T, minM(), (void *)bp);
+        switch (options->algorithm) {
+        default:
+        case 0:
+                prombs(ev_log, bp->ak, bd.prior_log, &breakProb_f, bd.T, minM(), (void *)bp);
+                break;
+        case 1:
+                prombs_tree(ev_log, bd.prior_log, &breakProb_f, bd.T, minM(), (void *)bp);
+                break;
+        case 2:
+                mgs(ev_log, bd.prior_log, &breakProb_f, bd.T, (void *)bp);
+                break;
+        }
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -467,6 +477,7 @@ typedef struct {
         int i;
         prob_t *bprob;
         prob_t evidence_ref;
+        Options *options;
 } pthread_data_bprob;
 
 static
@@ -477,8 +488,9 @@ void * computeBreakProbabilities_thread(void* data_)
         int i = data->i;
         prob_t *bprob = data->bprob;
         prob_t evidence_ref = data->evidence_ref;
+        Options *options = data->options;
 
-        bprob[i] = breakProb(bp, i, evidence_ref);
+        bprob[i] = breakProb(bp, i, evidence_ref, options);
         return NULL;
 }
 
@@ -511,6 +523,7 @@ void computeBreakProbabilities(
                 data[j].bp = &bp[j];
                 data[j].bprob = bprob;
                 data[j].evidence_ref = evidence_ref;
+                data[j].options = options;
         }
         for (i = 0; i < bd.T; i += options->threads) {
                 for (j = 0; j < options->threads && i+j < bd.T; j++) {
@@ -760,9 +773,9 @@ void computeBinning(
         // compute the model prior once for all computations
         computeModelPrior();
         // init sampler
-        if (options->algorithm == 1) {
-                printf("T: %u\n", bd.T);
-                mgs_init(10000, bd.prior_log, &execPrombs_f, (size_t)bd.T, (void *)&bp);
+        if (options->algorithm == 2) {
+                mgs_init((size_t)options->samples[0], (size_t)options->samples[1],
+                         bd.prior_log, &execPrombs_f, (size_t)bd.T, (void *)&bp);
         }
         // compute evidence P(D)
         evidence_ref = evidence(&bp, evidence_log_tmp, options);
@@ -791,7 +804,7 @@ void computeBinning(
                 computeEffectiveCounts(effective_counts, evidence_ref, options);
         }
 
-        if (options->algorithm == 1) {
+        if (options->algorithm == 2) {
                 mgs_free();
         }
         binProblemFree(&bp);

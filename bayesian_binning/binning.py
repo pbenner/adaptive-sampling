@@ -59,7 +59,8 @@ def usage():
     print "       --epsilon=EPSILON          - epsilon for entropy estimations"
     print "   -k  --moments=N                - compute the first N>=2 moments"
     print "       --which=EVENT              - for which event to compute the binning"
-    print "       --algorithm=NAME           - select an algorithm [prombstree, default: prombs]"
+    print "       --algorithm=NAME           - select an algorithm [mgs, prombstree, default: prombs]"
+    print "       --samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000]"
     print
     print "       --threads=THREADS          - number of threads [default: 1]"
     print "       --stacksize=BYTES          - thread stack size [default: 256*1024]"
@@ -206,6 +207,7 @@ def parseConfig(config_file):
 options = {
     'epsilon'           : 0.00001,
     'algorithm'         : 0,
+    'samples'           : (100,2000),
     'marginal'          : 0,
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
@@ -231,7 +233,8 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
-                      "effective-counts", "savefig=", "threads=", "stacksize=", "algorithm="]
+                      "effective-counts", "savefig=", "threads=", "stacksize=", "algorithm=",
+                      "samples="]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -292,9 +295,13 @@ def main():
                 options["algorithm"] = 0
             elif a == "prombstree":
                 options["algorithm"] = 1
+            elif a == "mgs":
+                options["algorithm"] = 2
             else:
                 usage()
                 return 0
+        if o == "--samples":
+            options["samples"] = tuple(map(int, a.split(":")))
     if len(tail) != 1:
         usage()
         return 1
