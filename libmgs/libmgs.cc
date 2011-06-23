@@ -45,7 +45,7 @@ Multibin::Multibin(Multibin* mb, uint32_t* breaks)
         this->n = n;
         this->n_breaks = L-1;
         this->breaks   = (uint32_t*)malloc(n*sizeof(uint32_t));
-        this->n_bins   = get_n_bins();
+        this->n_bins   = mb->get_n_bins();
 
         for (i = 0; i < n; i++) {
                 this->breaks[i] = breaks[i];
@@ -100,9 +100,11 @@ Multibin::switch_break(size_t i)
 
                 if (this->breaks[n] & m) {
                         this->breaks[n] -= m;
+                        this->n_bins--;
                 }
                 else {
                         this->breaks[n] += m;
+                        this->n_bins++;
                 }
         }
 }
@@ -123,15 +125,15 @@ Multibin::print()
                         }
                         m = m << 1;
                 }
-                printf("\n");
         }
+        printf("\n\n");
 }
 
 list<bin_t>*
 Multibin::get_bins()
 {
-        size_t from = 0;
-        size_t to   = 0;
+        long int from =  0;
+        long int to   = -1;
         size_t i;
         list<bin_t>* bins = new list<bin_t>();
 
@@ -141,7 +143,7 @@ Multibin::get_bins()
                 while (p) {
                         m    = p & (~p + 1);
                         from = to+1;
-                        to   = (size_t)log2(m);
+                        to   = 32*i+(size_t)log2(m);
                         bin_t b = {from, to};
                         bins->push_back(b);
                         p -= m;

@@ -68,6 +68,7 @@ class OPTIONS(Structure):
                  ("effective_counts",  c_int),
                  ("which",             c_int),
                  ("algorithm",         c_int),
+                 ("samples",           2*c_int),
                  ("marginal",          c_int),
                  ("marginal_step",     c_float),
                  ("marginal_range",    MARGINAL_RANGE),
@@ -79,6 +80,8 @@ class OPTIONS(Structure):
           self.threads        = c_int(options["threads"])
           self.stacksize      = c_int(options["stacksize"])
           self.algorithm      = c_int(options["algorithm"])
+          self.samples[0]     = c_int(options["samples"][0])
+          self.samples[1]     = c_int(options["samples"][1])
           self.marginal       = c_int(options["marginal"])
           self.marginal_step  = c_float(options["marginal_step"])
           self.marginal_range = MARGINAL_RANGE(*options["marginal_range"])
