@@ -442,12 +442,25 @@ void computeModelPosteriors(
 {
         unsigned int j;
 
-        for (j = 0; j < bd.L; j++) {
-                if (gsl_vector_get(bd.beta, j) > 0) {
-                        mpost[j] = expl(ev_log[j] - evidence_ref);
+        if (bd.options->algorithm == 2) {
+                size_t *counts = mgs_get_counts();
+                for (j = 0; j < bd.L; j++) {
+                        if (gsl_vector_get(bd.beta, j) > 0) {
+                                mpost[j] = (prob_t)counts[j]/bd.options->samples[1];
+                        }
+                        else {
+                                mpost[j] = 0;
+                        }
                 }
-                else {
-                        mpost[j] = 0;
+        }
+        else {
+                for (j = 0; j < bd.L; j++) {
+                        if (gsl_vector_get(bd.beta, j) > 0) {
+                                mpost[j] = expl(ev_log[j] - evidence_ref);
+                        }
+                        else {
+                                mpost[j] = 0;
+                        }
                 }
         }
 }
@@ -743,8 +756,8 @@ void computeBinning(
         computeModelPrior();
         // init sampler
         if (bd.options->algorithm == 2) {
-                mgs_init((size_t)bd.options->samples[0], (size_t)bd.options->samples[1],
-                         bd.prior_log, &execPrombs_f, (size_t)bd.L, (void *)&bp);
+                mgs_init(bd.options->samples[0], bd.options->samples[1],
+                         bd.prior_log, &execPrombs_f, bd.L, (void *)&bp);
         }
         // compute evidence P(D)
         evidence_ref = evidence(&bp, evidence_log_tmp);

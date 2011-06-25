@@ -180,9 +180,15 @@ void evaluate(
                 }
 
                 result[bins->size()-1] =
-                        Bayes::logadd(result[bins->size()-1], sum);
+                        Bayes::logadd(sum, result[bins->size()-1]);
         }
         delete(bins);
+}
+
+size_t *
+mgs_get_counts()
+{
+        return __counts__;
 }
 
 void mgs(
@@ -205,12 +211,9 @@ void mgs(
         }
         for (i = 0; i < L; i++) {
                 if (result[i] > -HUGE_VAL) {
-                        result[i] -= logl(__counts__[i]);
+                        result[i] -= logl(N);
                 }
         }
-//        for (i = 0; i < L; i++) {
-//                printf("ev(M = %u) = %f\n", (unsigned int)i, (float)result[i]);
-//        }
 }
 
 }
