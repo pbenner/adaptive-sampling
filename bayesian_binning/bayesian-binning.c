@@ -47,8 +47,9 @@
 
 // data that has to be immutable
 typedef struct {
+        Options *options;
         // number of timesteps
-        unsigned int T;
+        unsigned int L;
         unsigned int events;
         prob_t *prior_log;     // P(p,B|m_B)
         // counts and parameters
@@ -124,11 +125,12 @@ prob_t sumModels(prob_t *ev_log)
         prob_t sum = -HUGE_VAL;
         int i;
 
-        for (i = 0; i < bd.T; i++) {
+        for (i = 0; i < bd.L; i++) {
                 if (gsl_vector_get(bd.beta, i) > 0) {
                         sum = logadd(sum, ev_log[i]);
                 }
         }
+
         return sum;
 }
 
@@ -186,7 +188,7 @@ static
 int minM()
 {
         int i;
-        for (i = bd.T-1; i > 0; i--) {
+        for (i = bd.L-1; i > 0; i--) {
                 if (gsl_vector_get(bd.beta, i) > 0) {
                         return i;
                 }
@@ -195,10 +197,10 @@ int minM()
 }
 
 static
-void binProblemInit(binProblem *bp, Options *options)
+void binProblemInit(binProblem *bp)
 {
-        if (options->algorithm == 0) {
-                bp->ak      = allocMatrix(bd.T, bd.T);
+        if (bd.options->algorithm == 0) {
+                bp->ak      = allocMatrix(bd.L, bd.L);
         }
         else {
                 bp->ak      = NULL;
@@ -207,10 +209,10 @@ void binProblemInit(binProblem *bp, Options *options)
         bp->counts_pos      = -1;
         bp->add_event.pos   = -1;
         bp->add_event.n     = 0;
-        bp->add_event.which = options->which;
+        bp->add_event.which = bd.options->which;
         bp->fix_prob.pos    = -1;
         bp->fix_prob.val    = 0;
-        bp->fix_prob.which  = options->which;
+        bp->fix_prob.which  = bd.options->which;
 }
 
 static
@@ -226,6 +228,26 @@ void binProblemFree(binProblem *bp)
 ////////////////////////////////////////////////////////////////////////////////
 
 static
+void callBinningAlgorithm(
+        binProblem *bp,
+        prob_t (*f)(int, int, void*),
+        prob_t *ev_log)
+{
+        switch (bd.options->algorithm) {
+        default:
+        case 0:
+                prombs(ev_log, bp->ak, bd.prior_log, f, bd.L, minM(), (void *)bp);
+                break;
+        case 1:
+                prombs_tree(ev_log, bd.prior_log, f, bd.L, minM(), (void *)bp);
+                break;
+        case 2:
+                mgs(ev_log, bd.prior_log, f, bd.L, (void *)bp);
+                break;
+        }
+}
+
+static
 prob_t execPrombs_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
@@ -234,38 +256,10 @@ prob_t execPrombs_f(int i, int j, void *data)
 }
 
 static
-void execPrombs(binProblem *bp, prob_t *ev_log)
+prob_t evidence(binProblem *bp, prob_t *ev_log)
 {
-        prombs(ev_log, bp->ak, bd.prior_log, &execPrombs_f, bd.T, minM(), (void *)bp);
-}
+        callBinningAlgorithm(bp, execPrombs_f, ev_log);
 
-static
-void execPrombsTree(binProblem *bp, prob_t *ev_log)
-{
-        prombs_tree(ev_log, bd.prior_log, &execPrombs_f, bd.T, minM(), (void *)bp);
-}
-
-static
-void execMgs(binProblem *bp, prob_t *ev_log)
-{
-        mgs(ev_log, bd.prior_log, &execPrombs_f, bd.T, (void *)bp);
-}
-
-static
-prob_t evidence(binProblem *bp, prob_t *ev_log, Options *options)
-{
-        switch (options->algorithm) {
-        default:
-        case 0:
-                execPrombs(bp, ev_log);
-                break;
-        case 1:
-                execPrombsTree(bp, ev_log);
-                break;
-        case 2:
-                execMgs(bp, ev_log);
-                break;
-        }
         return sumModels(ev_log);
 }
 
@@ -304,14 +298,14 @@ prob_t differentialEntropy_h(int i, int j, void *data)
 static
 prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_ref)
 {
-        prob_t ev_log[bd.T];
+        prob_t ev_log[bd.L];
         prob_t sum;
 
         bp->add_event.n     = n;
         bp->add_event.pos   = i;
         bp->add_event.which = j;
 
-        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.T, minM(), (void *)bp);
+        prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.L, minM(), (void *)bp);
 
         sum = sumModels(ev_log);
         if (sum == -HUGE_VAL) {
@@ -342,10 +336,10 @@ prob_t effectiveCounts_f(int i, int j, void *data)
 static
 prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
 {
-        prob_t ev_log[bd.T];
+        prob_t ev_log[bd.L];
 
         bp->counts_pos = pos;
-        prombs(ev_log, bp->ak, bd.prior_log, &effectiveCounts_f, bd.T, minM(), (void *)bp);
+        prombs(ev_log, bp->ak, bd.prior_log, &effectiveCounts_f, bd.L, minM(), (void *)bp);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -365,23 +359,12 @@ prob_t breakProb_f(int i, int j, void *data)
         return iec_log(NULL, i, j);
 }
 static
-prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref, Options* options)
+prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
 {
-        prob_t ev_log[bd.T];
+        prob_t ev_log[bd.L];
 
         bp->bprob_pos = pos;
-        switch (options->algorithm) {
-        default:
-        case 0:
-                prombs(ev_log, bp->ak, bd.prior_log, &breakProb_f, bd.T, minM(), (void *)bp);
-                break;
-        case 1:
-                prombs_tree(ev_log, bd.prior_log, &breakProb_f, bd.T, minM(), (void *)bp);
-                break;
-        case 2:
-                mgs(ev_log, bd.prior_log, &breakProb_f, bd.T, (void *)bp);
-                break;
-        }
+        callBinningAlgorithm(bp, &breakProb_f, ev_log);
 
         return expl(sumModels(ev_log) - evidence_ref);
 }
@@ -395,15 +378,14 @@ prob_t moment(
         binProblem *bp,
         unsigned int nth,
         unsigned int pos,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
         prob_t evidence_log;
-        prob_t evidence_log_tmp[bd.T];
+        prob_t evidence_log_tmp[bd.L];
 
         bp->add_event.pos = pos;
         bp->add_event.n   = nth;
-        evidence_log      = evidence(bp, evidence_log_tmp, options);
+        evidence_log      = evidence(bp, evidence_log_tmp);
         bp->add_event.pos = -1;
         bp->add_event.n   = 0;
 
@@ -416,16 +398,15 @@ prob_t marginal(
         int pos,
         prob_t val,
         int which,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
         prob_t evidence_log;
-        prob_t evidence_log_tmp[bd.T];
+        prob_t evidence_log_tmp[bd.L];
 
         bp->fix_prob.pos   = pos;
         bp->fix_prob.val   = val;
         bp->fix_prob.which = which;
-        evidence_log       = evidence(bp, evidence_log_tmp, options);
+        evidence_log       = evidence(bp, evidence_log_tmp);
         bp->fix_prob.pos   = -1;
         bp->fix_prob.val   =  0;
         bp->fix_prob.which =  0;
@@ -440,14 +421,13 @@ prob_t marginal(
 static
 void computeEffectiveCounts(
         prob_t *result,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
-        binProblem bp; binProblemInit(&bp, options);
+        binProblem bp; binProblemInit(&bp);
         unsigned int i;
 
-        for (i = 0; i < bd.T; i++) {
-                notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd.T);
+        for (i = 0; i < bd.L; i++) {
+                notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd.L);
                 result[i] = effectiveCounts(&bp, i, evidence_ref);
         }
 
@@ -462,7 +442,7 @@ void computeModelPosteriors(
 {
         unsigned int j;
 
-        for (j = 0; j < bd.T; j++) {
+        for (j = 0; j < bd.L; j++) {
                 if (gsl_vector_get(bd.beta, j) > 0) {
                         mpost[j] = expl(ev_log[j] - evidence_ref);
                 }
@@ -477,7 +457,6 @@ typedef struct {
         int i;
         prob_t *bprob;
         prob_t evidence_ref;
-        Options *options;
 } pthread_data_bprob;
 
 static
@@ -488,60 +467,57 @@ void * computeBreakProbabilities_thread(void* data_)
         int i = data->i;
         prob_t *bprob = data->bprob;
         prob_t evidence_ref = data->evidence_ref;
-        Options *options = data->options;
 
-        bprob[i] = breakProb(bp, i, evidence_ref, options);
+        bprob[i] = breakProb(bp, i, evidence_ref);
         return NULL;
 }
 
 static
 void computeBreakProbabilities(
         prob_t *bprob,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
         unsigned int i, j, rc;
 
-        binProblem bp[options->threads];
-        pthread_t threads[options->threads];
-        pthread_data_bprob data[options->threads];
+        binProblem bp[bd.options->threads];
+        pthread_t threads[bd.options->threads];
+        pthread_data_bprob data[bd.options->threads];
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        if (options->stacksize < PTHREAD_STACK_MIN) {
+        if (bd.options->stacksize < PTHREAD_STACK_MIN) {
                 if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
         else {
-                if (pthread_attr_setstacksize (&attr, (size_t)options->stacksize) != 0) {
+                if (pthread_attr_setstacksize (&attr, (size_t)bd.options->stacksize) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
 
-        for (j = 0; j < options->threads && j < bd.T; j++) {
-                binProblemInit(&bp[j], options);
+        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
+                binProblemInit(&bp[j]);
                 data[j].bp = &bp[j];
                 data[j].bprob = bprob;
                 data[j].evidence_ref = evidence_ref;
-                data[j].options = options;
         }
-        for (i = 0; i < bd.T; i += options->threads) {
-                for (j = 0; j < options->threads && i+j < bd.T; j++) {
-                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.T);
+        for (i = 0; i < bd.L; i += bd.options->threads) {
+                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
+                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.L);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, computeBreakProbabilities_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
                 }
-                for (j = 0; j < options->threads && i+j < bd.T; j++) {
+                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
                         rc = pthread_join(threads[j], NULL);
                         if (rc) {
                                 std_err(NONE, "Couldn't join thread.");
                         }
                 }
         }
-        for (j = 0; j < options->threads && j < bd.T; j++) {
+        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
                 binProblemFree(&bp[j]);
         }
 }
@@ -549,24 +525,23 @@ void computeBreakProbabilities(
 static
 void computeDifferentialUtility(
         prob_t *result,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
-        binProblem bp; binProblemInit(&bp, options);
+        binProblem bp; binProblemInit(&bp);
         unsigned int i, j;
         prob_t expected_entropy;
         prob_t entropy;
         prob_t evidence_log;
-        prob_t evidence_log_tmp[bd.T];
+        prob_t evidence_log_tmp[bd.L];
 
-        entropy = differentialEntropy(&bp, 0, -1, options->which, evidence_ref);
+        entropy = differentialEntropy(&bp, 0, -1, bd.options->which, evidence_ref);
 
-        for (i = 0; i < bd.T; i++) {
-                notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bd.T);
+        for (i = 0; i < bd.L; i++) {
+                notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bd.L);
                 // recompute the evidence
                 result[i] = 0;
                 for (j = 0; j < bd.events; j++) {
-                        evidence_log = evidence(&bp, evidence_log_tmp, options);
+                        evidence_log = evidence(&bp, evidence_log_tmp);
                         // expected entropy for event j
                         expected_entropy = differentialEntropy(&bp, 1, i, j, evidence_log);
                         // initialize sum
@@ -583,7 +558,6 @@ typedef struct {
         int i;
         prob_t **moments;
         prob_t evidence_ref;
-        Options *options;
 } pthread_data_moments;
 
 static
@@ -594,11 +568,10 @@ void * computeMoments_thread(void* data_)
         int i = data->i, j;
         prob_t **moments = data->moments;
         prob_t evidence_ref = data->evidence_ref;
-        Options *options = data->options;
 
         // Moments
-        for (j = 0; j < options->n_moments; j++) {
-                moments[j][i] = moment(bp, j+1, i, evidence_ref, options);
+        for (j = 0; j < bd.options->n_moments; j++) {
+                moments[j][i] = moment(bp, j+1, i, evidence_ref);
         }
         return NULL;
 }
@@ -606,51 +579,49 @@ void * computeMoments_thread(void* data_)
 static
 void computeMoments(
         prob_t **moments,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
         int i, j, rc;
 
-        binProblem bp[options->threads];
-        pthread_t threads[options->threads];
-        pthread_data_moments data[options->threads];
+        binProblem bp[bd.options->threads];
+        pthread_t threads[bd.options->threads];
+        pthread_data_moments data[bd.options->threads];
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        if (options->stacksize < PTHREAD_STACK_MIN) {
+        if (bd.options->stacksize < PTHREAD_STACK_MIN) {
                 if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
         else {
-                if (pthread_attr_setstacksize (&attr, (size_t)options->stacksize) != 0) {
+                if (pthread_attr_setstacksize (&attr, (size_t)bd.options->stacksize) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
 
-        for (j = 0; j < options->threads && j < bd.T; j++) {
-                binProblemInit(&bp[j], options);
+        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
+                binProblemInit(&bp[j]);
                 data[j].bp = &bp[j];
                 data[j].moments = moments;
                 data[j].evidence_ref = evidence_ref;
-                data[j].options = options;
         }
-        for (i = 0; i < bd.T; i += options->threads) {
-                for (j = 0; j < options->threads && i+j < bd.T; j++) {
-                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.T);
+        for (i = 0; i < bd.L; i += bd.options->threads) {
+                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
+                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.L);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, computeMoments_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
                 }
-                for (j = 0; j < options->threads && i+j < bd.T; j++) {
+                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
                         rc = pthread_join(threads[j], NULL);
                         if (rc) {
                                 std_err(NONE, "Couldn't join thread.");
                         }
                 }
         }
-        for (j = 0; j < options->threads && j < bd.T; j++) {
+        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
                 binProblemFree(&bp[j]);
         }
 }
@@ -658,20 +629,19 @@ void computeMoments(
 static
 void computeMarginal(
         prob_t **marginals,
-        prob_t evidence_ref,
-        Options *options)
+        prob_t evidence_ref)
 {
-        binProblem bp; binProblemInit(&bp, options);
+        binProblem bp; binProblemInit(&bp);
         int i, j;
 
-        for (i = 0; i < bd.T; i++) {
-                notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bd.T);
+        for (i = 0; i < bd.L; i++) {
+                notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bd.L);
                 marginals[i][0] = 0;
-                for (j = 1; j < options->n_marginals; j++) {
-                        prob_t p = j*options->marginal_step;
-                        if (options->marginal_range.from <= p &&
-                            options->marginal_range.to   >= p) {
-                                marginals[i][j] = marginal(&bp, i, p, options->which, evidence_ref, options);
+                for (j = 1; j < bd.options->n_marginals; j++) {
+                        prob_t p = j*bd.options->marginal_step;
+                        if (bd.options->marginal_range.from <= p &&
+                            bd.options->marginal_range.to   >= p) {
+                                marginals[i][j] = marginal(&bp, i, p, bd.options->which, evidence_ref);
                         }
                         else {
                                 marginals[i][j] = 0;
@@ -705,30 +675,30 @@ static
 void prombsTest()
 {
         MET_INIT;
-        prob_t result1[bd.T];
-        prob_t result2[bd.T];
+        prob_t result1[bd.L];
+        prob_t result2[bd.L];
         prob_t sum;
         unsigned int i;
-        Matrix *ak = allocMatrix(bd.T, bd.T);
+        Matrix *ak = allocMatrix(bd.L, bd.L);
 
         // set prior to 1
-        for (i = 0; i < bd.T; i++) {
+        for (i = 0; i < bd.L; i++) {
                 bd.prior_log[i] = 0;
         }
         MET("Testing prombs",
-            prombs   (result1, ak, bd.prior_log, &prombsTest_f, bd.T, minM(), NULL));
+            prombs   (result1, ak, bd.prior_log, &prombsTest_f, bd.L, minM(), NULL));
         MET("Testing prombsExt",
-            prombsExt(result2, ak, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.T, minM(), NULL));
+            prombsExt(result2, ak, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.L, minM(), NULL));
 
         sum = -HUGE_VAL;
-        for (i = 0; i < bd.T; i++) {
+        for (i = 0; i < bd.L; i++) {
                 (void)printf("prombs[%02d]: %.10f\n", i, (double)result1[i]);
                 sum = logadd(sum, result1[i]);
         }
         (void)printf("prombs: %.10f\n", (double)sum);
 
         sum = -HUGE_VAL;
-        for (i = 0; i < bd.T; i++) {
+        for (i = 0; i < bd.L; i++) {
                 (void)printf("prombsExt[%02d]: %.10f\n", i, (double)result2[i]);
                 sum = logadd(sum, result2[i]);
         }
@@ -745,12 +715,12 @@ static
 void computeModelPrior()
 {
         unsigned int m_b;
-        for (m_b = 0; m_b < bd.T; m_b++) {
+        for (m_b = 0; m_b < bd.L; m_b++) {
                 if (gsl_vector_get(bd.beta, m_b) == 0) {
                         bd.prior_log[m_b] = -HUGE_VAL;
                 }
                 else {
-                        bd.prior_log[m_b] = -gsl_sf_lnchoose(bd.T-1, m_b) +
+                        bd.prior_log[m_b] = -gsl_sf_lnchoose(bd.L-1, m_b) +
                                 logl(gsl_vector_get(bd.beta, m_b));
                 }
         }
@@ -763,48 +733,47 @@ void computeBinning(
         prob_t  *bprob,
         prob_t  *mpost,
         prob_t  *differential_gain,
-        prob_t  *effective_counts,
-        Options *options)
+        prob_t  *effective_counts)
 {
-        binProblem bp; binProblemInit(&bp, options);
+        binProblem bp; binProblemInit(&bp);
         prob_t evidence_ref;
-        prob_t evidence_log_tmp[bd.T];
+        prob_t evidence_log_tmp[bd.L];
 
         // compute the model prior once for all computations
         computeModelPrior();
         // init sampler
-        if (options->algorithm == 2) {
-                mgs_init((size_t)options->samples[0], (size_t)options->samples[1],
-                         bd.prior_log, &execPrombs_f, (size_t)bd.T, (void *)&bp);
+        if (bd.options->algorithm == 2) {
+                mgs_init((size_t)bd.options->samples[0], (size_t)bd.options->samples[1],
+                         bd.prior_log, &execPrombs_f, (size_t)bd.L, (void *)&bp);
         }
         // compute evidence P(D)
-        evidence_ref = evidence(&bp, evidence_log_tmp, options);
+        evidence_ref = evidence(&bp, evidence_log_tmp);
         // compute model posteriors P(m_B|D)
-        if (options->model_posterior) {
+        if (bd.options->model_posterior) {
                 computeModelPosteriors(evidence_log_tmp, mpost, evidence_ref);
         }
         // compute moments
-        if (options->marginal) {
-                computeMarginal(marginals, evidence_ref, options);
+        if (bd.options->marginal) {
+                computeMarginal(marginals, evidence_ref);
         }
         // compute break probability
-        if (options->bprob) {
-                computeBreakProbabilities(bprob, evidence_ref, options);
+        if (bd.options->bprob) {
+                computeBreakProbabilities(bprob, evidence_ref);
         }
         // compute the first n moments
-        if (options->n_moments > 0) {
-                computeMoments(moments, evidence_ref, options);
+        if (bd.options->n_moments > 0) {
+                computeMoments(moments, evidence_ref);
         }
         // compute the differential entropy
-        if (options->differential_gain) {
-                computeDifferentialUtility(differential_gain, evidence_ref, options);
+        if (bd.options->differential_gain) {
+                computeDifferentialUtility(differential_gain, evidence_ref);
         }
         // compute effective counts
-        if (options->effective_counts) {
-                computeEffectiveCounts(effective_counts, evidence_ref, options);
+        if (bd.options->effective_counts) {
+                computeEffectiveCounts(effective_counts, evidence_ref);
         }
 
-        if (options->algorithm == 2) {
+        if (bd.options->algorithm == 2) {
                 mgs_free();
         }
         binProblemFree(&bp);
@@ -867,8 +836,9 @@ bin_log(
         prombs_init(options->epsilon);
 
         verbose            = options->verbose;
+        bd.options         = options;
         bd.beta            = beta;
-        bd.T               = K;
+        bd.L               = K;
         bd.prior_log       = prior_log;
         bd.events          = events;
         bd.counts          = counts;
@@ -879,8 +849,8 @@ bin_log(
                 prombsTest();
         }
         computeBinning(moments, marginals, bprob, mpost, differential_gain,
-                       effective_counts, options);
-        for (i = 0; i <= bd.T-1; i++) {
+                       effective_counts);
+        for (i = 0; i <= bd.L-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
                 }
