@@ -23,5 +23,6 @@
 extern void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
 extern void mgs_init(size_t R, size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
 extern void mgs_free();
+extern size_t * mgs_get_counts();
 
 #endif /* _MGS_H_ */
