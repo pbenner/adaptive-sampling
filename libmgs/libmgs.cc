@@ -134,13 +134,13 @@ Multibin::get_bins()
 {
         long int from =  0;
         long int to   = -1;
-        size_t i;
+        size_t i, j;
         list<bin_t>* bins = new list<bin_t>();
 
-        for (i = 0; i < this->n; i++) {
+        for (i = 0, j = 0; i < this->n; i++) {
                 uint32_t p = this->breaks[i];
                 uint32_t m;
-                while (p) {
+                for (; j < this->n_bins-1 && p; j++) {
                         m    = p & (~p + 1);
                         from = to+1;
                         to   = 32*i+(size_t)log2(m);

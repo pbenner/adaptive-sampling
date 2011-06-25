@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <math.h>
 
+#include <sys/time.h>
+
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_permutation.h>
@@ -48,7 +50,7 @@ void sample_bin(
         Bayes::prob_t sum2 = 0;
         list<bin_t>* bins1 = mb->get_bins(); mb->switch_break(pos);
         list<bin_t>* bins2 = mb->get_bins();
-        Bayes::prob_t r = (Bayes::prob_t)rand()/(RAND_MAX+1.0);
+        Bayes::prob_t r = (Bayes::prob_t)rand()/RAND_MAX;
 
         if (g[bins1->size()-1] > -HUGE_VAL) {
                 for (list<bin_t>::iterator it = bins1->begin(); it != bins1->end(); it++) {
@@ -114,6 +116,12 @@ void mgs_init(
         const gsl_rng_type * T = gsl_rng_default;
         gsl_rng_env_setup();
         __r__ = gsl_rng_alloc (T);
+
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        time_t seed = tv.tv_sec*tv.tv_usec;
+        srand(seed);
+
 
         __multibins__    = (Multibin**)malloc((N+1)*sizeof(Multibin*));
         __multibins__[N] = (Multibin* )NULL;
