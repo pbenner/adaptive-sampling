@@ -35,7 +35,8 @@ extern "C" {
 #include <bayes/exception.h>
 
 static Multibin** __multibins__;
-static gsl_rng * __r__;
+static gsl_rng* __r__;
+static size_t* __counts__;
 
 static
 void sample_bin(
@@ -122,11 +123,15 @@ void mgs_init(
         time_t seed = tv.tv_sec*tv.tv_usec;
         srand(seed);
 
-
         __multibins__    = (Multibin**)malloc((N+1)*sizeof(Multibin*));
         __multibins__[N] = (Multibin* )NULL;
+        __counts__ = (size_t*)malloc(L*sizeof(size_t));
 
         size_t i;
+        // initialize counts
+        for (i = 0; i < L; i++) {
+                __counts__[i] = 0;
+        }
 
         // burn in
         __multibins__[0] = new Multibin(L);
@@ -134,6 +139,7 @@ void mgs_init(
                 sample_multibin(g, f, data, __multibins__[0]);
         }
 
+        __counts__[__multibins__[0]->get_n_bins()-1]++;
         // sample
         for (i = 1; i < N; i++) {
                 if (i%100 == 0) {
@@ -141,6 +147,8 @@ void mgs_init(
                 }
                 __multibins__[i] = __multibins__[i-1]->copy();
                 sample_multibin(g, f, data, __multibins__[i]);
+
+                __counts__[__multibins__[i]->get_n_bins()-1]++;
         }
 }
 
@@ -152,6 +160,7 @@ void mgs_free()
                 delete(__multibins__[i]);
         }
         free(__multibins__);
+        free(__counts__);
         gsl_rng_free (__r__);
 }
 
@@ -169,7 +178,6 @@ void evaluate(
                 for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
                         sum += (*f)((*it).from, (*it).to, data);
                 }
-//                sum += g[bins->size()-1];
 
                 result[bins->size()-1] =
                         Bayes::logadd(result[bins->size()-1], sum);
@@ -197,9 +205,12 @@ void mgs(
         }
         for (i = 0; i < L; i++) {
                 if (result[i] > -HUGE_VAL) {
-                        result[i] -= logl(N);
+                        result[i] -= logl(__counts__[i]);
                 }
         }
+//        for (i = 0; i < L; i++) {
+//                printf("ev(M = %u) = %f\n", (unsigned int)i, (float)result[i]);
+//        }
 }
 
 }

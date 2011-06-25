@@ -52,19 +52,21 @@ def usage():
     print "adaptive-sampling [option]... FILE "
     print
     print "Options:"
-    print "   -b                             - compute break probabilities"
-    print "       --blocks=N                 - sample in blocks of N measurements"
-    print "   -d                             - compute differential gain"
-    print "       --lapsing=p                - specify a lapsing probability"
-    print "   -m  --marginal                 - compute full marginal distribution"
-    print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
-    print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
-    print "       --epsilon=EPSILON          - epsilon for entropy estimations"
-    print "   -n  --samples=N                - number of samples"
-    print "   -k  --moments=N                - compute the first N>=2 moments"
-    print "       --strategy=STRATEGY        - uniform, uniform-random, differential-gain (default),"
-    print "                                    effective-counts, or variance"
-    print "       --which=EVENT              - for which event to compute the binning"
+    print "   -b                                 - compute break probabilities"
+    print "       --blocks=N                     - sample in blocks of N measurements"
+    print "   -d                                 - compute differential gain"
+    print "       --lapsing=p                    - specify a lapsing probability"
+    print "   -m  --marginal                     - compute full marginal distribution"
+    print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
+    print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
+    print "       --epsilon=EPSILON              - epsilon for entropy estimations"
+    print "   -n  --samples=N                    - number of samples"
+    print "   -k  --moments=N                    - compute the first N>=2 moments"
+    print "       --strategy=STRATEGY            - uniform, uniform-random, differential-gain (default),"
+    print "                                        effective-counts, or variance"
+    print "       --which=EVENT                  - for which event to compute the binning"
+    print "       --algorithm=NAME               - select an algorithm [mgs, prombstree, default: prombs]"
+    print "       --mgs-samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000] for mgs"
     print
     print "       --plot-utility             - plot utility as a function of sample steps"
     print
@@ -296,8 +298,10 @@ def parseConfig(config_file):
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Ground Truth'):
-        options['visualization'] = config.readVisualization(config_parser, 'Ground Truth', os.path.dirname(config_file))
-        options['filter'] = config.readFilter(config_parser, 'Ground Truth', os.path.dirname(config_file))
+        config.readVisualization(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
+        config.readFilter(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
+        config.readAlgorithm(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
+        config.readMgsSamples(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
         data['gt']  = config.readVector(config_parser, 'Ground Truth', 'gt', float)
         data['L']   = len(data['gt'])
         data['alpha'], data['beta'], data['gamma'] = \
@@ -306,8 +310,10 @@ def parseConfig(config_file):
         result = loadResult()
         result = sample(result, data)
     if config_parser.has_section('Experiment'):
-        options['visualization'] = config.readVisualization(config_parser, 'Experiment', os.path.dirname(config_file))
-        options['filter'] = config.readFilter(config_parser, 'Experiment', os.path.dirname(config_file))
+        config.readVisualization(config_parser, 'Experiment', os.path.dirname(config_file), options)
+        config.readFilter(config_parser, 'Experiment', os.path.dirname(config_file), options)
+        config.readAlgorithm(config_parser, 'Experiment', os.path.dirname(config_file), options)
+        config.readMgsSamples(config_parser, 'Experiment', os.path.dirname(config_file), options)
         data['L'] = int(config_parser.get('Experiment', 'bins'))
         data['alpha'], data['beta'], data['gamma'] = \
             config.getParameters(config_parser, 'Experiment', os.path.dirname(config_file), data['K'], data['L'])
@@ -338,8 +344,7 @@ options = {
     'samples'           : 0,
     'epsilon'           : 0.00001,
     'n_moments'         : 0,
-    'algorithm'         : 0,
-    'samples'           : (100,2000),
+    'mgs_samples'       : (100,2000),
     'marginal'          : 0,
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
@@ -347,6 +352,7 @@ options = {
     'lapsing'           : 0.0,
     'threads'           : 1,
     'stacksize'         : 256*1024,
+    'algorithm'         : 'prombs',
     'strategy'          : 'differential-gain',
     'port'              : None,
     'filter'            : None,
@@ -370,7 +376,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
                       "plot-utility", "strategy=", "savefig=", "lapsing=", "port=",
-                      "threads=", "stacksize=" ]
+                      "threads=", "stacksize=", "algorithm=", "samples=", "mgs-samples"]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -385,7 +391,7 @@ def main():
         if o in ("-t", "--prombsTest"):
             sys.stderr.write("Testing prombs.\n")
             options["prombsTest"] = True
-        if o == "-n":
+        if o in ("-n", "--samples"):
             options["samples"] = int(a)
         if o == "--strategy":
             options["strategy"] = a
@@ -436,6 +442,10 @@ def main():
             else:
                 usage()
                 return 0
+        if o == "--algorithm":
+            options["algorithm"] = a
+        if o == "--mgs-samples":
+            options["mgs_samples"] = tuple(map(int, a.split(":")))
     if len(tail) != 1:
         usage()
         return 1

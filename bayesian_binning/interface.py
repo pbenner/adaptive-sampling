@@ -79,9 +79,8 @@ class OPTIONS(Structure):
           self.which          = c_int(options["which"])
           self.threads        = c_int(options["threads"])
           self.stacksize      = c_int(options["stacksize"])
-          self.algorithm      = c_int(options["algorithm"])
-          self.samples[0]     = c_int(options["samples"][0])
-          self.samples[1]     = c_int(options["samples"][1])
+          self.samples[0]     = c_int(options["mgs_samples"][0])
+          self.samples[1]     = c_int(options["mgs_samples"][1])
           self.marginal       = c_int(options["marginal"])
           self.marginal_step  = c_float(options["marginal_step"])
           self.marginal_range = MARGINAL_RANGE(*options["marginal_range"])
@@ -94,6 +93,14 @@ class OPTIONS(Structure):
           self.differential_gain = c_int(1) if options["differential_gain"] else c_int(0)
           self.effective_counts  = c_int(1) if options["effective_counts"]  else c_int(0)
           self.model_posterior   = c_int(1) if options["model_posterior"]   else c_int(0)
+          if options["algorithm"] == "prombs":
+               self.algorithm = c_int(0)
+          elif options["algorithm"] == "prombstree":
+               self.algorithm = c_int(1)
+          elif options["algorithm"] == "mgs":
+               self.algorithm = c_int(2)
+          else:
+               raise IOError("Unknown algorithm.")
 
 class BINNING_RESULT(Structure):
      _fields_ = [("moments",           POINTER(MATRIX)),

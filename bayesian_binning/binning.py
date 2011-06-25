@@ -50,28 +50,28 @@ def usage():
     print "bayesian-binning [option]... FILE "
     print
     print "Options:"
-    print "   -b                             - compute break probabilities"
-    print "   -d                             - compute differential gain"
-    print "       --effective-counts         - compute effective counts"
-    print "   -m  --marginal                 - compute full marginal distribution"
-    print "   -r  --marginal-range=(FROM,TO) - limit range for the marginal distribution"
-    print "   -s  --marginal-step=STEP       - step size for the marginal distribution"
-    print "       --epsilon=EPSILON          - epsilon for entropy estimations"
-    print "   -k  --moments=N                - compute the first N>=2 moments"
-    print "       --which=EVENT              - for which event to compute the binning"
-    print "       --algorithm=NAME           - select an algorithm [mgs, prombstree, default: prombs]"
-    print "       --samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000]"
+    print "   -b                                - compute break probabilities"
+    print "   -d                                - compute differential gain"
+    print "       --effective-counts            - compute effective counts"
+    print "   -m  --marginal                    - compute full marginal distribution"
+    print "   -r  --marginal-range=(FROM,TO)    - limit range for the marginal distribution"
+    print "   -s  --marginal-step=STEP          - step size for the marginal distribution"
+    print "       --epsilon=EPSILON             - epsilon for entropy estimations"
+    print "   -k  --moments=N                   - compute the first N>=2 moments"
+    print "       --which=EVENT                 - for which event to compute the binning"
+    print "       --algorithm=NAME              - select an algorithm [mgs, prombstree, default: prombs]"
+    print "       --mgs-samples=BURN_IN:SAMPLES - number of samples [default: 100:2000]"
     print
-    print "       --threads=THREADS          - number of threads [default: 1]"
-    print "       --stacksize=BYTES          - thread stack size [default: 256*1024]"
+    print "       --threads=THREADS             - number of threads [default: 1]"
+    print "       --stacksize=BYTES             - thread stack size [default: 256*1024]"
     print
-    print "       --load=FILE                - load result from file"
-    print "       --save=FILE                - save result to file"
-    print "       --savefig=FILE             - save figure to file"
+    print "       --load=FILE                   - load result from file"
+    print "       --save=FILE                   - save result to file"
+    print "       --savefig=FILE                - save figure to file"
     print
-    print "   -h, --help                     - print help"
-    print "   -v, --verbose                  - be verbose"
-    print "   -t, --prombsTest               - test prombs algorithm"
+    print "   -h, --help                        - print help"
+    print "   -v, --verbose                     - be verbose"
+    print "   -t, --prombsTest                  - test prombs algorithm"
     print
 
 # load results from file
@@ -158,7 +158,9 @@ def parseConfig(config_file):
     if config_parser.sections() == []:
         raise IOError("Invalid configuration file.")
     if config_parser.has_section('Counts'):
-        options['visualization'] = config.readVisualization(config_parser, 'Counts', os.path.dirname(config_file))
+        config.readVisualization(config_parser, 'Counts', os.path.dirname(config_file), options)
+        config.readAlgorithm(config_parser, 'Counts', os.path.dirname(config_file), options)
+        config.readMgsSamples(config_parser, 'Counts', os.path.dirname(config_file), options)
         counts = config.readCounts(config_parser, 'Counts')
         K, L   = len(counts), len(counts[0])
         alpha, beta, gamma = config.getParameters(config_parser, 'Counts', os.path.dirname(config_file), K, L)
@@ -177,7 +179,9 @@ def parseConfig(config_file):
                 vis.plotBinning(result, options)
                 show()
     if config_parser.has_section('Trials'):
-        options['visualization'] = config.readVisualization(config_parser, 'Trials', os.path.dirname(config_file))
+        config.readVisualization(config_parser, 'Trials', os.path.dirname(config_file), options)
+        config.readAlgorithm(config_parser, 'Trials', os.path.dirname(config_file), options)
+        config.readMgsSamples(config_parser, 'Trials', os.path.dirname(config_file), options)
         binsize   = config_parser.getint('Trials', 'binsize')
         timings   = config.readMatrix(config_parser, 'Trials', 'timings', int)
         srange    = None
@@ -206,8 +210,7 @@ def parseConfig(config_file):
 
 options = {
     'epsilon'           : 0.00001,
-    'algorithm'         : 0,
-    'samples'           : (100,2000),
+    'mgs_samples'       : (100,2000),
     'marginal'          : 0,
     'marginal_step'     : 0.01,
     'marginal_range'    : (0.0,1.0),
@@ -215,6 +218,7 @@ options = {
     'which'             : 0,
     'threads'           : 1,
     'stacksize'         : 256*1024,
+    'algorithm'         : 'prombs',
     'visualization'     : None,
     'load'              : None,
     'save'              : None,
@@ -234,7 +238,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
                       "effective-counts", "savefig=", "threads=", "stacksize=", "algorithm=",
-                      "samples="]
+                      "mgs-samples="]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -291,17 +295,9 @@ def main():
                 usage()
                 return 0
         if o == "--algorithm":
-            if a == "prombs":
-                options["algorithm"] = 0
-            elif a == "prombstree":
-                options["algorithm"] = 1
-            elif a == "mgs":
-                options["algorithm"] = 2
-            else:
-                usage()
-                return 0
-        if o == "--samples":
-            options["samples"] = tuple(map(int, a.split(":")))
+            options["algorithm"] = a
+        if o == "--mgs-samples":
+            options["mgs_samples"] = tuple(map(int, a.split(":")))
     if len(tail) != 1:
         usage()
         return 1

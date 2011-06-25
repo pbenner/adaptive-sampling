@@ -120,8 +120,17 @@ def getParameters(config_parser, section, dir, K, L):
         gamma = generate_gamma(L)
         return alpha, beta, gamma
 
-def readFilter(config_parser, section, dir):
-    return readScript(config_parser, section, dir, 'filter')
+def readFilter(config_parser, section, dir, options):
+    options['filter'] =  readScript(config_parser, section, dir, 'filter')
 
-def readVisualization(config_parser, section, dir):
-    return readScript(config_parser, section, dir, 'visualization')
+def readVisualization(config_parser, section, dir, options):
+    options['visualization'] = readScript(config_parser, section, dir, 'visualization')
+
+def readAlgorithm(config_parser, section, dir, options):
+    if config_parser.has_option(section, 'algorithm'):
+        options['algorithm'] = config_parser.get(section, 'algorithm')
+
+def readMgsSamples(config_parser, section, dir, options):
+    if config_parser.has_option(section, 'mgs-samples'):
+         samples_str = config_parser.get(section, 'mgs-samples')
+         options['mgs_samples'] = tuple(map(int, samples_str.split(":")))
