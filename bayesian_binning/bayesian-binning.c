@@ -353,7 +353,7 @@ prob_t breakProb_f(int i, int j, void *data)
         // position pos, which means, that only multi-bins
         // are included, that have a break at position
         // pos
-        if (i < bp->bprob_pos && bp->bprob_pos < j) {
+        if (i < bp->bprob_pos && bp->bprob_pos <= j) {
                 return -HUGE_VAL;
         }
         return iec_log(NULL, i, j);
@@ -490,6 +490,11 @@ void computeBreakProbabilities(
         prob_t *bprob,
         prob_t evidence_ref)
 {
+        if (bd.options->algorithm == 2) {
+                mgs_get_bprob(bprob, bd.L);
+                return;
+        }
+
         unsigned int i, j, rc;
 
         binProblem bp[bd.options->threads];

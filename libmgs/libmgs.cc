@@ -157,6 +157,18 @@ Multibin::get_bins()
         return bins;
 }
 
+void
+Multibin::get_breaks(size_t *breaks)
+{
+        list<bin_t>* bins = this->get_bins();
+
+        for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
+                breaks[(*it).from]++;
+        }
+
+        delete(bins);
+}
+
 size_t
 Multibin::get_n_breaks()
 {

@@ -35,6 +35,7 @@ extern "C" {
 #include <bayes/exception.h>
 
 static Multibin** __multibins__;
+static size_t __N__;
 static gsl_rng* __r__;
 static size_t* __counts__;
 
@@ -123,6 +124,7 @@ void mgs_init(
         time_t seed = tv.tv_sec*tv.tv_usec;
         srand(seed);
 
+        __N__ = N;
         __multibins__    = (Multibin**)malloc((N+1)*sizeof(Multibin*));
         __multibins__[N] = (Multibin* )NULL;
         __counts__ = (size_t*)malloc(L*sizeof(size_t));
@@ -191,6 +193,23 @@ mgs_get_counts()
         return __counts__;
 }
 
+void
+mgs_get_bprob(Bayes::prob_t *bprob, size_t L)
+{
+        size_t breaks[L];
+        size_t i;
+
+        for (i = 0; i < L; i++) {
+                breaks[i] = 0;
+        }
+        for (i = 0; i < __N__; i++) {
+                __multibins__[i]->get_breaks(breaks);
+        }
+        for (i = 0; i < L; i++) {
+                bprob[i] = (Bayes::prob_t)breaks[i]/__N__;
+        }
+}
+
 void mgs(
         Bayes::prob_t *result,
         Bayes::prob_t *g,
@@ -198,7 +217,6 @@ void mgs(
         size_t L,
         void *data)
 {
-        size_t N;
         size_t i;
 
         for (i = 0; i < L; i++) {
@@ -206,12 +224,12 @@ void mgs(
         }
 
         // evaluate samples
-        for (N = 0; __multibins__[N]; N++) {
-                evaluate(result, g, f, data, __multibins__[N]);
+        for (i = 0; __multibins__[i]; i++) {
+                evaluate(result, g, f, data, __multibins__[i]);
         }
         for (i = 0; i < L; i++) {
                 if (result[i] > -HUGE_VAL) {
-                        result[i] -= logl(N);
+                        result[i] -= logl(__N__);
                 }
         }
 }
