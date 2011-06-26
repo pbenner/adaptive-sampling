@@ -58,6 +58,7 @@ public:
         list<bin_t>* get_bins();
         size_t get_n_breaks();
         size_t get_n_bins();
+        void get_breaks(size_t *breaks);
 
 private:
         size_t n;        // length of breaks[]
