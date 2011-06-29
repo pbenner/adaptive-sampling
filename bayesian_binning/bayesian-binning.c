@@ -261,6 +261,7 @@ prob_t evidence(binProblem *bp, prob_t *ev_log)
         callBinningAlgorithm(bp, execPrombs_f, ev_log);
 
         return sumModels(ev_log);
+//        return prombs_rec(bd.L, execPrombs_f, (void *)bp);
 }
 
 static
