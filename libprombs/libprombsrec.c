@@ -29,6 +29,7 @@
  * prombs_rec(bd.L, execPrombs_f, (void *)bp)
  */
 
+static
 prob_t prombs_rec_(
         prob_t *result,
         size_t j,
