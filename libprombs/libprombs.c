@@ -24,6 +24,8 @@
 #include <bayes/datatypes.h>
 #include <bayes/logarithmetic.h>
 
+/* Algorithm from Yi-Ching Yao 1984 */
+
 static prob_t prombsExt_epsilon = 0.0001;
 
 void prombs_init(prob_t epsilon) {
