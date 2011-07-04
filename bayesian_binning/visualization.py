@@ -157,22 +157,30 @@ def plotBinning(result, options):
             x, title = preplot(result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
-    ax11 = fig.add_subplot(2,1,1)
-    ax21 = fig.add_subplot(2,1,2)
-    ax12 = ax11.twinx()
-    ax22 = ax21.twinx()
+    if ((result['mpost'] and options['model_posterior']) or
+        (result['effective_counts'] and options['effective_counts'])):
+        ax11 = fig.add_subplot(2,1,1)
+        ax21 = fig.add_subplot(2,1,2)
+        ax12 = ax11.twinx()
+        ax22 = ax21.twinx()
+    else:
+        ax11 = fig.add_subplot(1,1,1)
+        ax21 = None
+        ax12 = ax11.twinx()
+        ax22 = None
     p11 = plotMoments(ax11, x, result)
-    p21 = plotModelPosterior(ax21, result)
     p12 = None
     p22 = None
     if result['marginals'] and options['marginal']:
         plotMarginal(ax11, x, result)
     if result['bprob'] and options['bprob']:
-        plotBinBoundaries(ax12, x, result)
+        p12 = plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
-        plotUtility(ax12, x, result)
+        p12 = plotUtility(ax12, x, result)
+    if result['mpost'] and options['model_posterior']:
+        p21 = plotModelPosterior(ax21, result)
     if result['effective_counts'] and options['effective_counts']:
-        plotEffectiveCounts(ax22, x, result)
+        p22 = plotEffectiveCounts(ax22, x, result)
     if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22], [p11, p12, p21, p22],
                  result, options)
@@ -188,15 +196,23 @@ def plotBinningSpikes(x, timings, result, options):
             x, dt, timings, title = preplot(x, timings, result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
-    ax11 = fig.add_subplot(3,1,1, title=title)
-    ax21 = fig.add_subplot(3,1,2)
-    ax31 = fig.add_subplot(3,1,3)
-    ax12 = ax11.twinx()
-    ax22 = ax21.twinx()
-    ax32 = ax31.twinx()
+    if result['mpost'] and options['model_posterior']:
+        ax11 = fig.add_subplot(3,1,1, title=title)
+        ax21 = fig.add_subplot(3,1,2)
+        ax31 = fig.add_subplot(3,1,3)
+        ax12 = ax11.twinx()
+        ax22 = ax21.twinx()
+        ax32 = ax31.twinx()
+    else:
+        ax11 = fig.add_subplot(2,1,1, title=title)
+        ax21 = fig.add_subplot(2,1,2)
+        ax31 = None
+        ax12 = ax11.twinx()
+        ax22 = ax21.twinx()
+        ax32 = None
     p11 = plotSpikes(ax11, x, timings)
     p21 = plotSpikeRate(ax21, x, result, dt)
-    p31 = plotModelPosterior(ax31, result)
+    p31 = None
     p12 = None
     p22 = None
     p32 = None
@@ -206,6 +222,8 @@ def plotBinningSpikes(x, timings, result, options):
         p12 = plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['differential_gain']:
         p12 = plotUtility(ax12, result)
+    if result['mpost'] and options['model_posterior']:
+        p31 = plotModelPosterior(ax31, result)
     if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],
@@ -222,28 +240,38 @@ def plotSampling(result, options, data):
             x, title = preplot(result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
-    ax11 = fig.add_subplot(3,1,1, title=title)
-    ax21 = fig.add_subplot(3,1,2)
-    ax31 = fig.add_subplot(3,1,3)
-    ax12 = ax11.twinx()
-    ax22 = ax21.twinx()
-    ax32 = ax31.twinx()
+    if result['mpost'] and options['model_posterior']:
+        ax11 = fig.add_subplot(3,1,1, title=title)
+        ax21 = fig.add_subplot(3,1,2)
+        ax31 = fig.add_subplot(3,1,3)
+        ax12 = ax11.twinx()
+        ax22 = ax21.twinx()
+        ax32 = ax31.twinx()
+    else:
+        ax11 = fig.add_subplot(2,1,1, title=title)
+        ax21 = fig.add_subplot(2,1,2)
+        ax31 = None
+        ax12 = ax11.twinx()
+        ax22 = ax21.twinx()
+        ax32 = None
     p11 = plotMoments(ax11, x, result)
     p21 = plotCounts(ax21, x, result)
-    p31 = plotModelPosterior(ax31, result)
+    p31 = None
     p12 = None
     p22 = None
     p32 = None
-    if data['gt']:
-        p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['marginals'] and options['marginal']:
         plotMarginal(ax11, x, result)
+    if data['gt']:
+        p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['bprob'] and options['bprob']:
-        plotBinBoundaries(ax12, x, result)
+        p12 = plotBinBoundaries(ax12, x, result)
     if result['differential_gain'] and options['strategy'] == 'differential-gain':
         p22 = plotUtility(ax22, x, result)
     if result['effective_counts'] and options['strategy'] == 'effective-counts':
         p22 = plotEffectiveCounts(ax22, x, result)
+    if result['mpost'] and options['model_posterior']:
+        p31 = plotModelPosterior(ax31, result)
     if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],

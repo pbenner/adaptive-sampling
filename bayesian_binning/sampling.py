@@ -59,6 +59,7 @@ def usage():
     print "   -m  --marginal                     - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
+    print "       --no-model-posterior          - do not compute the model posterior"
     print "       --epsilon=EPSILON              - epsilon for entropy estimations"
     print "   -n  --samples=N                    - number of samples"
     print "   -k  --moments=N                    - compute the first N>=2 moments"
@@ -270,7 +271,6 @@ def sample(result, data):
             samples.append(index)
             counts[event][index] += 1
             gain.pop(index)
-    options['model_posterior'] = True
     options['n_moments'] = 2
     options['marginal'] = marginal
     result = bin(counts, data)
@@ -367,7 +367,7 @@ options = {
     'bprob'             : False,
     'differential_gain' : False,
     'effective_counts'  : False,
-    'model_posterior'   : False,
+    'model_posterior'   : True,
     }
 
 def main():
@@ -376,7 +376,8 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
                       "plot-utility", "strategy=", "savefig=", "lapsing=", "port=",
-                      "threads=", "stacksize=", "algorithm=", "samples=", "mgs-samples"]
+                      "threads=", "stacksize=", "algorithm=", "samples=", "mgs-samples",
+                      "no-model-posterior"]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -446,6 +447,8 @@ def main():
             options["algorithm"] = a
         if o == "--mgs-samples":
             options["mgs_samples"] = tuple(map(int, a.split(":")))
+        if o == "--no-model-posterior":
+            options["model_posterior"] = False
     if len(tail) != 1:
         usage()
         return 1

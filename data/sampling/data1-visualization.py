@@ -15,9 +15,10 @@ def postplot(ax, p, result, options):
     ax21.set_xlabel('input',  font)
     ax21.legend([p22], ['$U_x$'], loc=4, prop=smallfont)
     ax22.set_ylabel(r'$U_x$', font)
-    ax31.set_ylabel(r'$P(m_B|E)$', font)
-    ax31.set_xlabel(r'$m_B$',  font)
-    ax31.set_xlim(0,30)
+    if ax31:
+        ax31.set_ylabel(r'$P(m_B|E)$', font)
+        ax31.set_xlabel(r'$m_B$',  font)
+        ax31.set_xlim(0,30)
 
 
 def utilitypreplot(result):
