@@ -56,6 +56,7 @@ def usage():
     print "   -m  --marginal                    - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)    - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP          - step size for the marginal distribution"
+    print "       --no-model-posterior          - do not compute the model posterior"
     print "       --epsilon=EPSILON             - epsilon for entropy estimations"
     print "   -k  --moments=N                   - compute the first N>=2 moments"
     print "       --which=EVENT                 - for which event to compute the binning"
@@ -238,7 +239,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
                       "effective-counts", "savefig=", "threads=", "stacksize=", "algorithm=",
-                      "mgs-samples="]
+                      "mgs-samples=", "no-model-posterior"]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -298,6 +299,8 @@ def main():
             options["algorithm"] = a
         if o == "--mgs-samples":
             options["mgs_samples"] = tuple(map(int, a.split(":")))
+        if o == "--no-model-posterior":
+            options["model_posterior"] = False
     if len(tail) != 1:
         usage()
         return 1

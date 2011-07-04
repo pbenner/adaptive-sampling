@@ -10,6 +10,7 @@ def postplot(ax, p, result, options):
         ax12.set_ylabel(r'$P(\Rsh_i|E)$', font)
     ax21.set_ylabel(r'$P(s_i|E)$', font)
     ax21.set_xlabel(r'$t$',  font)
-    ax31.set_ylabel(r'$P(m_B|E)$', font)
-    ax31.set_xlabel(r'$m_B$',  font)
-    ax31.set_xlim(0,30)
+    if ax31:
+        ax31.set_ylabel(r'$P(m_B|E)$', font)
+        ax31.set_xlabel(r'$m_B$',  font)
+        ax31.set_xlim(0,30)
