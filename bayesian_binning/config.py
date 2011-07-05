@@ -20,6 +20,7 @@ import os.path
 import numpy as np
 import ConfigParser
 import re
+import random
 
 import bayesian_binning.statistics    as statistics
 
@@ -56,6 +57,17 @@ def readAlpha(config_parser, events, bins, section, converter):
 def readCounts(config_parser, section):
     counts = readMatrix(config_parser, section, 'counts', float)
     return statistics.countStatistic(counts)
+
+def readSeeds(config_parser, section, option):
+    if config_parser.has_option(section, option):
+        seeds = readVector(config_parser, section, option, float)
+        rand_states = []
+        for i in seeds:
+            random.seed(i)
+            rand_states.append(random.getstate())
+    else:
+        rand_states = None
+    return rand_states
 
 ## helper functions for setting prior parameters
 ################################################################################
