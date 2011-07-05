@@ -59,7 +59,7 @@ def usage():
     print "   -m  --marginal                     - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
-    print "       --no-model-posterior          - do not compute the model posterior"
+    print "       --no-model-posterior           - do not compute the model posterior"
     print "       --epsilon=EPSILON              - epsilon for entropy estimations"
     print "   -n  --samples=N                    - number of samples"
     print "   -k  --moments=N                    - compute the first N>=2 moments"
@@ -69,20 +69,20 @@ def usage():
     print "       --algorithm=NAME               - select an algorithm [mgs, prombstree, default: prombs]"
     print "       --mgs-samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000] for mgs"
     print
-    print "       --plot-utility             - plot utility as a function of sample steps"
+    print "       --plot-utility                 - plot utility as a function of sample steps"
     print
-    print "       --port=PORT                - connect to port from a matlab server for data collection"
+    print "       --port=PORT                    - connect to port from a matlab server for data collection"
     print
-    print "       --threads=THREADS          - number of threads [default: 1]"
-    print "       --stacksize=BYTES          - thread stack size [default: 256*1024]"
+    print "       --threads=THREADS              - number of threads [default: 1]"
+    print "       --stacksize=BYTES              - thread stack size [default: 256*1024]"
     print
-    print "       --load=FILE                - load result from file"
-    print "       --save=FILE                - save result to file"
-    print "       --savefig=FILE             - save figure to file"
+    print "       --load=FILE                    - load result from file"
+    print "       --save=FILE                    - save result to file"
+    print "       --savefig=FILE                 - save figure to file"
     print
-    print "   -h, --help                     - print help"
-    print "   -v, --verbose                  - be verbose"
-    print "   -t, --prombsTest               - test prombs algorithm"
+    print "   -h, --help                         - print help"
+    print "   -v, --verbose                      - be verbose"
+    print "   -t, --prombsTest                   - test prombs algorithm"
     print
 
 # tools
@@ -133,6 +133,7 @@ def saveResult(result):
     config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
+    configfile.close()
 
 # load results from file
 # ------------------------------------------------------------------------------
@@ -177,14 +178,14 @@ def loadResult():
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(counts_v, data):
+def bin(counts_v, data, bin_options):
     """Call the binning library."""
     events = len(counts_v)
     counts = statistics.countStatistic(counts_v)
     alpha  = data['alpha']
     beta   = data['beta']
     gamma  = data['gamma']
-    return interface.binning(events, counts, alpha, beta, gamma, options)
+    return interface.binning(events, counts, alpha, beta, gamma, bin_options)
 
 # sampling
 # ------------------------------------------------------------------------------
@@ -211,6 +212,9 @@ def selectItem(gain, counts, result):
 
 def experiment(index, data, msocket):
     if data['gt']:
+        # load previous state of the random generator
+        if data['rand_states']:
+            random.setstate(data['rand_states'][index])
         # lapsing
         if options['lapsing'] >= random.uniform(0.0, 1.0):
             if 0.5 >= random.uniform(0.0, 1.0):
@@ -218,7 +222,11 @@ def experiment(index, data, msocket):
             else:
                 return 1 # failure
         # real psychometric function
-        if data['gt'][index] >= random.uniform(0.0, 1.0):
+        sample = random.uniform(0.0, 1.0)
+        # save state of the random generator
+        if data['rand_states']:
+            data['rand_states'][index] = random.getstate()
+        if data['gt'][index] >= sample:
             return 0 # success
         else:
             return 1 # failure
@@ -238,18 +246,18 @@ def experiment(index, data, msocket):
     return ret
 
 def sample(result, data):
+    bin_options = options.copy()
+    bin_options['model_posterior'] = False
+    bin_options['marginal']  = 0
+    bin_options['n_moments'] = 0
     utility  = []
     marginal = options['marginal']
     msocket  = None
     options['marginal'] = 0
     if options['port']:
         msocket = open_msocket()
-    if options['strategy'] == 'differential-gain':
-        options['differential_gain'] = True
-    if options['strategy'] == 'effective-counts':
-        options['effective_counts'] = True
     if options['strategy'] == 'variance':
-        options['n_moments'] = 2
+        bin_options['n_moments'] = 2
     if result['counts']:
         counts = result['counts']
     else:
@@ -261,7 +269,7 @@ def sample(result, data):
         samples = []
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
-        result  = bin(counts, data)
+        result  = bin(counts, data, bin_options)
         gain    = map(lambda x: round(x, 4), result['differential_gain'])
         utility.append(gain[:])
         for j in range(0, options['blocks']):
@@ -271,9 +279,7 @@ def sample(result, data):
             samples.append(index)
             counts[event][index] += 1
             gain.pop(index)
-    options['n_moments'] = 2
-    options['marginal'] = marginal
-    result = bin(counts, data)
+    result = bin(counts, data, options)
     result['counts']  = counts
     result['samples'] = samples
     result['utility'] = utility
@@ -302,8 +308,9 @@ def parseConfig(config_file):
         config.readFilter(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
         config.readAlgorithm(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
         config.readMgsSamples(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
-        data['gt']  = config.readVector(config_parser, 'Ground Truth', 'gt', float)
-        data['L']   = len(data['gt'])
+        data['rand_states'] = config.readSeeds(config_parser, 'Ground Truth', 'seeds')
+        data['gt'] = config.readVector(config_parser, 'Ground Truth', 'gt', float)
+        data['L'] = len(data['gt'])
         data['alpha'], data['beta'], data['gamma'] = \
             config.getParameters(config_parser, 'Ground Truth', os.path.dirname(config_file), data['K'], data['L'])
         config.readStrategy(config_parser, 'Ground Truth', options)
@@ -343,7 +350,7 @@ options = {
     'blocks'            : 1,
     'samples'           : 0,
     'epsilon'           : 0.00001,
-    'n_moments'         : 0,
+    'n_moments'         : 2,
     'mgs_samples'       : (100,2000),
     'marginal'          : 0,
     'marginal_step'     : 0.01,
@@ -449,6 +456,10 @@ def main():
             options["mgs_samples"] = tuple(map(int, a.split(":")))
         if o == "--no-model-posterior":
             options["model_posterior"] = False
+    if options['strategy'] == 'differential-gain':
+        options['differential_gain'] = True
+    if options['strategy'] == 'effective-counts':
+        options['effective_counts'] = True
     if len(tail) != 1:
         usage()
         return 1
