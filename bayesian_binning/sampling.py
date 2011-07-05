@@ -251,9 +251,7 @@ def sample(result, data):
     bin_options['marginal']  = 0
     bin_options['n_moments'] = 0
     utility  = []
-    marginal = options['marginal']
     msocket  = None
-    options['marginal'] = 0
     if options['port']:
         msocket = open_msocket()
     if options['strategy'] == 'variance':
