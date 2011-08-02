@@ -30,6 +30,7 @@
 #include <bayes/mgs.h>
 #include <bayes/prombs.h>
 #include <bayes/datatypes.h>
+#include <bayes/uthash.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
@@ -134,6 +135,42 @@ prob_t sumModels(prob_t *ev_log)
         return sum;
 }
 
+typedef struct {
+        prob_t key;
+        prob_t value;
+        UT_hash_handle hh;
+} lngamma_hash_t;
+
+static lngamma_hash_t* lngamma_map = NULL;
+
+static
+void lngamma_map_free() {
+        lngamma_hash_t *current, *tmp;
+
+        HASH_ITER(hh, lngamma_map, current, tmp) {
+                HASH_DEL(lngamma_map, current);
+                free(current);
+        }
+}
+
+static
+prob_t hashed_lngamma(prob_t p)
+{
+        lngamma_hash_t* s;
+        HASH_FIND_INT(lngamma_map, &p, s);
+
+        if (s == NULL) {
+                lngamma_hash_t* new = (lngamma_hash_t*)malloc(sizeof(lngamma_hash_t));
+                new->key   = p;
+                new->value = gsl_sf_lngamma(p);
+                HASH_ADD_INT(lngamma_map, key, new);
+                return new->value;
+        }
+        else {
+                return s->value;
+        }
+}
+
 static
 prob_t mbeta_log(prob_t *p)
 {
@@ -145,9 +182,11 @@ prob_t mbeta_log(prob_t *p)
         for (i = 0; i < bd.events; i++) {
                 sum1 += p[i];
                 sum2 += gsl_sf_lngamma(p[i]);
+//                sum2 += hashed_lngamma(p[i]);
         }
 
         return sum2 - gsl_sf_lngamma(sum1);
+//        return sum2 - hashed_lngamma(sum1);
 }
 
 static /* P(E|B) */
@@ -890,6 +929,7 @@ bin_log(
         for (i = 0; i < K; i++) {
                 free(marginals[i]);
         }
+        lngamma_map_free();
 
         return result;
 }
