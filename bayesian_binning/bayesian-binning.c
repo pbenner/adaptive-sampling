@@ -157,13 +157,13 @@ static
 prob_t hashed_lngamma(prob_t p)
 {
         lngamma_hash_t* s;
-        HASH_FIND_INT(lngamma_map, &p, s);
+        HASH_FIND(hh, lngamma_map, &p, sizeof(prob_t), s);
 
         if (s == NULL) {
                 lngamma_hash_t* new = (lngamma_hash_t*)malloc(sizeof(lngamma_hash_t));
                 new->key   = p;
                 new->value = gsl_sf_lngamma(p);
-                HASH_ADD_INT(lngamma_map, key, new);
+                HASH_ADD(hh, lngamma_map, key, sizeof(prob_t), new);
                 return new->value;
         }
         else {
