@@ -136,8 +136,8 @@ prob_t sumModels(prob_t *ev_log)
 }
 
 typedef struct {
-        prob_t key;
-        prob_t value;
+        double key;
+        double value;
         UT_hash_handle hh;
 } lngamma_hash_t;
 
@@ -154,16 +154,16 @@ void lngamma_map_free() {
 }
 
 static
-prob_t hashed_lngamma(prob_t p)
+double hashed_lngamma(double p)
 {
         lngamma_hash_t* s;
-        HASH_FIND(hh, lngamma_map, &p, sizeof(prob_t), s);
+        HASH_FIND(hh, lngamma_map, &p, sizeof(double), s);
 
         if (s == NULL) {
                 lngamma_hash_t* new = (lngamma_hash_t*)malloc(sizeof(lngamma_hash_t));
                 new->key   = p;
                 new->value = gsl_sf_lngamma(p);
-                HASH_ADD(hh, lngamma_map, key, sizeof(prob_t), new);
+                HASH_ADD(hh, lngamma_map, key, sizeof(double), new);
                 return new->value;
         }
         else {
@@ -181,12 +181,12 @@ prob_t mbeta_log(prob_t *p)
         sum2 = 0;
         for (i = 0; i < bd.events; i++) {
                 sum1 += p[i];
-                sum2 += gsl_sf_lngamma(p[i]);
-//                sum2 += hashed_lngamma(p[i]);
+//                sum2 += gsl_sf_lngamma(p[i]);
+                sum2 += hashed_lngamma(p[i]);
         }
 
-        return sum2 - gsl_sf_lngamma(sum1);
-//        return sum2 - hashed_lngamma(sum1);
+//        return sum2 - gsl_sf_lngamma(sum1);
+        return sum2 - hashed_lngamma(sum1);
 }
 
 static /* P(E|B) */
