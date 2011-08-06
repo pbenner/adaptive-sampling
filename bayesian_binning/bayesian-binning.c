@@ -141,7 +141,8 @@ typedef struct {
         UT_hash_handle hh;
 } lngamma_hash_t;
 
-static lngamma_hash_t* lngamma_map = NULL;
+static lngamma_hash_t*  lngamma_map = NULL;
+static pthread_rwlock_t lngamma_map_lock;
 
 static
 void lngamma_map_free() {
@@ -157,13 +158,23 @@ static
 double hashed_lngamma(double p)
 {
         lngamma_hash_t* s;
+        if (pthread_rwlock_rdlock(&lngamma_map_lock) != 0) {
+                fprintf(stderr, "Can't get lngamma_map_lock (r)\n");
+                exit(EXIT_FAILURE);
+        }
         HASH_FIND(hh, lngamma_map, &p, sizeof(double), s);
+        pthread_rwlock_unlock(&lngamma_map_lock);
 
         if (s == NULL) {
                 lngamma_hash_t* new = (lngamma_hash_t*)malloc(sizeof(lngamma_hash_t));
                 new->key   = p;
                 new->value = gsl_sf_lngamma(p);
+                if (pthread_rwlock_wrlock(&lngamma_map_lock) != 0) {
+                        fprintf(stderr, "Can't get lngamma_map_lock (w)\n");
+                        exit(EXIT_FAILURE);
+                }
                 HASH_ADD(hh, lngamma_map, key, sizeof(double), new);
+                pthread_rwlock_unlock(&lngamma_map_lock);
                 return new->value;
         }
         else {
@@ -796,6 +807,11 @@ void computeBinning(
         binProblem bp; binProblemInit(&bp);
         prob_t evidence_ref;
         prob_t evidence_log_tmp[bd.L];
+
+        if (pthread_rwlock_init(&lngamma_map_lock,NULL) != 0) {
+                fprintf(stderr, "Can't create lngamma_map_lock\n");
+                exit(EXIT_FAILURE);
+        }
 
         // compute the model prior once for all computations
         computeModelPrior();
