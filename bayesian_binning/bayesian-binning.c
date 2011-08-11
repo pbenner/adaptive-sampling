@@ -192,12 +192,12 @@ prob_t mbeta_log(prob_t *p)
         sum2 = 0;
         for (i = 0; i < bd.events; i++) {
                 sum1 += p[i];
-//                sum2 += gsl_sf_lngamma(p[i]);
-                sum2 += hashed_lngamma(p[i]);
+                sum2 += gsl_sf_lngamma(p[i]);
+//                sum2 += hashed_lngamma(p[i]);
         }
 
-//        return sum2 - gsl_sf_lngamma(sum1);
-        return sum2 - hashed_lngamma(sum1);
+        return sum2 - gsl_sf_lngamma(sum1);
+//        return sum2 - hashed_lngamma(sum1);
 }
 
 static /* P(E|B) */
