@@ -113,8 +113,11 @@ def plotMoments(ax, x, result):
     """Plot the binning result."""
     N = len(result['moments'][0])
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-    ax.plot(x, [ a + b for a, b in zip(result['moments'][0], stddev) ], 'k--')
-    ax.plot(x, [ a - b for a, b in zip(result['moments'][0], stddev) ], 'k--')
+    stddev_upper = [ a + b for a, b in zip(result['moments'][0], stddev) ]
+    stddev_lower = [ a - b for a, b in zip(result['moments'][0], stddev) ]
+#    ax.plot(x, stddev_upper, 'k--')
+#    ax.plot(x, stddev_lower, 'k--')
+    ax.fill_between(x, stddev_lower, stddev_upper, facecolor='red', alpha=0.3)
     p = ax.plot(x, result['moments'][0], 'r')
     ax.set_xlim(x[0],x[-1])
     [y1,y2] = ax.get_ylim()
@@ -127,8 +130,11 @@ def plotSpikeRate(ax, x, result, dt):
     """Plot the binning result."""
     N = len(result['moments'][0])
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-    ax.plot(x, [ (a + b)/dt for a, b in zip(result['moments'][0], stddev) ], 'k--')
-    ax.plot(x, [ (a - b)/dt for a, b in zip(result['moments'][0], stddev) ], 'k--')
+    stddev_upper = [ (a + b)/dt for a, b in zip(result['moments'][0], stddev) ]
+    stddev_lower = [ (a - b)/dt for a, b in zip(result['moments'][0], stddev) ]
+#    ax.plot(x, stddev_upper, 'k--')
+#    ax.plot(x, stddev_lower, 'k--')
+    ax.fill_between(x, stddev_lower, stddev_upper, facecolor='red', alpha=0.3)
     p = ax.plot(x, map(lambda x: x/dt, result['moments'][0]), 'r')
     ax.set_xlim(x[0],x[-1])
     [y1,y2] = ax.get_ylim()
