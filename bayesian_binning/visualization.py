@@ -115,10 +115,10 @@ def plotMoments(ax, x, result):
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
     stddev_upper = [ a + b for a, b in zip(result['moments'][0], stddev) ]
     stddev_lower = [ a - b for a, b in zip(result['moments'][0], stddev) ]
-#    ax.plot(x, stddev_upper, 'k--')
-#    ax.plot(x, stddev_lower, 'k--')
-    ax.fill_between(x, stddev_lower, stddev_upper, facecolor='red', alpha=0.3)
-    p = ax.plot(x, result['moments'][0], 'r')
+    ax.plot(x, stddev_upper, 'k-')
+    ax.plot(x, stddev_lower, 'k-')
+    ax.fill_between(x, stddev_lower, stddev_upper, linewidth=0, facecolor='red', alpha=0.3)
+    p = ax.plot(x, result['moments'][0], 'r', linewidth=2)
     ax.set_xlim(x[0],x[-1])
     [y1,y2] = ax.get_ylim()
     if y1 < 0: y1 = 0
@@ -132,10 +132,10 @@ def plotSpikeRate(ax, x, result, dt):
     stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
     stddev_upper = [ (a + b)/dt for a, b in zip(result['moments'][0], stddev) ]
     stddev_lower = [ (a - b)/dt for a, b in zip(result['moments'][0], stddev) ]
-#    ax.plot(x, stddev_upper, 'k--')
-#    ax.plot(x, stddev_lower, 'k--')
-    ax.fill_between(x, stddev_lower, stddev_upper, facecolor='red', alpha=0.3)
-    p = ax.plot(x, map(lambda x: x/dt, result['moments'][0]), 'r')
+    ax.plot(x, stddev_upper, 'k-')
+    ax.plot(x, stddev_lower, 'k-')
+    ax.fill_between(x, stddev_lower, stddev_upper, linewidth=0, facecolor='red', alpha=0.3)
+    p = ax.plot(x, map(lambda x: x/dt, result['moments'][0]), 'r', linewidth=2)
     ax.set_xlim(x[0],x[-1])
     [y1,y2] = ax.get_ylim()
     if y1 < 0: y1 = 0
