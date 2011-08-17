@@ -282,39 +282,3 @@ def plotSampling(result, options, data):
         postplot([ax11, ax12, ax21, ax22, ax31, ax32],
                  [p11, p12, p21, p22, p31, p31],
                  result, options)
-
-def normalizeUtility(result):
-    utility_matrix = []
-    for utility in result['utility']:
-        utility_min = min(utility)
-        utility_max = max(utility)
-        if utility_max - utility_min > 0 :
-            utility_matrix.append(map(lambda x: (x-utility_min)/(utility_max-utility_min),utility))
-        else:
-            utility_matrix.append(map(lambda x: 0.5, utility))
-    return utility_matrix
-
-def plotUtilitySeries(result, options):
-    utilitypreplot  = None
-    utilitypostplot = None
-    utility_matrix  = normalizeUtility(result)
-    title = ''
-    x = np.array(range(1, len(utility_matrix)+1))
-    y = np.array(range(0, len(utility_matrix[0])))
-    if options['visualization']:
-        exec options['visualization']
-        if not utilitypreplot is None:
-            x, y, title = utilitypreplot(result)
-    fig = figure()
-    ax = fig.add_subplot(111, title=title)
-    z = zip(*utility_matrix)
-    p1 = NonUniformImage(ax, interpolation='nearest')
-    p1.set_data(x, y, z)
-    ax.images.append(p1)
-    cb = colorbar(p1)
-    z = [ result['samples'][i] for i in x ]
-    ax.scatter(x, z, marker='o', c='w', s=10, zorder=10, edgecolors='none')
-    ax.set_xlim(min(x)+0.5, max(x)+0.5)
-    ax.set_ylim(min(y)-0.5, max(y)+0.5)
-    if options['visualization'] and not utilitypostplot is None:
-        utilitypostplot(ax, p1, cb)
