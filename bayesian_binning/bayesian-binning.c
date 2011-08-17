@@ -347,14 +347,10 @@ prob_t differentialEntropy_h(int i, int j, void *data)
 }
 
 static
-prob_t differentialEntropy(binProblem *bp, int n, int i, int j, prob_t evidence_ref)
+prob_t differentialEntropy(binProblem *bp, prob_t evidence_ref)
 {
         prob_t ev_log[bd.L];
         prob_t sum;
-
-        bp->add_event.n     = n;
-        bp->add_event.pos   = i;
-        bp->add_event.which = j;
 
         prombsExt(ev_log, bp->ak, bd.prior_log, &differentialEntropy_f, &differentialEntropy_h, bd.L, minM(), (void *)bp);
 
@@ -427,18 +423,20 @@ prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
 static
 prob_t moment(
         binProblem *bp,
-        unsigned int nth,
-        unsigned int pos,
+        int nth,
+        int pos,
+        int which,
         prob_t evidence_ref)
 {
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.L];
 
-        bp->add_event.pos = pos;
-        bp->add_event.n   = nth;
-        evidence_log      = evidence(bp, evidence_log_tmp);
-        bp->add_event.pos = -1;
-        bp->add_event.n   = 0;
+        bp->add_event.pos   = pos;
+        bp->add_event.n     = nth;
+        bp->add_event.which = which;
+        evidence_log        = evidence(bp, evidence_log_tmp);
+        bp->add_event.pos   = -1;
+        bp->add_event.n     = 0;
 
         return expl(evidence_log - evidence_ref);
 }
@@ -603,16 +601,19 @@ void computeDifferentialUtility(
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.L];
 
-        entropy = differentialEntropy(&bp, 0, -1, bd.options->which, evidence_ref);
+        entropy = differentialEntropy(&bp, evidence_ref);
 
+        bp.add_event.n = 1;
         for (i = 0; i < bd.L; i++) {
                 notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bd.L);
-                // recompute the evidence
+                bp.add_event.pos = i;
                 result[i] = 0;
                 for (j = 0; j < bd.events; j++) {
+                        bp.add_event.which = j;
+                        // recompute the evidence
                         evidence_log = evidence(&bp, evidence_log_tmp);
                         // expected entropy for event j
-                        expected_entropy = differentialEntropy(&bp, 1, i, j, evidence_log);
+                        expected_entropy = differentialEntropy(&bp, evidence_log);
                         // initialize sum
                         result[i] += expl(evidence_log - evidence_ref)*expected_entropy;
                 }
@@ -640,7 +641,7 @@ void * computeMoments_thread(void* data_)
 
         // Moments
         for (j = 0; j < bd.options->n_moments; j++) {
-                moments[j][i] = moment(bp, j+1, i, evidence_ref);
+                moments[j][i] = moment(bp, j+1, i, bd.options->which, evidence_ref);
         }
         return NULL;
 }
