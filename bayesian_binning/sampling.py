@@ -19,6 +19,7 @@
 import sys
 import getopt
 import os
+import operator
 import ConfigParser
 import numpy as np
 import math
@@ -53,9 +54,9 @@ def usage():
     print
     print "Options:"
     print "   -b                                 - compute break probabilities"
-    print "       --blocks=N                     - sample in blocks of N measurements"
     print "   -d                                 - compute differential gain"
     print "       --lapsing=p                    - specify a lapsing probability"
+    print "       --look-ahead=N                 - recursion depth for the sampling look ahead"
     print "   -m  --marginal                     - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
@@ -68,8 +69,6 @@ def usage():
     print "       --which=EVENT                  - for which event to compute the binning"
     print "       --algorithm=NAME               - select an algorithm [mgs, prombstree, default: prombs]"
     print "       --mgs-samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000] for mgs"
-    print
-    print "       --plot-utility                 - plot utility as a function of sample steps"
     print
     print "       --port=PORT                    - connect to port from a matlab server for data collection"
     print
@@ -160,9 +159,7 @@ def loadResult():
             'bprob'     : bprob,
             'mpost'     : mpost,
             'counts'    : counts,
-            'samples'   : samples,
-            'utility'   : [],
-            'differential_gain' : [] }
+            'samples'   : samples }
     else:
         result = {
             'moments'   : [],
@@ -170,9 +167,7 @@ def loadResult():
             'bprob'     : [],
             'mpost'     : [],
             'counts'    : [],
-            'samples'   : [],
-            'utility'   : [],
-            'differential_gain' : [] }
+            'samples'   : [] }
     return result
 
 # binning
@@ -187,28 +182,87 @@ def bin(counts_v, data, bin_options):
     gamma  = data['gamma']
     return interface.binning(events, counts, alpha, beta, gamma, bin_options)
 
-# sampling
+# utility
 # ------------------------------------------------------------------------------
 
-def selectItem(gain, counts, result):
+def prombsUtility(counts, data):
+    bin_options = options.copy()
+    bin_options['model_posterior'] = False
+    bin_options['marginal']  = 0
+    bin_options['n_moments'] = 0
+    if options['strategy'] == 'variance':
+        bin_options['n_moments'] = 2
+    result = bin(counts, data, bin_options)
+    if options['strategy'] == 'variance':
+        return map(math.sqrt, statistics.centralMoments(result['moments'], 2))
+    if options['strategy'] == 'differential-gain':
+        return result['differential_gain']
+    if options['strategy'] == 'effective-counts':
+        return map(operator.neg, result['effective_counts'])
+
+def prombsExpectation(y, counts, data):
+    bin_options = options.copy()
+    bin_options['differential_gain'] = False
+    bin_options['effective_counts']  = False
+    bin_options['model_posterior']   = False
+    bin_options['marginal']  = 0
+    bin_options['n_moments'] = 1
+    bin_options['which'] = y
+    result = bin(counts, data, bin_options)
+    return result['moments'][0]
+
+def computeKey(counts):
+    return tuple(map(tuple, counts))
+
+def recursiveUtility(counts, data, m, hashmap):
+    key   = computeKey(counts)
+    value = hashmap.get(key)
+    if value:
+        return value, hashmap
+    elif m == 0:
+        return prombsUtility(counts, data), hashmap
+    else:
+        result = []
+        for y in range(0, data['K']):
+            # ( pi(Y = y | X = y, X_n, Y_n) )_{x in X}
+            expectation = prombsExpectation(y, counts, data)
+            utility     = []
+            for x in range(0, data['L']):
+                counts_tmp = counts[:][:]
+                counts_tmp[y][x] += 1
+                tmp, hashmap = recursiveUtility(counts_tmp, data, m-1, hashmap)
+                utility.append(max(tmp))
+            result.append([ e*u for e, u in zip(expectation, utility) ])
+        result = map(sum, zip(*result))
+        hashmap[key] = result
+        return result, hashmap
+
+def computeUtility(counts, data):
+    utility, hashmap = recursiveUtility(counts, data, options['look_ahead'], {})
+    return utility
+
+def selectItem(counts, data):
     if options['filter']:
         gainFilter = None
         exec options['filter']
         if not gainFilter is None:
-            gain = gainFilter(gain, counts, result)
+            # TODO
+            gain = gainFilter(gain, map(sum, zip(*counts)), result)
     if options['strategy'] == 'uniform':
-        return selectRandom(argmin(counts))
+        return selectRandom(argmin(map(sum, zip(*counts))))
     elif options['strategy'] == 'uniform-random':
         return selectRandom(range(0,len(gain)))
     elif options['strategy'] == 'differential-gain':
-        return selectRandom(argmax(gain))
+        return selectRandom(argmax(computeUtility(counts, data)))
     elif options['strategy'] == 'effective-counts':
-        return selectRandom(argmin(result['effective_counts']))
+        return selectRandom(argmax(computeUtility(counts, data)))
     elif options['strategy'] == 'variance':
-        stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-        return selectRandom(argmax(stddev))
+        return selectRandom(argmax(computeUtility(counts, data)))
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
+
+# experiment
+# ------------------------------------------------------------------------------
 
 def experiment(index, data, msocket):
     if data['gt']:
@@ -245,17 +299,13 @@ def experiment(index, data, msocket):
                 ret = int(raw_input())
     return ret
 
+# sampling
+# ------------------------------------------------------------------------------
+
 def sample(result, data):
-    bin_options = options.copy()
-    bin_options['model_posterior'] = False
-    bin_options['marginal']  = 0
-    bin_options['n_moments'] = 0
-    utility  = []
-    msocket  = None
+    msocket   = None
     if options['port']:
         msocket = open_msocket()
-    if options['strategy'] == 'variance':
-        bin_options['n_moments'] = 2
     if result['counts']:
         counts = result['counts']
     else:
@@ -267,20 +317,13 @@ def sample(result, data):
         samples = []
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
-        result  = bin(counts, data, bin_options)
-        gain    = map(lambda x: round(x, 4), result['differential_gain'])
-        utility.append(gain[:])
-        for j in range(0, options['blocks']):
-            index  = selectItem(gain, map(sum, zip(*counts)), result)
-            stddev = map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-            event  = experiment(index, data, msocket)
-            samples.append(index)
-            counts[event][index] += 1
-            gain.pop(index)
+        index  = selectItem(counts, data)
+        event  = experiment(index, data, msocket)
+        samples.append(index)
+        counts[event][index] += 1
     result = bin(counts, data, options)
     result['counts']  = counts
     result['samples'] = samples
-    result['utility'] = utility
     if options['port']:
         close_msocket(msocket)
     return result
@@ -337,16 +380,14 @@ def parseConfig(config_file):
             importMatplotlib()
             from matplotlib.pyplot import show
             vis.plotSampling(result, options, data)
-            if options['plot-utility']:
-                vis.plotUtilitySeries(result, options, data)
             show()
 
 # main
 # ------------------------------------------------------------------------------
 
 options = {
-    'blocks'            : 1,
     'samples'           : 0,
+    'look_ahead'        : 0,
     'epsilon'           : 0.00001,
     'n_moments'         : 2,
     'mgs_samples'       : (100,2000),
@@ -365,7 +406,6 @@ options = {
     'load'              : None,
     'save'              : None,
     'savefig'           : None,
-    'plot-utility'      : False,
     'verbose'           : False,
     'prombsTest'        : False,
     'compare'           : False,
@@ -379,24 +419,23 @@ def main():
     global options
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
-                      "marginal-step=", "which=", "epsilon=", "moments", "blocks=",
-                      "plot-utility", "strategy=", "savefig=", "lapsing=", "port=",
-                      "threads=", "stacksize=", "algorithm=", "samples=", "mgs-samples",
-                      "no-model-posterior"]
+                      "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
+                      "strategy=", "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
+                      "algorithm=", "samples=", "mgs-samples", "no-model-posterior"]
         opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
     output = None
     for o, a in opts:
-        if o == "--blocks":
-            options["blocks"] = int(a)
         if o in ("-v", "--verbose"):
             sys.stderr.write("Verbose mode turned on.\n")
             options["verbose"] = True
         if o in ("-t", "--prombsTest"):
             sys.stderr.write("Testing prombs.\n")
             options["prombsTest"] = True
+        if o == "--look-ahead":
+            options["look_ahead"] = int(a)
         if o in ("-n", "--samples"):
             options["samples"] = int(a)
         if o == "--strategy":
@@ -434,8 +473,6 @@ def main():
             options["which"] = int(a)
         if o == "--epsilon":
             options["epsilon"] = float(a)
-        if o == "--plot-utility":
-            options["plot-utility"] = True
         if o == "--threads":
             if int(a) >= 1:
                 options["threads"] = int(a)
