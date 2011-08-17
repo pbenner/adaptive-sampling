@@ -185,6 +185,9 @@ def bin(counts_v, data, bin_options):
 # utility
 # ------------------------------------------------------------------------------
 
+hashutil = {}
+hashexp  = {}
+
 def prombsUtility(counts, data):
     bin_options = options.copy()
     bin_options['model_posterior'] = False
@@ -214,32 +217,37 @@ def prombsExpectation(y, counts, data):
 def computeKey(counts):
     return tuple(map(tuple, counts))
 
-def recursiveUtility(counts, data, m, hashmap):
+def recursiveUtility(counts, data, m, hashtree, hashutil, hashexp):
     key   = computeKey(counts)
-    value = hashmap.get(key)
+    value = hashtree.get(key)
     if value:
-        return value, hashmap
+        return value
     elif m == 0:
-        return prombsUtility(counts, data), hashmap
+        utility = hashutil.get(key)
+        if not utility:
+            utility = prombsUtility(counts, data)
+            hashutil[key] = utility
+        return utility
     else:
         result = []
+        if not hashexp.get(key):
+            hashexp[key] = [ prombsExpectation(y, counts, data) for y in range(0, data['K']) ]
         for y in range(0, data['K']):
-            # ( pi(Y = y | X = y, X_n, Y_n) )_{x in X}
-            expectation = prombsExpectation(y, counts, data)
             utility     = []
+            # ( pi(Y = y | X = y, X_n, Y_n) )_{x in X}
+            expectation = hashexp.get(key)[y]
             for x in range(0, data['L']):
-                counts_tmp = counts[:][:]
-                counts_tmp[y][x] += 1
-                tmp, hashmap = recursiveUtility(counts_tmp, data, m-1, hashmap)
+                counts[y][x] += 1
+                tmp = recursiveUtility(counts, data, m-1, hashtree, hashutil, hashexp)
+                counts[y][x] -= 1
                 utility.append(max(tmp))
             result.append([ e*u for e, u in zip(expectation, utility) ])
         result = map(sum, zip(*result))
-        hashmap[key] = result
-        return result, hashmap
+        hashtree[key] = result
+        return result
 
 def computeUtility(counts, data):
-    utility, hashmap = recursiveUtility(counts, data, options['look_ahead'], {})
-    return utility
+    return recursiveUtility(counts, data, options['look_ahead'], {}, hashutil, hashexp)
 
 def selectItem(counts, data):
     if options['filter']:
@@ -249,17 +257,18 @@ def selectItem(counts, data):
             # TODO
             gain = gainFilter(gain, map(sum, zip(*counts)), result)
     if options['strategy'] == 'uniform':
-        return selectRandom(argmin(map(sum, zip(*counts))))
+        utility = map(operator.neg, map(sum, zip(*counts)))
     elif options['strategy'] == 'uniform-random':
-        return selectRandom(range(0,len(gain)))
+        utility = [ 0.0 for i in range(0,len(gain)) ]
     elif options['strategy'] == 'differential-gain':
-        return selectRandom(argmax(computeUtility(counts, data)))
+        utility = computeUtility(counts, data)
     elif options['strategy'] == 'effective-counts':
-        return selectRandom(argmax(computeUtility(counts, data)))
+        utility = computeUtility(counts, data)
     elif options['strategy'] == 'variance':
-        return selectRandom(argmax(computeUtility(counts, data)))
+        utility = computeUtility(counts, data)
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
+    return selectRandom(argmax(utility)), utility
 
 # experiment
 # ------------------------------------------------------------------------------
@@ -317,13 +326,14 @@ def sample(result, data):
         samples = []
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
-        index  = selectItem(counts, data)
+        index, utility = selectItem(counts, data)
         event  = experiment(index, data, msocket)
         samples.append(index)
         counts[event][index] += 1
     result = bin(counts, data, options)
     result['counts']  = counts
     result['samples'] = samples
+    result['differential_gain'] = utility
     if options['port']:
         close_msocket(msocket)
     return result
