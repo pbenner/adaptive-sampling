@@ -22,7 +22,7 @@ import ConfigParser
 import re
 import random
 
-import bayesian_binning.statistics    as statistics
+import statistics
 
 ## functions for reading config options
 ################################################################################

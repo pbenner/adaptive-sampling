@@ -21,7 +21,7 @@
 import sys
 sys.path.append('@pythondir@')
 
-from bayesian_binning.binning import main
+from bayesian_binning.bayesian_binning import main
 
 if __name__ == "__main__":
     sys.exit(main())
