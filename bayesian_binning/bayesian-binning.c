@@ -120,7 +120,7 @@ void computeBinning(
         }
         // compute the differential entropy
         if (bd.options->differential_gain) {
-                computeDifferentialUtility(differential_gain, evidence_ref);
+                computeEntropicUtility(differential_gain, evidence_ref);
         }
         // compute effective counts
         if (bd.options->effective_counts) {
