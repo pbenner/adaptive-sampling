@@ -95,7 +95,50 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence_ref)
                 return 0.0;
         }
         else {
-                return -expl(sumModels(ev_log) - evidence_ref);
+                return -expl(sum - evidence_ref);
+        }
+}
+
+static prob_t multibinEntropy_f(int i, int j, void *data)
+{
+        binProblem *bp = (binProblem *)data;
+
+        return iec_log(bp, i, j);
+}
+static prob_t multibinEntropy_h(int i, int j, void *data)
+{
+        binProblem *bp = (binProblem *)data;
+
+        // - Log[f(b)]
+        return -iec_log(bp, i, j);
+}
+
+static
+prob_t multibinEntropy(binProblem *bp, prob_t evidence_ref)
+{
+        size_t i;
+        prob_t g[bd.L];
+        prob_t result1[bd.L];
+        prob_t result2[bd.L];
+        prob_t result[bd.L];
+        prob_t sum;
+
+        for (i = 0; i < bd.L; i++) {
+                g[i] = logl(bd.prior_log[i] - evidence_ref) + bd.prior_log[i];
+        }
+        prombsExt(result1, bp->ak, bd.prior_log, &multibinEntropy_f, &multibinEntropy_h, bd.L, minM(), (void *)bp);
+        prombs(result2, bp->ak, g, &multibinEntropy_f, bd.L, minM(), (void *)bp);
+
+        for (i = 0; i < bd.L; i++) {
+                result[i] = logsub(result1[i], result2[i]);
+        }
+
+        sum = sumModels(result);
+        if (sum == -HUGE_VAL) {
+                return 0.0;
+        }
+        else {
+                return expl(sum - evidence_ref);
         }
 }
 
@@ -103,35 +146,41 @@ prob_t differentialEntropy(binProblem *bp, prob_t evidence_ref)
 // Main
 ////////////////////////////////////////////////////////////////////////////////
 
-void computeDifferentialUtility(
+void computeEntropicUtility(
         prob_t *result,
         prob_t evidence_ref)
 {
         binProblem bp; binProblemInit(&bp);
         unsigned int i, j;
-        prob_t expected_entropy;
-        prob_t entropy;
+        prob_t differential_entropy;
+        prob_t multibin_entropy;
+        prob_t expectation;
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.L];
 
-        entropy = differentialEntropy(&bp, evidence_ref);
-
         bp.add_event.n = 1;
         for (i = 0; i < bd.L; i++) {
+                // for all items
                 notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bd.L);
                 bp.add_event.pos = i;
                 result[i] = 0;
                 for (j = 0; j < bd.events; j++) {
+                        // for all events
                         bp.add_event.which = j;
                         // recompute the evidence
                         evidence_log = evidence(&bp, evidence_log_tmp);
-                        // expected entropy for event j
-                        expected_entropy = differentialEntropy(&bp, evidence_log);
+                        expectation  = expl(evidence_log - evidence_ref);
+                        // compute entropies
+                        differential_entropy = differentialEntropy(&bp, evidence_log);
+                        multibin_entropy     = multibinEntropy(&bp, evidence_log);
                         // initialize sum
-                        result[i] += expl(evidence_log - evidence_ref)*expected_entropy;
+//                        printf("differential entropy: %f\n", (float)differential_entropy);
+//                        printf("multibin     entropy: %f\n", (float)multibin_entropy);
+//                        result[i] += expectation*(differential_entropy - multibin_entropy);
+//                        result[i] += expectation*differential_entropy;
+                        result[i] += expectation*multibin_entropy;
                 }
-//                result[i] = entropy - result[i];
-                result[i] = - result[i];
+                result[i] = -result[i];
         }
 
         binProblemFree(&bp);

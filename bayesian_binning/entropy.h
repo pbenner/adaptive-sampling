@@ -22,6 +22,6 @@
 
 #include <bayes/datatypes.h>
 
-extern void computeDifferentialUtility(prob_t *result, prob_t evidence_ref);
+extern void computeEntropicUtility(prob_t *result, prob_t evidence_ref);
 
 #endif /* ENTROPY_H */
