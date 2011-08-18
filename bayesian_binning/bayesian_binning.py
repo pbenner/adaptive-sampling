@@ -30,11 +30,11 @@ def importMatplotlib(backend=None):
     from matplotlib import use
     if backend:
         use(backend)
-    import bayesian_binning.visualization as vis
+    import visualization as vis
 
-import bayesian_binning.config     as config
-import bayesian_binning.interface  as interface
-import bayesian_binning.statistics as statistics
+import config
+import interface
+import statistics
 
 # global options
 # ------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2010, 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef BAYESIAN_BINNING_H
-#define BAYESIAN_BINNING_H
+#ifndef BREAK_PROBABILITIES_H
+#define BREAK_PROBABILITIES_H
 
 #include <config.h>
 
-#include <gsl/gsl_matrix.h>
+#include <bayes/datatypes.h>
 
-extern BinningResultGSL * bin_log(size_t events, gsl_matrix **counts, gsl_matrix **alpha, gsl_vector *beta, gsl_matrix *gamma, Options *options);
+void computeBreakProbabilities(prob_t *bprob, prob_t evidence_ref);
 
-#endif /* BAYESIAN_BINNING */
+#endif /* BREAK_PROBABILITIES_H */
