@@ -463,7 +463,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
-                      "differential-entropy", "multibin-entropy",
+                      "strategy=", "differential-entropy", "multibin-entropy",
                       "algorithm=", "samples=", "mgs-samples", "no-model-posterior"]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
@@ -500,6 +500,8 @@ def main():
             options["bprob"] = True
         if o == "--lapsing":
             options["lapsing"] = float(a)
+        if o == "--strategy":
+            options["strategy"] = a
         if o == "--differential-entropy":
             options["differential_entropy"] = True
         if o == "--multibin-entropy":
