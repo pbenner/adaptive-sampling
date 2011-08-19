@@ -22,10 +22,9 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv.h>
 
-#include <bayes/datatypes.h>
+#include <datatypes.h>
 #include <bayes/linalg.h>
 
 extern BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options);
 
 #endif /* INTERFACE_H */
-

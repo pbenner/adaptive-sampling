@@ -151,13 +151,13 @@ prob_t iec_log(binProblem *bp, int kk, int k)
 // Model init
 ////////////////////////////////////////////////////////////////////////////////
 
-void init_model() {
+void __init_model__() {
         if (pthread_rwlock_init(&lngamma_map_lock, NULL) != 0) {
                 fprintf(stderr, "Can't create lngamma_map_lock\n");
                 exit(EXIT_FAILURE);
         }
 }
 
-void free_model() {
+void __free_model__() {
         lngamma_map_free();
 }

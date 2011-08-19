@@ -20,11 +20,55 @@
 
 #include <config.h>
 
+#include <bayes/linalg.h>
 #include <bayes/datatypes.h>
+
+#include <gsl/gsl_matrix.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Data structures
 ////////////////////////////////////////////////////////////////////////////////
+
+typedef struct options {
+        float epsilon;
+        int verbose;
+        int prombsTest;
+        int bprob;
+        int threads;
+        int stacksize;
+        int differential_gain;
+        int effective_counts;
+        int which;
+        int algorithm;
+        int samples[2];
+        int marginal;
+        float marginal_step;
+        struct {
+                float from;
+                float to;
+        } marginal_range;
+        int n_moments;
+        int n_marginals;
+        int model_posterior;
+} Options;
+
+typedef struct binningResultGSL {
+        gsl_matrix *moments;
+        gsl_matrix *marginals;
+        gsl_vector *bprob;
+        gsl_vector *mpost;
+        gsl_vector *differential_gain;
+        gsl_vector *effective_counts;
+} BinningResultGSL;
+
+typedef struct binningResult{
+        Matrix *moments;
+        Matrix *marginals;
+        Vector *bprob;
+        Vector *mpost;
+        Vector *differential_gain;
+        Vector *effective_counts;
+} BinningResult;
 
 // data that has to be immutable
 typedef struct {
