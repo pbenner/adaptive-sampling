@@ -51,8 +51,6 @@ def usage():
     print
     print "Options:"
     print "   -b                                - compute break probabilities"
-    print "   -d                                - compute differential gain"
-    print "       --effective-counts            - compute effective counts"
     print "   -m  --marginal                    - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)    - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP          - step size for the marginal distribution"
@@ -95,8 +93,7 @@ def load_config():
         'moments'   : moments,
         'marginals' : marginals,
         'bprob'     : bprob,
-        'mpost'     : mpost,
-        'differential_gain' : [] }
+        'mpost'     : mpost }
     return result
 
 # binning
@@ -210,27 +207,29 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'epsilon'           : 0.00001,
-    'mgs_samples'       : (100,2000),
-    'marginal'          : 0,
-    'marginal_step'     : 0.01,
-    'marginal_range'    : (0.0,1.0),
-    'n_moments'         : 2,
-    'which'             : 0,
-    'threads'           : 1,
-    'stacksize'         : 256*1024,
-    'algorithm'         : 'prombs',
-    'visualization'     : None,
-    'load'              : None,
-    'save'              : None,
-    'savefig'           : None,
-    'verbose'           : False,
-    'prombsTest'        : False,
-    'compare'           : False,
-    'bprob'             : False,
-    'differential_gain' : False,
-    'effective_counts'  : False,
-    'model_posterior'   : True,
+    'epsilon'              : 0.00001,
+    'mgs_samples'          : (100,2000),
+    'marginal'             : 0,
+    'marginal_step'        : 0.01,
+    'marginal_range'       : (0.0,1.0),
+    'n_moments'            : 2,
+    'which'                : 0,
+    'threads'              : 1,
+    'stacksize'            : 256*1024,
+    'algorithm'            : 'prombs',
+    'visualization'        : None,
+    'load'                 : None,
+    'save'                 : None,
+    'savefig'              : None,
+    'verbose'              : False,
+    'prombsTest'           : False,
+    'compare'              : False,
+    'bprob'                : False,
+    'utility'              : False,
+    'differential_entropy' : False,
+    'multibin_entropy'     : False,
+    'effective_counts'     : False,
+    'model_posterior'      : True,
     }
 
 def main():
@@ -238,9 +237,9 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
-                      "effective-counts", "savefig=", "threads=", "stacksize=", "algorithm=",
+                      "savefig=", "threads=", "stacksize=", "algorithm=",
                       "mgs-samples=", "no-model-posterior"]
-        opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -269,10 +268,6 @@ def main():
             return 0
         if o == "-b":
             options["bprob"] = True
-        if o == "-d":
-            options["differential_gain"] = True
-        if o == "--effective-counts":
-            options["effective_counts"] = True
         if o == "--load":
             options["load"] = a
         if o == "--save":

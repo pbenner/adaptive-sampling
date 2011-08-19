@@ -168,6 +168,20 @@ prob_t computeMultibinEntropy(prob_t evidence_ref)
         return multibin_entropy;
 }
 
+prob_t computeEntropy(prob_t evidence_ref)
+{
+        prob_t entropy = 0;
+
+        if (bd.options->differential_entropy) {
+                entropy += computeDifferentialEntropy(evidence_ref);
+        }
+        if (bd.options->multibin_entropy) {
+                entropy += computeMultibinEntropy(evidence_ref);
+        }
+
+        return entropy;
+}
+
 void computeEntropicUtility(
         prob_t *result,
         prob_t evidence_ref)

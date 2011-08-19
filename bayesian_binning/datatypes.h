@@ -33,14 +33,23 @@ typedef struct options {
         float epsilon;
         int verbose;
         int prombsTest;
+        // break probabilities
         int bprob;
         int threads;
         int stacksize;
-        int differential_gain;
+        // compute sampling utility
+        int utility;
+        // specify components of the utility function
+        int differential_entropy;
+        int multibin_entropy;
         int effective_counts;
+        // which event
         int which;
+        // binning algorithm
         int algorithm;
+        // burnin length and number of samples
         int samples[2];
+        // compute marginal
         int marginal;
         float marginal_step;
         struct {
@@ -57,8 +66,7 @@ typedef struct binningResultGSL {
         gsl_matrix *marginals;
         gsl_vector *bprob;
         gsl_vector *mpost;
-        gsl_vector *differential_gain;
-        gsl_vector *effective_counts;
+        gsl_vector *utility;
 } BinningResultGSL;
 
 typedef struct binningResult{
@@ -66,8 +74,7 @@ typedef struct binningResult{
         Matrix *marginals;
         Vector *bprob;
         Vector *mpost;
-        Vector *differential_gain;
-        Vector *effective_counts;
+        Vector *utility;
 } BinningResult;
 
 // data that has to be immutable
