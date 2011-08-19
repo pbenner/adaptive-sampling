@@ -24,6 +24,7 @@
 
 extern prob_t computeDifferentialEntropy(prob_t evidence_ref);
 extern prob_t computeMultibinEntropy(prob_t evidence_ref);
+extern prob_t computeEntropy(prob_t evidence_ref);
 extern void computeEntropicUtility(prob_t *result, prob_t evidence_ref);
 
 #endif /* ENTROPY_H */

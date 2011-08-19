@@ -1,4 +1,4 @@
-# Copyright (C) 2010 Philipp Benner
+# Copyright (C) 2010, 2011 Philipp Benner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 
 import math
 import numpy as np
+import operator
 
 import statistics
 
@@ -46,7 +47,7 @@ def plotGroundTruth(ax, x, gt):
     return p
 
 def plotUtility(ax, x, result):
-    p = ax.plot(x, result['differential_gain'])
+    p = ax.plot(x, result['utility'])
     ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
     return p
 
@@ -68,7 +69,7 @@ def plotModelPosterior(ax, result):
     ax.set_xlim(1, N)
 
 def plotEffectiveCounts(ax, xorig, result):
-    data = result['effective_counts'][:]
+    data = map(operator.neg, result['utility'][:])
     x = list(xorig[:])
     x.insert(0, x[0]-1)
     data.insert(0, 0)
@@ -163,8 +164,7 @@ def plotBinning(result, options):
             x, title = preplot(result, options)
     fig = figure()
     fig.subplots_adjust(hspace=0.35)
-    if ((result['mpost'] and options['model_posterior']) or
-        (result['effective_counts'] and options['effective_counts'])):
+    if (result['mpost'] and options['model_posterior']):
         ax11 = fig.add_subplot(2,1,1)
         ax21 = fig.add_subplot(2,1,2)
         ax12 = ax11.twinx()
@@ -181,12 +181,8 @@ def plotBinning(result, options):
         plotMarginal(ax11, x, result)
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
-    if result['differential_gain'] and options['differential_gain']:
-        p12 = plotUtility(ax12, x, result)
     if result['mpost'] and options['model_posterior']:
         p21 = plotModelPosterior(ax21, result)
-    if result['effective_counts'] and options['effective_counts']:
-        p22 = plotEffectiveCounts(ax22, x, result)
     if options['visualization'] and not postplot is None:
         postplot([ax11, ax12, ax21, ax22], [p11, p12, p21, p22],
                  result, options)
@@ -226,8 +222,6 @@ def plotBinningSpikes(x, timings, result, options):
         plotMarginal(ax21, x, result)
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
-    if result['differential_gain'] and options['differential_gain']:
-        p12 = plotUtility(ax12, result)
     if result['mpost'] and options['model_posterior']:
         p31 = plotModelPosterior(ax31, result)
     if options['visualization'] and not postplot is None:
@@ -272,9 +266,9 @@ def plotSampling(result, options, data):
         p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
-    if result['differential_gain'] and options['strategy'] == 'differential-gain':
+    if result['utility'] and options['strategy'] == 'entropy':
         p22 = plotUtility(ax22, x, result)
-    if result['effective_counts'] and options['strategy'] == 'effective-counts':
+    if result['utility'] and options['strategy'] == 'effective-counts':
         p22 = plotEffectiveCounts(ax22, x, result)
     if result['mpost'] and options['model_posterior']:
         p31 = plotModelPosterior(ax31, result)

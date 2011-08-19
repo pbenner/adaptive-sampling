@@ -54,7 +54,6 @@ def usage():
     print
     print "Options:"
     print "   -b                                 - compute break probabilities"
-    print "   -d                                 - compute differential gain"
     print "       --lapsing=p                    - specify a lapsing probability"
     print "       --look-ahead=N                 - recursion depth for the sampling look ahead"
     print "   -m  --marginal                     - compute full marginal distribution"
@@ -64,8 +63,6 @@ def usage():
     print "       --epsilon=EPSILON              - epsilon for entropy estimations"
     print "   -n  --samples=N                    - number of samples"
     print "   -k  --moments=N                    - compute the first N>=2 moments"
-    print "       --strategy=STRATEGY            - uniform, uniform-random, differential-gain (default),"
-    print "                                        effective-counts, or variance"
     print "       --which=EVENT                  - for which event to compute the binning"
     print "       --algorithm=NAME               - select an algorithm [mgs, prombstree, default: prombs]"
     print "       --mgs-samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000] for mgs"
@@ -82,6 +79,12 @@ def usage():
     print "   -h, --help                         - print help"
     print "   -v, --verbose                      - be verbose"
     print "   -t, --prombsTest                   - test prombs algorithm"
+    print
+    print "Sampling strategies:"
+    print "       --strategy=STRATEGY            - uniform, uniform-random, entropy (default),"
+    print "                                        effective-counts, or variance"
+    print "       --differential-entropy         - include differential entropy for entropy based sampling"
+    print "       --multibin-entropy             - include multibin entropy for entropy based sampling"
     print
 
 # tools
@@ -128,6 +131,7 @@ def saveResult(result):
     config.set('Sampling Result', 'moments',   "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
     config.set('Sampling Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
     config.set('Sampling Result', 'samples',   " ".join(map(str, result['samples'])))
+    config.set('Sampling Result', 'entropy',   " ".join(map(str, result['entropy'])))
     config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
     config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
     configfile = open(options['save'], 'wb')
@@ -149,6 +153,7 @@ def loadResult():
         marginals = config.readMatrix(config_parser, 'Sampling Result', 'marginals', float)
         samples   = config.readVector(config_parser, 'Sampling Result', 'samples',   int)
         mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',     float)
+        entropy   = config.readVector(config_parser, 'Sampling Result', 'entropy',   float)
         if config_parser.has_option('Sampling Result', 'bprob'):
             bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',     float)
         else:
@@ -159,7 +164,8 @@ def loadResult():
             'bprob'     : bprob,
             'mpost'     : mpost,
             'counts'    : counts,
-            'samples'   : samples }
+            'samples'   : samples,
+            'entropy'   : entropy }
     else:
         result = {
             'moments'   : [],
@@ -167,11 +173,21 @@ def loadResult():
             'bprob'     : [],
             'mpost'     : [],
             'counts'    : [],
-            'samples'   : [] }
+            'samples'   : [],
+            'entropy'   : [] }
     return result
 
 # binning
 # ------------------------------------------------------------------------------
+
+def bin_entropy(counts_v, data, bin_options):
+    """Call the binning library."""
+    events = len(counts_v)
+    counts = statistics.countStatistic(counts_v)
+    alpha  = data['alpha']
+    beta   = data['beta']
+    gamma  = data['gamma']
+    return interface.entropy(events, counts, alpha, beta, gamma, bin_options)
 
 def bin(counts_v, data, bin_options):
     """Call the binning library."""
@@ -182,6 +198,13 @@ def bin(counts_v, data, bin_options):
     gamma  = data['gamma']
     return interface.binning(events, counts, alpha, beta, gamma, bin_options)
 
+# entropy
+# ------------------------------------------------------------------------------
+
+def prombsEntropy(counts, data):
+    bin_options = options.copy()
+    return bin_entropy(counts, data, bin_options)
+
 # utility
 # ------------------------------------------------------------------------------
 
@@ -190,27 +213,27 @@ hashexp  = {}
 
 def prombsUtility(counts, data):
     bin_options = options.copy()
+    bin_options['utility']         = True
     bin_options['model_posterior'] = False
-    bin_options['marginal']  = 0
-    bin_options['n_moments'] = 0
+    bin_options['marginal']        = 0
+    bin_options['n_moments']       = 0
     if options['strategy'] == 'variance':
         bin_options['n_moments'] = 2
     result = bin(counts, data, bin_options)
     if options['strategy'] == 'variance':
         return map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-    if options['strategy'] == 'differential-gain':
-        return result['differential_gain']
+    if options['strategy'] == 'entropy':
+        return result['utility']
     if options['strategy'] == 'effective-counts':
-        return map(operator.neg, result['effective_counts'])
+        return result['utility']
 
 def prombsExpectation(y, counts, data):
     bin_options = options.copy()
-    bin_options['differential_gain'] = False
-    bin_options['effective_counts']  = False
-    bin_options['model_posterior']   = False
-    bin_options['marginal']  = 0
-    bin_options['n_moments'] = 1
-    bin_options['which'] = y
+    bin_options['utility']         = False
+    bin_options['model_posterior'] = False
+    bin_options['marginal']        = 0
+    bin_options['n_moments']       = 1
+    bin_options['which']           = y
     result = bin(counts, data, bin_options)
     return result['moments'][0]
 
@@ -260,7 +283,7 @@ def selectItem(counts, data):
         utility = map(operator.neg, map(sum, zip(*counts)))
     elif options['strategy'] == 'uniform-random':
         utility = [ 0.0 for i in range(0,len(gain)) ]
-    elif options['strategy'] == 'differential-gain':
+    elif options['strategy'] == 'entropy':
         utility = computeUtility(counts, data)
     elif options['strategy'] == 'effective-counts':
         utility = computeUtility(counts, data)
@@ -324,17 +347,23 @@ def sample(result, data):
         samples = result['samples']
     else:
         samples = []
+    if result['entropy']:
+        entropy = result['entropy']
+    else:
+        entropy = []
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
         index, utility = selectItem(counts, data)
         event  = experiment(index, data, msocket)
         samples.append(index)
+        entropy.append(prombsEntropy(counts, data))
         counts[event][index] += 1
     index, utility = selectItem(counts, data)
     result = bin(counts, data, options)
     result['counts']  = counts
     result['samples'] = samples
-    result['differential_gain'] = utility
+    result['utility'] = utility
+    result['entropy'] = entropy
     if options['port']:
         close_msocket(msocket)
     return result
@@ -397,33 +426,35 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'samples'           : 0,
-    'look_ahead'        : 0,
-    'epsilon'           : 0.00001,
-    'n_moments'         : 2,
-    'mgs_samples'       : (100,2000),
-    'marginal'          : 0,
-    'marginal_step'     : 0.01,
-    'marginal_range'    : (0.0,1.0),
-    'which'             : 0,
-    'lapsing'           : 0.0,
-    'threads'           : 1,
-    'stacksize'         : 256*1024,
-    'algorithm'         : 'prombs',
-    'strategy'          : 'differential-gain',
-    'port'              : None,
-    'filter'            : None,
-    'visualization'     : None,
-    'load'              : None,
-    'save'              : None,
-    'savefig'           : None,
-    'verbose'           : False,
-    'prombsTest'        : False,
-    'compare'           : False,
-    'bprob'             : False,
-    'differential_gain' : False,
-    'effective_counts'  : False,
-    'model_posterior'   : True,
+    'samples'              : 0,
+    'look_ahead'           : 0,
+    'epsilon'              : 0.00001,
+    'n_moments'            : 2,
+    'mgs_samples'          : (100,2000),
+    'marginal'             : 0,
+    'marginal_step'        : 0.01,
+    'marginal_range'       : (0.0,1.0),
+    'which'                : 0,
+    'lapsing'              : 0.0,
+    'threads'              : 1,
+    'stacksize'            : 256*1024,
+    'algorithm'            : 'prombs',
+    'strategy'             : 'entropy',
+    'port'                 : None,
+    'filter'               : None,
+    'visualization'        : None,
+    'load'                 : None,
+    'save'                 : None,
+    'savefig'              : None,
+    'verbose'              : False,
+    'prombsTest'           : False,
+    'compare'              : False,
+    'bprob'                : False,
+    'utility'              : False,
+    'multibin_entropy'     : False,
+    'differential_entropy' : False,
+    'effective_counts'     : False,
+    'model_posterior'      : True,
     }
 
 def main():
@@ -431,9 +462,10 @@ def main():
     try:
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
-                      "strategy=", "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
+                      "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
+                      "differential-entropy", "multibin-entropy",
                       "algorithm=", "samples=", "mgs-samples", "no-model-posterior"]
-        opts, tail = getopt.getopt(sys.argv[1:], "dmr:s:k:n:bhvt", longopts)
+        opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
         return 2
@@ -449,8 +481,6 @@ def main():
             options["look_ahead"] = int(a)
         if o in ("-n", "--samples"):
             options["samples"] = int(a)
-        if o == "--strategy":
-            options["strategy"] = a
         if o in ("-m", "--marginal"):
             options["marginal"] = True
         if o in ("-r", "--marginal-range"):
@@ -470,8 +500,12 @@ def main():
             options["bprob"] = True
         if o == "--lapsing":
             options["lapsing"] = float(a)
-        if o == "-d":
-            options["differential_gain"] = True
+        if o == "--differential-entropy":
+            options["differential_entropy"] = True
+        if o == "--multibin-entropy":
+            options["multibin_entropy"] = True
+        if o == "--effective-counts":
+            options["effective_counts"] = True
         if o == "--load":
             options["load"] = a
         if o == "--port":
@@ -502,10 +536,8 @@ def main():
             options["mgs_samples"] = tuple(map(int, a.split(":")))
         if o == "--no-model-posterior":
             options["model_posterior"] = False
-    if options['strategy'] == 'differential-gain':
-        options['differential_gain'] = True
-    if options['strategy'] == 'effective-counts':
-        options['effective_counts'] = True
+    if not options["differential_entropy"] and not options["multibin_entropy"]:
+        options["differential_entropy"] = True
     if len(tail) != 1:
         usage()
         return 1

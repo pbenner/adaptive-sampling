@@ -79,13 +79,24 @@ void computeModelPrior()
 }
 
 static
+void computeUtility(prob_t *utility, prob_t evidence_ref)
+{
+        if (bd.options->differential_entropy || bd.options->multibin_entropy) {
+                computeEntropicUtility(utility, evidence_ref);
+        }
+        // compute effective counts
+        else if (bd.options->effective_counts) {
+                computeEffectiveCountsUtility(utility, evidence_ref);
+        }
+}
+
+static
 void computeBinning(
         prob_t **moments,
         prob_t **marginals,
         prob_t  *bprob,
         prob_t  *mpost,
-        prob_t  *differential_gain,
-        prob_t  *effective_counts)
+        prob_t  *utility)
 {
         binProblem bp; binProblemInit(&bp);
         prob_t evidence_ref;
@@ -114,13 +125,9 @@ void computeBinning(
         if (bd.options->n_moments > 0) {
                 computeMoments(moments, evidence_ref);
         }
-        // compute the differential entropy
-        if (bd.options->differential_gain) {
-                computeEntropicUtility(differential_gain, evidence_ref);
-        }
-        // compute effective counts
-        if (bd.options->effective_counts) {
-                computeEffectiveCounts(effective_counts, evidence_ref);
+        // compute sampling utility
+        if (bd.options->utility) {
+                computeUtility(utility, evidence_ref);
         }
 
         if (bd.options->algorithm == 2) {
@@ -180,6 +187,33 @@ void __free__() {
 // Library entry point
 ////////////////////////////////////////////////////////////////////////////////
 
+prob_t
+bin_entropy(
+        size_t events,
+        gsl_matrix **counts,
+        gsl_matrix **alpha,
+        gsl_vector  *beta,
+        gsl_matrix  *gamma,
+        Options *options)
+{
+        prob_t entropy;
+        prob_t evidence_ref;
+        prob_t evidence_ref_tmp[bd.L];
+
+        __init__(events, counts, alpha, beta, gamma, options);
+
+        binProblem bp; binProblemInit(&bp);
+
+        evidence_ref = evidence(&bp, evidence_ref_tmp);
+        entropy = computeEntropy(evidence_ref);
+
+        binProblemFree(&bp);
+
+        __free__();
+
+        return entropy;
+}
+
 BinningResultGSL *
 bin_log(
         size_t events,
@@ -195,16 +229,14 @@ bin_log(
                              gsl_matrix_alloc(options->n_moments, L)   : NULL);
         result->marginals = (options->marginal  ?
                              gsl_matrix_alloc(L, options->n_marginals) : NULL);
-        result->bprob             = gsl_vector_alloc(L);
-        result->mpost             = gsl_vector_alloc(L);
-        result->differential_gain = gsl_vector_alloc(L);
-        result->effective_counts  = gsl_vector_alloc(L);
+        result->bprob     = gsl_vector_alloc(L);
+        result->mpost     = gsl_vector_alloc(L);
+        result->utility   = gsl_vector_alloc(L);
         prob_t * moments[options->n_moments];
         prob_t * marginals[L];
         prob_t bprob[L];
         prob_t mpost[L];
-        prob_t differential_gain[L];
-        prob_t effective_counts[L];
+        prob_t utility[L];
         unsigned int i, j;
 
         for (i = 0; i < options->n_moments; i++) {
@@ -213,18 +245,16 @@ bin_log(
         for (i = 0; i < L; i++) {
                 marginals[i] = (prob_t *)calloc(options->n_marginals, sizeof(prob_t));
         }
-        bzero(bprob,             L*sizeof(prob_t));
-        bzero(mpost,             L*sizeof(prob_t));
-        bzero(differential_gain, L*sizeof(prob_t));
-        bzero(effective_counts,  L*sizeof(prob_t));
+        bzero(bprob,   L*sizeof(prob_t));
+        bzero(mpost,   L*sizeof(prob_t));
+        bzero(utility, L*sizeof(prob_t));
 
         __init__(events, counts, alpha, beta, gamma, options);
 
         if (options->prombsTest) {
                 prombsTest();
         }
-        computeBinning(moments, marginals, bprob, mpost, differential_gain,
-                       effective_counts);
+        computeBinning(moments, marginals, bprob, mpost, utility);
         for (i = 0; i <= bd.L-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
@@ -234,10 +264,9 @@ bin_log(
                                 gsl_matrix_set(result->marginals, i, j, marginals[i][j]);
                         }
                 }
-                gsl_vector_set(result->bprob, i, bprob[i]);
-                gsl_vector_set(result->mpost, i, mpost[i]);
-                gsl_vector_set(result->differential_gain, i, differential_gain[i]);
-                gsl_vector_set(result->effective_counts,  i, effective_counts[i]);
+                gsl_vector_set(result->bprob,   i, bprob[i]);
+                gsl_vector_set(result->mpost,   i, mpost[i]);
+                gsl_vector_set(result->utility, i, utility[i]);
         }
 
         for (i = 0; i < options->n_moments; i++) {
