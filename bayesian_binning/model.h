@@ -23,8 +23,8 @@
 #include <datatypes.h>
 #include <bayes/datatypes.h>
 
-extern void init_model();
-extern void free_model();
+extern void __init_model__();
+extern void __free_model__();
 
 extern prob_t mbeta_log(prob_t *p);
 extern prob_t iec_log(binProblem *bp, int kk, int k);

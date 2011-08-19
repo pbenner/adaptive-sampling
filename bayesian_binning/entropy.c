@@ -129,7 +129,7 @@ prob_t multibinEntropy(binProblem *bp, prob_t evidence_ref)
         prombsExt(result1, bp->ak, bd.prior_log, &multibinEntropy_f, &multibinEntropy_h, bd.L, minM(), (void *)bp);
         prombs(result2, bp->ak, g, &multibinEntropy_f, bd.L, minM(), (void *)bp);
 
-        for (i = 0; i < bd.L; i++) {
+        for (i = 0; i < minM()+1; i++) {
                 result[i] = logsub(result1[i], result2[i]);
         }
 
@@ -146,6 +146,28 @@ prob_t multibinEntropy(binProblem *bp, prob_t evidence_ref)
 // Main
 ////////////////////////////////////////////////////////////////////////////////
 
+prob_t computeDifferentialEntropy(prob_t evidence_ref)
+{
+        binProblem bp; binProblemInit(&bp);
+        prob_t differential_entropy;
+
+        differential_entropy = differentialEntropy(&bp, evidence_ref);
+        binProblemFree(&bp);
+
+        return differential_entropy;
+}
+
+prob_t computeMultibinEntropy(prob_t evidence_ref)
+{
+        binProblem bp; binProblemInit(&bp);
+        prob_t multibin_entropy;
+
+        multibin_entropy = multibinEntropy(&bp, evidence_ref);
+        binProblemFree(&bp);
+
+        return multibin_entropy;
+}
+
 void computeEntropicUtility(
         prob_t *result,
         prob_t evidence_ref)
@@ -153,7 +175,7 @@ void computeEntropicUtility(
         binProblem bp; binProblemInit(&bp);
         unsigned int i, j;
         prob_t differential_entropy;
-        prob_t multibin_entropy;
+//        prob_t multibin_entropy;
         prob_t expectation;
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.L];
@@ -172,15 +194,12 @@ void computeEntropicUtility(
                         expectation  = expl(evidence_log - evidence_ref);
                         // compute entropies
                         differential_entropy = differentialEntropy(&bp, evidence_log);
-                        multibin_entropy     = multibinEntropy(&bp, evidence_log);
+//                        multibin_entropy     = multibinEntropy(&bp, evidence_log);
                         // initialize sum
-//                        printf("differential entropy: %f\n", (float)differential_entropy);
-//                        printf("multibin     entropy: %f\n", (float)multibin_entropy);
-//                        result[i] += expectation*(differential_entropy - multibin_entropy);
-//                        result[i] += expectation*differential_entropy;
-                        result[i] += expectation*multibin_entropy;
+                        result[i] += expectation*differential_entropy;
+//                        result[i] += expectation*multibin_entropy;
                 }
-                result[i] = -result[i];
+                result[i] = - result[i];
         }
 
         binProblemFree(&bp);

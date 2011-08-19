@@ -91,10 +91,6 @@ void computeBinning(
         prob_t evidence_ref;
         prob_t evidence_log_tmp[bd.L];
 
-        init_model();
-
-        // compute the model prior once for all computations
-        computeModelPrior();
         // init sampler
         if (bd.options->algorithm == 2) {
                 mgs_init(bd.options->samples[0], bd.options->samples[1],
@@ -134,7 +130,7 @@ void computeBinning(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Library entry point, initializes data structures
+// Initialization of common data structures
 ////////////////////////////////////////////////////////////////////////////////
 
 void __init_rand__() {
@@ -145,6 +141,45 @@ void __init_rand__() {
         srand(seed);
 }
 
+void __init__(
+        size_t events,
+        gsl_matrix **counts,
+        gsl_matrix **alpha,
+        gsl_vector  *beta,
+        gsl_matrix  *gamma,
+        Options* options)
+{
+        size_t L = counts[0]->size2;
+
+        __init_rand__();
+        __init_model__();
+
+        prombs_init(options->epsilon);
+
+        verbose      = options->verbose;
+        bd.options   = options;
+        bd.L         = L;
+        bd.events    = events;
+        bd.counts    = counts;
+        bd.alpha     = alpha;
+        bd.beta      = beta;
+        bd.gamma     = gamma;
+        bd.prior_log = (prob_t *)malloc(L*sizeof(prob_t));
+
+        // compute the model prior once for all computations
+        computeModelPrior();
+}
+
+void __free__() {
+        __free_model__();
+
+        free(bd.prior_log);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Library entry point
+////////////////////////////////////////////////////////////////////////////////
+
 BinningResultGSL *
 bin_log(
         size_t events,
@@ -154,51 +189,37 @@ bin_log(
         gsl_matrix  *gamma,
         Options *options)
 {
-        size_t K = counts[0]->size2;
+        size_t L = counts[0]->size2;
         BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
         result->moments   = (options->n_moments ?
-                             gsl_matrix_alloc(options->n_moments, K)   : NULL);
+                             gsl_matrix_alloc(options->n_moments, L)   : NULL);
         result->marginals = (options->marginal  ?
-                             gsl_matrix_alloc(K, options->n_marginals) : NULL);
-        result->bprob             = gsl_vector_alloc(K);
-        result->mpost             = gsl_vector_alloc(K);
-        result->differential_gain = gsl_vector_alloc(K);
-        result->effective_counts  = gsl_vector_alloc(K);
+                             gsl_matrix_alloc(L, options->n_marginals) : NULL);
+        result->bprob             = gsl_vector_alloc(L);
+        result->mpost             = gsl_vector_alloc(L);
+        result->differential_gain = gsl_vector_alloc(L);
+        result->effective_counts  = gsl_vector_alloc(L);
         prob_t * moments[options->n_moments];
-        prob_t * marginals[K];
-        prob_t bprob[K];
-        prob_t mpost[K];
-        prob_t differential_gain[K];
-        prob_t effective_counts[K];
-        prob_t prior_log[K];
+        prob_t * marginals[L];
+        prob_t bprob[L];
+        prob_t mpost[L];
+        prob_t differential_gain[L];
+        prob_t effective_counts[L];
         unsigned int i, j;
 
-        __init_rand__();
-
         for (i = 0; i < options->n_moments; i++) {
-                moments[i]   = (prob_t *)calloc(K, sizeof(prob_t));
+                moments[i]   = (prob_t *)calloc(L, sizeof(prob_t));
         }
-        for (i = 0; i < K; i++) {
+        for (i = 0; i < L; i++) {
                 marginals[i] = (prob_t *)calloc(options->n_marginals, sizeof(prob_t));
         }
-        bzero(bprob,             K*sizeof(prob_t));
-        bzero(mpost,             K*sizeof(prob_t));
-        bzero(prior_log,         K*sizeof(prob_t));
-        bzero(differential_gain, K*sizeof(prob_t));
-        bzero(effective_counts,  K*sizeof(prob_t));
+        bzero(bprob,             L*sizeof(prob_t));
+        bzero(mpost,             L*sizeof(prob_t));
+        bzero(differential_gain, L*sizeof(prob_t));
+        bzero(effective_counts,  L*sizeof(prob_t));
 
-        prombs_init(options->epsilon);
+        __init__(events, counts, alpha, beta, gamma, options);
 
-        verbose            = options->verbose;
-        bd.options         = options;
-        bd.beta            = beta;
-        bd.L               = K;
-        bd.prior_log       = prior_log;
-        bd.events          = events;
-        bd.counts          = counts;
-        bd.alpha           = alpha;
-        bd.beta            = beta;
-        bd.gamma           = gamma;
         if (options->prombsTest) {
                 prombsTest();
         }
@@ -222,10 +243,11 @@ bin_log(
         for (i = 0; i < options->n_moments; i++) {
                 free(moments[i]);
         }
-        for (i = 0; i < K; i++) {
+        for (i = 0; i < L; i++) {
                 free(marginals[i]);
         }
-        free_model();
+
+        __free__();
 
         return result;
 }

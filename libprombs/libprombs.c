@@ -22,6 +22,7 @@
 #include <math.h>
 
 #include <bayes/datatypes.h>
+#include <bayes/linalg.h>
 #include <bayes/logarithmetic.h>
 
 /* Algorithm from Yi-Ching Yao 1984 */
