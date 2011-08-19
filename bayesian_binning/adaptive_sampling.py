@@ -282,7 +282,7 @@ def selectItem(counts, data):
     if options['strategy'] == 'uniform':
         utility = map(operator.neg, map(sum, zip(*counts)))
     elif options['strategy'] == 'uniform-random':
-        utility = [ 0.0 for i in range(0,len(gain)) ]
+        utility = [ 0.0 for i in range(0, len(counts[0])) ]
     elif options['strategy'] == 'entropy':
         utility = computeUtility(counts, data)
     elif options['strategy'] == 'effective-counts':
