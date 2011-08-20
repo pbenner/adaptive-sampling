@@ -69,6 +69,14 @@ def readSeeds(config_parser, section, option):
         rand_states = None
     return rand_states
 
+def readStates(config_parser, section, option):
+    if config_parser.has_option(section, option):
+        states_str = config_parser.get(section, option)
+        states = [ eval(state_str) for state_str in states_str.split('\n') ]
+    else:
+        states = None
+    return states
+
 ## helper functions for setting prior parameters
 ################################################################################
 
