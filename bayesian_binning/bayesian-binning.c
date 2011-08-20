@@ -196,11 +196,11 @@ bin_entropy(
         gsl_matrix  *gamma,
         Options *options)
 {
+        __init__(events, counts, alpha, beta, gamma, options);
+
         prob_t entropy;
         prob_t evidence_ref;
         prob_t evidence_ref_tmp[bd.L];
-
-        __init__(events, counts, alpha, beta, gamma, options);
 
         binProblem bp; binProblemInit(&bp);
 

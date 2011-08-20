@@ -177,7 +177,7 @@ def loadResult():
             'entropy'   : [] }
     return result
 
-# binning
+# binning interface
 # ------------------------------------------------------------------------------
 
 def bin_entropy(counts_v, data, bin_options):
@@ -198,18 +198,13 @@ def bin(counts_v, data, bin_options):
     gamma  = data['gamma']
     return interface.binning(events, counts, alpha, beta, gamma, bin_options)
 
-# entropy
+# prombs wrapper
 # ------------------------------------------------------------------------------
 
 def prombsEntropy(counts, data):
     bin_options = options.copy()
-    return bin_entropy(counts, data, bin_options)
-
-# utility
-# ------------------------------------------------------------------------------
-
-hashutil = {}
-hashexp  = {}
+    result = bin_entropy(counts, data, bin_options)
+    return result
 
 def prombsUtility(counts, data):
     bin_options = options.copy()
@@ -236,6 +231,12 @@ def prombsExpectation(y, counts, data):
     bin_options['which']           = y
     result = bin(counts, data, bin_options)
     return result['moments'][0]
+
+# utility
+# ------------------------------------------------------------------------------
+
+hashutil = {}
+hashexp  = {}
 
 def computeKey(counts):
     return tuple(map(tuple, counts))
