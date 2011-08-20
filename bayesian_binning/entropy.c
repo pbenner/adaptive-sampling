@@ -189,7 +189,7 @@ void computeEntropicUtility(
         binProblem bp; binProblemInit(&bp);
         unsigned int i, j;
         prob_t differential_entropy;
-//        prob_t multibin_entropy;
+        prob_t multibin_entropy;
         prob_t expectation;
         prob_t evidence_log;
         prob_t evidence_log_tmp[bd.L];
@@ -207,13 +207,17 @@ void computeEntropicUtility(
                         evidence_log = evidence(&bp, evidence_log_tmp);
                         expectation  = expl(evidence_log - evidence_ref);
                         // compute entropies
-                        differential_entropy = differentialEntropy(&bp, evidence_log);
-//                        multibin_entropy     = multibinEntropy(&bp, evidence_log);
-                        // initialize sum
-                        result[i] += expectation*differential_entropy;
-//                        result[i] += expectation*multibin_entropy;
+                        if (bd.options->differential_entropy) {
+                                differential_entropy = differentialEntropy(&bp, evidence_log);
+                                result[i] += expectation*differential_entropy;
+                        }
+                        if (bd.options->multibin_entropy) {
+                                multibin_entropy = multibinEntropy(&bp, evidence_log);
+                                result[i] += expectation*multibin_entropy;
+                        }
                 }
-                result[i] = - result[i];
+                // entropy -> utility
+                result[i] = -result[i];
         }
 
         binProblemFree(&bp);
