@@ -507,8 +507,6 @@ def main():
             options["differential_entropy"] = True
         if o == "--multibin-entropy":
             options["multibin_entropy"] = True
-        if o == "--effective-counts":
-            options["effective_counts"] = True
         if o == "--load":
             options["load"] = a
         if o == "--port":
@@ -539,7 +537,11 @@ def main():
             options["mgs_samples"] = tuple(map(int, a.split(":")))
         if o == "--no-model-posterior":
             options["model_posterior"] = False
-    if not options["differential_entropy"] and not options["multibin_entropy"]:
+    if options["strategy"] == "effective-counts":
+        options["effective_counts"] = True
+    if (options["strategy"] == "entropy"    and 
+        not options["differential_entropy"] and
+        not options["multibin_entropy"]):
         options["differential_entropy"] = True
     if len(tail) != 1:
         usage()
