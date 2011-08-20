@@ -134,6 +134,7 @@ def saveResult(result):
     config.set('Sampling Result', 'entropy',   " ".join(map(str, result['entropy'])))
     config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
     config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
+    config.set('Sampling Result', 'states',    "\n".join(map(str, result['states'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
     configfile.close()
@@ -154,6 +155,7 @@ def loadResult():
         samples   = config.readVector(config_parser, 'Sampling Result', 'samples',   int)
         mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',     float)
         entropy   = config.readVector(config_parser, 'Sampling Result', 'entropy',   float)
+        states    = config.readStates(config_parser, 'Sampling Result', 'states')
         if config_parser.has_option('Sampling Result', 'bprob'):
             bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',     float)
         else:
@@ -165,7 +167,8 @@ def loadResult():
             'mpost'     : mpost,
             'counts'    : counts,
             'samples'   : samples,
-            'entropy'   : entropy }
+            'entropy'   : entropy,
+            'states'    : states }
     else:
         result = {
             'moments'   : [],
@@ -174,7 +177,8 @@ def loadResult():
             'mpost'     : [],
             'counts'    : [],
             'samples'   : [],
-            'entropy'   : [] }
+            'entropy'   : [],
+            'states'    : [] }
     return result
 
 # binning interface
@@ -298,11 +302,11 @@ def selectItem(counts, data):
 # experiment
 # ------------------------------------------------------------------------------
 
-def experiment(index, data, msocket):
+def experiment(index, data, result, msocket):
     if data['gt']:
         # load previous state of the random generator
-        if data['rand_states']:
-            random.setstate(data['rand_states'][index])
+        if result['states']:
+            random.setstate(result['states'][index])
         # lapsing
         if options['lapsing'] >= random.uniform(0.0, 1.0):
             if 0.5 >= random.uniform(0.0, 1.0):
@@ -312,8 +316,8 @@ def experiment(index, data, msocket):
         # real psychometric function
         sample = random.uniform(0.0, 1.0)
         # save state of the random generator
-        if data['rand_states']:
-            data['rand_states'][index] = random.getstate()
+        if result['states']:
+            result['states'][index] = random.getstate()
         if data['gt'][index] >= sample:
             return 0 # success
         else:
@@ -340,35 +344,27 @@ def sample(result, data):
     msocket   = None
     if options['port']:
         msocket = open_msocket()
-    if result['counts']:
-        counts = result['counts']
-    else:
-        counts = [ list(np.repeat(0, data['L'])),
-                   list(np.repeat(0, data['L'])) ]
-    if result['samples']:
-        samples = result['samples']
-    else:
-        samples = []
-    if result['entropy']:
-        entropy = result['entropy']
-    else:
-        entropy = []
+    if not result['counts']:
+        result['counts'] = [ list(np.repeat(0, data['L'])),
+                             list(np.repeat(0, data['L'])) ]
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
-        index, utility = selectItem(counts, data)
-        event  = experiment(index, data, msocket)
-        samples.append(index)
-        entropy.append(prombsEntropy(counts, data))
-        counts[event][index] += 1
-    index, utility = selectItem(counts, data)
-    result = bin(counts, data, options)
-    result['counts']  = counts
-    result['samples'] = samples
-    result['utility'] = utility
-    result['entropy'] = entropy
+        index, utility = selectItem(result['counts'], data)
+        event  = experiment(index, data, result, msocket)
+        result['samples'].append(index)
+        result['entropy'].append(prombsEntropy(result['counts'], data))
+        result['counts'][event][index] += 1
+    index, utility = selectItem(result['counts'], data)
+    # update result
+    bin_result = bin(result['counts'], data, options)
+    bin_result['counts']  = result['counts']
+    bin_result['samples'] = result['samples']
+    bin_result['entropy'] = result['entropy']
+    bin_result['states']  = result['states']
+    bin_result['utility'] = utility
     if options['port']:
         close_msocket(msocket)
-    return result
+    return bin_result
 
 # parse config
 # ------------------------------------------------------------------------------
@@ -391,13 +387,14 @@ def parseConfig(config_file):
         config.readFilter(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
         config.readAlgorithm(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
         config.readMgsSamples(config_parser, 'Ground Truth', os.path.dirname(config_file), options)
-        data['rand_states'] = config.readSeeds(config_parser, 'Ground Truth', 'seeds')
         data['gt'] = config.readVector(config_parser, 'Ground Truth', 'gt', float)
         data['L'] = len(data['gt'])
         data['alpha'], data['beta'], data['gamma'] = \
             config.getParameters(config_parser, 'Ground Truth', os.path.dirname(config_file), data['K'], data['L'])
         config.readStrategy(config_parser, 'Ground Truth', options)
         result = loadResult()
+        if not result['states']:
+            result['states'] = config.readSeeds(config_parser, 'Ground Truth', 'seeds')
         result = sample(result, data)
     if config_parser.has_section('Experiment'):
         config.readVisualization(config_parser, 'Experiment', os.path.dirname(config_file), options)
