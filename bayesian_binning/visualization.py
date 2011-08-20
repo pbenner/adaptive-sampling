@@ -266,10 +266,11 @@ def plotSampling(result, options, data):
         p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
-    if result['utility'] and options['strategy'] == 'entropy':
-        p22 = plotUtility(ax22, x, result)
-    if result['utility'] and options['strategy'] == 'effective-counts':
-        p22 = plotEffectiveCounts(ax22, x, result)
+    if result['utility']:
+        if options['strategy'] == 'effective-counts':
+            p22 = plotEffectiveCounts(ax22, x, result)
+        else:
+            p22 = plotUtility(ax22, x, result)
     if result['mpost'] and options['model_posterior']:
         p31 = plotModelPosterior(ax31, result)
     if options['visualization'] and not postplot is None:
