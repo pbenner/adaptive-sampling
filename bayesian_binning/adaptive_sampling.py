@@ -274,12 +274,7 @@ def computeUtility(counts, data):
     return recursiveUtility(counts, data, options['look_ahead'], {}, hashutil, hashexp)
 
 def selectItem(counts, data):
-    if options['filter']:
-        gainFilter = None
-        exec options['filter']
-        if not gainFilter is None:
-            # TODO
-            gain = gainFilter(gain, map(sum, zip(*counts)), result)
+    # compute utility
     if options['strategy'] == 'uniform':
         utility = map(operator.neg, map(sum, zip(*counts)))
     elif options['strategy'] == 'uniform-random':
@@ -292,6 +287,12 @@ def selectItem(counts, data):
         utility = computeUtility(counts, data)
     else:
         raise IOError('Unknown strategy: '+options['strategy'])
+    # filter utility
+    if options['filter']:
+        gainFilter = None
+        exec options['filter']
+        if not gainFilter is None:
+            utility = gainFilter(utility, map(sum, zip(*counts)), result)
     return selectRandom(argmax(utility)), utility
 
 # experiment
