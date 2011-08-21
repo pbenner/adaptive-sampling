@@ -25,6 +25,8 @@
 #include <datatypes.h>
 #include <bayes/linalg.h>
 
+extern void _init_(double epsilon);
+extern void _free_();
 extern BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options);
 
 #endif /* INTERFACE_H */

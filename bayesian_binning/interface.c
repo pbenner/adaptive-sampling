@@ -32,6 +32,16 @@ Matrix * _allocMatrix(int rows, int columns) { return allocMatrix(rows, columns)
 void     _freeMatrix(Matrix *m)              { freeMatrix(m); }
 void     _free(void *ptr)                    { free(ptr); }
 
+void _init_(double epsilon)
+{
+        __init__(epsilon);
+}
+
+void _free_()
+{
+        __free__();
+}
+
 double entropy(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options)
 {
         size_t i;
