@@ -22,6 +22,6 @@
 
 #include <bayes/datatypes.h>
 
-extern void computeMoments(prob_t **moments, prob_t evidence_ref);
+extern void computeMoments(prob_t **moments, prob_t evidence_ref, binData *bd);
 
 #endif /* MOMENT_H */

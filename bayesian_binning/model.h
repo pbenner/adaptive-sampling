@@ -26,7 +26,7 @@
 extern void __init_model__();
 extern void __free_model__();
 
-extern prob_t mbeta_log(prob_t *p);
-extern prob_t iec_log(binProblem *bp, int kk, int k);
+extern prob_t mbeta_log(prob_t *p, binProblem *bp);
+extern prob_t iec_log(int kk, int k, binProblem *bp);
 
 #endif /* MODEL_H */

@@ -22,6 +22,6 @@
 
 #include <bayes/datatypes.h>
 
-extern void computeEffectiveCountsUtility(prob_t *result, prob_t evidence_ref);
+extern void computeEffectiveCountsUtility(prob_t *result, prob_t evidence_ref, binData* bd);
 
 #endif /* EFFECTIVE_COUNTS_H */

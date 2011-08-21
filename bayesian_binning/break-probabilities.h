@@ -20,8 +20,8 @@
 
 #include <config.h>
 
-#include <bayes/datatypes.h>
+#include <datatypes.h>
 
-void computeBreakProbabilities(prob_t *bprob, prob_t evidence_ref);
+void computeBreakProbabilities(prob_t *bprob, prob_t evidence_ref, binData *bd);
 
 #endif /* BREAK_PROBABILITIES_H */

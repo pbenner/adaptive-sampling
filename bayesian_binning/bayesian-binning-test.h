@@ -20,6 +20,8 @@
 
 #include <config.h>
 
-extern void prombsTest();
+#include <datatypes.h>
+
+extern void prombsTest(binData *bd);
 
 #endif /* BAYESIAN_BINNING_TEST_H */

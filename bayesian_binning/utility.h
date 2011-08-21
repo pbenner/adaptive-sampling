@@ -33,14 +33,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline
-prob_t sumModels(prob_t *ev_log)
+prob_t sumModels(prob_t *ev_log, binProblem* bp)
 {
         // sum up the vector returned by prombs
         prob_t sum = -HUGE_VAL;
         int i;
 
-        for (i = 0; i < bd.L; i++) {
-                if (gsl_vector_get(bd.beta, i) > 0) {
+        for (i = 0; i < bp->bd->L; i++) {
+                if (gsl_vector_get(bp->bd->beta, i) > 0) {
                         sum = logadd(sum, ev_log[i]);
                 }
         }
@@ -50,11 +50,11 @@ prob_t sumModels(prob_t *ev_log)
 
 /* Find the smallest m_B for which the prior P(m_B) is nonzero. */
 static inline
-int minM()
+int minM(binProblem *bp)
 {
         int i;
-        for (i = bd.L-1; i > 0; i--) {
-                if (gsl_vector_get(bd.beta, i) > 0) {
+        for (i = bp->bd->L-1; i > 0; i--) {
+                if (gsl_vector_get(bp->bd->beta, i) > 0) {
                         return i;
                 }
         }
@@ -62,10 +62,11 @@ int minM()
 }
 
 static inline
-void binProblemInit(binProblem *bp)
+void binProblemInit(binProblem *bp, binData* bd)
 {
-        if (bd.options->algorithm == 0) {
-                bp->ak      = allocMatrix(bd.L, bd.L);
+        bp->bd              = bd;
+        if (bd->options->algorithm == 0) {
+                bp->ak      = allocMatrix(bd->L, bd->L);
         }
         else {
                 bp->ak      = NULL;
@@ -74,10 +75,10 @@ void binProblemInit(binProblem *bp)
         bp->counts_pos      = -1;
         bp->add_event.pos   = -1;
         bp->add_event.n     = 0;
-        bp->add_event.which = bd.options->which;
+        bp->add_event.which = bd->options->which;
         bp->fix_prob.pos    = -1;
         bp->fix_prob.val    = 0;
-        bp->fix_prob.which  = bd.options->which;
+        bp->fix_prob.which  = bd->options->which;
 }
 
 static inline
@@ -93,15 +94,15 @@ void binProblemFree(binProblem *bp)
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline
-unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
+unsigned int countStatistic(unsigned int event, int ks, int ke, binProblem *bp)
 {
         if (bp != NULL && bp->add_event.which == event &&
             ks <= bp->add_event.pos && bp->add_event.pos <= ke) {
-                return gsl_matrix_get(bd.counts[event], ks, ke) +
+                return gsl_matrix_get(bp->bd->counts[event], ks, ke) +
                         bp->add_event.n;
         }
         else if (ks <= ke) {
-                return gsl_matrix_get(bd.counts[event], ks, ke);
+                return gsl_matrix_get(bp->bd->counts[event], ks, ke);
         }
         else {
                 return 0;
@@ -109,10 +110,10 @@ unsigned int countStatistic(binProblem *bp, unsigned int event, int ks, int ke)
 }
 
 static inline
-prob_t countAlpha(unsigned int event, int ks, int ke)
+prob_t countAlpha(unsigned int event, int ks, int ke, binProblem *bp)
 {
         if (ks <= ke) {
-                return gsl_matrix_get(bd.alpha[event], ks, ke);
+                return gsl_matrix_get(bp->bd->alpha[event], ks, ke);
         }
         else {
                 return 0;
@@ -125,20 +126,20 @@ prob_t countAlpha(unsigned int event, int ks, int ke)
 
 static inline
 void callBinningAlgorithm(
-        binProblem *bp,
         prob_t (*f)(int, int, void*),
-        prob_t *ev_log)
+        prob_t *ev_log,
+        binProblem *bp)
 {
-        switch (bd.options->algorithm) {
+        switch (bp->bd->options->algorithm) {
         default:
         case 0:
-                prombs(ev_log, bp->ak, bd.prior_log, f, bd.L, minM(), (void *)bp);
+                prombs(ev_log, bp->ak, bp->bd->prior_log, f, bp->bd->L, minM(bp), (void *)bp);
                 break;
         case 1:
-                prombs_tree(ev_log, bd.prior_log, f, bd.L, minM(), (void *)bp);
+                prombs_tree(ev_log, bp->bd->prior_log, f, bp->bd->L, minM(bp), (void *)bp);
                 break;
         case 2:
-                mgs(ev_log, bd.prior_log, f, bd.L, (void *)bp);
+                mgs(ev_log, bp->bd->prior_log, f, bp->bd->L, (void *)bp);
                 break;
         }
 }
@@ -148,16 +149,16 @@ prob_t execPrombs_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
-        return iec_log(bp, i, j);
+        return iec_log(i, j, bp);
 }
 
 static inline
-prob_t evidence(binProblem *bp, prob_t *ev_log)
+prob_t evidence(prob_t *ev_log, binProblem *bp)
 {
-        callBinningAlgorithm(bp, execPrombs_f, ev_log);
+        callBinningAlgorithm(execPrombs_f, ev_log, bp);
 
-        return sumModels(ev_log);
-//        return prombs_rec(bd.L, execPrombs_f, (void *)bp);
+        return sumModels(ev_log, bp);
+//        return prombs_rec(bp->bd->L, execPrombs_f, (void *)bp);
 }
 
 #endif /* UTILITY_H */

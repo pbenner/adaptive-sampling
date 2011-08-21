@@ -301,19 +301,25 @@ def precomputeUtilityRec(counts, data, m, hashutil, queue, i_, j_):
                 precomputeUtilityRec(counts, data, m-1, hashutil, queue, i, j)
                 counts[j][i] -= 1
 
+utility_queue_in  = Queue.Queue()
+utility_queue_out = Queue.Queue()
+utility_threads   = []
 def precomputeUtility(counts, data, m, hashutil):
-    queue_in  = Queue.Queue()
-    queue_out = Queue.Queue()
-    precomputeUtilityRec(counts, data, m, hashutil, queue_in, 0, 0)
-    for i in range(options['threads']):
-        t = ThreadUtility(queue_in, queue_out, data)
-        t.setDaemon(True)
-        t.start()
-    queue_in.join()
-    while not queue_out.empty():
-        counts, result = queue_out.get()
+    global utility_threads
+    if not utility_threads:
+        # launch daemon threads
+        for i in range(options['threads']):
+            t = ThreadUtility(utility_queue_in, utility_queue_out, data)
+            t.setDaemon(True)
+            t.start()
+            utility_threads += [t]
+    precomputeUtilityRec(counts, data, m, hashutil, utility_queue_in, 0, 0)
+    utility_queue_in.join()
+    while not utility_queue_out.empty():
+        counts, result = utility_queue_out.get()
         key = computeKey(counts)
         hashutil[key] = result
+        utility_queue_out.task_done()
 
 # precompute expectation
 # ------------------------------------------------------------------------------
@@ -343,19 +349,25 @@ def precomputeExpectationRec(counts, data, m, hashexp, queue, i_, j_):
                 precomputeExpectationRec(counts, data, m-1, hashexp, queue, i, j)
                 counts[j][i] -= 1
 
+exp_queue_in  = Queue.Queue()
+exp_queue_out = Queue.Queue()
+exp_threads   = []
 def precomputeExpectation(counts, data, m, hashexp):
-    queue_in  = Queue.Queue()
-    queue_out = Queue.Queue()
-    precomputeExpectationRec(counts, data, m-1, hashexp, queue_in, 0, 0)
-    for i in range(options['threads']):
-        t = ThreadExp(queue_in, queue_out, data)
-        t.setDaemon(True)
-        t.start()
-    queue_in.join()
-    while not queue_out.empty():
-        counts, result = queue_out.get()
+    global exp_threads
+    if not exp_threads:
+        # launch daemon threads
+        for i in range(options['threads']):
+            t = ThreadExp(exp_queue_in, exp_queue_out, data)
+            t.setDaemon(True)
+            t.start()
+            exp_threads += [t]
+    precomputeExpectationRec(counts, data, m-1, hashexp, exp_queue_in, 0, 0)
+    exp_queue_in.join()
+    while not exp_queue_out.empty():
+        counts, result = exp_queue_out.get()
         key = computeKey(counts)
         hashexp[key] = result
+        exp_queue_out.task_done()
 
 # main method to compute utilities
 # ------------------------------------------------------------------------------

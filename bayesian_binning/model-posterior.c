@@ -51,15 +51,16 @@
 void computeModelPosteriors(
         prob_t *ev_log,
         prob_t *mpost,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        binData *bd)
 {
         unsigned int j;
 
-        if (bd.options->algorithm == 2) {
+        if (bd->options->algorithm == 2) {
                 size_t *counts = mgs_get_counts();
-                for (j = 0; j < bd.L; j++) {
-                        if (gsl_vector_get(bd.beta, j) > 0) {
-                                mpost[j] = (prob_t)counts[j]/bd.options->samples[1];
+                for (j = 0; j < bd->L; j++) {
+                        if (gsl_vector_get(bd->beta, j) > 0) {
+                                mpost[j] = (prob_t)counts[j]/bd->options->samples[1];
                         }
                         else {
                                 mpost[j] = 0;
@@ -67,8 +68,8 @@ void computeModelPosteriors(
                 }
         }
         else {
-                for (j = 0; j < bd.L; j++) {
-                        if (gsl_vector_get(bd.beta, j) > 0) {
+                for (j = 0; j < bd->L; j++) {
+                        if (gsl_vector_get(bd->beta, j) > 0) {
                                 mpost[j] = expl(ev_log[j] - evidence_ref);
                         }
                         else {
