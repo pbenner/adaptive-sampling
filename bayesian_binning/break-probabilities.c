@@ -62,17 +62,17 @@ prob_t breakProb_f(int i, int j, void *data)
         if (i < bp->bprob_pos && bp->bprob_pos <= j) {
                 return -HUGE_VAL;
         }
-        return iec_log(NULL, i, j);
+        return iec_log(i, j, NULL);
 }
 static
-prob_t breakProb(binProblem *bp, unsigned int pos, prob_t evidence_ref)
+prob_t breakProb(unsigned int pos, prob_t evidence_ref, binProblem *bp)
 {
-        prob_t ev_log[bd.L];
+        prob_t ev_log[bp->bd->L];
 
         bp->bprob_pos = pos;
-        callBinningAlgorithm(bp, &breakProb_f, ev_log);
+        callBinningAlgorithm(&breakProb_f, ev_log, bp);
 
-        return expl(sumModels(ev_log) - evidence_ref);
+        return expl(sumModels(ev_log, bp) - evidence_ref);
 }
 
 typedef struct {
@@ -91,7 +91,7 @@ void * computeBreakProbabilities_thread(void* data_)
         prob_t *bprob = data->bprob;
         prob_t evidence_ref = data->evidence_ref;
 
-        bprob[i] = breakProb(bp, i, evidence_ref);
+        bprob[i] = breakProb(i, evidence_ref, bp);
         return NULL;
 }
 
@@ -101,54 +101,55 @@ void * computeBreakProbabilities_thread(void* data_)
 
 void computeBreakProbabilities(
         prob_t *bprob,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        binData *bd)
 {
-        if (bd.options->algorithm == 2) {
-                mgs_get_bprob(bprob, bd.L);
+        if (bd->options->algorithm == 2) {
+                mgs_get_bprob(bprob, bd->L);
                 return;
         }
 
         unsigned int i, j, rc;
 
-        binProblem bp[bd.options->threads];
-        pthread_t threads[bd.options->threads];
-        pthread_data_bprob data[bd.options->threads];
+        binProblem bp[bd->options->threads];
+        pthread_t threads[bd->options->threads];
+        pthread_data_bprob data[bd->options->threads];
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        if (bd.options->stacksize < PTHREAD_STACK_MIN) {
+        if (bd->options->stacksize < PTHREAD_STACK_MIN) {
                 if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
         else {
-                if (pthread_attr_setstacksize (&attr, (size_t)bd.options->stacksize) != 0) {
+                if (pthread_attr_setstacksize (&attr, (size_t)bd->options->stacksize) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
 
-        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
-                binProblemInit(&bp[j]);
+        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
+                binProblemInit(&bp[j], bd);
                 data[j].bp = &bp[j];
                 data[j].bprob = bprob;
                 data[j].evidence_ref = evidence_ref;
         }
-        for (i = 0; i < bd.L; i += bd.options->threads) {
-                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
-                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd.L);
+        for (i = 0; i < bd->L; i += bd->options->threads) {
+                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
+                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd->L);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, computeBreakProbabilities_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
                 }
-                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
+                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
                         rc = pthread_join(threads[j], NULL);
                         if (rc) {
                                 std_err(NONE, "Couldn't join thread.");
                         }
                 }
         }
-        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
+        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
                 binProblemFree(&bp[j]);
         }
 }

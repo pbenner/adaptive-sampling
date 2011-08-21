@@ -29,7 +29,7 @@
 
 static prob_t prombsExt_epsilon = 0.0001;
 
-void prombs_init(prob_t epsilon) {
+void __init_prombs__(prob_t epsilon) {
         prombsExt_epsilon = epsilon;
 }
 

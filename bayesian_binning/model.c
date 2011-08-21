@@ -97,14 +97,14 @@ double hashed_lngamma(double p)
         }
 }
 
-prob_t mbeta_log(prob_t *p)
+prob_t mbeta_log(prob_t *p, binProblem *bp)
 {
         unsigned int i;
         prob_t sum1, sum2;
 
         sum1 = 0;
         sum2 = 0;
-        for (i = 0; i < bd.events; i++) {
+        for (i = 0; i < bp->bd->events; i++) {
                 sum1 += p[i];
                 sum2 += gsl_sf_lngamma(p[i]);
 //                sum2 += hashed_lngamma(p[i]);
@@ -115,18 +115,18 @@ prob_t mbeta_log(prob_t *p)
 }
 
 /* P(E|B) */
-prob_t iec_log(binProblem *bp, int kk, int k)
+prob_t iec_log(int kk, int k, binProblem *bp)
 {
         unsigned int i;
-        prob_t c[bd.events];
-        prob_t alpha[bd.events];
-        prob_t gamma = gsl_matrix_get(bd.gamma, kk, k);
+        prob_t c[bp->bd->events];
+        prob_t alpha[bp->bd->events];
+        prob_t gamma = gsl_matrix_get(bp->bd->gamma, kk, k);
         if (gamma == 0) {
                 return -HUGE_VAL;
         }
-        for (i = 0; i < bd.events; i++) {
-                c[i]     = countStatistic(bp, i, kk, k) + countAlpha(i, kk, k);
-                alpha[i] = countAlpha(i, kk, k);
+        for (i = 0; i < bp->bd->events; i++) {
+                c[i]     = countStatistic(i, kk, k, bp) + countAlpha(i, kk, k, bp);
+                alpha[i] = countAlpha(i, kk, k, bp);
         }
         if (bp != NULL && kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
                 // compute marginals
@@ -134,16 +134,16 @@ prob_t iec_log(binProblem *bp, int kk, int k)
                 if (bp->fix_prob.which == 0) {
                         return logl(gamma) + (c[0]-1)*logl(bp->fix_prob.val)
                                 + (c[1]-1)*logl(1-bp->fix_prob.val)
-                                - mbeta_log(alpha);
+                                - mbeta_log(alpha, bp);
                 }
                 else {
                         return logl(gamma) + (c[0]-1)*log(1-bp->fix_prob.val)
                                 + (c[1]-1)*log(bp->fix_prob.val)
-                                - mbeta_log(alpha);
+                                - mbeta_log(alpha, bp);
                 }
         }
         else {
-                return logl(gamma) + (mbeta_log(c) - mbeta_log(alpha));
+                return logl(gamma) + (mbeta_log(c, bp) - mbeta_log(alpha, bp));
         }
 }
 

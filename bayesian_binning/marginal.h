@@ -22,6 +22,6 @@
 
 #include <bayes/datatypes.h>
 
-extern void computeMarginal(prob_t **marginals, prob_t evidence_ref);
+extern void computeMarginal(prob_t **marginals, prob_t evidence_ref, binData *bd);
 
 #endif /* MARGINAL_H */

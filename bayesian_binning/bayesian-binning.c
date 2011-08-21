@@ -54,39 +54,33 @@
 #include <utility.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-// Global variables
-////////////////////////////////////////////////////////////////////////////////
-
-binData bd;
-
-////////////////////////////////////////////////////////////////////////////////
 // Main binning function
 ////////////////////////////////////////////////////////////////////////////////
 
 static
-void computeModelPrior()
+void computeModelPrior(binData* bd)
 {
         unsigned int m_b;
-        for (m_b = 0; m_b < bd.L; m_b++) {
-                if (gsl_vector_get(bd.beta, m_b) == 0) {
-                        bd.prior_log[m_b] = -HUGE_VAL;
+        for (m_b = 0; m_b < bd->L; m_b++) {
+                if (gsl_vector_get(bd->beta, m_b) == 0) {
+                        bd->prior_log[m_b] = -HUGE_VAL;
                 }
                 else {
-                        bd.prior_log[m_b] = -gsl_sf_lnchoose(bd.L-1, m_b) +
-                                logl(gsl_vector_get(bd.beta, m_b));
+                        bd->prior_log[m_b] = -gsl_sf_lnchoose(bd->L-1, m_b) +
+                                logl(gsl_vector_get(bd->beta, m_b));
                 }
         }
 }
 
 static
-void computeUtility(prob_t *utility, prob_t evidence_ref)
+void computeUtility(prob_t *utility, prob_t evidence_ref, binData* bd)
 {
-        if (bd.options->differential_entropy || bd.options->multibin_entropy) {
-                computeEntropicUtility(utility, evidence_ref);
+        if (bd->options->differential_entropy || bd->options->multibin_entropy) {
+                computeEntropicUtility(utility, evidence_ref, bd);
         }
         // compute effective counts
-        else if (bd.options->effective_counts) {
-                computeEffectiveCountsUtility(utility, evidence_ref);
+        else if (bd->options->effective_counts) {
+                computeEffectiveCountsUtility(utility, evidence_ref, bd);
         }
 }
 
@@ -96,41 +90,42 @@ void computeBinning(
         prob_t **marginals,
         prob_t  *bprob,
         prob_t  *mpost,
-        prob_t  *utility)
+        prob_t  *utility,
+        binData *bd)
 {
-        binProblem bp; binProblemInit(&bp);
+        binProblem bp; binProblemInit(&bp, bd);
         prob_t evidence_ref;
-        prob_t evidence_log_tmp[bd.L];
+        prob_t evidence_log_tmp[bd->L];
 
         // init sampler
-        if (bd.options->algorithm == 2) {
-                mgs_init(bd.options->samples[0], bd.options->samples[1],
-                         bd.prior_log, &execPrombs_f, bd.L, (void *)&bp);
+        if (bd->options->algorithm == 2) {
+                mgs_init(bd->options->samples[0], bd->options->samples[1],
+                         bd->prior_log, &execPrombs_f, bd->L, (void *)&bp);
         }
         // compute evidence P(D)
-        evidence_ref = evidence(&bp, evidence_log_tmp);
+        evidence_ref = evidence(evidence_log_tmp, &bp);
         // compute model posteriors P(m_B|D)
-        if (bd.options->model_posterior) {
-                computeModelPosteriors(evidence_log_tmp, mpost, evidence_ref);
+        if (bd->options->model_posterior) {
+                computeModelPosteriors(evidence_log_tmp, mpost, evidence_ref, bd);
         }
         // compute moments
-        if (bd.options->marginal) {
-                computeMarginal(marginals, evidence_ref);
+        if (bd->options->marginal) {
+                computeMarginal(marginals, evidence_ref, bd);
         }
         // compute break probability
-        if (bd.options->bprob) {
-                computeBreakProbabilities(bprob, evidence_ref);
+        if (bd->options->bprob) {
+                computeBreakProbabilities(bprob, evidence_ref, bd);
         }
         // compute the first n moments
-        if (bd.options->n_moments > 0) {
-                computeMoments(moments, evidence_ref);
+        if (bd->options->n_moments > 0) {
+                computeMoments(moments, evidence_ref, bd);
         }
         // compute sampling utility
-        if (bd.options->utility) {
-                computeUtility(utility, evidence_ref);
+        if (bd->options->utility) {
+                computeUtility(utility, evidence_ref, bd);
         }
 
-        if (bd.options->algorithm == 2) {
+        if (bd->options->algorithm == 2) {
                 mgs_free();
         }
         binProblemFree(&bp);
@@ -148,44 +143,50 @@ void __init_rand__() {
         srand(seed);
 }
 
-void __init__(
-        size_t events,
-        gsl_matrix **counts,
-        gsl_matrix **alpha,
-        gsl_vector  *beta,
-        gsl_matrix  *gamma,
-        Options* options)
+void __init__(prob_t epsilon)
 {
-        size_t L = counts[0]->size2;
-
         __init_rand__();
         __init_model__();
-
-        prombs_init(options->epsilon);
-
-        verbose      = options->verbose;
-        bd.options   = options;
-        bd.L         = L;
-        bd.events    = events;
-        bd.counts    = counts;
-        bd.alpha     = alpha;
-        bd.beta      = beta;
-        bd.gamma     = gamma;
-        bd.prior_log = (prob_t *)malloc(L*sizeof(prob_t));
-
-        // compute the model prior once for all computations
-        computeModelPrior();
+        __init_prombs__(epsilon);
 }
 
 void __free__() {
         __free_model__();
-
-        free(bd.prior_log);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Library entry point
 ////////////////////////////////////////////////////////////////////////////////
+
+void bin_init(
+        size_t events,
+        gsl_matrix **counts,
+        gsl_matrix **alpha,
+        gsl_vector  *beta,
+        gsl_matrix  *gamma,
+        Options* options,
+        binData* bd)
+{
+        size_t L = counts[0]->size2;
+
+        verbose      = options->verbose;
+        bd->options   = options;
+        bd->L         = L;
+        bd->events    = events;
+        bd->counts    = counts;
+        bd->alpha     = alpha;
+        bd->beta      = beta;
+        bd->gamma     = gamma;
+        bd->prior_log = (prob_t *)malloc(L*sizeof(prob_t));
+
+        // compute the model prior once for all computations
+        computeModelPrior(bd);
+}
+
+void bin_free(binData* bd)
+{
+        free(bd->prior_log);
+}
 
 prob_t
 bin_entropy(
@@ -196,20 +197,21 @@ bin_entropy(
         gsl_matrix  *gamma,
         Options *options)
 {
-        __init__(events, counts, alpha, beta, gamma, options);
+        binData bd;
+        bin_init(events, counts, alpha, beta, gamma, options, &bd);
 
         prob_t entropy;
         prob_t evidence_ref;
         prob_t evidence_ref_tmp[bd.L];
 
-        binProblem bp; binProblemInit(&bp);
+        binProblem bp; binProblemInit(&bp, &bd);
 
-        evidence_ref = evidence(&bp, evidence_ref_tmp);
-        entropy = computeEntropy(evidence_ref);
+        evidence_ref = evidence(evidence_ref_tmp, &bp);
+        entropy = computeEntropy(evidence_ref, &bd);
 
         binProblemFree(&bp);
 
-        __free__();
+        bin_free(&bd);
 
         return entropy;
 }
@@ -223,6 +225,7 @@ bin_log(
         gsl_matrix  *gamma,
         Options *options)
 {
+        binData bd;
         size_t L = counts[0]->size2;
         BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
         result->moments   = (options->n_moments ?
@@ -249,12 +252,12 @@ bin_log(
         bzero(mpost,   L*sizeof(prob_t));
         bzero(utility, L*sizeof(prob_t));
 
-        __init__(events, counts, alpha, beta, gamma, options);
+        bin_init(events, counts, alpha, beta, gamma, options, &bd);
 
         if (options->prombsTest) {
-                prombsTest();
+                prombsTest(&bd);
         }
-        computeBinning(moments, marginals, bprob, mpost, utility);
+        computeBinning(moments, marginals, bprob, mpost, utility, &bd);
         for (i = 0; i <= bd.L-1; i++) {
                 for (j = 0; j < options->n_moments; j++) {
                         gsl_matrix_set(result->moments, j, i, moments[j][i]);
@@ -276,7 +279,7 @@ bin_log(
                 free(marginals[i]);
         }
 
-        __free__();
+        bin_free(&bd);
 
         return result;
 }

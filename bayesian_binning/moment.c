@@ -52,19 +52,19 @@
 
 static
 prob_t moment(
-        binProblem *bp,
         int nth,
         int pos,
         int which,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        binProblem *bp)
 {
         prob_t evidence_log;
-        prob_t evidence_log_tmp[bd.L];
+        prob_t evidence_log_tmp[bp->bd->L];
 
         bp->add_event.pos   = pos;
         bp->add_event.n     = nth;
         bp->add_event.which = which;
-        evidence_log        = evidence(bp, evidence_log_tmp);
+        evidence_log        = evidence(evidence_log_tmp, bp);
         bp->add_event.pos   = -1;
         bp->add_event.n     = 0;
 
@@ -92,57 +92,58 @@ void * computeMoments_thread(void* data_)
         prob_t evidence_ref = data->evidence_ref;
 
         // Moments
-        for (j = 0; j < bd.options->n_moments; j++) {
-                moments[j][i] = moment(bp, j+1, i, bd.options->which, evidence_ref);
+        for (j = 0; j < bp->bd->options->n_moments; j++) {
+                moments[j][i] = moment(j+1, i, bp->bd->options->which, evidence_ref, bp);
         }
         return NULL;
 }
 
 void computeMoments(
         prob_t **moments,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        binData *bd)
 {
         int i, j, rc;
 
-        binProblem bp[bd.options->threads];
-        pthread_t threads[bd.options->threads];
-        pthread_data_moments data[bd.options->threads];
+        binProblem bp[bd->options->threads];
+        pthread_t threads[bd->options->threads];
+        pthread_data_moments data[bd->options->threads];
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        if (bd.options->stacksize < PTHREAD_STACK_MIN) {
+        if (bd->options->stacksize < PTHREAD_STACK_MIN) {
                 if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
         else {
-                if (pthread_attr_setstacksize (&attr, (size_t)bd.options->stacksize) != 0) {
+                if (pthread_attr_setstacksize (&attr, (size_t)bd->options->stacksize) != 0) {
                         std_warn(NONE, "Couldn't set stack size.");
                 }
         }
 
-        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
-                binProblemInit(&bp[j]);
+        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
+                binProblemInit(&bp[j], bd);
                 data[j].bp = &bp[j];
                 data[j].moments = moments;
                 data[j].evidence_ref = evidence_ref;
         }
-        for (i = 0; i < bd.L; i += bd.options->threads) {
-                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
-                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd.L);
+        for (i = 0; i < bd->L; i += bd->options->threads) {
+                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
+                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd->L);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, computeMoments_thread, (void *)&data[j]);
                         if (rc) {
                                 std_err(NONE, "Couldn't create thread.");
                         }
                 }
-                for (j = 0; j < bd.options->threads && i+j < bd.L; j++) {
+                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
                         rc = pthread_join(threads[j], NULL);
                         if (rc) {
                                 std_err(NONE, "Couldn't join thread.");
                         }
                 }
         }
-        for (j = 0; j < bd.options->threads && j < bd.L; j++) {
+        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
                 binProblemFree(&bp[j]);
         }
 }

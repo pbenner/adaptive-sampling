@@ -58,24 +58,24 @@ prob_t effectiveCounts_f(int i, int j, void *data)
         if (i <= bp->counts_pos && bp->counts_pos <= j) {
                 int k;
                 prob_t n = 0;
-                for (k = 0; k < bd.events; k++) {
-                        n += countStatistic(NULL, k, i, j) + countAlpha(k, i, j);
+                for (k = 0; k < bp->bd->events; k++) {
+                        n += countStatistic(k, i, j, bp) + countAlpha(k, i, j, bp);
                 }
-                return log(n) + iec_log(NULL, i, j);
+                return log(n) + iec_log(i, j, bp);
         }
         else {
-                return iec_log(NULL, i, j);
+                return iec_log(i, j, bp);
         }
 }
 static
-prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
+prob_t effectiveCounts(unsigned int pos, prob_t evidence_ref, binProblem *bp)
 {
-        prob_t ev_log[bd.L];
+        prob_t ev_log[bp->bd->L];
 
         bp->counts_pos = pos;
-        prombs(ev_log, bp->ak, bd.prior_log, &effectiveCounts_f, bd.L, minM(), (void *)bp);
+        prombs(ev_log, bp->ak, bp->bd->prior_log, &effectiveCounts_f, bp->bd->L, minM(bp), (void *)bp);
 
-        return expl(sumModels(ev_log) - evidence_ref);
+        return expl(sumModels(ev_log, bp) - evidence_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,14 +84,15 @@ prob_t effectiveCounts(binProblem *bp, unsigned int pos, prob_t evidence_ref)
 
 void computeEffectiveCountsUtility(
         prob_t *result,
-        prob_t evidence_ref)
+        prob_t evidence_ref,
+        binData* bd)
 {
-        binProblem bp; binProblemInit(&bp);
+        binProblem bp; binProblemInit(&bp, bd);
         unsigned int i;
 
-        for (i = 0; i < bd.L; i++) {
-                notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd.L);
-                result[i] = -effectiveCounts(&bp, i, evidence_ref);
+        for (i = 0; i < bd->L; i++) {
+                notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd->L);
+                result[i] = -effectiveCounts(i, evidence_ref, &bp);
         }
 
         binProblemFree(&bp);

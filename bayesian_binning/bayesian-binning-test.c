@@ -55,7 +55,7 @@ prob_t prombsTest_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
-        return iec_log(bp, i, j);
+        return iec_log(i, j, bp);
 }
 
 static
@@ -64,40 +64,40 @@ prob_t prombsTest_h(int i, int j, void *data)
         binProblem *bp = (binProblem *)data;
 
         // - Log[f(b)]
-        return -iec_log(bp, i, j);
+        return -iec_log(i, j, bp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main
 ////////////////////////////////////////////////////////////////////////////////
 
-void prombsTest()
+void prombsTest(binData *bd)
 {
         MET_INIT;
-        prob_t result1[bd.L];
-        prob_t result2[bd.L];
+        prob_t result1[bd->L];
+        prob_t result2[bd->L];
         prob_t sum;
         unsigned int i;
-        Matrix *ak = allocMatrix(bd.L, bd.L);
+        Matrix *ak = allocMatrix(bd->L, bd->L);
 
         // set prior to 1
-        for (i = 0; i < bd.L; i++) {
-                bd.prior_log[i] = 0;
+        for (i = 0; i < bd->L; i++) {
+                bd->prior_log[i] = 0;
         }
         MET("Testing prombs",
-            prombs   (result1, ak, bd.prior_log, &prombsTest_f, bd.L, minM(), NULL));
+            prombs   (result1, ak, bd->prior_log, &prombsTest_f, bd->L, bd->L-1, NULL));
         MET("Testing prombsExt",
-            prombsExt(result2, ak, bd.prior_log, &prombsTest_f, &prombsTest_h, bd.L, minM(), NULL));
+            prombsExt(result2, ak, bd->prior_log, &prombsTest_f, &prombsTest_h, bd->L, bd->L-1, NULL));
 
         sum = -HUGE_VAL;
-        for (i = 0; i < bd.L; i++) {
+        for (i = 0; i < bd->L; i++) {
                 (void)printf("prombs[%02d]: %.10f\n", i, (double)result1[i]);
                 sum = logadd(sum, result1[i]);
         }
         (void)printf("prombs: %.10f\n", (double)sum);
 
         sum = -HUGE_VAL;
-        for (i = 0; i < bd.L; i++) {
+        for (i = 0; i < bd->L; i++) {
                 (void)printf("prombsExt[%02d]: %.10f\n", i, (double)result2[i]);
                 sum = logadd(sum, result2[i]);
         }

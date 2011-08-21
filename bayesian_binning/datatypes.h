@@ -93,6 +93,7 @@ typedef struct {
 
 // mutable data, local to each thread
 typedef struct {
+        binData* bd;
         // temporary memory for prombs
         Matrix *ak;
         // break probability
@@ -112,11 +113,5 @@ typedef struct {
                 int which;
         } fix_prob;
 } binProblem;
-
-////////////////////////////////////////////////////////////////////////////////
-// Global variables
-////////////////////////////////////////////////////////////////////////////////
-
-extern binData bd;
 
 #endif /* DATATYPES_H */
