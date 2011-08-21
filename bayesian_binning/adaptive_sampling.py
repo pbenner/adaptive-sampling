@@ -644,7 +644,9 @@ def main():
     if len(tail) != 1:
         usage()
         return 1
+    interface.init(options['epsilon'])
     parseConfig(tail[0])
+    interface.free()
     return 0
 
 if __name__ == "__main__":

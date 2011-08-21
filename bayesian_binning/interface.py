@@ -131,6 +131,12 @@ _lib._freeMatrix.argtypes  = [POINTER(MATRIX)]
 _lib._free.restype         = None
 _lib._free.argtypes        = [POINTER(None)]
 
+_lib._init_.restype         = None
+_lib._init_.argtype         = [c_double]
+
+_lib._free_.restype        = None
+_lib._free_.argtype        = []
+
 _lib.entropy.restype       = c_double
 _lib.entropy.argtypes      = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
@@ -165,6 +171,13 @@ def getMatrix(c_m):
 
 # 
 # ------------------------------------------------------------------------------
+
+def init(epsilon):
+     c_epsilon = c_double(epsilon)
+     _lib._init_(c_epsilon)
+
+def free():
+     _lib._free_()
 
 def entropy(events, counts, alpha, beta, gamma, options):
      c_events = c_int(events)
