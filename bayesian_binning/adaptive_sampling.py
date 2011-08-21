@@ -25,6 +25,8 @@ import numpy as np
 import math
 import socket
 import random
+import Queue
+import threading
 
 from itertools import izip
 
@@ -235,7 +237,7 @@ def prombsExpectation(y, counts, data):
     result = bin(counts, data, bin_options)
     return result['moments'][0]
 
-# utility
+# recursive computation of utilities
 # ------------------------------------------------------------------------------
 
 hashutil = {}
@@ -250,11 +252,9 @@ def recursiveUtility(counts, data, m, hashtree, hashutil, hashexp):
     if value:
         return value
     elif m == 0:
-        utility = hashutil.get(key)
-        if not utility:
-            utility = prombsUtility(counts, data)
-            hashutil[key] = utility
-        return utility
+        if not hashutil.get(key):
+            hashutil[key] = prombsUtility(counts, data)
+        return hashutil[key]
     else:
         result = []
         if not hashexp.get(key):
@@ -273,7 +273,96 @@ def recursiveUtility(counts, data, m, hashtree, hashutil, hashexp):
         hashtree[key] = result
         return result
 
+# precompute utility
+# ------------------------------------------------------------------------------
+
+class ThreadUtility(threading.Thread):
+    def __init__(self, queue_in, queue_out, data):
+        threading.Thread.__init__(self)
+        self.queue_in  = queue_in
+        self.queue_out = queue_out
+        self.data      = data
+    def run(self):
+        while True:
+            counts = self.queue_in.get()
+            result = prombsUtility(counts, self.data)
+            self.queue_out.put((counts, result))
+            self.queue_in.task_done()
+
+def precomputeUtilityRec(counts, data, m, hashutil, queue, i_, j_):
+    if m == 0:
+        key = computeKey(counts)
+        if not hashutil.get(key):
+            queue.put(counts)
+    elif m > 0:
+        for i in range(i_, data['L']):
+            for j in range(j_, data['K']):
+                counts[j][i] += 1
+                precomputeUtilityRec(counts, data, m-1, hashutil, queue, i, j)
+                counts[j][i] -= 1
+
+def precomputeUtility(counts, data, m, hashutil):
+    queue_in  = Queue.Queue()
+    queue_out = Queue.Queue()
+    precomputeUtilityRec(counts, data, m, hashutil, queue_in, 0, 0)
+    for i in range(options['threads']):
+        t = ThreadUtility(queue_in, queue_out, data)
+        t.setDaemon(True)
+        t.start()
+    queue_in.join()
+    while not queue_out.empty():
+        counts, result = queue_out.get()
+        key = computeKey(counts)
+        hashutil[key] = result
+
+# precompute expectation
+# ------------------------------------------------------------------------------
+
+class ThreadExp(threading.Thread):
+    def __init__(self, queue_in, queue_out, data):
+        threading.Thread.__init__(self)
+        self.queue_in  = queue_in
+        self.queue_out = queue_out
+        self.data      = data
+    def run(self):
+        while True:
+            counts = self.queue_in.get()
+            result = [ prombsExpectation(y, counts, self.data) for y in range(0, self.data['K']) ]
+            self.queue_out.put((counts, result))
+            self.queue_in.task_done()
+
+def precomputeExpectationRec(counts, data, m, hashexp, queue, i_, j_):
+    if m == 0:
+        key = computeKey(counts)
+        if not hashexp.get(key):
+            queue.put(counts)
+    elif m > 0:
+        for i in range(i_, data['L']):
+            for j in range(j_, data['K']):
+                counts[j][i] += 1
+                precomputeExpectationRec(counts, data, m-1, hashexp, queue, i, j)
+                counts[j][i] -= 1
+
+def precomputeExpectation(counts, data, m, hashexp):
+    queue_in  = Queue.Queue()
+    queue_out = Queue.Queue()
+    precomputeExpectationRec(counts, data, m-1, hashexp, queue_in, 0, 0)
+    for i in range(options['threads']):
+        t = ThreadExp(queue_in, queue_out, data)
+        t.setDaemon(True)
+        t.start()
+    queue_in.join()
+    while not queue_out.empty():
+        counts, result = queue_out.get()
+        key = computeKey(counts)
+        hashexp[key] = result
+
+# main method to compute utilities
+# ------------------------------------------------------------------------------
+
 def computeUtility(counts, data):
+    precomputeUtility(counts, data, options['look_ahead'], hashutil)
+    precomputeExpectation(counts, data, options['look_ahead'], hashexp)
     return recursiveUtility(counts, data, options['look_ahead'], {}, hashutil, hashexp)
 
 def selectItem(counts, data):
