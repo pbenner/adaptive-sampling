@@ -27,6 +27,7 @@ import socket
 import random
 import Queue
 import threading
+import copy
 
 from itertools import izip
 
@@ -293,10 +294,14 @@ def precomputeUtilityRec(counts, data, m, hashutil, queue, i_, j_):
     if m == 0:
         key = computeKey(counts)
         if not hashutil.get(key):
-            queue.put(counts)
+            queue.put(copy.deepcopy(counts))
     elif m > 0:
-        for i in range(i_, data['L']):
-            for j in range(j_, data['K']):
+        for j in range(j_, data['K']):
+            if j == j_:
+                i_from = i_
+            else:
+                i_from = 0
+            for i in range(i_from, data['L']):
                 counts[j][i] += 1
                 precomputeUtilityRec(counts, data, m-1, hashutil, queue, i, j)
                 counts[j][i] -= 1
@@ -341,10 +346,17 @@ def precomputeExpectationRec(counts, data, m, hashexp, queue, i_, j_):
     if m == 0:
         key = computeKey(counts)
         if not hashexp.get(key):
-            queue.put(counts)
+            queue.put(copy.deepcopy(counts))
     elif m > 0:
-        for i in range(i_, data['L']):
-            for j in range(j_, data['K']):
+        key = computeKey(counts)
+        if not hashexp.get(key):
+            queue.put(copy.deepcopy(counts))
+        for j in range(j_, data['K']):
+            if j == j_:
+                i_from = i_
+            else:
+                i_from = 0
+            for i in range(i_from, data['L']):
                 counts[j][i] += 1
                 precomputeExpectationRec(counts, data, m-1, hashexp, queue, i, j)
                 counts[j][i] -= 1
