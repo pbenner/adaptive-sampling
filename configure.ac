@@ -278,7 +278,6 @@ AC_CONFIG_FILES([
 	libmgs/Makefile
 	libexception/Makefile
 	bayesian_binning/Makefile
-	dpm/Makefile
 	include/Makefile
  	])
 

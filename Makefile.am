@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libexception libprombs libmgs bayesian_binning dpm include
+SUBDIRS = libexception libprombs libmgs bayesian_binning include
 
 dist_bin_SCRIPTS  = bayesian-binning adaptive-sampling
 CLEANFILES        = $(dist_bin_SCRIPTS)
