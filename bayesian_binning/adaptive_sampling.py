@@ -207,8 +207,7 @@ def bin(counts_v, data, bin_options):
 
 def prombsEntropy(counts, data):
     bin_options = options.copy()
-    result = bin_entropy(counts, data, bin_options)
-    return result
+    return bin_entropy(counts, data, bin_options)
 
 def prombsUtility(counts, data):
     bin_options = options.copy()

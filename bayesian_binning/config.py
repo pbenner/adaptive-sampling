@@ -66,15 +66,16 @@ def readSeeds(config_parser, section, option):
             random.seed(i)
             rand_states.append(random.getstate())
     else:
-        rand_states = None
+        rand_states = []
     return rand_states
 
 def readStates(config_parser, section, option):
+    states = []
     if config_parser.has_option(section, option):
         states_str = config_parser.get(section, option)
-        states = [ eval(state_str) for state_str in states_str.split('\n') ]
-    else:
-        states = None
+        for state_str in states_str.split('\n'):
+            if state_str != '':
+                states.append(eval(state_str))
     return states
 
 ## helper functions for setting prior parameters
