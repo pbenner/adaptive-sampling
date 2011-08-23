@@ -135,6 +135,7 @@ def saveResult(result):
     config.set('Sampling Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
     config.set('Sampling Result', 'samples',   " ".join(map(str, result['samples'])))
     config.set('Sampling Result', 'entropy',   " ".join(map(str, result['entropy'])))
+    config.set('Sampling Result', 'utility',   " ".join(map(str, result['utility'])))
     config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
     config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
     config.set('Sampling Result', 'states',    "\n".join(map(str, result['states'])))
