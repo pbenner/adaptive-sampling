@@ -79,6 +79,8 @@ def usage():
     print "       --save=FILE                    - save result to file"
     print "       --savefig=FILE                 - save figure to file"
     print
+    print "       --video=BASENAME               - generate a video from the sampling process"
+    print
     print "   -h, --help                         - print help"
     print "   -v, --verbose                      - be verbose"
     print "   -t, --prombsTest                   - test prombs algorithm"
@@ -409,7 +411,7 @@ def selectItem(counts, data):
         gainFilter = None
         exec options['filter']
         if not gainFilter is None:
-            utility = gainFilter(utility, map(sum, zip(*counts)), result)
+            utility = gainFilter(utility, map(sum, zip(*counts)))
     return selectRandom(argmax(utility)), utility
 
 # experiment
@@ -450,6 +452,37 @@ def experiment(index, data, result, msocket):
                 ret = int(raw_input())
     return ret
 
+# video
+# ------------------------------------------------------------------------------
+
+def save_frame(result, data, utility, i):
+    importMatplotlib('Agg')
+    from matplotlib.pyplot import savefig
+    bin_result = bin(result['counts'], data, options)
+    bin_result['counts']  = result['counts']
+    bin_result['samples'] = result['samples']
+    bin_result['entropy'] = result['entropy']
+    bin_result['states']  = result['states']
+    bin_result['utility'] = utility
+    vis.plotSampling(bin_result, options, data)
+    savefig('%s_%03d.png' % (options['video'], i), bbox_inches='tight', pad_inches=0, dpi=250)
+
+def save_video():
+    import subprocess
+    command = ('mencoder',
+               'mf://%s_*.png',
+               '-mf',
+               'type=png:w=800:h=600:fps=5',
+               '-ovc',
+               'lavc',
+               '-lavcopts',
+               'vcodec=mpeg4',
+               '-oac',
+               'copy',
+               '-o',
+               '%s.avi' % (options['video'], options['video']))
+    subprocess.check_call(command)
+
 # sampling
 # ------------------------------------------------------------------------------
 
@@ -467,6 +500,8 @@ def sample(result, data):
         result['samples'].append(index)
         result['entropy'].append(prombsEntropy(result['counts'], data))
         result['counts'][event][index] += 1
+        if options['video']:
+            save_frame(result, data, utility, i)
     index, utility = selectItem(result['counts'], data)
     # update result
     bin_result = bin(result['counts'], data, options)
@@ -520,6 +555,8 @@ def parseConfig(config_file):
         config.readStrategy(config_parser, 'Experiment', options)
         result = loadResult()
         result = sample(result, data)
+    if options['video']:
+        save_video()
     if options['save']:
         saveResult(result)
     else:
@@ -552,6 +589,7 @@ options = {
     'stacksize'            : 256*1024,
     'algorithm'            : 'prombs',
     'strategy'             : 'entropy',
+    'video'                : None,
     'port'                 : None,
     'filter'               : None,
     'visualization'        : None,
@@ -576,7 +614,8 @@ def main():
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
                       "strategy=", "differential-entropy", "multibin-entropy",
-                      "algorithm=", "samples=", "mgs-samples", "no-model-posterior"]
+                      "algorithm=", "samples=", "mgs-samples", "no-model-posterior",
+                      "video="]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -648,6 +687,8 @@ def main():
             options["mgs_samples"] = tuple(map(int, a.split(":")))
         if o == "--no-model-posterior":
             options["model_posterior"] = False
+        if o == "--video":
+            options["video"] = a
     if options["strategy"] == "effective-counts":
         options["effective_counts"] = True
     if (options["strategy"] == "entropy"    and 
