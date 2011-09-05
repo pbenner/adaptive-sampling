@@ -1,4 +1,4 @@
-Source: bayesian-toolbox
+Source: adaptive-sampling
 Section: math
 Priority: extra
 Maintainer: Philipp Benner <philipp@debian.org>
