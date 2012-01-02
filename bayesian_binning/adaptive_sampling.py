@@ -564,7 +564,8 @@ def parseConfig(config_file):
             importMatplotlib('Agg')
             from matplotlib.pyplot import savefig
             vis.plotSampling(result, options, data)
-            savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
+#            savefig(options['savefig'], bbox_inches='tight', pad_inches=0)
+            savefig(options['savefig'])
         else:
             importMatplotlib()
             from matplotlib.pyplot import show
