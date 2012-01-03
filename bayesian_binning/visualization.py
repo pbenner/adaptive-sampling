@@ -26,6 +26,7 @@ try:
     from matplotlib.image import NonUniformImage
     import matplotlib.patches as patches
     import matplotlib.path as path
+    import matplotlib.ticker as ticker
 except ImportError:
     print "Error: Couldn't load matplotlib."
     exit(1)
