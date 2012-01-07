@@ -18,15 +18,11 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv.h>
-
-#include <datatypes.h>
 #include <bayes/linalg.h>
+#include <datatypes.h>
 
 extern void _init_(double epsilon);
 extern void _free_();
-extern BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options);
+extern BinningResult * binning(size_t events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
 
 #endif /* INTERFACE_H */

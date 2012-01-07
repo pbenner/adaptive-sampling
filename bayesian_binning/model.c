@@ -32,15 +32,7 @@
 #include <bayes/datatypes.h>
 #include <bayes/uthash.h>
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv.h>
-#include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_sf_pow_int.h>
-#include <gsl/gsl_sf_log.h>
-#include <gsl/gsl_sf_exp.h>
-#include <gsl/gsl_sf_psi.h>
 
 #include <datatypes.h>
 #include <model.h>
@@ -117,10 +109,10 @@ prob_t mbeta_log(prob_t *p, binProblem *bp)
 /* P(E|B) */
 prob_t iec_log(int kk, int k, binProblem *bp)
 {
-        unsigned int i;
+        size_t i;
         prob_t c[bp->bd->events];
         prob_t alpha[bp->bd->events];
-        prob_t gamma = gsl_matrix_get(bp->bd->gamma, kk, k);
+        prob_t gamma = bp->bd->gamma->content[kk][k];
         if (gamma == 0) {
                 return -HUGE_VAL;
         }
