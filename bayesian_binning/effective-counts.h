@@ -18,7 +18,9 @@
 #ifndef EFFECTIVE_COUNTS_H
 #define EFFECTIVE_COUNTS_H
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
 
 #include <bayes/datatypes.h>
 
