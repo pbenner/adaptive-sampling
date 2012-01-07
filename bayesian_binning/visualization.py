@@ -26,6 +26,7 @@ try:
     from matplotlib.image import NonUniformImage
     import matplotlib.patches as patches
     import matplotlib.path as path
+    import matplotlib.ticker as ticker
 except ImportError:
     print "Error: Couldn't load matplotlib."
     exit(1)
@@ -238,8 +239,8 @@ def plotSampling(result, options, data):
         exec options['visualization']
         if not preplot is None:
             x, title = preplot(result, options)
-    fig = figure()
-    fig.subplots_adjust(hspace=0.35)
+    fig = figure(1, (8.0, 6.0))
+    fig.subplots_adjust(left=0.09, bottom=0.06, right=0.89, top=0.96, hspace=0.35)
     if result['mpost'] and options['model_posterior']:
         ax11 = fig.add_subplot(3,1,1, title=title)
         ax21 = fig.add_subplot(3,1,2)
