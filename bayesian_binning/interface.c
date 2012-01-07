@@ -26,11 +26,11 @@
 #include "bayesian-binning.h"
 
 // export functions for interface.py
-Vector * _allocVector(int size)              { return allocVector(size); }
-void     _freeVector(Vector *v)              { freeVector(v); }
-Matrix * _allocMatrix(int rows, int columns) { return allocMatrix(rows, columns); }
-void     _freeMatrix(Matrix *m)              { freeMatrix(m); }
-void     _free(void *ptr)                    { free(ptr); }
+vector_t * _alloc_vector(int size)              { return alloc_vector(size); }
+void       _free_vector(vector_t *v)            { free_vector(v); }
+matrix_t * _alloc_matrix(int rows, int columns) { return alloc_matrix(rows, columns); }
+void       _free_matrix(matrix_t *m)            { free_matrix(m); }
+void       _free(void *ptr)                     { free(ptr); }
 
 void _init_(double epsilon)
 {
@@ -40,86 +40,4 @@ void _init_(double epsilon)
 void _free_()
 {
         __free__();
-}
-
-double entropy(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options)
-{
-        size_t i;
-
-        // allocate gsl matrices
-        gsl_matrix **counts_m = (gsl_matrix **)malloc(events*sizeof(gsl_matrix *));
-        gsl_matrix **alpha_m  = (gsl_matrix **)malloc(events*sizeof(gsl_matrix *));
-        for (i = 0; i < events; i++) {
-                counts_m[i] = toGslMatrix(counts[i]);
-                alpha_m[i]  = toGslMatrix(alpha[i]);
-        }
-        gsl_vector *beta_v  = toGslVector(beta);
-        gsl_matrix *gamma_m = toGslMatrix(gamma);
-
-        prob_t result = bin_entropy(events, counts_m, alpha_m, beta_v, gamma_m, options);
-
-        // free gsl matrices
-        for (i = 0; i < events; i++) {
-                gsl_matrix_free(counts_m[i]);
-                gsl_matrix_free(alpha_m[i]);
-        }
-        gsl_vector_free(beta_v);
-        gsl_matrix_free(gamma_m);
-
-        // return result
-        return result;
-}
-
-BinningResult * binning(size_t events, Matrix **counts, Matrix **alpha, Vector *beta, Matrix *gamma, Options *options)
-{
-        size_t i;
-
-        // allocate gsl matrices
-        gsl_matrix **counts_m = (gsl_matrix **)malloc(events*sizeof(gsl_matrix *));
-        gsl_matrix **alpha_m  = (gsl_matrix **)malloc(events*sizeof(gsl_matrix *));
-        for (i = 0; i < events; i++) {
-                counts_m[i] = toGslMatrix(counts[i]);
-                alpha_m[i]  = toGslMatrix(alpha[i]);
-        }
-        gsl_vector *beta_v  = toGslVector(beta);
-        gsl_matrix *gamma_m = toGslMatrix(gamma);
-        BinningResultGSL *resultGsl;
-        BinningResult    *result = (BinningResult *)malloc(sizeof(BinningResult));
-
-        resultGsl = bin_log(events, counts_m, alpha_m, beta_v, gamma_m, options);
-        if (options->n_moments > 0) {
-                result->moments = fromGslMatrix(resultGsl->moments);
-        }
-        else {
-                result->moments = NULL;
-        }
-        if (options->marginal) {
-                result->marginals = fromGslMatrix(resultGsl->marginals);
-        }
-        else {
-                result->marginals = NULL;
-        }
-        result->bprob   = fromGslVector(resultGsl->bprob);
-        result->mpost   = fromGslVector(resultGsl->mpost);
-        result->utility = fromGslVector(resultGsl->utility);
-
-        // free gsl matrices
-        for (i = 0; i < events; i++) {
-                gsl_matrix_free(counts_m[i]);
-                gsl_matrix_free(alpha_m[i]);
-        }
-        gsl_vector_free(beta_v);
-        gsl_matrix_free(gamma_m);
-        if (options->n_moments > 0) {
-                gsl_matrix_free(resultGsl->moments);
-        }
-        if (options->marginal) {
-                gsl_matrix_free(resultGsl->marginals);
-        }
-        gsl_vector_free(resultGsl->bprob);
-        gsl_vector_free(resultGsl->mpost);
-        gsl_vector_free(resultGsl->utility);
-        free(resultGsl);
-
-        return result;
 }

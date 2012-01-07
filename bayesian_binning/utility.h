@@ -22,8 +22,6 @@
 
 #include <datatypes.h>
 
-#include <gsl/gsl_matrix.h>
-
 #include <bayes/datatypes.h>
 #include <bayes/logarithmetic.h>
 #include <bayes/prombs.h>
@@ -40,7 +38,7 @@ prob_t sumModels(prob_t *ev_log, binProblem* bp)
         int i;
 
         for (i = 0; i < bp->bd->L; i++) {
-                if (gsl_vector_get(bp->bd->beta, i) > 0) {
+                if (bp->bd->beta->content[i] > 0) {
                         sum = logadd(sum, ev_log[i]);
                 }
         }
@@ -54,7 +52,7 @@ int minM(binProblem *bp)
 {
         int i;
         for (i = bp->bd->L-1; i > 0; i--) {
-                if (gsl_vector_get(bp->bd->beta, i) > 0) {
+                if (bp->bd->beta->content[i] > 0) {
                         return i;
                 }
         }
@@ -66,7 +64,7 @@ void binProblemInit(binProblem *bp, binData* bd)
 {
         bp->bd              = bd;
         if (bd->options->algorithm == 0) {
-                bp->ak      = allocMatrix(bd->L, bd->L);
+                bp->ak      = alloc_matrix(bd->L, bd->L);
         }
         else {
                 bp->ak      = NULL;
@@ -85,7 +83,7 @@ static inline
 void binProblemFree(binProblem *bp)
 {
         if (bp->ak) {
-                freeMatrix(bp->ak);
+                free_matrix(bp->ak);
         }
 }
 
@@ -98,11 +96,11 @@ unsigned int countStatistic(unsigned int event, int ks, int ke, binProblem *bp)
 {
         if (bp != NULL && bp->add_event.which == event &&
             ks <= bp->add_event.pos && bp->add_event.pos <= ke) {
-                return gsl_matrix_get(bp->bd->counts[event], ks, ke) +
+                return bp->bd->counts[event]->content[ks][ke] +
                         bp->add_event.n;
         }
         else if (ks <= ke) {
-                return gsl_matrix_get(bp->bd->counts[event], ks, ke);
+                return bp->bd->counts[event]->content[ks][ke];
         }
         else {
                 return 0;
@@ -113,7 +111,7 @@ static inline
 prob_t countAlpha(unsigned int event, int ks, int ke, binProblem *bp)
 {
         if (ks <= ke) {
-                return gsl_matrix_get(bp->bd->alpha[event], ks, ke);
+                return bp->bd->alpha[event]->content[ks][ke];
         }
         else {
                 return 0;

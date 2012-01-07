@@ -15,7 +15,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,17 +32,8 @@
 #include <bayes/mgs.h>
 #include <bayes/prombs.h>
 #include <bayes/datatypes.h>
-#include <bayes/uthash.h>
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv.h>
-#include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_sf_pow_int.h>
-#include <gsl/gsl_sf_log.h>
-#include <gsl/gsl_sf_exp.h>
-#include <gsl/gsl_sf_psi.h>
 
 #include <bayesian-binning-test.h>
 #include <break-probabilities.h>
@@ -62,12 +55,12 @@ void computeModelPrior(binData* bd)
 {
         unsigned int m_b;
         for (m_b = 0; m_b < bd->L; m_b++) {
-                if (gsl_vector_get(bd->beta, m_b) == 0) {
+                if (bd->beta->content[m_b] == 0) {
                         bd->prior_log[m_b] = -HUGE_VAL;
                 }
                 else {
                         bd->prior_log[m_b] = -gsl_sf_lnchoose(bd->L-1, m_b) +
-                                logl(gsl_vector_get(bd->beta, m_b));
+                                logl(bd->beta->content[m_b]);
                 }
         }
 }
@@ -86,11 +79,7 @@ void computeUtility(prob_t *utility, prob_t evidence_ref, binData* bd)
 
 static
 void computeBinning(
-        prob_t **moments,
-        prob_t **marginals,
-        prob_t  *bprob,
-        prob_t  *mpost,
-        prob_t  *utility,
+        BinningResult* result,
         binData *bd)
 {
         binProblem bp; binProblemInit(&bp, bd);
@@ -106,23 +95,23 @@ void computeBinning(
         evidence_ref = evidence(evidence_log_tmp, &bp);
         // compute model posteriors P(m_B|D)
         if (bd->options->model_posterior) {
-                computeModelPosteriors(evidence_log_tmp, mpost, evidence_ref, bd);
+                computeModelPosteriors(evidence_log_tmp, result->mpost->content, evidence_ref, bd);
         }
         // compute moments
         if (bd->options->marginal) {
-                computeMarginal(marginals, evidence_ref, bd);
+                computeMarginal(result->marginals->content, evidence_ref, bd);
         }
         // compute break probability
         if (bd->options->bprob) {
-                computeBreakProbabilities(bprob, evidence_ref, bd);
+                computeBreakProbabilities(result->bprob->content, evidence_ref, bd);
         }
         // compute the first n moments
         if (bd->options->n_moments > 0) {
-                computeMoments(moments, evidence_ref, bd);
+                computeMoments(result->moments->content, evidence_ref, bd);
         }
         // compute sampling utility
         if (bd->options->utility) {
-                computeUtility(utility, evidence_ref, bd);
+                computeUtility(result->utility->content, evidence_ref, bd);
         }
 
         if (bd->options->algorithm == 2) {
@@ -160,16 +149,16 @@ void __free__() {
 
 void bin_init(
         size_t events,
-        gsl_matrix **counts,
-        gsl_matrix **alpha,
-        gsl_vector  *beta,
-        gsl_matrix  *gamma,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
         Options* options,
         binData* bd)
 {
-        size_t L = counts[0]->size2;
+        size_t L = counts[0]->columns;
 
-        verbose      = options->verbose;
+        verbose       = options->verbose;
         bd->options   = options;
         bd->L         = L;
         bd->events    = events;
@@ -189,12 +178,12 @@ void bin_free(binData* bd)
 }
 
 prob_t
-bin_entropy(
+entropy(
         size_t events,
-        gsl_matrix **counts,
-        gsl_matrix **alpha,
-        gsl_vector  *beta,
-        gsl_matrix  *gamma,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
         Options *options)
 {
         binData bd;
@@ -216,68 +205,43 @@ bin_entropy(
         return entropy;
 }
 
-BinningResultGSL *
-bin_log(
+BinningResult *
+binning(
         size_t events,
-        gsl_matrix **counts,
-        gsl_matrix **alpha,
-        gsl_vector  *beta,
-        gsl_matrix  *gamma,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
         Options *options)
 {
         binData bd;
-        size_t L = counts[0]->size2;
-        BinningResultGSL *result = (BinningResultGSL *)malloc(sizeof(BinningResultGSL));
+        size_t i, L = counts[0]->columns;
+        BinningResult *result = (BinningResult *)malloc(sizeof(BinningResult));
         result->moments   = (options->n_moments ?
-                             gsl_matrix_alloc(options->n_moments, L)   : NULL);
+                             alloc_matrix(options->n_moments, L)   : NULL);
         result->marginals = (options->marginal  ?
-                             gsl_matrix_alloc(L, options->n_marginals) : NULL);
-        result->bprob     = gsl_vector_alloc(L);
-        result->mpost     = gsl_vector_alloc(L);
-        result->utility   = gsl_vector_alloc(L);
-        prob_t * moments[options->n_moments];
-        prob_t * marginals[L];
-        prob_t bprob[L];
-        prob_t mpost[L];
-        prob_t utility[L];
-        unsigned int i, j;
+                             alloc_matrix(L, options->n_marginals) : NULL);
+        result->bprob     = alloc_vector(L);
+        result->mpost     = alloc_vector(L);
+        result->utility   = alloc_vector(L);
 
-        for (i = 0; i < options->n_moments; i++) {
-                moments[i]   = (prob_t *)calloc(L, sizeof(prob_t));
+        // bzero results
+        for (i = 0; i < options->n_moments && options->n_moments; i++) {
+                bzero(result->moments->content[i], L*sizeof(prob_t));
         }
-        for (i = 0; i < L; i++) {
-                marginals[i] = (prob_t *)calloc(options->n_marginals, sizeof(prob_t));
+        for (i = 0; i < L && options->marginal; i++) {
+                bzero(result->marginals->content[i], options->n_marginals*sizeof(prob_t));
         }
-        bzero(bprob,   L*sizeof(prob_t));
-        bzero(mpost,   L*sizeof(prob_t));
-        bzero(utility, L*sizeof(prob_t));
+        bzero(result->bprob->content,   L*sizeof(prob_t));
+        bzero(result->mpost->content,   L*sizeof(prob_t));
+        bzero(result->utility->content, L*sizeof(prob_t));
 
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
 
         if (options->prombsTest) {
                 prombsTest(&bd);
         }
-        computeBinning(moments, marginals, bprob, mpost, utility, &bd);
-        for (i = 0; i <= bd.L-1; i++) {
-                for (j = 0; j < options->n_moments; j++) {
-                        gsl_matrix_set(result->moments, j, i, moments[j][i]);
-                }
-                if (options->marginal) {
-                        for (j = 0; j < options->n_marginals; j++) {
-                                gsl_matrix_set(result->marginals, i, j, marginals[i][j]);
-                        }
-                }
-                gsl_vector_set(result->bprob,   i, bprob[i]);
-                gsl_vector_set(result->mpost,   i, mpost[i]);
-                gsl_vector_set(result->utility, i, utility[i]);
-        }
-
-        for (i = 0; i < options->n_moments; i++) {
-                free(moments[i]);
-        }
-        for (i = 0; i < L; i++) {
-                free(marginals[i]);
-        }
+        computeBinning(result, &bd);
 
         bin_free(&bd);
 

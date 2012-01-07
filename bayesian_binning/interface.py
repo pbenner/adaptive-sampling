@@ -45,13 +45,13 @@ if not _lib:
 # ------------------------------------------------------------------------------
 
 class VECTOR(Structure):
-     _fields_ = [("size", c_int),
-                 ("vec",  POINTER(c_double))]
+     _fields_ = [("size",     c_int),
+                 ("content",  POINTER(c_double))]
 
 class MATRIX(Structure):
      _fields_ = [("rows",    c_int),
                  ("columns", c_int),
-                 ("mat",     POINTER(POINTER(c_double)))]
+                 ("content", POINTER(POINTER(c_double)))]
 
 class MARGINAL_RANGE(Structure):
      _fields_ = [("from", c_float),
@@ -116,49 +116,49 @@ class BINNING_RESULT(Structure):
 # function prototypes
 # ------------------------------------------------------------------------------
 
-_lib._allocVector.restype  = POINTER(VECTOR)
-_lib._allocVector.argtypes = [c_int]
+_lib._alloc_vector.restype  = POINTER(VECTOR)
+_lib._alloc_vector.argtypes = [c_int]
 
-_lib._allocMatrix.restype  = POINTER(MATRIX)
-_lib._allocMatrix.argtypes = [c_int, c_int]
+_lib._alloc_matrix.restype  = POINTER(MATRIX)
+_lib._alloc_matrix.argtypes = [c_int, c_int]
 
-_lib._freeVector.restype   = None
-_lib._freeVector.argtypes  = [POINTER(VECTOR)]
+_lib._free_vector.restype   = None
+_lib._free_vector.argtypes  = [POINTER(VECTOR)]
 
-_lib._freeMatrix.restype   = None
-_lib._freeMatrix.argtypes  = [POINTER(MATRIX)]
+_lib._free_matrix.restype   = None
+_lib._free_matrix.argtypes  = [POINTER(MATRIX)]
 
-_lib._free.restype         = None
-_lib._free.argtypes        = [POINTER(None)]
+_lib._free.restype          = None
+_lib._free.argtypes         = [POINTER(None)]
 
 _lib._init_.restype         = None
 _lib._init_.argtype         = [c_double]
 
-_lib._free_.restype        = None
-_lib._free_.argtype        = []
+_lib._free_.restype         = None
+_lib._free_.argtype         = []
 
-_lib.entropy.restype       = c_double
-_lib.entropy.argtypes      = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.entropy.restype        = c_double
+_lib.entropy.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
-_lib.binning.restype       = POINTER(BINNING_RESULT)
-_lib.binning.argtypes      = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.binning.restype        = POINTER(BINNING_RESULT)
+_lib.binning.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
 # convert datatypes
 # ------------------------------------------------------------------------------
 
 def copyVectorToC(v, c_v):
      for i in range(0, c_v.contents.size):
-          c_v.contents.vec[i] = v[i]
+          c_v.contents.content[i] = v[i]
 
 def copyMatrixToC(m, c_m):
      for i in range(0, c_m.contents.rows):
           for j in range(0, c_m.contents.columns):
-               c_m.contents.mat[i][j] = m[i][j]
+               c_m.contents.content[i][j] = m[i][j]
 
 def getVector(c_v):
      v = []
      for i in range(0, c_v.contents.size):
-          v.append(c_v.contents.vec[i])
+          v.append(c_v.contents.content[i])
      return v
 
 def getMatrix(c_m):
@@ -166,7 +166,7 @@ def getMatrix(c_m):
      for i in range(0, c_m.contents.rows):
           m.append([])
           for j in range(0, c_m.contents.columns):
-               m[i].append(c_m.contents.mat[i][j])
+               m[i].append(c_m.contents.content[i][j])
      return m
 
 # 
@@ -184,23 +184,23 @@ def entropy(events, counts, alpha, beta, gamma, options):
      c_counts = (events*POINTER(MATRIX))()
      c_alpha  = (events*POINTER(MATRIX))()
      for i in range(0, events):
-          c_counts[i]  = _lib._allocMatrix(len(counts[i]), len(counts[i][0]))
+          c_counts[i]  = _lib._alloc_matrix(len(counts[i]), len(counts[i][0]))
           copyMatrixToC(counts[i], c_counts[i])
-          c_alpha[i]   = _lib._allocMatrix(len(alpha[i]), len(alpha[i][0]))
+          c_alpha[i]   = _lib._alloc_matrix(len(alpha[i]), len(alpha[i][0]))
           copyMatrixToC(alpha[i],  c_alpha[i])
-     c_beta  = _lib._allocVector(len(beta))
+     c_beta  = _lib._alloc_vector(len(beta))
      copyVectorToC(beta,  c_beta)
-     c_gamma = _lib._allocMatrix(len(gamma), len(gamma[0]))
+     c_gamma = _lib._alloc_matrix(len(gamma), len(gamma[0]))
      copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
      tmp = _lib.entropy(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
 
      for i in range(0, events):
-          _lib._freeMatrix(c_counts[i])
-          _lib._freeMatrix(c_alpha[i])
-     _lib._freeVector(c_beta)
-     _lib._freeMatrix(c_gamma)
+          _lib._free_matrix(c_counts[i])
+          _lib._free_matrix(c_alpha[i])
+     _lib._free_vector(c_beta)
+     _lib._free_matrix(c_gamma)
 
      return tmp
 
@@ -209,23 +209,23 @@ def binning(events, counts, alpha, beta, gamma, options):
      c_counts = (events*POINTER(MATRIX))()
      c_alpha  = (events*POINTER(MATRIX))()
      for i in range(0, events):
-          c_counts[i]  = _lib._allocMatrix(len(counts[i]), len(counts[i][0]))
+          c_counts[i]  = _lib._alloc_matrix(len(counts[i]), len(counts[i][0]))
           copyMatrixToC(counts[i], c_counts[i])
-          c_alpha[i]   = _lib._allocMatrix(len(alpha[i]), len(alpha[i][0]))
+          c_alpha[i]   = _lib._alloc_matrix(len(alpha[i]), len(alpha[i][0]))
           copyMatrixToC(alpha[i],  c_alpha[i])
-     c_beta  = _lib._allocVector(len(beta))
+     c_beta  = _lib._alloc_vector(len(beta))
      copyVectorToC(beta,  c_beta)
-     c_gamma = _lib._allocMatrix(len(gamma), len(gamma[0]))
+     c_gamma = _lib._alloc_matrix(len(gamma), len(gamma[0]))
      copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
      tmp = _lib.binning(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
 
      for i in range(0, events):
-          _lib._freeMatrix(c_counts[i])
-          _lib._freeMatrix(c_alpha[i])
-     _lib._freeVector(c_beta)
-     _lib._freeMatrix(c_gamma)
+          _lib._free_matrix(c_counts[i])
+          _lib._free_matrix(c_alpha[i])
+     _lib._free_vector(c_beta)
+     _lib._free_matrix(c_gamma)
 
      result = \
      { 'moments'   : getMatrix(tmp.contents.moments)   if tmp.contents.moments   else [],
@@ -235,12 +235,12 @@ def binning(events, counts, alpha, beta, gamma, options):
        'utility'   : getVector(tmp.contents.utility) }
 
      if tmp.contents.moments:
-          _lib._freeMatrix(tmp.contents.moments)
+          _lib._free_matrix(tmp.contents.moments)
      if tmp.contents.marginals:
-          _lib._freeMatrix(tmp.contents.marginals)
-     _lib._freeVector(tmp.contents.bprob)
-     _lib._freeVector(tmp.contents.mpost)
-     _lib._freeVector(tmp.contents.utility)
+          _lib._free_matrix(tmp.contents.marginals)
+     _lib._free_vector(tmp.contents.bprob)
+     _lib._free_vector(tmp.contents.mpost)
+     _lib._free_vector(tmp.contents.utility)
      _lib._free(tmp)
 
      return result

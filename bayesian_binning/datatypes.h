@@ -61,20 +61,12 @@ typedef struct options {
         int model_posterior;
 } Options;
 
-typedef struct binningResultGSL {
-        gsl_matrix *moments;
-        gsl_matrix *marginals;
-        gsl_vector *bprob;
-        gsl_vector *mpost;
-        gsl_vector *utility;
-} BinningResultGSL;
-
 typedef struct binningResult{
-        Matrix *moments;
-        Matrix *marginals;
-        Vector *bprob;
-        Vector *mpost;
-        Vector *utility;
+        matrix_t *moments;
+        matrix_t *marginals;
+        vector_t *bprob;
+        vector_t *mpost;
+        vector_t *utility;
 } BinningResult;
 
 // data that has to be immutable
@@ -85,17 +77,17 @@ typedef struct {
         unsigned int events;
         prob_t *prior_log;     // P(p,B|m_B)
         // counts and parameters
-        gsl_matrix **counts;
-        gsl_matrix **alpha;
-        gsl_vector  *beta;     // P(m_B)
-        gsl_matrix  *gamma;
+        matrix_t **counts;
+        matrix_t **alpha;
+        vector_t  *beta;     // P(m_B)
+        matrix_t  *gamma;
 } binData;
 
 // mutable data, local to each thread
 typedef struct {
         binData* bd;
         // temporary memory for prombs
-        Matrix *ak;
+        matrix_t *ak;
         // break probability
         int bprob_pos;
         // effective counts

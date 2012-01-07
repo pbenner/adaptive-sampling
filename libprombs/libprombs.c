@@ -34,7 +34,7 @@ void __init_prombs__(prob_t epsilon) {
 }
 
 static
-void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
+void logproduct(prob_t *result, matrix_t *ak, size_t L, size_t i)
 {
         prob_t tmp[L], elem;
         size_t j, k;
@@ -47,7 +47,7 @@ void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
                 result[j-i] = -HUGE_VAL;
                 for (k = i; k <= j; k++) {
                         if (j < L && k < L) {
-                                elem = ak->mat[k][j];
+                                elem = ak->content[k][j];
                         }
                         else if (k == j) {
                                 elem = logl(1);
@@ -61,14 +61,14 @@ void logproduct(prob_t *result, Matrix *ak, size_t L, size_t i)
 }
 
 static inline
-void init_f(Matrix *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
+void init_f(matrix_t *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
 {
         size_t i, j;
 
         // initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL
         for (i = 0; i < L; i++) {
                 for (j = i; j < L; j++) {
-                        ak->mat[i][j] = (*f)(i, j, data);
+                        ak->content[i][j] = (*f)(i, j, data);
                 }
         }
 }
@@ -79,7 +79,7 @@ void init_f(Matrix *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
 // m: the maximal number of bins in a multibin
 void prombs(
         prob_t *result,
-        Matrix *ak,
+        matrix_t *ak,
         prob_t *g,
         prob_t (*f)(int, int, void*),
         size_t L,
@@ -92,7 +92,7 @@ void prombs(
         // init
         init_f(ak, f, L, data);
         for (j = 0; j < L; j++) {
-                pr[j] = ak->mat[0][j];
+                pr[j] = ak->content[0][j];
         }
 
         // compute the products
@@ -123,7 +123,7 @@ static prob_t prombsExt_fprime(int i, int j, void *data) {
 
 void prombsExt(
         prob_t *result,
-        Matrix *ak,
+        matrix_t *ak,
         prob_t *g,
         prob_t (*f)(int, int, void*), // on log scale
         prob_t (*h)(int, int, void*), // on normal scale

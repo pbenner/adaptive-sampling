@@ -32,16 +32,6 @@
 #include <bayes/datatypes.h>
 #include <bayes/uthash.h>
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_odeiv.h>
-#include <gsl/gsl_randist.h>
-#include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_sf_pow_int.h>
-#include <gsl/gsl_sf_log.h>
-#include <gsl/gsl_sf_exp.h>
-#include <gsl/gsl_sf_psi.h>
-
 #include <datatypes.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +49,7 @@ void computeModelPosteriors(
         if (bd->options->algorithm == 2) {
                 size_t *counts = mgs_get_counts();
                 for (j = 0; j < bd->L; j++) {
-                        if (gsl_vector_get(bd->beta, j) > 0) {
+                        if (bd->beta->content[j] > 0) {
                                 mpost[j] = (prob_t)counts[j]/bd->options->samples[1];
                         }
                         else {
@@ -69,7 +59,7 @@ void computeModelPosteriors(
         }
         else {
                 for (j = 0; j < bd->L; j++) {
-                        if (gsl_vector_get(bd->beta, j) > 0) {
+                        if (bd->beta->content[j] > 0) {
                                 mpost[j] = expl(ev_log[j] - evidence_ref);
                         }
                         else {
