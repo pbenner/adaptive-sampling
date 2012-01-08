@@ -94,7 +94,7 @@ void binProblemFree(binProblem *bp)
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline
-unsigned int countStatistic(unsigned int event, int ks, int ke, binProblem *bp)
+size_t countStatistic(size_t event, int ks, int ke, binProblem *bp)
 {
         if (bp != NULL && bp->add_event.which == event &&
             ks <= bp->add_event.pos && bp->add_event.pos <= ke) {
@@ -110,7 +110,7 @@ unsigned int countStatistic(unsigned int event, int ks, int ke, binProblem *bp)
 }
 
 static inline
-prob_t countAlpha(unsigned int event, int ks, int ke, binProblem *bp)
+prob_t countAlpha(size_t event, int ks, int ke, binProblem *bp)
 {
         if (ks <= ke) {
                 return bp->bd->alpha[event]->content[ks][ke];

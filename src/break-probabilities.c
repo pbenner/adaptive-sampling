@@ -57,7 +57,7 @@ prob_t breakProb_f(int i, int j, void *data)
         return iec_log(i, j, bp);
 }
 static
-prob_t breakProb(unsigned int pos, prob_t evidence_ref, binProblem *bp)
+prob_t breakProb(size_t pos, prob_t evidence_ref, binProblem *bp)
 {
         prob_t ev_log[bp->bd->L];
 
@@ -101,8 +101,7 @@ void computeBreakProbabilities(
                 return;
         }
 
-        unsigned int i, j, rc;
-
+        size_t i, j, rc;
         binProblem bp[bd->options->threads];
         pthread_t threads[bd->options->threads];
         pthread_data_bprob data[bd->options->threads];

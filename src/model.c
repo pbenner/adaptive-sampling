@@ -93,7 +93,7 @@ double hashed_lngamma(double p)
 
 prob_t mbeta_log(prob_t *p, binProblem *bp)
 {
-        unsigned int i;
+        size_t i;
         prob_t sum1, sum2;
 
         sum1 = 0;

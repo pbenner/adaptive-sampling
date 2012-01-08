@@ -60,7 +60,7 @@ prob_t effectiveCounts_f(int i, int j, void *data)
         }
 }
 static
-prob_t effectiveCounts(unsigned int pos, prob_t evidence_ref, binProblem *bp)
+prob_t effectiveCounts(size_t pos, prob_t evidence_ref, binProblem *bp)
 {
         prob_t ev_log[bp->bd->L];
 
@@ -80,7 +80,7 @@ void computeEffectiveCountsUtility(
         binData* bd)
 {
         binProblem bp; binProblemInit(&bp, bd);
-        unsigned int i;
+        size_t i;
 
         for (i = 0; i < bd->L; i++) {
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd->L);

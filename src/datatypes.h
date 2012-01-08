@@ -73,8 +73,8 @@ typedef struct binningResult{
 typedef struct {
         Options *options;
         // number of timesteps
-        unsigned int L;
-        unsigned int events;
+        size_t L;
+        size_t events;
         prob_t *prior_log;     // P(p,B|m_B)
         // counts and parameters
         matrix_t **counts;
