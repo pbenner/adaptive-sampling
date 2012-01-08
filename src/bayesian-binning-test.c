@@ -83,14 +83,14 @@ void prombsTest(binData *bd)
 
         sum = -HUGE_VAL;
         for (i = 0; i < bd->L; i++) {
-                (void)printf("prombs[%02lu]: %.10f\n", i, (double)result1[i]);
+                (void)printf("prombs[%02du]: %.10f\n", (unsigned int)i, (double)result1[i]);
                 sum = logadd(sum, result1[i]);
         }
         (void)printf("prombs: %.10f\n", (double)sum);
 
         sum = -HUGE_VAL;
         for (i = 0; i < bd->L; i++) {
-                (void)printf("prombsExt[%02lu]: %.10f\n", i, (double)result2[i]);
+                (void)printf("prombsExt[%02du]: %.10f\n", (unsigned int)i, (double)result2[i]);
                 sum = logadd(sum, result2[i]);
         }
         (void)printf("prombsExt: %.10f\n", (double)sum);
