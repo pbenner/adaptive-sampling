@@ -15,20 +15,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODEL_H
-#define MODEL_H
+#ifndef MOMENT_H
+#define MOMENT_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <datatypes.h>
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
-extern void __init_model__();
-extern void __free_model__();
+extern void computeMoments(prob_t **moments, prob_t evidence_ref, binData *bd);
 
-extern prob_t mbeta_log(prob_t *p, binProblem *bp);
-extern prob_t iec_log(int kk, int k, binProblem *bp);
-
-#endif /* MODEL_H */
+#endif /* MOMENT_H */

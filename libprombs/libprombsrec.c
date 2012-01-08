@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <bayes/datatypes.h>
-#include <bayes/logarithmetic.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/logarithmetic.h>
 
 /* Algorithm from D. Barry and J. A. Hartigan (1992)
  *

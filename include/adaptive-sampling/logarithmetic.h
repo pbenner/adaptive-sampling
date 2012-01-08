@@ -18,23 +18,27 @@
 #ifndef _LOGARITHMETIC_H_
 #define _LOGARITHMETIC_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <math.h>
 
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
 /* Log Sum of Exponentials Algorithm */
 
 static inline
 prob_t logadd(prob_t a, prob_t b)
 {
-        if (a < b) return a == -HUGE_VAL ? b : b + log1pl(expl(a-b));
-        else       return b == -HUGE_VAL ? a : a + log1pl(expl(b-a));
+        if (a < b) return a == -HUGE_VAL ? b : b + LOG1P(expl(a-b));
+        else       return b == -HUGE_VAL ? a : a + LOG1P(expl(b-a));
 }
 
 static inline
 prob_t logsub(prob_t a, prob_t b)
 {
-        return b == -HUGE_VAL ? a : a + logl(1-expl(b-a));
+        return b == -HUGE_VAL ? a : a + LOG(1-EXP(b-a));
 }
 
 #endif /* _LOGARITHMETIC_H_ */

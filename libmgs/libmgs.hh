@@ -29,8 +29,8 @@
 
 namespace Bayes {
         extern "C" {
-#include <bayes/datatypes.h>
-#include <bayes/logarithmetic.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/logarithmetic.h>
         }
 }
 

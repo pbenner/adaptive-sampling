@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Philipp Benner
+/* Copyright (C) 2010, 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,18 +15,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef INTERFACE_H
-#define INTERFACE_H
+#ifndef MARGINAL_H
+#define MARGINAL_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <bayes/linalg.h>
-#include <datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
-extern void _init_(double epsilon);
-extern void _free_();
-extern BinningResult * binning(size_t events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
+extern void computeMarginal(prob_t **marginals, prob_t evidence_ref, binData *bd);
 
-#endif /* INTERFACE_H */
+#endif /* MARGINAL_H */

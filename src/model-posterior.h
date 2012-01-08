@@ -22,7 +22,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
 extern void computeModelPosteriors(prob_t *ev_log, prob_t *mpost, prob_t evidence_ref, binData *bd);
 

@@ -27,11 +27,11 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
 
 #include <datatypes.h>
 #include <model.h>
@@ -59,7 +59,7 @@ prob_t moment(
         bp->add_event.pos   = -1;
         bp->add_event.n     = 0;
 
-        return expl(evidence_log - evidence_ref);
+        return EXP(evidence_log - evidence_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

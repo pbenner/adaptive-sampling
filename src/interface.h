@@ -15,25 +15,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _PROMBS_H_
-#define _PROMBS_H_
+#ifndef INTERFACE_H
+#define INTERFACE_H
 
-#include <bayes/datatypes.h>
-#include <bayes/linalg.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
 
-extern void __init_prombs__(prob_t epsilon);
-extern void prombs(prob_t *result, matrix_t *ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
-extern prob_t prombs_rec(
-        size_t j,
-        prob_t (*f)(int, int, void*),
-        void *data);
-extern void prombs_tree(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
-extern void prombsExt(
-        prob_t *result,
-        matrix_t *ak,
-        prob_t *g,
-        prob_t (*f)(int, int, void*),
-        prob_t (*h)(int, int, void*),
-        size_t L, size_t m, void *data);
+#include <adaptive-sampling/linalg.h>
+#include <datatypes.h>
 
-#endif /* _PROMBS_H_ */
+extern void _init_(double epsilon);
+extern void _free_();
+extern BinningResult * binning(size_t events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
+
+#endif /* INTERFACE_H */

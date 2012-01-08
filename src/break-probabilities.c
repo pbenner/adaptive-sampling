@@ -27,12 +27,12 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
-#include <bayes/uthash.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/uthash.h>
 
 #include <datatypes.h>
 #include <model.h>
@@ -64,7 +64,7 @@ prob_t breakProb(unsigned int pos, prob_t evidence_ref, binProblem *bp)
         bp->bprob_pos = pos;
         callBinningAlgorithm(&breakProb_f, ev_log, bp);
 
-        return expl(sumModels(ev_log, bp) - evidence_ref);
+        return EXP(sumModels(ev_log, bp) - evidence_ref);
 }
 
 typedef struct {

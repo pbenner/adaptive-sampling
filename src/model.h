@@ -15,18 +15,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ENTROPY_H
-#define ENTROPY_H
+#ifndef MODEL_H
+#define MODEL_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <bayes/datatypes.h>
+#include <datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
-extern prob_t computeDifferentialEntropy(prob_t evidence_ref, binData *bd);
-extern prob_t computeMultibinEntropy(prob_t evidence_ref, binData *bd);
-extern prob_t computeEntropy(prob_t evidence_ref, binData *bd);
-extern void computeEntropicUtility(prob_t *result, prob_t evidence_ref, binData *bd);
+extern void __init_model__();
+extern void __free_model__();
 
-#endif /* ENTROPY_H */
+extern prob_t mbeta_log(prob_t *p, binProblem *bp);
+extern prob_t iec_log(int kk, int k, binProblem *bp);
+
+#endif /* MODEL_H */

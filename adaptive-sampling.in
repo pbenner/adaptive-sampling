@@ -21,7 +21,7 @@
 import sys
 sys.path.append('@pythondir@')
 
-from bayesian_binning.adaptive_sampling import main
+from adaptive_sampling.adaptive_sampling import main
 
 if __name__ == "__main__":
     sys.exit(main())
