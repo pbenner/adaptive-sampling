@@ -27,12 +27,12 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
-#include <bayes/uthash.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/uthash.h>
 
 #include <datatypes.h>
 
@@ -62,7 +62,7 @@ void computeModelPosteriors(
         else {
                 for (j = 0; j < bd->L; j++) {
                         if (bd->beta->content[j] > 0) {
-                                mpost[j] = expl(ev_log[j] - evidence_ref);
+                                mpost[j] = EXP(ev_log[j] - evidence_ref);
                         }
                         else {
                                 mpost[j] = 0;

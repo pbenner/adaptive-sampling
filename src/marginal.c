@@ -27,12 +27,12 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
-#include <bayes/uthash.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/uthash.h>
 
 #include <datatypes.h>
 #include <model.h>
@@ -61,7 +61,7 @@ prob_t marginal(
         bp->fix_prob.val   =  0;
         bp->fix_prob.which =  0;
 
-        return expl(evidence_log - evidence_ref);
+        return EXP(evidence_log - evidence_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

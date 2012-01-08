@@ -27,11 +27,11 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
 
 #include <gsl/gsl_sf_gamma.h>
 
@@ -60,7 +60,7 @@ void computeModelPrior(binData* bd)
                 }
                 else {
                         bd->prior_log[m_b] = -gsl_sf_lnchoose(bd->L-1, m_b) +
-                                logl(bd->beta->content[m_b]);
+                                LOG(bd->beta->content[m_b]);
                 }
         }
 }
@@ -215,7 +215,7 @@ binning(
         Options *options)
 {
         binData bd;
-        size_t i, L = counts[0]->columns;
+        size_t L = counts[0]->columns;
         BinningResult *result = (BinningResult *)malloc(sizeof(BinningResult));
         result->moments   = (options->n_moments ?
                              alloc_matrix(options->n_moments, L)   : NULL);
@@ -224,17 +224,6 @@ binning(
         result->bprob     = alloc_vector(L);
         result->mpost     = alloc_vector(L);
         result->utility   = alloc_vector(L);
-
-        // bzero results
-        for (i = 0; i < options->n_moments && options->n_moments; i++) {
-                bzero(result->moments->content[i], L*sizeof(prob_t));
-        }
-        for (i = 0; i < L && options->marginal; i++) {
-                bzero(result->marginals->content[i], options->n_marginals*sizeof(prob_t));
-        }
-        bzero(result->bprob->content,   L*sizeof(prob_t));
-        bzero(result->mpost->content,   L*sizeof(prob_t));
-        bzero(result->utility->content, L*sizeof(prob_t));
 
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
 

@@ -24,9 +24,9 @@
 
 #include <datatypes.h>
 
-#include <bayes/datatypes.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/prombs.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/prombs.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Utility functions

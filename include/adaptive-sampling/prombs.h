@@ -15,32 +15,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif /* HAVE_CONFIG_H */
+#ifndef _PROMBS_H_
+#define _PROMBS_H_
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/linalg.h>
 
-#include <bayes/exception.h>
-#include <bayes/linalg.h>
+extern void __init_prombs__(prob_t epsilon);
+extern void prombs(prob_t *result, matrix_t *ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
+extern prob_t prombs_rec(
+        size_t j,
+        prob_t (*f)(int, int, void*),
+        void *data);
+extern void prombs_tree(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
+extern void prombsExt(
+        prob_t *result,
+        matrix_t *ak,
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
+        prob_t (*h)(int, int, void*),
+        size_t L, size_t m, void *data);
 
-#include "interface.h"
-#include "bayesian-binning.h"
-
-// export functions for interface.py
-vector_t * _alloc_vector(int size)              { return alloc_vector(size); }
-void       _free_vector(vector_t *v)            { free_vector(v); }
-matrix_t * _alloc_matrix(int rows, int columns) { return alloc_matrix(rows, columns); }
-void       _free_matrix(matrix_t *m)            { free_matrix(m); }
-void       _free(void *ptr)                     { free(ptr); }
-
-void _init_(double epsilon)
-{
-        __init__(epsilon);
-}
-
-void _free_()
-{
-        __free__();
-}
+#endif /* _PROMBS_H_ */

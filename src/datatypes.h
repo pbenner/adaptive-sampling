@@ -20,8 +20,8 @@
 
 #include <config.h>
 
-#include <bayes/linalg.h>
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/linalg.h>
+#include <adaptive-sampling/datatypes.h>
 
 #include <gsl/gsl_matrix.h>
 

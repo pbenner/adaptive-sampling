@@ -27,12 +27,12 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
-#include <bayes/uthash.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/uthash.h>
 
 #include <gsl/gsl_sf_psi.h>
 
@@ -89,7 +89,7 @@ prob_t differentialEntropy(prob_t evidence_ref, binProblem *bp)
                 return 0.0;
         }
         else {
-                return -expl(sum - evidence_ref);
+                return -EXP(sum - evidence_ref);
         }
 }
 
@@ -118,7 +118,7 @@ prob_t multibinEntropy(prob_t evidence_ref, binProblem *bp)
         prob_t sum;
 
         for (i = 0; i < bp->bd->L; i++) {
-                g[i] = logl(bp->bd->prior_log[i] - evidence_ref) + bp->bd->prior_log[i];
+                g[i] = LOG(bp->bd->prior_log[i] - evidence_ref) + bp->bd->prior_log[i];
         }
         prombsExt(result1, bp->ak, bp->bd->prior_log, &multibinEntropy_f, &multibinEntropy_h, bp->bd->L, minM(bp), (void *)bp);
         prombs(result2, bp->ak, g, &multibinEntropy_f, bp->bd->L, minM(bp), (void *)bp);
@@ -132,7 +132,7 @@ prob_t multibinEntropy(prob_t evidence_ref, binProblem *bp)
                 return 0.0;
         }
         else {
-                return expl(sum - evidence_ref);
+                return EXP(sum - evidence_ref);
         }
 }
 
@@ -200,7 +200,7 @@ void computeEntropicUtility(
                         bp.add_event.which = j;
                         // recompute the evidence
                         evidence_log = evidence(evidence_log_tmp, &bp);
-                        expectation  = expl(evidence_log - evidence_ref);
+                        expectation  = EXP(evidence_log - evidence_ref);
                         // compute entropies
                         if (bd->options->differential_entropy) {
                                 differential_entropy = differentialEntropy(evidence_log, &bp);

@@ -32,7 +32,7 @@
 
 extern "C" {
 
-#include <bayes/exception.h>
+#include <adaptive-sampling/exception.h>
 
 static Multibin** __multibins__;
 static size_t __N__;

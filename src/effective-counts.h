@@ -22,7 +22,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
 extern void computeEffectiveCountsUtility(prob_t *result, prob_t evidence_ref, binData* bd);
 

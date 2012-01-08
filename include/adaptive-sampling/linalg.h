@@ -22,7 +22,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <bayes/datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
 #include <stddef.h>
 
@@ -42,19 +42,19 @@ __BEGIN_DECLS
 
 typedef struct {
         size_t size;
-        prob_t *content;
+        double *content;
 } vector_t;
 
 typedef struct {
         size_t rows;
         size_t columns;
-        prob_t **content;
+        double **content;
 } matrix_t;
 
 static inline
 vector_t * alloc_vector(size_t size) {
         vector_t *v = (vector_t *)malloc(sizeof(vector_t));
-        v->content  = (prob_t   *)malloc(sizeof(prob_t) * size);
+        v->content  = (double   *)calloc(size, sizeof(double));
         v->size     = size;
         return v;
 }
@@ -62,12 +62,12 @@ vector_t * alloc_vector(size_t size) {
 static inline
 matrix_t * alloc_matrix(size_t rows, size_t columns) {
         matrix_t *m = (matrix_t *)malloc(sizeof(matrix_t));
-        m->content  = (prob_t  **)malloc(sizeof(prob_t *) * rows);
+        m->content  = (double  **)calloc(rows, sizeof(double *));
         m->rows     = rows;
         m->columns  = columns;
         size_t i;
         for (i = 0; i < rows; i++) {
-                m->content[i] = (prob_t *)malloc(sizeof(prob_t) * columns);
+                m->content[i] = (double *)calloc(columns, sizeof(double));
         }
         return m;
 }

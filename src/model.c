@@ -27,12 +27,12 @@
 #include <limits.h>
 #include <sys/time.h>
 
-#include <bayes/exception.h>
-#include <bayes/logarithmetic.h>
-#include <bayes/mgs.h>
-#include <bayes/prombs.h>
-#include <bayes/datatypes.h>
-#include <bayes/uthash.h>
+#include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
+#include <adaptive-sampling/prombs.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/uthash.h>
 
 #include <gsl/gsl_sf_gamma.h>
 
@@ -126,18 +126,18 @@ prob_t iec_log(int kk, int k, binProblem *bp)
                 // compute marginals
                 // TODO: extend to multinomial case
                 if (bp->fix_prob.which == 0) {
-                        return logl(gamma) + (c[0]-1)*logl(bp->fix_prob.val)
-                                + (c[1]-1)*logl(1-bp->fix_prob.val)
+                        return LOG(gamma) + (c[0]-1)*LOG(bp->fix_prob.val)
+                                + (c[1]-1)*LOG(1-bp->fix_prob.val)
                                 - mbeta_log(alpha, bp);
                 }
                 else {
-                        return logl(gamma) + (c[0]-1)*log(1-bp->fix_prob.val)
+                        return LOG(gamma) + (c[0]-1)*log(1-bp->fix_prob.val)
                                 + (c[1]-1)*log(bp->fix_prob.val)
                                 - mbeta_log(alpha, bp);
                 }
         }
         else {
-                return logl(gamma) + (mbeta_log(c, bp) - mbeta_log(alpha, bp));
+                return LOG(gamma) + (mbeta_log(c, bp) - mbeta_log(alpha, bp));
         }
 }
 

@@ -22,7 +22,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AC_CONFIG_SRCDIR(bayesian_binning/bayesian-binning.c)
+AC_CONFIG_SRCDIR(src/bayesian-binning.c)
 AM_INIT_AUTOMAKE([gnu dist-bzip2])
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
@@ -185,11 +185,14 @@ AC_ARG_ENABLE([longdouble],
 AS_IF([test "x$enable_longdouble" = "xyes"],
 	[AC_CHECK_FUNCS([expl logl log1pl], [], [enable_longdouble=no])], [])
 AS_IF([test "x$enable_longdouble" = "xyes"],
-	[AC_DEFINE([PROB_T], [long double], [Use long double to store log probabilities.])],
+	[AC_DEFINE([PROB_T], [long double], [Use long double to store log probabilities.])
+	 AC_DEFINE([EXP], [expl], [Replace expl with exp])
+	 AC_DEFINE([LOG], [logl], [Replace logl with log])
+	 AC_DEFINE([LOG1P], [log1pl], [Replace log1pl with log1p])],
 	[AC_DEFINE([PROB_T], [double], [Use double to store log probabilities.])
-	 AC_DEFINE([expl], [exp], [Replace expl with exp])
-	 AC_DEFINE([logl], [log], [Replace logl with log])
-	 AC_DEFINE([log1pl], [log1p], [Replace log1pl with log1p])
+	 AC_DEFINE([EXP], [exp], [Replace expl with exp])
+	 AC_DEFINE([LOG], [log], [Replace logl with log])
+	 AC_DEFINE([LOG1P], [log1p], [Replace log1pl with log1p])
 	 ])
 
 dnl ,---------------------------- 
@@ -270,14 +273,15 @@ dnl ,----------------------------
 dnl | AC_OUTPUT
 dnl `----------------------------
 
-AC_CONFIG_HEADER([config.h:config.h.in include/bayes/datatypes.h:include/bayes/datatypes.h.in])
+AC_CONFIG_HEADER([config.h:config.h.in include/adaptive-sampling/datatypes.h:include/adaptive-sampling/datatypes.h.in])
 AC_CONFIG_FILES([
 	Makefile
 	version.h
 	libprombs/Makefile
 	libmgs/Makefile
 	libexception/Makefile
-	bayesian_binning/Makefile
+	adaptive_sampling/Makefile
+	src/Makefile
 	include/Makefile
  	])
 

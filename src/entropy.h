@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Philipp Benner
+/* Copyright (C) 2010, 2011 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,15 +15,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _MGS_H_
-#define _MGS_H_
+#ifndef ENTROPY_H
+#define ENTROPY_H
 
-#include <bayes/datatypes.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
 
-extern void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
-extern void mgs_init(size_t R, size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
-extern void mgs_free();
-extern size_t * mgs_get_counts();
-extern void mgs_get_bprob(prob_t *bprob, size_t L);
+#include <adaptive-sampling/datatypes.h>
 
-#endif /* _MGS_H_ */
+extern prob_t computeDifferentialEntropy(prob_t evidence_ref, binData *bd);
+extern prob_t computeMultibinEntropy(prob_t evidence_ref, binData *bd);
+extern prob_t computeEntropy(prob_t evidence_ref, binData *bd);
+extern void computeEntropicUtility(prob_t *result, prob_t evidence_ref, binData *bd);
+
+#endif /* ENTROPY_H */

@@ -22,8 +22,8 @@
 #include <stdint.h>
 #include <math.h>
 
-#include <bayes/datatypes.h>
-#include <bayes/logarithmetic.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/logarithmetic.h>
 
 typedef struct {
         size_t max_breaks;

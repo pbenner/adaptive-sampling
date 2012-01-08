@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <bayes/datatypes.h>
-#include <bayes/linalg.h>
-#include <bayes/logarithmetic.h>
+#include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/linalg.h>
+#include <adaptive-sampling/logarithmetic.h>
 
 /* Algorithm from Yi-Ching Yao 1984 */
 
@@ -50,7 +50,7 @@ void logproduct(prob_t *result, matrix_t *ak, size_t L, size_t i)
                                 elem = ak->content[k][j];
                         }
                         else if (k == j) {
-                                elem = logl(1);
+                                elem = LOG(1);
                         }
                         else  {
                                 elem = -HUGE_VAL;
@@ -140,7 +140,7 @@ void prombsExt(
 
         for (i = 0; i < L; i++) {
                 if (result[i] != tmp[i]) {
-                        result[i] = logsub(result[i], tmp[i]) - logl(prombsExt_epsilon);
+                        result[i] = logsub(result[i], tmp[i]) - LOG(prombsExt_epsilon);
                 }
                 else {
                         // this can happen if all counts are zero
