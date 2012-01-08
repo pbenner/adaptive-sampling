@@ -177,7 +177,7 @@ prob_t computeEntropy(prob_t evidence_ref, binData* bd)
 }
 
 void computeEntropicUtility(
-        prob_t *result,
+        vector_t *result,
         prob_t evidence_ref,
         binData* bd)
 {
@@ -194,7 +194,7 @@ void computeEntropicUtility(
                 // for all items
                 notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bd->L);
                 bp.add_event.pos = i;
-                result[i] = 0;
+                result->content[i] = 0;
                 for (j = 0; j < bd->events; j++) {
                         // for all events
                         bp.add_event.which = j;
@@ -204,15 +204,15 @@ void computeEntropicUtility(
                         // compute entropies
                         if (bd->options->differential_entropy) {
                                 differential_entropy = differentialEntropy(evidence_log, &bp);
-                                result[i] += expectation*differential_entropy;
+                                result->content[i] += expectation*differential_entropy;
                         }
                         if (bd->options->multibin_entropy) {
                                 multibin_entropy = multibinEntropy(evidence_log, &bp);
-                                result[i] += expectation*multibin_entropy;
+                                result->content[i] += expectation*multibin_entropy;
                         }
                 }
                 // entropy -> utility
-                result[i] = -result[i];
+                result->content[i] = -result->content[i];
         }
 
         binProblemFree(&bp);

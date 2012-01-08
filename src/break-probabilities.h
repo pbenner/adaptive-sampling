@@ -24,6 +24,6 @@
 
 #include <datatypes.h>
 
-void computeBreakProbabilities(prob_t *bprob, prob_t evidence_ref, binData *bd);
+void computeBreakProbabilities(vector_t *bprob, prob_t evidence_ref, binData *bd);
 
 #endif /* BREAK_PROBABILITIES_H */

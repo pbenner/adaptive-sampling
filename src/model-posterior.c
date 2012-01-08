@@ -42,7 +42,7 @@
 
 void computeModelPosteriors(
         prob_t *ev_log,
-        prob_t *mpost,
+        vector_t *mpost,
         prob_t evidence_ref,
         binData *bd)
 {
@@ -52,20 +52,20 @@ void computeModelPosteriors(
                 size_t *counts = mgs_get_counts();
                 for (j = 0; j < bd->L; j++) {
                         if (bd->beta->content[j] > 0) {
-                                mpost[j] = (prob_t)counts[j]/bd->options->samples[1];
+                                mpost->content[j] = (prob_t)counts[j]/bd->options->samples[1];
                         }
                         else {
-                                mpost[j] = 0;
+                                mpost->content[j] = 0;
                         }
                 }
         }
         else {
                 for (j = 0; j < bd->L; j++) {
                         if (bd->beta->content[j] > 0) {
-                                mpost[j] = EXP(ev_log[j] - evidence_ref);
+                                mpost->content[j] = EXP(ev_log[j] - evidence_ref);
                         }
                         else {
-                                mpost[j] = 0;
+                                mpost->content[j] = 0;
                         }
                 }
         }

@@ -18,12 +18,17 @@
 #ifndef _MGS_H_
 #define _MGS_H_
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/linalg.h>
 
 extern void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
 extern void mgs_init(size_t R, size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
 extern void mgs_free();
 extern size_t * mgs_get_counts();
-extern void mgs_get_bprob(prob_t *bprob, size_t L);
+extern void mgs_get_bprob(vector_t *bprob, size_t L);
 
 #endif /* _MGS_H_ */

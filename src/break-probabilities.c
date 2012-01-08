@@ -70,7 +70,7 @@ prob_t breakProb(unsigned int pos, prob_t evidence_ref, binProblem *bp)
 typedef struct {
         binProblem *bp;
         int i;
-        prob_t *bprob;
+        vector_t *bprob;
         prob_t evidence_ref;
 } pthread_data_bprob;
 
@@ -80,10 +80,10 @@ void * computeBreakProbabilities_thread(void* data_)
         pthread_data_bprob *data  = (pthread_data_bprob *)data_;
         binProblem *bp = data->bp;
         int i = data->i;
-        prob_t *bprob = data->bprob;
+        vector_t *bprob = data->bprob;
         prob_t evidence_ref = data->evidence_ref;
 
-        bprob[i] = breakProb(i, evidence_ref, bp);
+        bprob->content[i] = breakProb(i, evidence_ref, bp);
         return NULL;
 }
 
@@ -92,7 +92,7 @@ void * computeBreakProbabilities_thread(void* data_)
 ////////////////////////////////////////////////////////////////////////////////
 
 void computeBreakProbabilities(
-        prob_t *bprob,
+        vector_t *bprob,
         prob_t evidence_ref,
         binData *bd)
 {
