@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <assert.h>
 #include <math.h>
 #include <pthread.h>
 #include <limits.h>
@@ -53,7 +54,7 @@
 static
 void computeModelPrior(binData* bd)
 {
-        unsigned int m_b;
+        size_t m_b;
         for (m_b = 0; m_b < bd->L; m_b++) {
                 if (bd->beta->content[m_b] == 0) {
                         bd->prior_log[m_b] = -HUGE_VAL;
@@ -157,6 +158,8 @@ void bin_init(
         binData* bd)
 {
         size_t L = counts[0]->columns;
+
+        assert(options->which < events);
 
         verbose       = options->verbose;
         bd->options   = options;

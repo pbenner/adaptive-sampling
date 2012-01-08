@@ -46,7 +46,7 @@ void computeModelPosteriors(
         prob_t evidence_ref,
         binData *bd)
 {
-        unsigned int j;
+        size_t j;
 
         if (bd->options->algorithm == 2) {
                 size_t *counts = mgs_get_counts();

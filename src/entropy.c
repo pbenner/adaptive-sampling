@@ -47,7 +47,7 @@
 static
 prob_t singlebinEntropy(int i, int j, binProblem *bp)
 {
-        unsigned int k;
+        size_t k;
         prob_t n = 0;
         prob_t c[bp->bd->events];
         prob_t sum = 0;
@@ -182,7 +182,7 @@ void computeEntropicUtility(
         binData* bd)
 {
         binProblem bp; binProblemInit(&bp, bd);
-        unsigned int i, j;
+        size_t i, j;
         prob_t differential_entropy;
         prob_t multibin_entropy;
         prob_t expectation;
