@@ -27,12 +27,8 @@
 #include <list>
 #include <vector>
 
-namespace Bayes {
-        extern "C" {
 #include <adaptive-sampling/datatypes.h>
 #include <adaptive-sampling/logarithmetic.h>
-        }
-}
 
 using namespace std;
 

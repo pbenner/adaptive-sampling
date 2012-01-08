@@ -24,6 +24,6 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-extern void computeModelPosteriors(prob_t *ev_log, prob_t *mpost, prob_t evidence_ref, binData *bd);
+extern void computeModelPosteriors(prob_t *ev_log, vector_t *mpost, prob_t evidence_ref, binData *bd);
 
 #endif /* MODEL_POSTERIOR_H */

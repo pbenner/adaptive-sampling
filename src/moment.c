@@ -69,7 +69,7 @@ prob_t moment(
 typedef struct {
         binProblem *bp;
         int i;
-        prob_t **moments;
+        matrix_t *moments;
         prob_t evidence_ref;
 } pthread_data_moments;
 
@@ -79,18 +79,18 @@ void * computeMoments_thread(void* data_)
         pthread_data_moments *data  = (pthread_data_moments *)data_;
         binProblem *bp = data->bp;
         int i = data->i, j;
-        prob_t **moments = data->moments;
+        matrix_t *moments = data->moments;
         prob_t evidence_ref = data->evidence_ref;
 
         // Moments
         for (j = 0; j < bp->bd->options->n_moments; j++) {
-                moments[j][i] = moment(j+1, i, bp->bd->options->which, evidence_ref, bp);
+                moments->content[j][i] = moment(j+1, i, bp->bd->options->which, evidence_ref, bp);
         }
         return NULL;
 }
 
 void computeMoments(
-        prob_t **moments,
+        matrix_t *moments,
         prob_t evidence_ref,
         binData *bd)
 {

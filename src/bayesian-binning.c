@@ -66,7 +66,7 @@ void computeModelPrior(binData* bd)
 }
 
 static
-void computeUtility(prob_t *utility, prob_t evidence_ref, binData* bd)
+void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
 {
         if (bd->options->differential_entropy || bd->options->multibin_entropy) {
                 computeEntropicUtility(utility, evidence_ref, bd);
@@ -95,23 +95,23 @@ void computeBinning(
         evidence_ref = evidence(evidence_log_tmp, &bp);
         // compute model posteriors P(m_B|D)
         if (bd->options->model_posterior) {
-                computeModelPosteriors(evidence_log_tmp, result->mpost->content, evidence_ref, bd);
+                computeModelPosteriors(evidence_log_tmp, result->mpost, evidence_ref, bd);
         }
         // compute moments
         if (bd->options->marginal) {
-                computeMarginal(result->marginals->content, evidence_ref, bd);
+                computeMarginal(result->marginals, evidence_ref, bd);
         }
         // compute break probability
         if (bd->options->bprob) {
-                computeBreakProbabilities(result->bprob->content, evidence_ref, bd);
+                computeBreakProbabilities(result->bprob, evidence_ref, bd);
         }
         // compute the first n moments
         if (bd->options->n_moments > 0) {
-                computeMoments(result->moments->content, evidence_ref, bd);
+                computeMoments(result->moments, evidence_ref, bd);
         }
         // compute sampling utility
         if (bd->options->utility) {
-                computeUtility(result->utility->content, evidence_ref, bd);
+                computeUtility(result->utility, evidence_ref, bd);
         }
 
         if (bd->options->algorithm == 2) {

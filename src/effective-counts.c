@@ -75,7 +75,7 @@ prob_t effectiveCounts(unsigned int pos, prob_t evidence_ref, binProblem *bp)
 ////////////////////////////////////////////////////////////////////////////////
 
 void computeEffectiveCountsUtility(
-        prob_t *result,
+        vector_t *result,
         prob_t evidence_ref,
         binData* bd)
 {
@@ -84,7 +84,7 @@ void computeEffectiveCountsUtility(
 
         for (i = 0; i < bd->L; i++) {
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd->L);
-                result[i] = -effectiveCounts(i, evidence_ref, &bp);
+                result->content[i] = -effectiveCounts(i, evidence_ref, &bp);
         }
 
         binProblemFree(&bp);

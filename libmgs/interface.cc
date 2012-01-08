@@ -15,7 +15,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +35,7 @@
 extern "C" {
 
 #include <adaptive-sampling/exception.h>
+#include <adaptive-sampling/linalg.h>
 
 static Multibin** __multibins__;
 static size_t __N__;
@@ -42,17 +45,17 @@ static size_t* __counts__;
 static
 void sample_bin(
         size_t pos,
-        Bayes::prob_t *g,
-        Bayes::prob_t (*f)(int, int, void*),
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
         void *data,
         Multibin* mb)
 {
-        Bayes::prob_t post;
-        Bayes::prob_t sum1 = 0;
-        Bayes::prob_t sum2 = 0;
+        prob_t post;
+        prob_t sum1 = 0;
+        prob_t sum2 = 0;
         list<bin_t>* bins1 = mb->get_bins(); mb->switch_break(pos);
         list<bin_t>* bins2 = mb->get_bins();
-        Bayes::prob_t r = (Bayes::prob_t)rand()/RAND_MAX;
+        prob_t r = (prob_t)rand()/RAND_MAX;
 
         if (g[bins1->size()-1] > -HUGE_VAL) {
                 for (list<bin_t>::iterator it = bins1->begin(); it != bins1->end(); it++) {
@@ -76,7 +79,7 @@ void sample_bin(
         }
 
         // sample
-        post = expl(sum1 - Bayes::logadd(sum1, sum2));
+        post = expl(sum1 - logadd(sum1, sum2));
         if (r < post) {
                 // use multibin 1
                 mb->switch_break(pos);
@@ -90,8 +93,8 @@ err:
 
 static
 void sample_multibin(
-        Bayes::prob_t *g,
-        Bayes::prob_t (*f)(int, int, void*),
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
         void *data,
         Multibin* mb)
 {
@@ -110,8 +113,8 @@ void sample_multibin(
 void mgs_init(
         size_t R,
         size_t N,
-        Bayes::prob_t *g,
-        Bayes::prob_t (*f)(int, int, void*),
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
         size_t L,
         void *data)
 {
@@ -168,21 +171,21 @@ void mgs_free()
 
 static
 void evaluate(
-        Bayes::prob_t *result,
-        Bayes::prob_t *g,
-        Bayes::prob_t (*f)(int, int, void*),
+        prob_t *result,
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
         void *data,
         Multibin* mb)
 {
         list<bin_t>* bins = mb->get_bins();
         if (g[bins->size()-1] > -HUGE_VAL) {
-                Bayes::prob_t sum = 0;
+                prob_t sum = 0;
                 for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
                         sum += (*f)((*it).from, (*it).to, data);
                 }
 
                 result[bins->size()-1] =
-                        Bayes::logadd(sum, result[bins->size()-1]);
+                        logadd(sum, result[bins->size()-1]);
         }
         delete(bins);
 }
@@ -194,7 +197,7 @@ mgs_get_counts()
 }
 
 void
-mgs_get_bprob(Bayes::prob_t *bprob, size_t L)
+mgs_get_bprob(vector_t *bprob, size_t L)
 {
         size_t breaks[L];
         size_t i;
@@ -206,14 +209,14 @@ mgs_get_bprob(Bayes::prob_t *bprob, size_t L)
                 __multibins__[i]->get_breaks(breaks);
         }
         for (i = 0; i < L; i++) {
-                bprob[i] = (Bayes::prob_t)breaks[i]/__N__;
+                bprob->content[i] = (prob_t)breaks[i]/__N__;
         }
 }
 
 void mgs(
-        Bayes::prob_t *result,
-        Bayes::prob_t *g,
-        Bayes::prob_t (*f)(int, int, void*),
+        prob_t *result,
+        prob_t *g,
+        prob_t (*f)(int, int, void*),
         size_t L,
         void *data)
 {
@@ -229,7 +232,7 @@ void mgs(
         }
         for (i = 0; i < L; i++) {
                 if (result[i] > -HUGE_VAL) {
-                        result[i] -= logl(__N__);
+                        result[i] -= LOG(__N__);
                 }
         }
 }

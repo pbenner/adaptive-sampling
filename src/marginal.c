@@ -69,7 +69,7 @@ prob_t marginal(
 ////////////////////////////////////////////////////////////////////////////////
 
 void computeMarginal(
-        prob_t **marginals,
+        matrix_t *marginals,
         prob_t evidence_ref,
         binData *bd)
 {
@@ -78,15 +78,15 @@ void computeMarginal(
 
         for (i = 0; i < bd->L; i++) {
                 notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bd->L);
-                marginals[i][0] = 0;
+                marginals->content[i][0] = 0;
                 for (j = 1; j < bd->options->n_marginals; j++) {
                         prob_t p = j*bd->options->marginal_step;
                         if (bd->options->marginal_range.from <= p &&
                             bd->options->marginal_range.to   >= p) {
-                                marginals[i][j] = marginal(i, p, bd->options->which, evidence_ref, &bp);
+                                marginals->content[i][j] = marginal(i, p, bd->options->which, evidence_ref, &bp);
                         }
                         else {
-                                marginals[i][j] = 0;
+                                marginals->content[i][j] = 0;
                         }
                 }
         }
