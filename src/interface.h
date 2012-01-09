@@ -27,6 +27,5 @@
 
 extern void _init_(double epsilon);
 extern void _free_();
-extern BinningResult * binning(size_t events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
 
 #endif /* INTERFACE_H */
