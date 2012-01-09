@@ -26,7 +26,9 @@
 #include <utility.h>
 
 #include <limits.h>
+#ifdef HAVE_LIB_PTHREAD
 #include <pthread.h>
+#endif /* HAVE_LIB_PTHREAD */
 
 void threaded_computation(
         void *result,
@@ -35,6 +37,7 @@ void threaded_computation(
         void *(*f_thread)(void*),
         const char *msg)
 {
+#ifdef HAVE_LIB_PTHREAD
         size_t i, j, rc;
         binProblem bp[bd->options->threads];
         pthread_t threads[bd->options->threads];
@@ -77,4 +80,21 @@ void threaded_computation(
         for (j = 0; j < bd->options->threads && j < bd->L; j++) {
                 binProblemFree(&bp[j]);
         }
+#else
+        size_t i;
+        pthread_data_t data;
+        binProblem bp;
+
+        binProblemInit(&bp, bd);
+        data.bp = &bp;
+        data.result = result;
+        data.evidence_ref = evidence_ref;
+
+        for (i = 0; i < bd->L; i++ ) {
+                notice(NONE, msg, (float)100*(i+1)/bd->L);
+                data.i = i;
+                (*f_thread)(&data);
+        }
+
+#endif /* HAVE_LIB_PTHREAD */
 }

@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <math.h>
-#include <pthread.h>
 #include <limits.h>
 #include <sys/time.h>
 
@@ -40,6 +39,10 @@
 #include <model.h>
 #include <utility.h>
 
+#ifdef HAVE_LIB_PTHREAD
+#include <pthread.h>
+#endif /* HAVE_LIB_PTHREAD */
+
 /******************************************************************************
  * Model
  ******************************************************************************/
@@ -51,7 +54,9 @@ typedef struct {
 } lngamma_hash_t;
 
 static lngamma_hash_t*  lngamma_map = NULL;
+#ifdef HAVE_LIB_PTHREAD
 static pthread_rwlock_t lngamma_map_lock;
+#endif /* HAVE_LIB_PTHREAD */
 
 static
 void lngamma_map_free() {
@@ -67,23 +72,31 @@ static
 double hashed_lngamma(double p)
 {
         lngamma_hash_t* s;
+#ifdef HAVE_LIB_PTHREAD
         if (pthread_rwlock_rdlock(&lngamma_map_lock) != 0) {
                 fprintf(stderr, "Can't get lngamma_map_lock (r)\n");
                 exit(EXIT_FAILURE);
         }
+#endif /* HAVE_LIB_PTHREAD */
         HASH_FIND(hh, lngamma_map, &p, sizeof(double), s);
+#ifdef HAVE_LIB_PTHREAD
         pthread_rwlock_unlock(&lngamma_map_lock);
+#endif /* HAVE_LIB_PTHREAD */
 
         if (s == NULL) {
                 lngamma_hash_t* new = (lngamma_hash_t*)malloc(sizeof(lngamma_hash_t));
                 new->key   = p;
                 new->value = gsl_sf_lngamma(p);
+#ifdef HAVE_LIB_PTHREAD
                 if (pthread_rwlock_wrlock(&lngamma_map_lock) != 0) {
                         fprintf(stderr, "Can't get lngamma_map_lock (w)\n");
                         exit(EXIT_FAILURE);
                 }
+#endif /* HAVE_LIB_PTHREAD */
                 HASH_ADD(hh, lngamma_map, key, sizeof(double), new);
+#ifdef HAVE_LIB_PTHREAD
                 pthread_rwlock_unlock(&lngamma_map_lock);
+#endif /* HAVE_LIB_PTHREAD */
                 return new->value;
         }
         else {
@@ -146,10 +159,12 @@ prob_t iec_log(int kk, int k, binProblem *bp)
  ******************************************************************************/
 
 void __init_model__() {
+#ifdef HAVE_LIB_PTHREAD
         if (pthread_rwlock_init(&lngamma_map_lock, NULL) != 0) {
                 fprintf(stderr, "Can't create lngamma_map_lock\n");
                 exit(EXIT_FAILURE);
         }
+#endif /* HAVE_LIB_PTHREAD */
 }
 
 void __free_model__() {

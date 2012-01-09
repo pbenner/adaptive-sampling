@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <math.h>
-#include <pthread.h>
 #include <limits.h>
 #include <sys/time.h>
 
