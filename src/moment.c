@@ -88,5 +88,6 @@ void computeMoments(
         prob_t evidence_ref,
         binData *bd)
 {
-        threaded_computation((void *)moments, evidence_ref, bd, computeMoments_thread);
+        threaded_computation((void *)moments, evidence_ref, bd, computeMoments_thread,
+                             "Computing moments: %.1f%%");
 }

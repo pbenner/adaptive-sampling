@@ -94,5 +94,6 @@ void computeBreakProbabilities(
                 mgs_get_bprob(bprob, bd->L);
                 return;
         }
-        threaded_computation((void *)bprob, evidence_ref, bd, computeBreakProbabilities_thread);
+        threaded_computation((void *)bprob, evidence_ref, bd, computeBreakProbabilities_thread,
+                             "Computing break probabilities: %.1f%%");
 }
