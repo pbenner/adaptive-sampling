@@ -36,6 +36,7 @@
 
 #include <datatypes.h>
 #include <model.h>
+#include <threading.h>
 #include <utility.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,20 +68,13 @@ prob_t breakProb(size_t pos, prob_t evidence_ref, binProblem *bp)
         return EXP(sumModels(ev_log, bp) - evidence_ref);
 }
 
-typedef struct {
-        binProblem *bp;
-        int i;
-        vector_t *bprob;
-        prob_t evidence_ref;
-} pthread_data_bprob;
-
 static
 void * computeBreakProbabilities_thread(void* data_)
 {
-        pthread_data_bprob *data  = (pthread_data_bprob *)data_;
+        pthread_data_t *data  = (pthread_data_t *)data_;
         binProblem *bp = data->bp;
         int i = data->i;
-        vector_t *bprob = data->bprob;
+        vector_t *bprob = (vector_t *)data->result;
         prob_t evidence_ref = data->evidence_ref;
 
         bprob->content[i] = breakProb(i, evidence_ref, bp);
@@ -100,47 +94,5 @@ void computeBreakProbabilities(
                 mgs_get_bprob(bprob, bd->L);
                 return;
         }
-
-        size_t i, j, rc;
-        binProblem bp[bd->options->threads];
-        pthread_t threads[bd->options->threads];
-        pthread_data_bprob data[bd->options->threads];
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        if (bd->options->stacksize < PTHREAD_STACK_MIN) {
-                if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
-                        std_warn(NONE, "Couldn't set stack size.");
-                }
-        }
-        else {
-                if (pthread_attr_setstacksize (&attr, (size_t)bd->options->stacksize) != 0) {
-                        std_warn(NONE, "Couldn't set stack size.");
-                }
-        }
-
-        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
-                binProblemInit(&bp[j], bd);
-                data[j].bp = &bp[j];
-                data[j].bprob = bprob;
-                data[j].evidence_ref = evidence_ref;
-        }
-        for (i = 0; i < bd->L; i += bd->options->threads) {
-                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
-                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd->L);
-                        data[j].i = i+j;
-                        rc = pthread_create(&threads[j], &attr, computeBreakProbabilities_thread, (void *)&data[j]);
-                        if (rc) {
-                                std_err(NONE, "Couldn't create thread.");
-                        }
-                }
-                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
-                        rc = pthread_join(threads[j], NULL);
-                        if (rc) {
-                                std_err(NONE, "Couldn't join thread.");
-                        }
-                }
-        }
-        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
-                binProblemFree(&bp[j]);
-        }
+        threaded_computation((void *)bprob, evidence_ref, bd, computeBreakProbabilities_thread);
 }

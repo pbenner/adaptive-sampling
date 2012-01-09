@@ -35,6 +35,7 @@
 
 #include <datatypes.h>
 #include <model.h>
+#include <threading.h>
 #include <utility.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,20 +67,13 @@ prob_t moment(
 // Main
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef struct {
-        binProblem *bp;
-        int i;
-        matrix_t *moments;
-        prob_t evidence_ref;
-} pthread_data_moments;
-
 static
 void * computeMoments_thread(void* data_)
 {
-        pthread_data_moments *data  = (pthread_data_moments *)data_;
+        pthread_data_t *data  = (pthread_data_t *)data_;
         binProblem *bp = data->bp;
         int i = data->i, j;
-        matrix_t *moments = data->moments;
+        matrix_t *moments = (matrix_t *)data->result;
         prob_t evidence_ref = data->evidence_ref;
 
         // Moments
@@ -94,47 +88,5 @@ void computeMoments(
         prob_t evidence_ref,
         binData *bd)
 {
-        int i, j, rc;
-
-        binProblem bp[bd->options->threads];
-        pthread_t threads[bd->options->threads];
-        pthread_data_moments data[bd->options->threads];
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        if (bd->options->stacksize < PTHREAD_STACK_MIN) {
-                if (pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN) != 0) {
-                        std_warn(NONE, "Couldn't set stack size.");
-                }
-        }
-        else {
-                if (pthread_attr_setstacksize (&attr, (size_t)bd->options->stacksize) != 0) {
-                        std_warn(NONE, "Couldn't set stack size.");
-                }
-        }
-
-        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
-                binProblemInit(&bp[j], bd);
-                data[j].bp = &bp[j];
-                data[j].moments = moments;
-                data[j].evidence_ref = evidence_ref;
-        }
-        for (i = 0; i < bd->L; i += bd->options->threads) {
-                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
-                        notice(NONE, "Computing moments... %.1f%%", (float)100*(i+j+1)/bd->L);
-                        data[j].i = i+j;
-                        rc = pthread_create(&threads[j], &attr, computeMoments_thread, (void *)&data[j]);
-                        if (rc) {
-                                std_err(NONE, "Couldn't create thread.");
-                        }
-                }
-                for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
-                        rc = pthread_join(threads[j], NULL);
-                        if (rc) {
-                                std_err(NONE, "Couldn't join thread.");
-                        }
-                }
-        }
-        for (j = 0; j < bd->options->threads && j < bd->L; j++) {
-                binProblemFree(&bp[j]);
-        }
+        threaded_computation((void *)moments, evidence_ref, bd, computeMoments_thread);
 }

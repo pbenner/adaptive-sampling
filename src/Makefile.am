@@ -16,6 +16,7 @@ libadaptive_sampling_la_SOURCES = \
 	model.c model.h \
 	model-posterior.c model-posterior.h \
 	moment.c moment.h \
+	threading.c threading.h \
 	utility.h
 libadaptive_sampling_la_LIBADD  = $(LIB_PTHREAD)
 libadaptive_sampling_la_LIBADD += $(top_builddir)/libexception/libexception.la
