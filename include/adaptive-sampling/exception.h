@@ -19,6 +19,7 @@
 # define EXCEPTION_H
 
 #include <stdarg.h>
+#include <stddef.h>
 
 extern int verbose;
 

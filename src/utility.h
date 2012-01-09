@@ -23,9 +23,11 @@
 #endif /* HAVE_CONFIG_H */
 
 #include <datatypes.h>
+#include <model.h>
 
 #include <adaptive-sampling/datatypes.h>
 #include <adaptive-sampling/logarithmetic.h>
+#include <adaptive-sampling/mgs.h>
 #include <adaptive-sampling/prombs.h>
 
 ////////////////////////////////////////////////////////////////////////////////
