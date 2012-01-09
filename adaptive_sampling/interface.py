@@ -25,12 +25,14 @@ from ctypes import *
 
 _lib = None
 
-if   os.path.exists(os.path.dirname(__file__)+'/.libs/libadaptive-sampling.so'):
-     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/libadaptive-sampling.so')
-elif os.path.exists(os.path.dirname(__file__)+'/.libs/libadaptive-sampling.dylib'):
-     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/libadaptive-sampling.dylib')
-elif os.path.exists(os.path.dirname(__file__)+'/.libs/cygbayesian-binning-0.dll'):
-     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/.libs/cygbayesian-binning-0.dll')
+print os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so'
+
+if   os.path.exists(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so')
+elif os.path.exists(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.dylib'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.dylib')
+elif os.path.exists(os.path.dirname(__file__)+'/../src/.libs/cygbayesian-binning-0.dll'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/cygbayesian-binning-0.dll')
 else:
      for libname in ['libadaptive-sampling.so.0', 'cygbayesian-binning-0.dll', 'libadaptive-sampling.0.dylib']:
           if not _lib:
@@ -39,7 +41,7 @@ else:
                except: pass
 
 if not _lib:
-     raise OSError('Couldn\'t find bayesian-binning library.')
+     raise OSError('Couldn\'t find adaptive-sampling library.')
 
 # structures
 # ------------------------------------------------------------------------------
