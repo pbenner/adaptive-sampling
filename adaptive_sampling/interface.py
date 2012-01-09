@@ -25,8 +25,6 @@ from ctypes import *
 
 _lib = None
 
-print os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so'
-
 if   os.path.exists(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so'):
      _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so')
 elif os.path.exists(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.dylib'):
