@@ -5,4 +5,4 @@ INCLUDES = -I$(top_srcdir)/include
 ## library
 noinst_LTLIBRARIES = libmgs.la
 
-libmgs_la_SOURCES = libmgs.cc libmgs.hh interface.cc
+libmgs_la_SOURCES = mgs.c mgs.h sampler.c

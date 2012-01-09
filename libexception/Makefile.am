@@ -3,4 +3,4 @@
 ## library
 noinst_LTLIBRARIES = libexception.la
 
-libexception_la_SOURCES = libexception.c
+libexception_la_SOURCES = exception.c
