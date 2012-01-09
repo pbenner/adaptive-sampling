@@ -33,6 +33,7 @@ void threaded_computation(
         void *result,
         prob_t evidence_ref,
         binData *bd,
-        void *(*f_thread)(void*));
+        void *(*f_thread)(void*),
+        const char *msg);
 
 #endif /* THREADING_H */

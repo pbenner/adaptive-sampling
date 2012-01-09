@@ -32,7 +32,8 @@ void threaded_computation(
         void *result,
         prob_t evidence_ref,
         binData *bd,
-        void *(*f_thread)(void*))
+        void *(*f_thread)(void*),
+        const char *msg)
 {
         size_t i, j, rc;
         binProblem bp[bd->options->threads];
@@ -59,7 +60,7 @@ void threaded_computation(
         }
         for (i = 0; i < bd->L; i += bd->options->threads) {
                 for (j = 0; j < bd->options->threads && i+j < bd->L; j++) {
-                        notice(NONE, "Computing break probabilities: %.1f%%", (float)100*(i+j+1)/bd->L);
+                        notice(NONE, msg, (float)100*(i+j+1)/bd->L);
                         data[j].i = i+j;
                         rc = pthread_create(&threads[j], &attr, f_thread, (void *)&data[j]);
                         if (rc) {
