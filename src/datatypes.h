@@ -23,31 +23,31 @@
 #include <adaptive-sampling/linalg.h>
 #include <adaptive-sampling/datatypes.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Data structures
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Data structures
+ ******************************************************************************/
 
 typedef struct options {
         float epsilon;
         int verbose;
         int prombsTest;
-        // break probabilities
+        /* break probabilities */
         int bprob;
         int threads;
         int stacksize;
-        // compute sampling utility
+        /* compute sampling utility */
         int utility;
-        // specify components of the utility function
+        /* specify components of the utility function */
         int differential_entropy;
         int multibin_entropy;
         int effective_counts;
-        // which event
+        /* which event */
         int which;
-        // binning algorithm
+        /* binning algorithm */
         int algorithm;
-        // burnin length and number of samples
+        /* burnin length and number of samples */
         int samples[2];
-        // compute marginal
+        /* compute marginal */
         int marginal;
         float marginal_step;
         struct {
@@ -67,36 +67,36 @@ typedef struct binningResult{
         vector_t *utility;
 } BinningResult;
 
-// data that has to be immutable
+/* data that has to be immutable */
 typedef struct {
         Options *options;
-        // number of timesteps
+        /* number of timesteps */
         size_t L;
         size_t events;
-        prob_t *prior_log;     // P(p,B|m_B)
-        // counts and parameters
+        prob_t *prior_log;     /* P(p,B|m_B) */
+        /* counts and parameters */
         matrix_t **counts;
         matrix_t **alpha;
-        vector_t  *beta;     // P(m_B)
+        vector_t  *beta;       /* P(m_B) */
         matrix_t  *gamma;
 } binData;
 
-// mutable data, local to each thread
+/* mutable data, local to each thread */
 typedef struct {
         binData* bd;
-        // temporary memory for prombs
+        /* temporary memory for prombs */
         matrix_t *ak;
-        // break probability
+        /* break probability */
         int bprob_pos;
-        // effective counts
+        /* effective counts */
         int counts_pos;
-        // moments
+        /* moments */
         struct {
                 int pos;
                 int n;
                 int which;
         } add_event;
-        // marginals
+        /* marginals */
         struct {
                 int pos;
                 prob_t val;

@@ -30,14 +30,14 @@
 #include <adaptive-sampling/mgs.h>
 #include <adaptive-sampling/prombs.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Utility functions
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Utility functions
+ ******************************************************************************/
 
-static inline
+static __inline__
 prob_t sumModels(prob_t *ev_log, binProblem* bp)
 {
-        // sum up the vector returned by prombs
+        /* sum up the vector returned by prombs */
         prob_t sum = -HUGE_VAL;
         int i;
 
@@ -51,7 +51,7 @@ prob_t sumModels(prob_t *ev_log, binProblem* bp)
 }
 
 /* Find the smallest m_B for which the prior P(m_B) is nonzero. */
-static inline
+static __inline__
 int minM(binProblem *bp)
 {
         int i;
@@ -63,7 +63,7 @@ int minM(binProblem *bp)
         return i;
 }
 
-static inline
+static __inline__
 void binProblemInit(binProblem *bp, binData* bd)
 {
         bp->bd              = bd;
@@ -83,7 +83,7 @@ void binProblemInit(binProblem *bp, binData* bd)
         bp->fix_prob.which  = bd->options->which;
 }
 
-static inline
+static __inline__
 void binProblemFree(binProblem *bp)
 {
         if (bp->ak) {
@@ -91,11 +91,11 @@ void binProblemFree(binProblem *bp)
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Count statistics
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Count statistics
+ ******************************************************************************/
 
-static inline
+static __inline__
 size_t countStatistic(size_t event, int ks, int ke, binProblem *bp)
 {
         if (bp != NULL && bp->add_event.which == event &&
@@ -111,7 +111,7 @@ size_t countStatistic(size_t event, int ks, int ke, binProblem *bp)
         }
 }
 
-static inline
+static __inline__
 prob_t countAlpha(size_t event, int ks, int ke, binProblem *bp)
 {
         if (ks <= ke) {
@@ -122,11 +122,11 @@ prob_t countAlpha(size_t event, int ks, int ke, binProblem *bp)
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Utility functions for Prombs
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Utility functions for Prombs
+ ******************************************************************************/
 
-static inline
+static __inline__
 void callBinningAlgorithm(
         prob_t (*f)(int, int, void*),
         prob_t *ev_log,
@@ -146,7 +146,7 @@ void callBinningAlgorithm(
         }
 }
 
-static inline
+static __inline__
 prob_t execPrombs_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
@@ -154,13 +154,13 @@ prob_t execPrombs_f(int i, int j, void *data)
         return iec_log(i, j, bp);
 }
 
-static inline
+static __inline__
 prob_t evidence(prob_t *ev_log, binProblem *bp)
 {
         callBinningAlgorithm(execPrombs_f, ev_log, bp);
 
         return sumModels(ev_log, bp);
-//        return prombs_rec(bp->bd->L, execPrombs_f, (void *)bp);
+/*        return prombs_rec(bp->bd->L, execPrombs_f, (void *)bp); */
 }
 
 #endif /* UTILITY_H */

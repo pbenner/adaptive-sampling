@@ -60,12 +60,12 @@ void logproduct(prob_t *result, matrix_t *ak, size_t L, size_t i)
         }
 }
 
-static inline
+static __inline__
 void init_f(matrix_t *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
 {
         size_t i, j;
 
-        // initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL
+        /* initialise A^1 = (a^1_ij)_LxL <- (f(i,j))_LxL */
         for (i = 0; i < L; i++) {
                 for (j = i; j < L; j++) {
                         ak->content[i][j] = (*f)(i, j, data);
@@ -73,10 +73,10 @@ void init_f(matrix_t *ak, prob_t (*f)(int, int, void*), size_t L, void *data)
         }
 }
 
-// result: array where the result is saved
-// g: contains the prior P(m_B) for m_B = 1,...,L
-// L: the number of inputs (maximal number of bins)
-// m: the maximal number of bins in a multibin
+/* result: array where the result is saved
+ * g: contains the prior P(m_B) for m_B = 1,...,L
+ * L: the number of inputs (maximal number of bins)
+ * m: the maximal number of bins in a multibin */
 void prombs(
         prob_t *result,
         matrix_t *ak,
@@ -89,23 +89,23 @@ void prombs(
         prob_t pr[L];
         size_t i, j;
 
-        // init
+        /* init */
         init_f(ak, f, L, data);
         for (j = 0; j < L; j++) {
                 pr[j] = ak->content[0][j];
         }
 
-        // compute the products
+        /* compute the products */
         for (i = 0; i < m; i++) {
                 logproduct(pr, ak, L, i+1);
         }
-        // save result
+        /* save result */
         for (i = 0; i < L-m-1; i++) {
-                // models with i>m were not computed, store a zero
+                /* models with i>m were not computed, store a zero */
                 result[L-1-i] = -HUGE_VAL;
         }
         for (i = L-m-1; i < L; i++) {
-                // the actual results are saved here
+                /* the actual results are saved here */
                 if (g[L-1-i] == -HUGE_VAL) {
                         result[L-1-i] = -HUGE_VAL;
                 }
@@ -125,8 +125,8 @@ void prombsExt(
         prob_t *result,
         matrix_t *ak,
         prob_t *g,
-        prob_t (*f)(int, int, void*), // on log scale
-        prob_t (*h)(int, int, void*), // on normal scale
+        prob_t (*f)(int, int, void*), /* on log scale */
+        prob_t (*h)(int, int, void*), /* on normal scale */
         size_t L,
         size_t m,
         void *data)
@@ -143,7 +143,7 @@ void prombsExt(
                         result[i] = logsub(result[i], tmp[i]) - LOG(prombsExt_epsilon);
                 }
                 else {
-                        // this can happen if all counts are zero
+                        /* this can happen if all counts are zero */
                         result[i] = -HUGE_VAL;
                 }
         }

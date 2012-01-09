@@ -40,9 +40,9 @@
 #include <model.h>
 #include <utility.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Prombs entropy functions
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Prombs entropy functions
+ ******************************************************************************/
 
 static
 prob_t singlebinEntropy(int i, int j, binProblem *bp)
@@ -103,7 +103,7 @@ static prob_t multibinEntropy_h(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
-        // - Log[f(b)]
+        /* - Log[f(b)] */
         return -iec_log(i, j, bp);
 }
 
@@ -136,9 +136,9 @@ prob_t multibinEntropy(prob_t evidence_ref, binProblem *bp)
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Main
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Main
+ ******************************************************************************/
 
 prob_t computeDifferentialEntropy(prob_t evidence_ref, binData* bd)
 {
@@ -191,17 +191,17 @@ void computeEntropicUtility(
 
         bp.add_event.n = 1;
         for (i = 0; i < bd->L; i++) {
-                // for all items
+                /* for all items */
                 notice(NONE, "Computing utilities... %.1f%%", (float)100*(i+1)/bd->L);
                 bp.add_event.pos = i;
                 result->content[i] = 0;
                 for (j = 0; j < bd->events; j++) {
-                        // for all events
+                        /* for all events */
                         bp.add_event.which = j;
-                        // recompute the evidence
+                        /* recompute the evidence */
                         evidence_log = evidence(evidence_log_tmp, &bp);
                         expectation  = EXP(evidence_log - evidence_ref);
-                        // compute entropies
+                        /* compute entropies */
                         if (bd->options->differential_entropy) {
                                 differential_entropy = differentialEntropy(evidence_log, &bp);
                                 result->content[i] += expectation*differential_entropy;
@@ -211,7 +211,7 @@ void computeEntropicUtility(
                                 result->content[i] += expectation*multibin_entropy;
                         }
                 }
-                // entropy -> utility
+                /* entropy -> utility */
                 result->content[i] = -result->content[i];
         }
 

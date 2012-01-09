@@ -47,9 +47,9 @@
 #include <moment.h>
 #include <utility.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Main binning function
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Main binning function
+ ******************************************************************************/
 
 static
 void computeModelPrior(binData* bd)
@@ -72,7 +72,7 @@ void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
         if (bd->options->differential_entropy || bd->options->multibin_entropy) {
                 computeEntropicUtility(utility, evidence_ref, bd);
         }
-        // compute effective counts
+        /* compute effective counts */
         else if (bd->options->effective_counts) {
                 computeEffectiveCountsUtility(utility, evidence_ref, bd);
         }
@@ -87,30 +87,30 @@ void computeBinning(
         prob_t evidence_ref;
         prob_t evidence_log_tmp[bd->L];
 
-        // init sampler
+        /* init sampler */
         if (bd->options->algorithm == 2) {
                 mgs_init(bd->options->samples[0], bd->options->samples[1],
                          bd->prior_log, &execPrombs_f, bd->L, (void *)&bp);
         }
-        // compute evidence P(D)
+        /* compute evidence P(D) */
         evidence_ref = evidence(evidence_log_tmp, &bp);
-        // compute model posteriors P(m_B|D)
+        /* compute model posteriors P(m_B|D) */
         if (bd->options->model_posterior) {
                 computeModelPosteriors(evidence_log_tmp, result->mpost, evidence_ref, bd);
         }
-        // compute moments
+        /* compute moments */
         if (bd->options->marginal) {
                 computeMarginal(result->marginals, evidence_ref, bd);
         }
-        // compute break probability
+        /* compute break probability */
         if (bd->options->bprob) {
                 computeBreakProbabilities(result->bprob, evidence_ref, bd);
         }
-        // compute the first n moments
+        /* compute the first n moments */
         if (bd->options->n_moments > 0) {
                 computeMoments(result->moments, evidence_ref, bd);
         }
-        // compute sampling utility
+        /* compute sampling utility */
         if (bd->options->utility) {
                 computeUtility(result->utility, evidence_ref, bd);
         }
@@ -121,9 +121,9 @@ void computeBinning(
         binProblemFree(&bp);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Initialization of common data structures
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Initialization of common data structures
+ ******************************************************************************/
 
 void __init_rand__() {
         struct timeval tv;
@@ -144,9 +144,9 @@ void __free__() {
         __free_model__();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Library entry point
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Library entry point
+ ******************************************************************************/
 
 void bin_init(
         size_t events,
@@ -171,7 +171,7 @@ void bin_init(
         bd->gamma     = gamma;
         bd->prior_log = (prob_t *)malloc(L*sizeof(prob_t));
 
-        // compute the model prior once for all computations
+        /* compute the model prior once for all computations */
         computeModelPrior(bd);
 }
 

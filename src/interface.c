@@ -28,7 +28,7 @@
 #include "interface.h"
 #include "bayesian-binning.h"
 
-// export functions for interface.py
+/* export functions for interface.py */
 vector_t * _alloc_vector(int size)              { return alloc_vector(size); }
 void       _free_vector(vector_t *v)            { free_vector(v); }
 matrix_t * _alloc_matrix(int rows, int columns) { return alloc_matrix(rows, columns); }

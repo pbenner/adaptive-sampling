@@ -39,19 +39,19 @@
 #include <threading.h>
 #include <utility.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Prombs entropy functions
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Prombs entropy functions
+ ******************************************************************************/
 
 static
 prob_t breakProb_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
-        // include only those bins that don't cover
-        // position pos, which means, that only multi-bins
-        // are included, that have a break at position
-        // pos
+        /* include only those bins that don't cover
+         * position pos, which means, that only multi-bins
+         * are included, that have a break at position
+         * pos */
         if (i < bp->bprob_pos && bp->bprob_pos <= j) {
                 return -HUGE_VAL;
         }
@@ -81,9 +81,9 @@ void * computeBreakProbabilities_thread(void* data_)
         return NULL;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Main
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Main
+ ******************************************************************************/
 
 void computeBreakProbabilities(
         vector_t *bprob,
