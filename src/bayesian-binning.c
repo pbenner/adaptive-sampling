@@ -24,7 +24,6 @@
 #include <strings.h>
 #include <assert.h>
 #include <math.h>
-#include <pthread.h>
 #include <limits.h>
 #include <sys/time.h>
 

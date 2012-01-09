@@ -86,8 +86,19 @@ AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
   AC_MSG_ERROR([this library is required]))
 AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
   AC_MSG_ERROR([this library is required]))
-AC_CHECK_LIB([pthread], [pthread_create], LIB_PTHREAD="-lpthread",
-  AC_MSG_ERROR([this library is required]))
+
+AC_ARG_ENABLE([pthreads],
+	[AS_HELP_STRING([--enable-pthreads],
+								[enable pthreads if available @<:@default=yes@:>@])],
+	[],
+	[enable_pthreads=yes])
+AS_IF([test "x$enable_pthreads" = "xyes"],
+	[AC_CHECK_LIB([pthread],
+								[pthread_create],
+								[LIB_PTHREAD="-lpthread"
+								 AC_DEFINE([HAVE_LIB_PTHREAD], [1], [Use pthread library.])],
+								 AC_MSG_ERROR([this library is required]))],
+	[])
 
 AC_SUBST(LIB_PTHREAD)
 
@@ -239,6 +250,7 @@ AX_CXXFLAGS_GCC_OPTION([-Winline])
 AX_CXXFLAGS_GCC_OPTION([-Wstrict-prototypes])
 AX_CXXFLAGS_GCC_OPTION([-Wno-trigraphs])
 AX_CXXFLAGS_GCC_OPTION([-Wtrampolines])
+AX_CXXFLAGS_GCC_OPTION([-ansi])
 AX_CXXFLAGS_GCC_OPTION([-fPIC])
 AX_CXXFLAGS_GCC_OPTION([-fno-nested-functions])
 
