@@ -30,14 +30,12 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_permutation.h>
 
-#include "libmgs.hh"
-
-extern "C" {
+#include <mgs.h>
 
 #include <adaptive-sampling/exception.h>
 #include <adaptive-sampling/linalg.h>
 
-static Multibin** __multibins__;
+static multibin_t** __multibins__;
 static size_t __N__;
 static gsl_rng* __r__;
 static size_t* __counts__;
@@ -48,47 +46,45 @@ void sample_bin(
         prob_t *g,
         prob_t (*f)(int, int, void*),
         void *data,
-        Multibin* mb)
+        multibin_t* mb)
 {
         prob_t post;
         prob_t sum1 = 0;
         prob_t sum2 = 0;
-        list<bin_t>* bins1 = mb->get_bins(); mb->switch_break(pos);
-        list<bin_t>* bins2 = mb->get_bins();
+        size_t nbins1 = mb->n_bins; bin_t bins1[nbins1]; get_bins(mb, bins1); switch_break(mb, pos);
+        size_t nbins2 = mb->n_bins; bin_t bins2[nbins2]; get_bins(mb, bins2);
         prob_t r = (prob_t)rand()/RAND_MAX;
+        size_t i;
 
-        if (g[bins1->size()-1] > -HUGE_VAL) {
-                for (list<bin_t>::iterator it = bins1->begin(); it != bins1->end(); it++) {
-                        sum1 += (*f)((*it).from, (*it).to, data);
+        if (g[nbins1-1] > -HUGE_VAL) {
+                for (i = 0; i < nbins1; i++) {
+                        sum1 += (*f)(bins1[i].from, bins1[i].to, data);
                 }
-                sum1 += g[bins1->size()-1];
+                sum1 += g[nbins1-1];
         }
         else {
-                goto err;
+                return;
         }
 
-        if (g[bins2->size()-1] > -HUGE_VAL) {
-                for (list<bin_t>::iterator it = bins2->begin(); it != bins2->end(); it++) {
-                        sum2 += (*f)((*it).from, (*it).to, data);
+        if (g[nbins2-1] > -HUGE_VAL) {
+                for (i = 0; i < nbins2; i++) {
+                        sum2 += (*f)(bins2[i].from, bins2[i].to, data);
                 }
-                sum2 += g[bins2->size()-1];
+                sum2 += g[nbins2-1];
         }
         else {
-                mb->switch_break(pos);
-                goto err;
+                switch_break(mb, pos);
+                return;
         }
 
-        // sample
-        post = expl(sum1 - logadd(sum1, sum2));
+        /* sample */
+        post = EXP(sum1 - logadd(sum1, sum2));
         if (r < post) {
-                // use multibin 1
-                mb->switch_break(pos);
+                /* use multibin 1 */
+                switch_break(mb, pos);
         }
-        // else:
-        // use multibin 2
-err:
-        delete(bins1);
-        delete(bins2);
+        /* else:
+         * use multibin 2 */
 }
 
 static
@@ -96,9 +92,9 @@ void sample_multibin(
         prob_t *g,
         prob_t (*f)(int, int, void*),
         void *data,
-        Multibin* mb)
+        multibin_t* mb)
 {
-        size_t N = mb->get_n_breaks();
+        size_t N = mb->n_breaks;
         size_t pos;
         gsl_permutation * p = gsl_permutation_alloc(N);
         gsl_permutation_init(p);
@@ -128,32 +124,32 @@ void mgs_init(
         srand(seed);
 
         __N__ = N;
-        __multibins__    = (Multibin**)malloc((N+1)*sizeof(Multibin*));
-        __multibins__[N] = (Multibin* )NULL;
-        __counts__ = (size_t*)malloc(L*sizeof(size_t));
+        __multibins__    = (multibin_t**)malloc((N+1)*sizeof(multibin_t*));
+        __multibins__[N] = (multibin_t* )NULL;
+        __counts__       = (size_t*)malloc(L*sizeof(size_t));
 
         size_t i;
-        // initialize counts
+        /* initialize counts */
         for (i = 0; i < L; i++) {
                 __counts__[i] = 0;
         }
 
-        // burn in
-        __multibins__[0] = new Multibin(L);
+        /* burn in */
+        __multibins__[0] = new_multibin(L);
         for (i = 0; i < R; i++) {
                 sample_multibin(g, f, data, __multibins__[0]);
         }
 
-        __counts__[__multibins__[0]->get_n_bins()-1]++;
-        // sample
+        __counts__[__multibins__[0]->n_bins-1]++;
+        /* sample */
         for (i = 1; i < N; i++) {
-                if (i%100 == 0) {
+                if ((i+1)%100 == 0) {
                         notice(NONE, "Generating samples... %.1f%%", (float)100*(i+1)/N);
                 }
-                __multibins__[i] = __multibins__[i-1]->copy();
+                __multibins__[i] = clone_multibin(__multibins__[i-1]);
                 sample_multibin(g, f, data, __multibins__[i]);
 
-                __counts__[__multibins__[i]->get_n_bins()-1]++;
+                __counts__[__multibins__[i]->n_bins-1]++;
         }
 }
 
@@ -162,11 +158,11 @@ void mgs_free()
         size_t i;
 
         for (i = 0; __multibins__[i]; i++) {
-                delete(__multibins__[i]);
+                free_multibin(__multibins__[i]);
         }
         free(__multibins__);
         free(__counts__);
-        gsl_rng_free (__r__);
+        gsl_rng_free(__r__);
 }
 
 static
@@ -175,19 +171,21 @@ void evaluate(
         prob_t *g,
         prob_t (*f)(int, int, void*),
         void *data,
-        Multibin* mb)
+        multibin_t* mb)
 {
-        list<bin_t>* bins = mb->get_bins();
-        if (g[bins->size()-1] > -HUGE_VAL) {
-                prob_t sum = 0;
-                for (list<bin_t>::iterator it = bins->begin(); it != bins->end(); it++) {
-                        sum += (*f)((*it).from, (*it).to, data);
-                }
+        size_t i;
 
-                result[bins->size()-1] =
-                        logadd(sum, result[bins->size()-1]);
+        if (g[mb->n_bins-1] > -HUGE_VAL) {
+                prob_t sum = 0;
+                bin_t bins[mb->n_bins];
+
+                get_bins(mb, bins);
+                for (i = 0; i < mb->n_bins; i++) {
+                        sum += (*f)(bins[i].from, bins[i].to, data);
+                }
+                result[mb->n_bins-1] =
+                        logadd(sum, result[mb->n_bins-1]);
         }
-        delete(bins);
 }
 
 size_t *
@@ -206,7 +204,7 @@ mgs_get_bprob(vector_t *bprob, size_t L)
                 breaks[i] = 0;
         }
         for (i = 0; i < __N__; i++) {
-                __multibins__[i]->get_breaks(breaks);
+                get_breaks(__multibins__[i], breaks);
         }
         for (i = 0; i < L; i++) {
                 bprob->content[i] = (prob_t)breaks[i]/__N__;
@@ -226,7 +224,7 @@ void mgs(
                 result[i] = -HUGE_VAL;
         }
 
-        // evaluate samples
+        /* evaluate samples */
         for (i = 0; __multibins__[i]; i++) {
                 evaluate(result, g, f, data, __multibins__[i]);
         }
@@ -235,6 +233,4 @@ void mgs(
                         result[i] -= LOG(__N__);
                 }
         }
-}
-
 }

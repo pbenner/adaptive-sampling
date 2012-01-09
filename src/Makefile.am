@@ -23,8 +23,6 @@ libadaptive_sampling_la_LIBADD += $(top_builddir)/libexception/libexception.la
 libadaptive_sampling_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 libadaptive_sampling_la_LIBADD += $(top_builddir)/libmgs/libmgs.la
 libadaptive_sampling_la_LDFLAGS = -no-undefined -version-info 0:0:0
-# Dummy C++ source to cause C++ linking.
-nodist_EXTRA_libadaptive_sampling_la_SOURCES = dummy.cxx	
 
 ## install headers
 nobase_include_HEADERS = bayesian-binning.h

@@ -15,53 +15,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef LIBMGS_HH
-#define LIBMGS_HH
+#ifndef MGS_H
+#define MGS_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <iostream>
-#include <cstdlib>
-#include <list>
-#include <vector>
+#include <stddef.h>
 
 #include <adaptive-sampling/datatypes.h>
 #include <adaptive-sampling/logarithmetic.h>
-
-using namespace std;
 
 typedef struct {
         size_t from;
         size_t to;
 } bin_t;
 
-class Multibin {
-public:
-         Multibin(size_t L);
-         Multibin(Multibin* mb, uint32_t* breaks);
-        ~Multibin();
-
-        Multibin* copy();
-        void insert_break(size_t i);
-        void remove_break(size_t i);
-        void switch_break(size_t i);
-
-        void print();
-        void print_bins();
-
-        list<bin_t>* get_bins();
-        size_t get_n_breaks();
-        size_t get_n_bins();
-        void get_breaks(size_t *breaks);
-
-private:
-        size_t n;        // length of breaks[]
-        size_t n_breaks; // number of possible breaks
-        size_t n_bins;   // current number of bins
+typedef struct {
+        size_t n;        /* length of breaks[] */
+        size_t n_breaks; /* number of possible breaks */
+        size_t n_bins;   /* current number of bins */
         uint32_t* breaks;
-};
+} multibin_t;
 
+multibin_t* new_multibin(size_t L);
+multibin_t* clone_multibin(multibin_t* multibin);
+void free_multibin(multibin_t* multibin);
+void insert_break(multibin_t* multibin, size_t i);
+void remove_break(multibin_t* multibin, size_t i);
+void switch_break(multibin_t* multibin, size_t i);
+void print_mutlibin(multibin_t* mutlibin);
+void get_bins(multibin_t* multibin, bin_t* bins);
+void get_breaks(multibin_t* multibin, size_t *breaks);
 
-#endif /* LIBMGS_HH */
+#endif /* MGS_H */
