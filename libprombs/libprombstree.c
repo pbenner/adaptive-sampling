@@ -47,7 +47,7 @@ void approximate_multibin(
         }
 
         if (pos == am->L-1) {
-                // we arrived at a leaf
+                /* we arrived at a leaf */
                 partial_result += (*am->f)(from, pos, am->data);
                 partial_result += am->g[n_breaks];
 
@@ -55,9 +55,9 @@ void approximate_multibin(
                         logadd(am->result[n_breaks], partial_result);
         }
         else {
-                // no break
+                /* no break */
                 approximate_multibin(from,  pos+1, n_breaks,   partial_result, am);
-                // break
+                /* break */
                 partial_result += (*am->f)(from, pos, am->data);
                 approximate_multibin(pos+1, pos+1, n_breaks+1, partial_result, am);
         }

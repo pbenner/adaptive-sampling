@@ -28,14 +28,14 @@
 
 /* Log Sum of Exponentials Algorithm */
 
-static inline
+static __inline__
 prob_t logadd(prob_t a, prob_t b)
 {
         if (a < b) return a == -HUGE_VAL ? b : b + LOG1P(expl(a-b));
         else       return b == -HUGE_VAL ? a : a + LOG1P(expl(b-a));
 }
 
-static inline
+static __inline__
 prob_t logsub(prob_t a, prob_t b)
 {
         return b == -HUGE_VAL ? a : a + LOG(1-EXP(b-a));

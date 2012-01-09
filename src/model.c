@@ -40,9 +40,9 @@
 #include <model.h>
 #include <utility.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Model
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Model
+ ******************************************************************************/
 
 typedef struct {
         double key;
@@ -101,11 +101,11 @@ prob_t mbeta_log(prob_t *p, binProblem *bp)
         for (i = 0; i < bp->bd->events; i++) {
                 sum1 += p[i];
                 sum2 += gsl_sf_lngamma(p[i]);
-//                sum2 += hashed_lngamma(p[i]);
+/*                sum2 += hashed_lngamma(p[i]); */
         }
 
         return sum2 - gsl_sf_lngamma(sum1);
-//        return sum2 - hashed_lngamma(sum1);
+/*        return sum2 - hashed_lngamma(sum1); */
 }
 
 /* P(E|B) */
@@ -123,8 +123,8 @@ prob_t iec_log(int kk, int k, binProblem *bp)
                 alpha[i] = countAlpha(i, kk, k, bp);
         }
         if (bp != NULL && kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
-                // compute marginals
-                // TODO: extend to multinomial case
+                /* compute marginals
+                 * TODO: extend to multinomial case */
                 if (bp->fix_prob.which == 0) {
                         return LOG(gamma) + (c[0]-1)*LOG(bp->fix_prob.val)
                                 + (c[1]-1)*LOG(1-bp->fix_prob.val)
@@ -141,9 +141,9 @@ prob_t iec_log(int kk, int k, binProblem *bp)
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Model init
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Model init
+ ******************************************************************************/
 
 void __init_model__() {
         if (pthread_rwlock_init(&lngamma_map_lock, NULL) != 0) {

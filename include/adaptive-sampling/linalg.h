@@ -51,7 +51,7 @@ typedef struct {
         double **content;
 } matrix_t;
 
-static inline
+static __inline__
 vector_t * alloc_vector(size_t size) {
         vector_t *v = (vector_t *)malloc(sizeof(vector_t));
         v->content  = (double   *)calloc(size, sizeof(double));
@@ -59,7 +59,7 @@ vector_t * alloc_vector(size_t size) {
         return v;
 }
 
-static inline
+static __inline__
 matrix_t * alloc_matrix(size_t rows, size_t columns) {
         matrix_t *m = (matrix_t *)malloc(sizeof(matrix_t));
         m->content  = (double  **)calloc(rows, sizeof(double *));
@@ -72,13 +72,13 @@ matrix_t * alloc_matrix(size_t rows, size_t columns) {
         return m;
 }
 
-static inline
+static __inline__
 void free_vector(vector_t *v) {
         free(v->content);
         free(v);
 }
 
-static inline
+static __inline__
 void free_matrix(matrix_t *m) {
         size_t i;
         for (i = 0; i < m->rows; i++) {
@@ -88,7 +88,7 @@ void free_matrix(matrix_t *m) {
         free(m);
 }
 
-static inline
+static __inline__
 gsl_vector * to_gsl_vector(const vector_t *vector)
 {
         gsl_vector *v = gsl_vector_alloc(vector->size);
@@ -100,7 +100,7 @@ gsl_vector * to_gsl_vector(const vector_t *vector)
         return v;
 }
 
-static inline
+static __inline__
 vector_t * from_gsl_vector(const gsl_vector * vector)
 {
         size_t i;
@@ -113,7 +113,7 @@ vector_t * from_gsl_vector(const gsl_vector * vector)
         return v;
 }
 
-static inline
+static __inline__
 gsl_matrix * to_gsl_matrix(const matrix_t *matrix)
 {
         gsl_matrix *m = gsl_matrix_alloc(matrix->rows, matrix->columns);
@@ -127,7 +127,7 @@ gsl_matrix * to_gsl_matrix(const matrix_t *matrix)
         return m;
 }
 
-static inline
+static __inline__
 matrix_t * from_gsl_matrix(const gsl_matrix * matrix)
 {
         size_t i, j;

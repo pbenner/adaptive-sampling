@@ -38,9 +38,9 @@
 #include <threading.h>
 #include <utility.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Prombs moment functions
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Prombs moment functions
+ ******************************************************************************/
 
 static
 prob_t moment(
@@ -63,9 +63,9 @@ prob_t moment(
         return EXP(evidence_log - evidence_ref);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Main
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+ * Main
+ ******************************************************************************/
 
 static
 void * computeMoments_thread(void* data_)
@@ -76,7 +76,7 @@ void * computeMoments_thread(void* data_)
         matrix_t *moments = (matrix_t *)data->result;
         prob_t evidence_ref = data->evidence_ref;
 
-        // Moments
+        /* Moments */
         for (j = 0; j < bp->bd->options->n_moments; j++) {
                 moments->content[j][i] = moment(j+1, i, bp->bd->options->which, evidence_ref, bp);
         }
