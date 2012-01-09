@@ -182,7 +182,7 @@ void bin_free(binData* bd)
 
 prob_t
 entropy(
-        size_t events,
+        int events,
         matrix_t **counts,
         matrix_t **alpha,
         vector_t  *beta,
@@ -210,7 +210,7 @@ entropy(
 
 BinningResult *
 binning(
-        size_t events,
+        int events,
         matrix_t **counts,
         matrix_t **alpha,
         vector_t  *beta,
