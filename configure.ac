@@ -274,6 +274,7 @@ AC_CONFIG_FILES([
 	libmgs/Makefile
 	libexception/Makefile
 	adaptive_sampling/Makefile
+	matlab/Makefile
 	src/Makefile
 	include/Makefile
  	])
