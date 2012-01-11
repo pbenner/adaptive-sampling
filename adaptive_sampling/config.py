@@ -29,7 +29,11 @@ import statistics
 
 def readVector(config, section, option, converter):
     vector_str = config.get(section, option)
-    vector     = map(converter, vector_str.split(' '))
+    vector_str.strip()
+    if vector_str != '':
+        vector = map(converter, vector_str.split(' '))
+    else:
+        vector = []
     return vector
 
 def readMatrix(config, section, option, converter):
@@ -37,6 +41,7 @@ def readMatrix(config, section, option, converter):
     matrix     = []
     for line in matrix_str.split('\n'):
         if line != '':
+            line.strip()
             matrix.append([converter(a) for a in line.split(' ')])
     return matrix
 
