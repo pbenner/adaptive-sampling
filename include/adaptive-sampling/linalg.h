@@ -22,8 +22,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <adaptive-sampling/datatypes.h>
-
 #include <stddef.h>
 
 #include <gsl/gsl_matrix.h>

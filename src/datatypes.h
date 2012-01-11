@@ -18,7 +18,9 @@
 #ifndef DATATYPES_H
 #define DATATYPES_H
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
 
 #include <adaptive-sampling/linalg.h>
 #include <adaptive-sampling/datatypes.h>
@@ -26,46 +28,6 @@
 /******************************************************************************
  * Data structures
  ******************************************************************************/
-
-typedef struct options {
-        float epsilon;
-        int verbose;
-        int prombsTest;
-        /* break probabilities */
-        int bprob;
-        int threads;
-        int stacksize;
-        /* compute sampling utility */
-        int utility;
-        /* specify components of the utility function */
-        int differential_entropy;
-        int multibin_entropy;
-        int effective_counts;
-        /* which event */
-        int which;
-        /* binning algorithm */
-        int algorithm;
-        /* burnin length and number of samples */
-        int samples[2];
-        /* compute marginal */
-        int marginal;
-        float marginal_step;
-        struct {
-                float from;
-                float to;
-        } marginal_range;
-        int n_moments;
-        int n_marginals;
-        int model_posterior;
-} Options;
-
-typedef struct binningResult{
-        matrix_t *moments;
-        matrix_t *marginals;
-        vector_t *bprob;
-        vector_t *mpost;
-        vector_t *utility;
-} BinningResult;
 
 /* data that has to be immutable */
 typedef struct {
