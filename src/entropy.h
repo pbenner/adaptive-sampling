@@ -24,9 +24,9 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-extern prob_t computeDifferentialEntropy(prob_t evidence_ref, binData *bd);
-extern prob_t computeMultibinEntropy(prob_t evidence_ref, binData *bd);
-extern prob_t computeEntropy(prob_t evidence_ref, binData *bd);
-extern void computeEntropicUtility(vector_t *result, prob_t evidence_ref, binData *bd);
+prob_t computeDifferentialEntropy(prob_t evidence_ref, binData *bd);
+prob_t computeMultibinEntropy(prob_t evidence_ref, binData *bd);
+prob_t computeEntropy(prob_t evidence_ref, binData *bd);
+void computeEntropicUtility(vector_t *result, prob_t evidence_ref, binData *bd);
 
 #endif /* ENTROPY_H */
