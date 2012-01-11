@@ -25,10 +25,10 @@
 #include <datatypes.h>
 #include <adaptive-sampling/datatypes.h>
 
-extern void __init_model__();
-extern void __free_model__();
+void __init_model__();
+void __free_model__();
 
-extern prob_t mbeta_log(prob_t *p, binProblem *bp);
-extern prob_t iec_log(int kk, int k, binProblem *bp);
+prob_t mbeta_log(prob_t *p, binProblem *bp);
+prob_t iec_log(int kk, int k, binProblem *bp);
 
 #endif /* MODEL_H */

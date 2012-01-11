@@ -24,6 +24,6 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-extern void computeEffectiveCountsUtility(vector_t *result, prob_t evidence_ref, binData* bd);
+void computeEffectiveCountsUtility(vector_t *result, prob_t evidence_ref, binData* bd);
 
 #endif /* EFFECTIVE_COUNTS_H */

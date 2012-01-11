@@ -25,7 +25,7 @@
 #include <adaptive-sampling/linalg.h>
 #include <datatypes.h>
 
-extern void _init_(double epsilon);
-extern void _free_();
+void _init_(double epsilon);
+void _free_();
 
 #endif /* INTERFACE_H */

@@ -24,6 +24,6 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-extern void computeMarginal(matrix_t *marginals, prob_t evidence_ref, binData *bd);
+void computeMarginal(matrix_t *marginals, prob_t evidence_ref, binData *bd);
 
 #endif /* MARGINAL_H */
