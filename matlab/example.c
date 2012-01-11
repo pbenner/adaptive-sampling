@@ -71,10 +71,12 @@ int main(void) {
         int i, j;
         /* in this example, we have L=6 possible stimuly */
         int L = 6;
+        /* and two responses */
+        int K = 2;
 
         /***********************************************************************
          * we have counts for two possible events: {success, failure} */
-        vector_t* counts[2];
+        vector_t* counts[K];
         counts[0] = alloc_vector(L); /* for each we have L stimuly */
         counts[1] = alloc_vector(L);
 
@@ -84,7 +86,7 @@ int main(void) {
                 counts[1]->content[i] = 1.0;
         }
         /* and compute the full matrix for the sampling library... */
-        matrix_t* counts_m[2];
+        matrix_t* counts_m[K];
         counts_m[0] = alloc_matrix(L, L);
         counts_m[1] = alloc_matrix(L, L);
         count_statistic(counts[0], counts_m[0]);
@@ -92,7 +94,7 @@ int main(void) {
 
         /***********************************************************************
          * now the very same procedure for the pseudo counts alpha */
-        vector_t* alpha[2];
+        vector_t* alpha[K];
         alpha[0] = alloc_vector(L);
         alpha[1] = alloc_vector(L);
 
@@ -104,7 +106,7 @@ int main(void) {
         /* and one value to two */
         alpha[0]->content[4] = 2.0;
         /* and compute the full matrix for the sampling library... */
-        matrix_t* alpha_m[2];
+        matrix_t* alpha_m[K];
         alpha_m[0] = alloc_matrix(L, L);
         alpha_m[1] = alloc_matrix(L, L);
         generate_alpha(alpha[0], alpha_m[0]);
@@ -178,7 +180,7 @@ int main(void) {
          * let's run prombs! */
         printf("\nRunning prombs!\n\n");
 
-        BinningResult * result = binning(2, counts_m, alpha_m, beta, gamma, &options);
+        BinningResult * result = binning(K, counts_m, alpha_m, beta, gamma, &options);
 
         /***********************************************************************
          * print the result */
@@ -210,6 +212,7 @@ int main(void) {
         free_vector(result->bprob);
         free_vector(result->mpost);
         free_vector(result->utility);
+        free(result);
 
         return 0;
 }
