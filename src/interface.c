@@ -24,9 +24,9 @@
 
 #include <adaptive-sampling/exception.h>
 #include <adaptive-sampling/linalg.h>
+#include <adaptive-sampling/interface.h>
 
 #include "interface.h"
-#include "bayesian-binning.h"
 
 /* export functions for interface.py */
 vector_t * _alloc_vector(int size)              { return alloc_vector(size); }
