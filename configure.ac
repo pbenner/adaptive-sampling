@@ -33,6 +33,7 @@ AC_ISC_POSIX
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AC_PROG_LN_S
+MEX_INIT([MEX],[1],[1],[2])
 
 dnl ,---------------------------- 
 dnl | GENERAL PACKAGE INFO
@@ -233,6 +234,33 @@ AX_CFLAGS_GCC_OPTION([-Wtrampolines])
 AX_CFLAGS_GCC_OPTION([-ansi])
 AX_CFLAGS_GCC_OPTION([-fPIC])
 AX_CFLAGS_GCC_OPTION([-fno-nested-functions])
+
+dnl ,---------------------------- 
+dnl | MATLAB MEX SUPPORT
+dnl `----------------------------
+
+AC_ARG_ENABLE([mex],
+       [AS_HELP_STRING([--enable-mex],
+                       [turn mex support on @<:@default=no@:>@])],
+       [],
+       [enable_mex=no])
+AS_IF([test "x$enable_mex" = "xyes"],
+  [CHECK_MATLAB
+	 case $build_os in
+	 			*linux*)
+								MEX_EXT=.mexglx;;
+				*mingw*)
+								MEX_EXT=.dll;;
+				*cygwin*)
+								MEX_EXT=.dll;;
+	 esac
+   if test "$have_matlab" = "no"
+   then
+				AC_MSG_ERROR([You must specify the matlab directory with --with-matlab=PATH])
+   fi],
+  [])
+
+AC_SUBST(MEX_EXT)
 
 dnl ,---------------------------- 
 dnl | SUBDIR CONFIGURATION

@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
-
 #include <math.h>
+
+#include <mex.h>
 
 #include <adaptive-sampling/linalg.h>
 #include <adaptive-sampling/datatypes.h>
@@ -67,7 +68,7 @@ void print_matrix(matrix_t* m) {
         }
 }
 
-int main(void) {
+void example(double x[]) {
         int i, j;
         /* in this example, we have L=6 possible stimuly */
         int L = 6;
@@ -213,6 +214,37 @@ int main(void) {
         free_vector(result->mpost);
         free_vector(result->utility);
         free(result);
-
-        return 0;
 }
+
+void mexFunction( int nlhs, mxArray *plhs[],
+                  int nrhs, const mxArray *prhs[] )
+{
+        double *x,*y;
+        mwSize mrows,ncols;
+  
+        /* Check for proper number of arguments. */
+        if(nrhs!=1) {
+                mexErrMsgTxt("One input required.");
+        } else if(nlhs>1) {
+                mexErrMsgTxt("Too many output arguments.");
+        }
+  
+        /* The input must be a noncomplex scalar double.*/
+        mrows = mxGetM(prhs[0]);
+        ncols = mxGetN(prhs[0]);
+        if( !mxIsDouble(prhs[0]) || mxIsComplex(prhs[0]) ||
+            !(mrows==1 && ncols==1) ) {
+                mexErrMsgTxt("Input must be a noncomplex scalar double.");
+        }
+  
+        /* Create matrix for the return argument. */
+        plhs[0] = mxCreateDoubleMatrix(mrows,ncols, mxREAL);
+  
+        /* Assign pointers to each input and output. */
+        x = mxGetPr(prhs[0]);
+        y = mxGetPr(plhs[0]);
+        y[0] = 1.;
+        /* Call the timestwo subroutine. */
+        example(x);
+}
+
