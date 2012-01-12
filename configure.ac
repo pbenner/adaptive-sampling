@@ -39,10 +39,10 @@ dnl ,----------------------------
 dnl | GENERAL PACKAGE INFO
 dnl `----------------------------
 
-AC_SUBST([PACKAGE_SUMMARY], ["template project"])
-AC_SUBST([PACKAGE_URL], ["http://www.homepage.ch"])
+AC_SUBST([PACKAGE_SUMMARY], ["Adaptive Sampling"])
+AC_SUBST([PACKAGE_URL], ["http://www.mis.mpg.de"])
 AC_SUBST([PACKAGE_LICENSE], ["GPL"])
-AC_SUBST([PACKAGE_DESCRIPTION], ["This is a template project using autoconf, automake and autoheader."])
+AC_SUBST([PACKAGE_DESCRIPTION], ["Package for adaptive sampling of psychometric functions."])
 
 dnl ,---------------------------- 
 dnl | MACRO DEFINITIONS
@@ -163,25 +163,21 @@ dnl ,----------------------------
 dnl | HEADERS
 dnl `----------------------------
 
-HEADERS_TO_CHECK="stdarg.h dlfcn.h dirent.h netinet/in.h sys/ioctl.h
-									arpa/inet.h netdb.h syslog.h signal.h pthread.h"
+HEADERS_TO_CHECK="stdarg.h netdb.h syslog.h"
 
 AC_CHECK_HEADERS($HEADERS_TO_CHECK,,
 	AC_MSG_ERROR([this header is required]))
 
-AC_CHECK_HEADER(net/if.h,,
-	AC_MSG_ERROR([this header is required]),
-	[[#include <sys/types.h>
-		#include <sys/socket.h>]] )
-
 AC_CHECK_HEADER([error.h],
 	AC_DEFINE(HAVE_ERROR_H, [], [Needed on OpenBSD systems.]))
+AC_CHECK_HEADER([netdb.h],
+	AC_DEFINE(HAVE_NETDB_H, [], [Not present on mingw.]))
 
 dnl ,---------------------------- 
 dnl | FUNCTIONS
 dnl `----------------------------
 
-AC_CHECK_FUNCS(dprintf)
+AC_CHECK_FUNCS(hstrerror)
 AC_CHECK_FUNCS(vsyslog)
 
 dnl ,---------------------------- 
@@ -246,14 +242,6 @@ AC_ARG_ENABLE([mex],
        [enable_mex=no])
 AS_IF([test "x$enable_mex" = "xyes"],
   [CHECK_MATLAB
-	 case $build_os in
-	 			*linux*)
-								MEX_EXT=.mexglx;;
-				*mingw*)
-								MEX_EXT=.dll;;
-				*cygwin*)
-								MEX_EXT=.dll;;
-	 esac
    if test "$have_matlab" = "no"
    then
 				AC_MSG_ERROR([You must specify the matlab directory with --with-matlab=PATH])
