@@ -22,7 +22,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <datatypes.h>
+#include <adaptive-sampling/datatypes.h>
 
 void __init__(prob_t epsilon);
 void __free__();

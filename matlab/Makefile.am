@@ -2,7 +2,15 @@
 
 INCLUDES = -I$(top_srcdir)/include
 
-bin_PROGRAMS = example
+MATLAB_LINK_EXTRA = -Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas
 
-example_SOURCES = example.c
-example_LDADD   = $(top_builddir)/src/libadaptive-sampling.la
+all: example.$(MEXEXT)
+
+example.o: example.c
+	$(CC) $(DEFS) $(CFLAGS) $(INCLUDES) -I$(top_srcdir) $(MATLAB_FLAGS) -c -o $@ $<
+example.$(MEXEXT): example.o
+	$(CC) -o $@ $< $(MATLAB_LIB) $(MATLAB_LINK) $(MATLAB_LINK_EXTRA)
+
+clean-local:
+	$(RM) example.o
+	$(RM) example.$(MEXEXT)
