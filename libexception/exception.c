@@ -19,6 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #define _BSD_SOURCE 1
 
 #include <stdio.h>
@@ -26,8 +30,12 @@
 #include <string.h>
 #include <stdarg.h>
 #include <syslog.h>
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif /* HAVE_NETDB_H */
+#ifdef HAVE_ERROR_H
 #include <errno.h>
+#endif /* HAVE_ERROR_H */
 
 #define GETMODE(mode, exit_code, err_type)		\
 	exit_code = (mode>>2);	    /* ...xxxxx00 */	\
@@ -51,7 +59,11 @@ create_buffer(int err_type, const char *msg)
 		ptr = strerror(errno);
 		break;
 	case HERROR:
+#ifdef HAVE_HSTRERROR
 		ptr = hstrerror(h_errno);
+#else
+                ptr = "";
+#endif /* HAVE_HSTRERROR */
 		break;
 	default:
 		exit(EXIT_FAILURE);
@@ -153,7 +165,7 @@ vlog_notice(int mode, const char *msg, va_list az)
 		vsyslog(LOG_NOTICE, buffer, az);
 #else
 		(void)vprintf(buffer, az);
-#endif
+#endif /* HAVE_VSYSLOG */
 		free(buffer);
 	} else {
 		vsyslog(LOG_NOTICE, msg, az);
@@ -259,7 +271,7 @@ vlog_err(int mode, const char *msg, va_list az)
 		vsyslog(LOG_ERR, buffer, az);
 #else
 		(void)vfprintf(stderr, buffer, az);
-#endif
+#endif /* HAVE_VSYSLOG */
 		free(buffer);
 	} else {
 		vsyslog(LOG_ERR, msg, az);
@@ -297,7 +309,7 @@ vlog_warn(int mode, const char *msg, va_list az)
 		vsyslog(LOG_WARNING, buffer, az);
 #else
 		(void)vfprintf(stderr, buffer, az);
-#endif
+#endif /* HAVE_VSYSLOG */
 		free(buffer);
 	} else {
 		vsyslog(LOG_WARNING, msg, az);
