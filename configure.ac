@@ -163,7 +163,7 @@ dnl ,----------------------------
 dnl | HEADERS
 dnl `----------------------------
 
-HEADERS_TO_CHECK="stdarg.h netdb.h syslog.h"
+HEADERS_TO_CHECK="stdarg.h netdb.h"
 
 AC_CHECK_HEADERS($HEADERS_TO_CHECK,,
 	AC_MSG_ERROR([this header is required]))
@@ -172,6 +172,8 @@ AC_CHECK_HEADER([error.h],
 	AC_DEFINE(HAVE_ERROR_H, [], [Needed on OpenBSD systems.]))
 AC_CHECK_HEADER([netdb.h],
 	AC_DEFINE(HAVE_NETDB_H, [], [Not present on mingw.]))
+AC_CHECK_HEADER([syslog.h],
+	AC_DEFINE(HAVE_SYSLOG_H, [], [Not present on mingw.]))
 
 dnl ,---------------------------- 
 dnl | FUNCTIONS
