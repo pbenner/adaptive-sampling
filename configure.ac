@@ -33,7 +33,6 @@ AC_ISC_POSIX
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AC_PROG_LN_S
-MEX_INIT([MEX],[1],[1],[2])
 
 dnl ,---------------------------- 
 dnl | GENERAL PACKAGE INFO
@@ -96,9 +95,10 @@ AS_IF([test "x$enable_pthreads" = "xyes"],
 	[AC_CHECK_LIB([pthread],
 								[pthread_create],
 								[LIB_PTHREAD="-lpthread"
+								 have_pthreads="yes"
 								 AC_DEFINE([HAVE_LIB_PTHREAD], [1], [Use pthread library.])],
 								 AC_MSG_ERROR([this library is required]))],
-	[])
+	[have_pthreads="no"])
 
 AC_SUBST(LIB_PTHREAD)
 
@@ -235,20 +235,8 @@ dnl ,----------------------------
 dnl | MATLAB MEX SUPPORT
 dnl `----------------------------
 
-AC_ARG_ENABLE([mex],
-       [AS_HELP_STRING([--enable-mex],
-                       [turn mex support on @<:@default=no@:>@])],
-       [],
-       [enable_mex=no])
-AS_IF([test "x$enable_mex" = "xyes"],
-  [CHECK_MATLAB
-   if test "$have_matlab" = "no"
-   then
-				AC_MSG_ERROR([You must specify the matlab directory with --with-matlab=PATH])
-   fi],
-  [])
-
-AC_SUBST(MEX_EXT)
+MEX_INIT([MEX],[1],[1],[2])
+CHECK_MATLAB
 
 dnl ,---------------------------- 
 dnl | SUBDIR CONFIGURATION
@@ -303,9 +291,11 @@ dnl `----------------------------
 
 AC_MSG_NOTICE_BOX([Configure summary
 
-System type:              ${host}
-Build with debug symbols: ${enable_debug}
-Use long double:          ${enable_longdouble}
+System type............... ${host}
+Build with debug symbols.. ${enable_debug}
+Use long double........... ${enable_longdouble}
+Matlab support............ ${have_matlab}
+PThread support........... ${have_pthreads}
 ])
 
 dnl Local Variables:
