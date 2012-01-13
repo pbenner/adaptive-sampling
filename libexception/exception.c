@@ -29,7 +29,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#ifdef HAVE_SYSLOG_H
 #include <syslog.h>
+#endif /* HAVE_SYSLOG_H */
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
@@ -168,7 +170,11 @@ vlog_notice(int mode, const char *msg, va_list az)
 #endif /* HAVE_VSYSLOG */
 		free(buffer);
 	} else {
+#ifdef HAVE_VSYSLOG
 		vsyslog(LOG_NOTICE, msg, az);
+#else
+		(void)vprintf(msg, az);
+#endif /* HAVE_VSYSLOG */
 	}
 
 	return;
@@ -274,7 +280,11 @@ vlog_err(int mode, const char *msg, va_list az)
 #endif /* HAVE_VSYSLOG */
 		free(buffer);
 	} else {
+#ifdef HAVE_VSYSLOG
 		vsyslog(LOG_ERR, msg, az);
+#else
+		(void)vfprintf(stderr, msg, az);
+#endif /* HAVE_VSYSLOG */
 	}
 
 	exit(exit_code);
@@ -312,7 +322,11 @@ vlog_warn(int mode, const char *msg, va_list az)
 #endif /* HAVE_VSYSLOG */
 		free(buffer);
 	} else {
+#ifdef HAVE_VSYSLOG
 		vsyslog(LOG_WARNING, msg, az);
+#else
+		(void)vfprintf(stderr, msg, az);
+#endif /* HAVE_VSYSLOG */
 	}
 
 	return;
