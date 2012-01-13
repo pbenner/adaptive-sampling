@@ -20,65 +20,65 @@ then
     *linux*)
 	case $host_cpu in
 	     ia64*|x86_64)
-		MATLAB_FLAGS="-I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
-        	MATLAB_LINK="-pthread -shared -Wl,--version-script,${MATLAB_DIR}/extern/lib/glnxa64/mexFunction.map";
-        	MATLAB_LIB="-Wl,--rpath-link,${MATLAB_DIR}/extern/lib/glnxa64,--rpath-link,${MATLAB_DIR}/bin/glnxa64 -L${MATLAB_DIR}/bin/glnxa64 -lmx -lmex -lmat -lm";
+		MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
+        	MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnxa64/mexFunction.map\"";
+        	MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnxa64\",--rpath-link,\"${MATLAB_DIR}/bin/glnxa64\" -L\"${MATLAB_DIR}/bin/glnxa64\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexa64;;
 	     *)
-		MATLAB_FLAGS="-I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
-        	MATLAB_LINK="-pthread -shared -Wl,--version-script,${MATLAB_DIR}/extern/lib/glnx86/mexFunction.map";
-        	MATLAB_LIB="-Wl,--rpath-link,${MATLAB_DIR}/extern/lib/glnx86,--rpath-link,${MATLAB_DIR}/bin/glnx86 -L${MATLAB_DIR}/bin/glnx86 -lmx -lmex -lmat -lm";
+		MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
+        	MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnx86/mexFunction.map\"";
+        	MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnx86\",--rpath-link,${MATLAB_DIR}/bin/glnx86 -L\"${MATLAB_DIR}/bin/glnx86\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexglx;;
 	esac
 	;;
     *cygwin*)
-        MATLAB_FLAGS="-I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -fno-exceptions -mno-cygwin -DMATLAB_MEX_FILE -DNDEBUG";
-        MATLAB_LINK="-shared -mno-cygwin -Wl,--version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.def";
-        MATLAB_LIB="-W1,--rpath-link,${MATLAB_DIR}/extern/lib/win32,--rpath-link,${MATLAB_DIR}/bin/win32 ${MATLAB_DIR}/bin/win32/libmx.a ${MATLAB_DIR}/bin/win32/libmex.a ${MATLAB_DIR}/bin/win32/libmat.a -lm";
-        MATLAB_LINK="-shared -mno-cygwin -L${MATLAB_DIR}/bin/win32 -Wl,--version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.def";
+        MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -fno-exceptions -mno-cygwin -DMATLAB_MEX_FILE -DNDEBUG";
+        MATLAB_LINK="-shared -mno-cygwin -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
+        MATLAB_LIB="-W1,--rpath-link,\"${MATLAB_DIR}/extern/lib/win32\",--rpath-link,\"${MATLAB_DIR}/bin/win32\" \"${MATLAB_DIR}/bin/win32/libmx.a\" \"${MATLAB_DIR}/bin/win32/libmex.a\" \"${MATLAB_DIR}/bin/win32/libmat.a\" -lm";
+        MATLAB_LINK="-shared -mno-cygwin -L\"${MATLAB_DIR}/bin/win32\" -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
         MATLAB_LIB="-lmx -lmex -lmat -lm";
         MEXEXT=dll;
         if test ! -e "${MATLAB_DIR}/bin/win32/libmx.a"
         then
-            cd ${MATLAB_DIR}/bin/win32
-            libmx=`dlltool -llibmx.a -d${MATLAB_DIR}/extern/include/libmx.def -Dlibmx.dll`
+            cd "${MATLAB_DIR}/bin/win32"
+            libmx=`dlltool -llibmx.a -d"${MATLAB_DIR}/extern/include/libmx.def" -Dlibmx.dll`
+            cd -
+        fi
+        if test ! -e "${MATLAB_DIR}/bin/win32/libmex.a"
+        then
+            cd "${MATLAB_DIR}/bin/win32"
+            libmex=`dlltool -llibmex.a -d"${MATLAB_DIR}/extern/include/libmex.def" -Dlibmex.dll`
             cd -
         fi
         if test ! -e "${MATLAB_DIR}/bin/win32/libmex.a"
         then
             cd ${MATLAB_DIR}/bin/win32
-            libmex=`dlltool -llibmex.a -d${MATLAB_DIR}/extern/include/libmex.def -Dlibmex.dll`
-            cd -
-        fi
-        if test ! -e "${MATLAB_DIR}/bin/win32/libmex.a"
-        then
-            cd ${MATLAB_DIR}/bin/win32
-            libmat=`dlltool -llibmat.a -d${MATLAB_DIR}/extern/include/libmat.def -Dlibmat.dll`
+            libmat=`dlltool -llibmat.a -d"${MATLAB_DIR}/extern/include/libmat.def" -Dlibmat.dll`
             cd -
         fi;;
     *mingw*)
-        MATLAB_FLAGS="-I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -fno-exceptions -DMATLAB_MEX_FILE -DNDEBUG";
-        MATLAB_LINK="-shared -W1,--version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.def";
-        MATLAB_LIB="-W1,--rpath-link,${MATLAB_DIR}/extern/lib/win32,--rpath-link,${MATLAB_DIR}/bin/win32 ${MATLAB_DIR}/bin/win32/libmx.a ${MATLAB_DIR}/bin/win32/libmex.a ${MATLAB_DIR}/bin/win32/libmat.a -lm";
-        MATLAB_LINK="-shared -L${MATLAB_DIR}/bin/win32 -W1,--version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.def";
+        MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -fno-exceptions -DMATLAB_MEX_FILE -DNDEBUG";
+        MATLAB_LINK="-shared -W1,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
+        MATLAB_LIB="-W1,--rpath-link,\"${MATLAB_DIR}/extern/lib/win32\",--rpath-link,\"${MATLAB_DIR}/bin/win32\" \"${MATLAB_DIR}/bin/win32/libmx.a\" \"${MATLAB_DIR}/bin/win32/libmex.a\" \"${MATLAB_DIR}/bin/win32/libmat.a\" -lm";
+        MATLAB_LINK="-shared -L\"${MATLAB_DIR}/bin/win32\" -W1,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
         MATLAB_LIB="-lmx -lmex -lmat -lm";
         MEXEXT=dll;
         if test ! -e "${MATLAB_DIR}/bin/win32/libmx.a"
         then
-            cd ${MATLAB_DIR}/bin/win32
-            libmx=`dlltool -llibmx.a -d${MATLAB_DIR}/extern/include/libmx.def -Dlibmx.dll`
+            cd "${MATLAB_DIR}/bin/win32"
+            libmx=`dlltool -llibmx.a -d\"${MATLAB_DIR}/extern/include/libmx.def\" -Dlibmx.dll`
             cd -
         fi
         if test ! -e "${MATLAB_DIR}/bin/win32/libmex.a"
         then
-            cd ${MATLAB_DIR}/bin/win32
-            libmex=`dlltool -llibmex.a -d${MATLAB_DIR}/extern/include/libmex.def -Dlibmex.dll`
+            cd "${MATLAB_DIR}/bin/win32"
+            libmex=`dlltool -llibmex.a -d\"${MATLAB_DIR}/extern/include/libmex.def\" -Dlibmex.dll`
             cd -
         fi
         if test ! -e "${MATLAB_DIR}/bin/win32/libmex.a"
         then
-            cd ${MATLAB_DIR}/bin/win32
-            libmat=`dlltool -llibmat.a -d${MATLAB_DIR}/extern/include/libmat.def -Dlibmat.dll`
+            cd "${MATLAB_DIR}/bin/win32"
+            libmat=`dlltool -llibmat.a -d\"${MATLAB_DIR}/extern/include/libmat.def\" -Dlibmat.dll`
             cd -
         fi;;
     esac
