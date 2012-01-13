@@ -163,7 +163,7 @@ dnl ,----------------------------
 dnl | HEADERS
 dnl `----------------------------
 
-HEADERS_TO_CHECK="stdarg.h netdb.h syslog.h"
+HEADERS_TO_CHECK="stdarg.h syslog.h"
 
 AC_CHECK_HEADERS($HEADERS_TO_CHECK,,
 	AC_MSG_ERROR([this header is required]))
