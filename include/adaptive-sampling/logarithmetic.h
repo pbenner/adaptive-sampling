@@ -31,8 +31,8 @@
 static __inline__
 prob_t logadd(prob_t a, prob_t b)
 {
-        if (a < b) return a == -HUGE_VAL ? b : b + LOG1P(expl(a-b));
-        else       return b == -HUGE_VAL ? a : a + LOG1P(expl(b-a));
+        if (a < b) return a == -HUGE_VAL ? b : b + LOG1P(EXP(a-b));
+        else       return b == -HUGE_VAL ? a : a + LOG1P(EXP(b-a));
 }
 
 static __inline__

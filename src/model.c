@@ -144,8 +144,8 @@ prob_t iec_log(int kk, int k, binProblem *bp)
                                 - mbeta_log(alpha, bp);
                 }
                 else {
-                        return LOG(gamma) + (c[0]-1)*log(1-bp->fix_prob.val)
-                                + (c[1]-1)*log(bp->fix_prob.val)
+                        return LOG(gamma) + (c[0]-1)*LOG(1-bp->fix_prob.val)
+                                + (c[1]-1)*LOG(bp->fix_prob.val)
                                 - mbeta_log(alpha, bp);
                 }
         }
