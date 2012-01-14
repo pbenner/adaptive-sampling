@@ -37,7 +37,7 @@ then
         MATLAB_LIB="-W1,--rpath-link,\"${MATLAB_DIR}/extern/lib/win32\",--rpath-link,\"${MATLAB_DIR}/bin/win32\" \"${MATLAB_DIR}/bin/win32/libmx.a\" \"${MATLAB_DIR}/bin/win32/libmex.a\" \"${MATLAB_DIR}/bin/win32/libmat.a\" -lm";
         MATLAB_LINK="-shared -mno-cygwin -L\"${MATLAB_DIR}/bin/win32\" -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
         MATLAB_LIB="-lmx -lmex -lmat -lm";
-        MEXEXT=dll;
+        MEXEXT=mexw32;
         if test ! -e "${MATLAB_DIR}/bin/win32/libmx.a"
         then
             cd "${MATLAB_DIR}/bin/win32"
@@ -62,7 +62,7 @@ then
         MATLAB_LIB="-W1,--rpath-link,\"${MATLAB_DIR}/extern/lib/win32\",--rpath-link,\"${MATLAB_DIR}/bin/win32\" \"${MATLAB_DIR}/bin/win32/libmx.a\" \"${MATLAB_DIR}/bin/win32/libmex.a\" \"${MATLAB_DIR}/bin/win32/libmat.a\" -lm";
         MATLAB_LINK="-shared -L\"${MATLAB_DIR}/bin/win32\" -W1,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
         MATLAB_LIB="-lmx -lmex -lmat -lm";
-        MEXEXT=dll;
+        MEXEXT=mexw32;
         if test ! -e "${MATLAB_DIR}/bin/win32/libmx.a"
         then
             cd "${MATLAB_DIR}/bin/win32"
