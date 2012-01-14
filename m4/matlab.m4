@@ -27,7 +27,7 @@ then
 	     *)
 		MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
         	MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnx86/mexFunction.map\"";
-        	MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnx86\",--rpath-link,${MATLAB_DIR}/bin/glnx86 -L\"${MATLAB_DIR}/bin/glnx86\" -lmx -lmex -lmat -lm";
+        	MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnx86\",--rpath-link,\"${MATLAB_DIR}/bin/glnx86\" -L\"${MATLAB_DIR}/bin/glnx86\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexglx;;
 	esac
 	;;
@@ -52,7 +52,7 @@ then
         fi
         if test ! -e "${MATLAB_DIR}/bin/win32/libmex.a"
         then
-            cd ${MATLAB_DIR}/bin/win32
+            cd "${MATLAB_DIR}/bin/win32"
             libmat=`dlltool -llibmat.a -d"${MATLAB_DIR}/extern/include/libmat.def" -Dlibmat.dll`
             cd -
         fi;;
