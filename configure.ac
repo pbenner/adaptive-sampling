@@ -229,7 +229,7 @@ AX_CFLAGS_GCC_OPTION([-Winline])
 AX_CFLAGS_GCC_OPTION([-Wstrict-prototypes])
 AX_CFLAGS_GCC_OPTION([-Wno-trigraphs])
 AX_CFLAGS_GCC_OPTION([-Wtrampolines])
-AX_CFLAGS_GCC_OPTION([-ansi])
+dnl AX_CFLAGS_GCC_OPTION([-ansi])
 AX_CFLAGS_GCC_OPTION([-fPIC])
 AX_CFLAGS_GCC_OPTION([-fno-nested-functions])
 
