@@ -4,13 +4,13 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)
 
 MATLAB_LINK_EXTRA = -Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas
 
-all: example.$(MEXEXT)
+all: adaptive_sampling.$(MEXEXT)
 
-example.o: example.c
+adaptive_sampling.o: adaptive_sampling.c
 	$(CC) $(DEFS) $(CFLAGS) $(INCLUDES) $(MATLAB_FLAGS) -c -o $@ $<
-example.$(MEXEXT): example.o
+adaptive_sampling.$(MEXEXT): adaptive_sampling.o
 	$(CC) -o $@ $< $(MATLAB_LIB) $(MATLAB_LINK) $(MATLAB_LINK_EXTRA) $(LIB_PTHREAD)
 
 clean-local:
-	$(RM) example.o
-	$(RM) example.$(MEXEXT)
+	$(RM) adaptive_sampling.o
+	$(RM) adaptive_sampling.$(MEXEXT)
