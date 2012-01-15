@@ -141,6 +141,26 @@ matrix_t * from_gsl_matrix(const gsl_matrix * matrix)
         return m;
 }
 
+static __inline__
+void print_vector(vector_t* v) {
+        int i;
+        for (i = 0; i < v->size; i++) {
+                printf("%f ", v->content[i]);
+        }
+        printf("\n");
+}
+
+static __inline__
+void print_matrix(matrix_t* m) {
+        int i, j;
+        for (i = 0; i < m->rows; i++) {
+                for (j = 0; j < m->columns; j++) {
+                        printf("%f ", m->content[i][j]);
+                }
+                printf("\n");
+        }
+}
+
 __END_DECLS
 
 #endif /* LINALG_H */
