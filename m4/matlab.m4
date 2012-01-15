@@ -8,9 +8,18 @@ dnl  ----------------------------------------------------
 AC_DEFUN([CHECK_MATLAB],
 [
 AC_ARG_WITH(matlab,
-[  --with-matlab=DIR	the directory where Matlab is installed ],
-MATLAB_DIR=${withval},
-MATLAB_DIR=)
+	[  --with-matlab=DIR	the directory where Matlab is installed ],
+	[if test -n "${withval}" -a ! "${withval}" = "yes"; then
+		MATLAB_DIR=${withval};
+	 else
+		AC_PATH_PROG([MATLAB_PROG], [matlab])
+		if test -n "${MATLAB_PROG}"; then
+		   	MATLAB_DIR=$($MATLAB_PROG -e | grep '^MATLAB=' | sed s,MATLAB=,,);
+		else
+			AC_MSG_ERROR([You must specify the matlab directory with --with-matlab=PATH])
+		fi;
+	 fi],
+	MATLAB_DIR=)
 
 if test -n "${MATLAB_DIR}"
 then
