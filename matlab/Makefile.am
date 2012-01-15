@@ -11,6 +11,12 @@ adaptive_sampling.o: adaptive_sampling.c
 adaptive_sampling.$(MEXEXT): adaptive_sampling.o
 	$(CC) -o $@ $< $(MATLAB_LIB) $(MATLAB_LINK) $(MATLAB_LINK_EXTRA) $(LIB_PTHREAD)
 
+tar:
+	mkdir adaptive-sampling-matlab
+	cp  *.m *.mex* adaptive-sampling-matlab
+	tar -cjvf adaptive-sampling-matlab.tar.bz2 adaptive-sampling-matlab
+	$(RM) -r adaptive-sampling-matlab
+
 clean-local:
 	$(RM) adaptive_sampling.o
 	$(RM) adaptive_sampling.$(MEXEXT)
