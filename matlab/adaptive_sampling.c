@@ -206,11 +206,21 @@ matrix_t* getGamma(const mxArray* array, size_t L) {
 
 static
 void freeResult(BinningResult * result) {
-        free_matrix(result->moments);
-        free_matrix(result->marginals);
-        free_vector(result->bprob);
-        free_vector(result->mpost);
-        free_vector(result->utility);
+        if (result->moments) {
+                free_matrix(result->moments);
+        }
+        if (result->marginals) {
+                free_matrix(result->marginals);
+        }
+        if (result->bprob) {
+                free_vector(result->bprob);
+        }
+        if (result->mpost) {
+                free_vector(result->mpost);
+        }
+        if (result->utility) {
+                free_vector(result->utility);
+        }
         free(result);
 }
 
@@ -231,7 +241,6 @@ BinningResult * callBinning(const mxArray *prhs[]) {
         beta    = getBeta(prhs[2], L);
         gamma   = getGamma(prhs[3], L);
         options = getOptions(prhs[4]);
-        binning(K, counts, alpha, beta, gamma, options);
 
         result = binning(K, counts, alpha, beta, gamma, options);
 

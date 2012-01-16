@@ -134,22 +134,24 @@ void mgs_init(
                 __counts__[i] = 0;
         }
 
-        /* burn in */
-        __multibins__[0] = new_multibin(L);
-        for (i = 0; i < R; i++) {
-                sample_multibin(g, f, data, __multibins__[0]);
-        }
-
-        __counts__[__multibins__[0]->n_bins-1]++;
-        /* sample */
-        for (i = 1; i < N; i++) {
-                if ((i+1)%100 == 0) {
-                        notice(NONE, "Generating samples... %.1f%%", (float)100*(i+1)/N);
+        if (N > 0) {
+                /* burn in */
+                __multibins__[0] = new_multibin(L);
+                for (i = 0; i < R; i++) {
+                        sample_multibin(g, f, data, __multibins__[0]);
                 }
-                __multibins__[i] = clone_multibin(__multibins__[i-1]);
-                sample_multibin(g, f, data, __multibins__[i]);
 
-                __counts__[__multibins__[i]->n_bins-1]++;
+                __counts__[__multibins__[0]->n_bins-1]++;
+                /* sample */
+                for (i = 1; i < N; i++) {
+                        if ((i+1)%100 == 0) {
+                                notice(NONE, "Generating samples... %.1f%%", (float)100*(i+1)/N);
+                        }
+                        __multibins__[i] = clone_multibin(__multibins__[i-1]);
+                        sample_multibin(g, f, data, __multibins__[i]);
+
+                        __counts__[__multibins__[i]->n_bins-1]++;
+                }
         }
 }
 

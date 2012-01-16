@@ -110,7 +110,7 @@ void computeBinning(
                 computeMoments(result->moments, evidence_ref, bd);
         }
         /* compute sampling utility */
-        if (bd->options->utility) {
+        if (bd->options->utility && bd->options->algorithm == 0) {
                 computeUtility(result->utility, evidence_ref, bd);
         }
 
@@ -218,14 +218,13 @@ binning(
 {
         binData bd;
         size_t L = counts[0]->columns;
+
         BinningResult *result = (BinningResult *)malloc(sizeof(BinningResult));
-        result->moments   = (options->n_moments ?
-                             alloc_matrix(options->n_moments, L)   : NULL);
-        result->marginals = (options->marginal  ?
-                             alloc_matrix(L, options->n_marginals) : NULL);
-        result->bprob     = alloc_vector(L);
-        result->mpost     = alloc_vector(L);
-        result->utility   = alloc_vector(L);
+        result->moments   = (options->n_moments       ? alloc_matrix(options->n_moments, L)   : NULL);
+        result->marginals = (options->marginal        ? alloc_matrix(L, options->n_marginals) : NULL);
+        result->bprob     = (options->bprob           ? alloc_vector(L)                       : NULL);
+        result->mpost     = (options->model_posterior ? alloc_vector(L)                       : NULL);
+        result->utility   = (options->utility         ? alloc_vector(L)                       : NULL);
 
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
 

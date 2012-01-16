@@ -228,19 +228,22 @@ def binning(events, counts, alpha, beta, gamma, options):
      _lib._free_matrix(c_gamma)
 
      result = \
-     { 'moments'   : getMatrix(tmp.contents.moments)   if tmp.contents.moments   else [],
-       'marginals' : getMatrix(tmp.contents.marginals) if tmp.contents.marginals else [],
-       'bprob'     : getVector(tmp.contents.bprob),
-       'mpost'     : getVector(tmp.contents.mpost),
-       'utility'   : getVector(tmp.contents.utility) }
+     { 'moments'   : getMatrix(tmp.contents.moments)   if bool(tmp.contents.moments)   else [],
+       'marginals' : getMatrix(tmp.contents.marginals) if bool(tmp.contents.marginals) else [],
+       'bprob'     : getVector(tmp.contents.bprob)     if bool(tmp.contents.bprob)     else [],
+       'mpost'     : getVector(tmp.contents.mpost)     if bool(tmp.contents.mpost)     else [],
+       'utility'   : getVector(tmp.contents.utility)   if bool(tmp.contents.utility)   else [] }
 
-     if tmp.contents.moments:
+     if bool(tmp.contents.moments):
           _lib._free_matrix(tmp.contents.moments)
-     if tmp.contents.marginals:
+     if bool(tmp.contents.marginals):
           _lib._free_matrix(tmp.contents.marginals)
-     _lib._free_vector(tmp.contents.bprob)
-     _lib._free_vector(tmp.contents.mpost)
-     _lib._free_vector(tmp.contents.utility)
+     if bool(tmp.contents.bprob):
+          _lib._free_vector(tmp.contents.bprob)
+     if bool(tmp.contents.mpost):
+          _lib._free_vector(tmp.contents.mpost)
+     if bool(tmp.contents.utility):
+          _lib._free_vector(tmp.contents.utility)
      _lib._free(tmp)
 
      return result
