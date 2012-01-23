@@ -10,9 +10,9 @@ function result = adsamp(counts, varargin)
 % the following parameters are implemented:
 %
 % parameter, default [: description]
-%  'alpha', default_alpha(ones(K, L))
-%  'beta', ones(1, L)
-%  'gamma', default_gamma(L)
+%  'alpha', default_alpha(ones(K, L)): "pseudo counts"
+%  'beta', ones(1, L): relative class weights
+%  'gamma', default_gamma(L): a priori importance of each consecutive bin
 %  'n_moments', 2: compute the first N>=2 moments
 %  'model_posterior', 2
 %  'bprob', 1
@@ -29,7 +29,7 @@ function result = adsamp(counts, varargin)
 %  'algorithm', 'prombs': select an algorithm 
 %      [mgs | prombstree | prombs]
 %  'which', 0: for which event to compute the binning
-%  'samples', [0 0]
+%  'samples', [100 2000]
 %
 %
 % Example:
@@ -41,10 +41,20 @@ function result = adsamp(counts, varargin)
 [K, L] = size(counts);
 countstat  = count_statistic(counts);
 
+ispair = @(x) isnumeric(x) && length(x) == 2;
+isinterval = @(x) ispair(x) && 0 <= x(1) && x(1)<x(2) && x2<=1;
+ispos = @(x) isscalar(x) && x>0;
+
 args = inputParser;
-args.addParamValue('alpha', default_alpha(ones(K, L)), @isnumeric);	% maybe check dimensions here?
-args.addParamValue('beta', ones(1, L), @isnumeric);
-args.addParamValue('gamma', default_gamma(L), @isnumeric);
+args.addParamValue(...
+	'alpha', ...
+	default_alpha(ones(K, L)), ...
+	@(x) isnumeric(x) && all(size(x) == [K*L L]));
+args.addParamValue('beta', ones(1, L), @(x) isvector(x) && length(x)==L);
+args.addParamValue(...
+	'gamma', ...
+	default_gamma(L), ...
+	@(x) isnumeric(x) && all(size(x) == L));
 args.KeepUnmatched = true;
 args.parse(varargin{:});
 
@@ -58,14 +68,14 @@ p.addParamValue('differential_entropy', 1, @isscalar);
 p.addParamValue('multibin_entropy', 0, @isscalar);
 p.addParamValue('effective_counts', 0, @isscalar);
 p.addParamValue('marginal', 1, @isscalar);
-p.addParamValue('marginal_step', 0.01, @isscalar);
-p.addParamValue('marginal_range', [0.0 1.0], @isnumeric);
-p.addParamValue('epsilon', 0.00001, @isscalar);
+p.addParamValue('marginal_step', 0.01, ispos);
+p.addParamValue('marginal_range', [0.0 1.0], isinterval);
+p.addParamValue('epsilon', 0.00001, ispos);
 p.addParamValue('threads', 1, @isscalar);
-p.addParamValue('stacksize', 256*1024, @isscalar);
+p.addParamValue('stacksize', 256*1024, ispos);
 p.addParamValue('algorithm', 'prombs', @ischar);
 p.addParamValue('which', 0, @isscalar);
-p.addParamValue('samples', [0 0], @isnumeric);
+p.addParamValue('samples', [100 2000], ispair);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
@@ -76,6 +86,9 @@ switch p.Results.algorithm
 	case 'prombstree'
 		options.algorithm = 1;
 	case 'mgs'
+		if p.Results.utility
+			error('utility cannot be calculated for algorithm msg')
+		end
 		options.algorithm = 2;
 	otherwise
 		error(['algorithm ' p.Results.algorithm ' is not implemented'])
@@ -83,3 +96,4 @@ end
 
 
 result  = adaptive_sampling(countstat, args.Results.alpha, args.Results.beta, args.Results.gamma, options);
+
