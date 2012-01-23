@@ -35,9 +35,9 @@
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
-#ifdef HAVE_ERROR_H
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
-#endif /* HAVE_ERROR_H */
+#endif /* HAVE_ERRNO_H */
 
 #define GETMODE(mode, exit_code, err_type)		\
 	exit_code = (mode>>2);	    /* ...xxxxx00 */	\
