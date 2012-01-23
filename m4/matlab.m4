@@ -27,13 +27,16 @@ then
 
     case $build_os in
     *linux*)
-	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
-       	MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnxa64/mexFunction.map\"";
-       	MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnxa64\",--rpath-link,\"${MATLAB_DIR}/bin/glnxa64\" -L\"${MATLAB_DIR}/bin/glnxa64\" -lmx -lmex -lmat -lm";
 	case $host_cpu in
 	     ia64*|x86_64)
+	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
+       		MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnxa64/mexFunction.map\"";
+       		MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnxa64\",--rpath-link,\"${MATLAB_DIR}/bin/glnxa64\" -L\"${MATLAB_DIR}/bin/glnxa64\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexa64;;
 	     *)
+	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
+       		MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnx86/mexFunction.map\"";
+       		MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnx86\",--rpath-link,\"${MATLAB_DIR}/bin/glnx86\" -L\"${MATLAB_DIR}/bin/glnx86\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexglx;;
 	esac
 	;;
