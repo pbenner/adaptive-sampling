@@ -168,8 +168,8 @@ HEADERS_TO_CHECK="stdarg.h"
 AC_CHECK_HEADERS($HEADERS_TO_CHECK,,
 	AC_MSG_ERROR([this header is required]))
 
-AC_CHECK_HEADER([error.h],
-	AC_DEFINE(HAVE_ERROR_H, [], [Needed on OpenBSD systems.]))
+AC_CHECK_HEADER([errno.h],
+	AC_DEFINE(HAVE_ERRNO_H, [], [Needed on OpenBSD systems.]))
 AC_CHECK_HEADER([netdb.h],
 	AC_DEFINE(HAVE_NETDB_H, [], [Not present on mingw.]))
 AC_CHECK_HEADER([syslog.h],
