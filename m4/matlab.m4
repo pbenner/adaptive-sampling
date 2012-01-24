@@ -47,14 +47,14 @@ then
 	case $host_cpu in
 	     ia64*|x86_64)
 	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
-       		MATLAB_LINK="-pthread -bundle -Wl,-flat_namespace -undefined suppress -Wl,-exported_symbols_list,\"${MATLAB_DIR}/extern/lib/mac/mexFunction.map\"";
-		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -static-libgcc -lgsl -lgslcblas"
-       		MATLAB_LIB="-L\"${MATLAB_DIR}/bin/mac\" -lmx -lmex -lmat -lm";
+       		MATLAB_LINK="-pthread -bundle -Wl,-flat_namespace -undefined suppress -Wl,-exported_symbols_list,\"${MATLAB_DIR}/extern/lib/maci64/mexFunction.map\"";
+		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -lgsl -lgslcblas"
+       		MATLAB_LIB="-L\"${MATLAB_DIR}/bin/maci64\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexmaci64;;
 	     *)
 	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
        		MATLAB_LINK="-pthread -bundle -Wl,-flat_namespace -undefined suppress -Wl,-exported_symbols_list,\"${MATLAB_DIR}/extern/lib/mac/mexFunction.map\"";
-		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -static-libgcc -lgsl -lgslcblas"
+		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -lgsl -lgslcblas"
        		MATLAB_LIB="-L\"${MATLAB_DIR}/bin/mac\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexmac;;
 	esac
