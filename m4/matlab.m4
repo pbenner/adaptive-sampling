@@ -32,13 +32,13 @@ then
 	     ia64*|x86_64)
 	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
        		MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnxa64/mexFunction.map\"";
-		MATLAB_LINK_EXTRA="-Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas"
+		MATLAB_LINK_EXTRA="-Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas";
        		MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnxa64\",--rpath-link,\"${MATLAB_DIR}/bin/glnxa64\" -L\"${MATLAB_DIR}/bin/glnxa64\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexa64;;
 	     *)
 	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
        		MATLAB_LINK="-pthread -shared -Wl,--version-script,\"${MATLAB_DIR}/extern/lib/glnx86/mexFunction.map\"";
-		MATLAB_LINK_EXTRA="-Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas"
+		MATLAB_LINK_EXTRA="-Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas";
        		MATLAB_LIB="-Wl,--rpath-link,\"${MATLAB_DIR}/extern/lib/glnx86\",--rpath-link,\"${MATLAB_DIR}/bin/glnx86\" -L\"${MATLAB_DIR}/bin/glnx86\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexglx;;
 	esac
@@ -48,13 +48,13 @@ then
 	     ia64*|x86_64)
 	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
        		MATLAB_LINK="-pthread -bundle -Wl,-flat_namespace -undefined suppress -Wl,-exported_symbols_list,\"${MATLAB_DIR}/extern/lib/maci64/mexFunction.map\"";
-		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -lgsl -lgslcblas"
+		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -lgsl -lgslcblas";
        		MATLAB_LIB="-L\"${MATLAB_DIR}/bin/maci64\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexmaci64;;
 	     *)
 	     	MATLAB_FLAGS="-I\"${MATLAB_DIR}/extern/include\" -I\"${MATLAB_DIR}/simulink/include\" -DMATLAB_MEX_FILE -fPIC -ansi -D_GNU_SOURCE -pthread -O -DNDEBUG";
        		MATLAB_LINK="-pthread -bundle -Wl,-flat_namespace -undefined suppress -Wl,-exported_symbols_list,\"${MATLAB_DIR}/extern/lib/mac/mexFunction.map\"";
-		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -lgsl -lgslcblas"
+		MATLAB_LINK_EXTRA="../src/.libs/libadaptive-sampling.a -lgsl -lgslcblas";
        		MATLAB_LIB="-L\"${MATLAB_DIR}/bin/mac\" -lmx -lmex -lmat -lm";
         	MEXEXT=mexmac;;
 	esac
@@ -64,7 +64,7 @@ then
         MATLAB_LINK="-shared -W1,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
         MATLAB_LIB="-W1,--rpath-link,\"${MATLAB_DIR}/extern/lib/win32\",--rpath-link,\"${MATLAB_DIR}/bin/win32\" \"${MATLAB_DIR}/bin/win32/libmx.a\" \"${MATLAB_DIR}/bin/win32/libmex.a\" \"${MATLAB_DIR}/bin/win32/libmat.a\" -lm";
         MATLAB_LINK="-shared -L\"${MATLAB_DIR}/bin/win32\" -W1,--version-script,\"${MATLAB_DIR}/extern/lib/win32/mexFunction.def\"";
-	MATLAB_LINK_EXTRA="-Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas"
+	MATLAB_LINK_EXTRA="-Wl,--no-undefined -Wl,-dn,../src/.libs/libadaptive-sampling.a -static-libgcc -Wl,-dn,-lgsl,-dy,-lmwblas";
         MATLAB_LIB="-lmx -lmex -lmat -lm";
         MEXEXT=mexw32;
     esac
