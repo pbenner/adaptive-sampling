@@ -27,7 +27,7 @@ function plot_moments(results, varargin)
 % Examples:
 %  counts = [10 11 10 10 12 10 11 20 21 19 19 20 20 19 21 20; ...
 %    90 89 90 90 88 90 89 80 79 81 81 80 80 81 79 80];
-%  r = adsamp(counts, 'marginal_step', 0.005)
+%  r = adsamp(counts, 'marginal_step', 0.001)
 %  plot_moments(r);
 %  plot_moments(r, 'marginal_colormap', winter);
 %  plot_moments(r, 'bprob', 1, 'marginal_colorbar_location', 'off');
