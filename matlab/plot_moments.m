@@ -7,12 +7,12 @@ function plot_moments(results, varargin)
 % algorithm specified in
 %   Poppe, Benner & Elze (2012)
 %
-% the following parameters are implemented:
+% The following parameters are implemented:
 %
 % parameter, default [: description]
 %  'marginal', 1: plot full marginal distribution
 %  'marginal_colormap', flipud(gray()): colormap for plotting marginals
-%  'marginal_colorbar_location', 'NorthOutside': colorbar for marginals;
+%  'marginal_colorbar_location', 'off': colorbar for marginals;
 %    see help colorbar for more details about locations;
 %    'marginal_colorbar_location', 'off' switches colorbar off
 %  'autoclip_marginal', 1: clip y axis of the marginals to sensible values
@@ -22,27 +22,35 @@ function plot_moments(results, varargin)
 %  'std', 1: plot standard deviation (sqrt of 2nd moment)
 %    around the first moment (expected value)
 %  'bprob', 0: plot break probabilities
-%  'bprob_color', 'g': line color for break probabilities
+%  'bprob_color', [0 0.5 0]: line color for break probabilities
+%  'XAxisLocation', 'bottom'
 %
 % Examples:
 %  counts = [10 11 10 10 12 10 11 20 21 19 19 20 20 19 21 20; ...
 %    90 89 90 90 88 90 89 80 79 81 81 80 80 81 79 80];
 %  r = adsamp(counts, 'marginal_step', 0.001)
 %  plot_moments(r);
-%  plot_moments(r, 'marginal_colormap', winter);
-%  plot_moments(r, 'bprob', 1, 'marginal_colorbar_location', 'off');
+%  plot_moments(r, ...
+%    'marginal_colorbar_location', 'NorthOutside', ...
+%    'marginal_colormap', winter);
+%
+%  counts = [1 2 2 3 2 4 4 5 3 4 6 5 4 5 4 5 5 4 3 4 4 5 5 6 6 6 7 8 8 8 7 5 4 4 2 2; ...
+%    9 8 8 7 8 6 6 5 7 6 4 5 6 5 6 5 5 6 7 6 6 5 5 4 4 4 3 2 2 2 3 5 6 6 8 8];
+%  r = adsamp(counts)
+%  plot_moments(r, 'bprob', 1);
 
 % options:
 p = inputParser;
 p.addParamValue('marginal', 1, @isscalar);
 p.addParamValue('marginal_colormap', flipud(gray()), @isnumeric);
-p.addParamValue('marginal_colorbar_location', 'NorthOutside', @ischar);
+p.addParamValue('marginal_colorbar_location', 'off', @ischar);
 p.addParamValue('autoclip_marginal', 1, @isscalar);
 p.addParamValue('moment1_plotprops', 'r', @ischar);
 p.addParamValue('moment2_plotprops', 'r--', @ischar);
 p.addParamValue('std', 1, @isscalar);
 p.addParamValue('bprob', 0, @isscalar);
-p.addParamValue('bprob_color', 'g', @ischar);
+p.addParamValue('bprob_color', [0 0.5 0], @(x) ischar(x) || length(x) == 3);
+p.addParamValue('XAxisLocation', 'bottom', @ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
@@ -75,10 +83,11 @@ if p.Results.marginal
 	if p.Results.autoclip_marginal
 		if ~has_moment2
 			warning('cannot autoclip marginals: results structure does not contain 2nd moment')
+		else
+			ylimtop = min(max(m1 + 1.5*stdev), 1);
+			ylimbot = max(min(m1 - 1.5*stdev), 0);
+			ylim([ylimbot ylimtop]);
 		end
-		ylimtop = min(max(m1 + 1.5*stdev), 1);
-		ylimbot = max(min(m1 - 1.5*stdev), 0);
-		ylim([ylimbot ylimtop]);
 	end
 	
 	hold on
@@ -86,6 +95,12 @@ end
 
 % plot expected value (1st moment):
 plot(m1, p.Results.moment1_plotprops);
+
+ax1 = gca;
+if strcmp(p.Results.XAxisLocation, 'top')
+	set(ax1, 'XAxisLocation', 'top');
+end
+
 
 if p.Results.std
 	if ~has_moment2
@@ -101,10 +116,14 @@ if p.Results.bprob
 		error('results struct does not contain bprob')
 	end
 	hold on
-	ax1 = gca;
 	col = p.Results.bprob_color;
+	if strcmp(p.Results.XAxisLocation, 'top')
+		x2loc = 'bottom';
+	else
+		x2loc = 'top';
+	end
 	ax2 = axes('Position',get(ax1,'Position'),...
-		'XAxisLocation','top',...
+		'XAxisLocation', x2loc,...
 		'xticklabel',[], ...
 		'YAxisLocation','right',...
 		'Color','none',...
@@ -121,6 +140,8 @@ if p.Results.bprob
 	yinc = (ylimits(2)-ylimits(1))/5;
 	set(ax2,'YTick',[ylimits(1):yinc:ylimits(2)]);
 end
+
+grid on
 
 hold off
 
