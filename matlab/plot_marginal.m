@@ -11,12 +11,15 @@ function plot_marginal(results, varargin)
 % parameter, default [: description]
 %  'marginal', 1: plot full marginal distribution (if available);
 %    if no marginal available, the first two moments are plotted
-%  'marginal_colormap', flipud(gray()): colormap for plotting marginals
+%  'marginal_colormap', flipud(gray(256)): colormap for plotting marginals
 %  'marginal_colorbar_location', 'off': colorbar for marginals;
 %    see help colorbar for more details about locations;
 %    'marginal_colorbar_location', 'off' switches colorbar off
 %  'autoclip_marginal', 1: clip y axis of the marginals to sensible values
 %    if not set, the whole range between 0 and 1 is plotted
+%  'normalize_marginal_plot', 0: normalize marginals so that different
+%    plots are easier to compare; if z are marginals, normalized marginals
+%    n are n = log(1+z) && n <= 5
 %  'median_plotprobs', 'r': plot properties of median (if marginal 
 %    available)
 %  'quartiles', 1: plot 1st and 3rd quartile
@@ -54,9 +57,10 @@ function plot_marginal(results, varargin)
 % options:
 p = inputParser;
 p.addParamValue('marginal', 1, @isscalar);
-p.addParamValue('marginal_colormap', flipud(gray()), @isnumeric);
+p.addParamValue('marginal_colormap', flipud(gray(256)), @isnumeric);
 p.addParamValue('marginal_colorbar_location', 'off', @ischar);
 p.addParamValue('autoclip_marginal', 1, @isscalar);
+p.addParamValue('normalize_marginal_plot', 0, @isscalar);
 p.addParamValue('median_plotprobs', 'r', @ischar);
 p.addParamValue('quartiles', 1, @isscalar);
 p.addParamValue('quartiles_plotprobs', 'r--', @ischar);
@@ -92,11 +96,24 @@ if isfield(results, 'marginals')
 		% interpolate:
 		quantiles(:, i) = interp1(ncd, ind/ind(end), quantiles_p);
 	end
+	
 	if p.Results.marginal
-		imagesc(...
-			[1 n], ...
-			[1 0], ...
-			flipud(results.marginals'));
+		image_matrix = flipud(results.marginals');
+		if p.Results.normalize_marginal_plot
+			image_matrix = log(1+image_matrix);
+			maplength = length(p.Results.marginal_colormap);
+			image_matrix = maplength*(image_matrix/5);
+			image(...
+				[1 n], ...
+				[1 0], ...
+				image_matrix);
+		else
+			imagesc(...
+				[1 n], ...
+				[1 0], ...
+				image_matrix);
+		end
+		
 		set(gca, 'YDir', 'normal');
 		colormap(p.Results.marginal_colormap);
 		if ~strcmp(p.Results.marginal_colorbar_location, 'off')
