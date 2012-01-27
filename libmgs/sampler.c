@@ -26,10 +26,6 @@
 
 #include <sys/time.h>
 
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
-#include <gsl/gsl_permutation.h>
-
 #include <mgs.h>
 
 #include <adaptive-sampling/exception.h>
@@ -37,7 +33,6 @@
 
 static multibin_t** __multibins__;
 static size_t __N__;
-static gsl_rng* __r__;
 static size_t* __counts__;
 
 static
@@ -88,6 +83,17 @@ void sample_bin(
 }
 
 static
+void shuffle(size_t p[], size_t N)
+{
+        size_t i;
+
+        for(i = 0; i < N-1; i++) {
+                size_t c = rand() / (RAND_MAX/(N-i) + 1);
+                size_t t = p[i]; p[i] = p[i+c]; p[i+c] = t;
+        }
+}
+
+static
 void sample_multibin(
         prob_t *g,
         prob_t (*f)(int, int, void*),
@@ -96,14 +102,16 @@ void sample_multibin(
 {
         size_t N = mb->n_breaks;
         size_t pos;
-        gsl_permutation * p = gsl_permutation_alloc(N);
-        gsl_permutation_init(p);
-        gsl_ran_shuffle (__r__, p->data, N, sizeof(size_t));
+        size_t p[N];
+
+        for(pos = 0; pos < N; pos++) {
+                p[pos] = pos;
+        }
+        shuffle(p, N);
 
         for (pos = 0; pos < N; pos++) {
-                sample_bin(gsl_permutation_get(p, pos), g, f, data, mb);
+                sample_bin(p[pos], g, f, data, mb);
         }
-        gsl_permutation_free(p);
 }
 
 void mgs_init(
@@ -114,15 +122,6 @@ void mgs_init(
         size_t L,
         void *data)
 {
-        const gsl_rng_type * T = gsl_rng_default;
-        gsl_rng_env_setup();
-        __r__ = gsl_rng_alloc (T);
-
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        time_t seed = tv.tv_sec*tv.tv_usec;
-        srand(seed);
-
         __N__ = N;
         __multibins__    = (multibin_t**)malloc((N+1)*sizeof(multibin_t*));
         __multibins__[N] = (multibin_t* )NULL;
@@ -164,7 +163,6 @@ void mgs_free()
         }
         free(__multibins__);
         free(__counts__);
-        gsl_rng_free(__r__);
 }
 
 static
