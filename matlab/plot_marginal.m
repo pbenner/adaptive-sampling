@@ -33,6 +33,8 @@ function plot_marginal(results, varargin)
 %    is active
 %  'bprob', 0: plot break probabilities
 %  'bprob_color', [0 0.5 0]: line color for break probabilities
+%  'show_legend', 1: show legend
+%  'legend_location', 'Best': location of the legend (see help legend)
 %  'XAxisLocation', 'bottom'
 %
 % Examples:
@@ -66,23 +68,15 @@ p.addParamValue('moment2_plotprops', 'r--', @ischar);
 p.addParamValue('std', 1, @isscalar);
 p.addParamValue('bprob', 0, @isscalar);
 p.addParamValue('bprob_color', [0 0.5 0], @(x) ischar(x) || length(x) == 3);
+p.addParamValue('show_legend', 1, @isscalar);
+p.addParamValue('legend_location', 'Best', @(x) ischar(x) || length(x) == 4);
 p.addParamValue('XAxisLocation', 'bottom', @ischar);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
-plot_moments = ~isfield(results, 'marginal') ||  p.Results.add_moments;
-
-% if ~isfield(results, 'moments')
-% 	error('results structure does not contain moments')
-% end
-% m1 = results.moments(1, :);
-% if length(results.moments(:,1)) > 1
-% 	has_moment2 = 1;
-% 	variance = results.moments(2, :) - results.moments(1, :).^2;
-% 	stdev = sqrt(variance);
-% 	std_top = m1 + stdev;
-% 	std_bot = m1 - stdev;
-% end
+% initialize legend handles:
+legend_handles = [];
+legend_strings = {};
 
 if isfield(results, 'marginals')
 	% calculate quantiles [.025 .25 .50 .75 .975]:
@@ -90,7 +84,7 @@ if isfield(results, 'marginals')
 	quantiles_p = [.025 .25 .50 .75 .975];
 	quantiles = zeros(5, n);
 	for i=1:n
-		v = result.marginals(i, :);
+		v = results.marginals(i, :);
 		% normalized cumsum:
 		ncumsum = cumsum(v)/sum(v);
 		% make data distinct:
@@ -110,36 +104,70 @@ if isfield(results, 'marginals')
 		end
 		xlim([1 length(results.marginals(:,1))]);
 		if p.Results.autoclip_marginal
-			if ~has_moment2
-				warning('cannot autoclip marginals: results structure does not contain 2nd moment')
+			if p.Results.outer_quantiles
+				ylim([min(quantiles(1, :)) max(quantiles(5, :))]);
 			else
-				ylimtop = min(max(m1 + 1.5*stdev), 1);
-				ylimbot = max(min(m1 - 1.5*stdev), 0);
-				ylim([ylimbot ylimtop]);
+				ylim([...
+					min((quantiles(1, :) + quantiles(2, :))/2) ...
+					max((quantiles(4, :) + quantiles(5, :))/2)]);
 			end
 		end
 		
 		hold on
 	end
+	
+	% plot quantiles:
+	l_med = plot(quantiles(3, :), p.Results.median_plotprobs);
+	legend_strings{end+1} = 'median';
+	legend_handles(end+1) = l_med;
+	
+	hold on
+	if p.Results.quartiles
+		l_quart = plot(quantiles(2, :), p.Results.quartiles_plotprobs);
+		legend_strings{end+1} = 'quantiles .25/.75';
+		legend_handles(end+1) = l_quart;
+		plot(quantiles(4, :), p.Results.quartiles_plotprobs);
+	end
+	if p.Results.outer_quantiles
+		l_outer = plot(quantiles(1, :), p.Results.outer_quantiles_plotprobs);
+		legend_strings{end+1} = 'quantiles .025/.975';
+		legend_handles(end+1) = l_outer;
+		plot(quantiles(5, :), p.Results.outer_quantiles_plotprobs);
+	end
 end
 
-% plot expected value (1st moment):
-plot(m1, p.Results.moment1_plotprops);
+% plot moments:
+if ~isfield(results, 'marginals') ||  p.Results.add_moments
+	if ~isfield(results, 'moments')
+		error('results structure does not contain moments')
+	end
+	% plot expected value (1st moment):
+	m1 = results.moments(1, :);
+	l_exp = plot(m1, p.Results.moment1_plotprops);
+	legend_strings{end+1} = 'expected val.';
+	legend_handles(end+1) = l_exp;
+	hold on
+	
+	if p.Results.std
+		if length(results.moments(:,1)) < 2
+			error('results structure does not contain 2nd moment')
+		end
+		variance = results.moments(2, :) - results.moments(1, :).^2;
+		stdev = sqrt(variance);
+		std_top = m1 + stdev;
+		std_bot = m1 - stdev;
+		l_std = plot(std_top, p.Results.moment2_plotprops);
+		legend_strings{end+1} = 'standard dev.';
+		legend_handles(end+1) = l_std;
+		plot(std_bot, p.Results.moment2_plotprops);
+	end
+end
 
 ax1 = gca;
 if strcmp(p.Results.XAxisLocation, 'top')
 	set(ax1, 'XAxisLocation', 'top');
 end
 
-
-if p.Results.std
-	if ~has_moment2
-		error('results structure does not contain 2nd moment')
-	end
-	hold on
-	plot(std_top, p.Results.moment2_plotprops);
-	plot(std_bot, p.Results.moment2_plotprops);
-end
 
 if p.Results.bprob
 	if ~isfield(results, 'bprob')
@@ -161,7 +189,9 @@ if p.Results.bprob
 	bprob = results.bprob;
 	bprob(1) = nan;
 	bprob(end) = nan;
-	line(1:length(bprob), bprob, 'Color', col, 'Parent', ax2);
+	l_bprob = line(1:length(bprob), bprob, 'Color', col, 'Parent', ax2);
+	legend_strings{end+1} = 'break prob.';
+	legend_handles(end+1) = l_bprob;
 	xlim([1 length(bprob)]);
 	ylimits = get(ax1,'YLim');
 	yinc = (ylimits(2)-ylimits(1))/5;
@@ -172,6 +202,12 @@ if p.Results.bprob
 end
 
 grid on
+
+if p.Results.show_legend
+	legend(legend_handles, ...
+		legend_strings{:},  ...
+		'Location', p.Results.legend_location);
+end
 
 hold off
 
