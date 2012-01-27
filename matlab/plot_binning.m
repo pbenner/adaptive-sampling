@@ -5,7 +5,7 @@ function plot_binning(results, varargin)
 %   Poppe, Benner & Elze (2012)
 %
 % The following parameters are implemented:
-% all parameters of function plot_moments, and in addition:
+% all parameters of function plot_marginal, and in addition:
 %
 % parameter, default [: description]
 %  'bar_color', [0 0.5 0]: color of the bars of the class posteriors
@@ -25,7 +25,7 @@ p.parse(varargin{:});
 figure('Position', [10 10 580 800]);
 
 axes('Position', [0.07 0.51 0.86 0.45]);
-plot_moments(results, 'XAxisLocation', 'top', varargin{:});
+plot_marginal(results, 'XAxisLocation', 'top', varargin{:});
 
 axes('Position', [0.07 0.05 0.86 0.44]);
 if ~isfield(results, 'mpost')
