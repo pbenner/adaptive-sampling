@@ -81,10 +81,6 @@ dnl Tru64 distributes vasprintf() in -liberty
 AC_CHECK_LIB([iberty], [vasprintf])
 AC_CHECK_LIB([m],[cos],,
   AC_MSG_ERROR([this library is required]))
-AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
-  AC_MSG_ERROR([this library is required]))
-AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
-  AC_MSG_ERROR([this library is required]))
 
 AC_ARG_ENABLE([pthreads],
 	[AS_HELP_STRING([--enable-pthreads],
@@ -101,6 +97,25 @@ AS_IF([test "x$enable_pthreads" = "xyes"],
 	[have_pthreads="no"])
 
 AC_SUBST(LIB_PTHREAD)
+
+dnl ,---------------------------- 
+dnl | MINI-GSL LIBRARY
+dnl `----------------------------
+
+AC_ARG_ENABLE([mini-gsl],
+  [  --enable-mini-gsl    Use mini-gsl instead to dynamically linking to the full gsl. ],
+  [case "${enableval}" in
+    yes) enable_mini_gsl=yes ;;
+    no)  enable_mini_gsl=no ;;
+    *) AC_MSG_ERROR([bad value ${enableval} for --enable-mini-gsl]) ;;
+  esac],[enable_mini_gsl=false])
+AM_CONDITIONAL([ENABLE_MINI_GSL], [test x$enable_mini_gsl = xyes])
+
+AM_COND_IF([ENABLE_MINI_GSL],[],
+	[AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
+			AC_MSG_ERROR([this library is required]))
+	 AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
+	 		AC_MSG_ERROR([this library is required]))])
 
 dnl ,---------------------------- 
 dnl | GETOPT_LONG
@@ -279,6 +294,7 @@ AC_CONFIG_FILES([
 	libprombs/Makefile
 	libmgs/Makefile
 	libexception/Makefile
+	libmini-gsl/Makefile
 	adaptive_sampling/Makefile
 	matlab/Makefile
 	src/Makefile
@@ -298,6 +314,7 @@ Build with debug symbols.. ${enable_debug}
 Use long double........... ${enable_longdouble}
 Matlab support............ ${have_matlab}
 PThread support........... ${have_pthreads}
+Use mini-gsl...............${enable_mini_gsl}
 ])
 
 dnl Local Variables:

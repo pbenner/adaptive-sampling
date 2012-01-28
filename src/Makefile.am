@@ -22,4 +22,7 @@ libadaptive_sampling_la_LIBADD  = $(LIB_PTHREAD)
 libadaptive_sampling_la_LIBADD += $(top_builddir)/libexception/libexception.la
 libadaptive_sampling_la_LIBADD += $(top_builddir)/libprombs/libprombs.la
 libadaptive_sampling_la_LIBADD += $(top_builddir)/libmgs/libmgs.la
+if ENABLE_MINI_GSL
+libadaptive_sampling_la_LIBADD += $(top_builddir)/libmini-gsl/libmini-gsl.la
+endif
 libadaptive_sampling_la_LDFLAGS = -no-undefined -version-info 0:0:0

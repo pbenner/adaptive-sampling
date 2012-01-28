@@ -2,7 +2,11 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libexception libprombs libmgs adaptive_sampling src include
+SUBDIRS = include libexception libprombs libmgs
+if ENABLE_MINI_GSL
+SUBDIRS += libmini-gsl
+endif
+SUBDIRS += adaptive_sampling src
 
 dist_bin_SCRIPTS  = bayesian-binning adaptive-sampling
 CLEANFILES        = $(dist_bin_SCRIPTS)
