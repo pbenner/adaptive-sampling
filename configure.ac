@@ -108,7 +108,7 @@ AC_ARG_ENABLE([mini-gsl],
     yes) enable_mini_gsl=yes ;;
     no)  enable_mini_gsl=no ;;
     *) AC_MSG_ERROR([bad value ${enableval} for --enable-mini-gsl]) ;;
-  esac],[enable_mini_gsl=false])
+  esac],[enable_mini_gsl=no])
 AM_CONDITIONAL([ENABLE_MINI_GSL], [test x$enable_mini_gsl = xyes])
 
 AM_COND_IF([ENABLE_MINI_GSL],[],
