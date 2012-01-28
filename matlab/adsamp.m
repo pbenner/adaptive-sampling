@@ -87,7 +87,7 @@ switch p.Results.algorithm
 		options.algorithm = 1;
 	case 'mgs'
 		if p.Results.utility
-			error('utility cannot be calculated for algorithm msg')
+			error('utility cannot be calculated for algorithm mgs')
 		end
 		options.algorithm = 2;
 	otherwise
