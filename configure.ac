@@ -314,7 +314,7 @@ Build with debug symbols.. ${enable_debug}
 Use long double........... ${enable_longdouble}
 Matlab support............ ${have_matlab}
 PThread support........... ${have_pthreads}
-Use mini-gsl...............${enable_mini_gsl}
+Use mini-gsl.............. ${enable_mini_gsl}
 ])
 
 dnl Local Variables:
