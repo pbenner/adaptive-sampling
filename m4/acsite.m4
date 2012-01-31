@@ -23,7 +23,7 @@ dnl `------------------------------------
 AC_DEFUN([AC_MSG_WARN_BOX],
   [# display a nice ascii message box
 	  AC_MSG_WARN([,---------------])
-	  echo -e "$1" | while read LINE;
+	  echo "$1" | while read LINE;
 		  do AC_MSG_WARN([| $LINE]);
 		done
 	  AC_MSG_WARN([`---------------])])
@@ -31,7 +31,7 @@ AC_DEFUN([AC_MSG_WARN_BOX],
 AC_DEFUN([AC_MSG_NOTICE_BOX],
   [# display a nice ascii message box
 	  AC_MSG_NOTICE([,---------------])
-	  echo -e "$1" | while read LINE;
+	  echo "$1" | while read LINE;
 		  do AC_MSG_NOTICE([| $LINE]);
 		done
 	  AC_MSG_NOTICE([`---------------])])
