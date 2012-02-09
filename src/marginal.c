@@ -35,6 +35,7 @@
 
 #include <datatypes.h>
 #include <model.h>
+#include <threading.h>
 #include <utility.h>
 
 /******************************************************************************
@@ -67,29 +68,35 @@ prob_t marginal(
  * Loop through all X
  ******************************************************************************/
 
+static
+void * computeMarginal_thread(void* data_)
+{
+        pthread_data_t *data  = (pthread_data_t *)data_;
+        binProblem *bp = data->bp;
+        int i = data->i, j;
+        matrix_t *marginals = (matrix_t *)data->result;
+        prob_t evidence_ref = data->evidence_ref;
+
+        /* Moments */
+        for (j = 0; j < bp->bd->options->n_marginals; j++) {
+                prob_t p = j*bp->bd->options->marginal_step;
+                if (bp->bd->options->marginal_range.from <= p &&
+                    bp->bd->options->marginal_range.to   >= p &&
+                    p != 0.0 && p != 1.0) {
+                        marginals->content[i][j] = marginal(i, p, bp->bd->options->which, evidence_ref, bp);
+                }
+                else {
+                        marginals->content[i][j] = 0;
+                }
+        }
+        return NULL;
+}
+
 void computeMarginal(
         matrix_t *marginals,
         prob_t evidence_ref,
         binData *bd)
 {
-        binProblem bp; binProblemInit(&bp, bd);
-        int i, j;
-
-        for (i = 0; i < bd->L; i++) {
-                notice(NONE, "Computing marginals... %.1f%%", (float)100*(i+1)/bd->L);
-                marginals->content[i][0] = 0;
-                for (j = 0; j < bd->options->n_marginals; j++) {
-                        prob_t p = j*bd->options->marginal_step;
-                        if (bd->options->marginal_range.from <= p &&
-                            bd->options->marginal_range.to   >= p &&
-                            p != 0.0 && p != 1.0) {
-                                marginals->content[i][j] = marginal(i, p, bd->options->which, evidence_ref, &bp);
-                        }
-                        else {
-                                marginals->content[i][j] = 0;
-                        }
-                }
-        }
-
-        binProblemFree(&bp);
+        threaded_computation((void *)marginals, evidence_ref, bd, computeMarginal_thread,
+                             "Computing marginal: %.1f%%");
 }
