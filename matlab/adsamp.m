@@ -71,7 +71,7 @@ p.addParamValue('marginal', 1, @isscalar);
 p.addParamValue('marginal_step', 0.01, ispos);
 p.addParamValue('marginal_range', [0.0 1.0], isinterval);
 p.addParamValue('epsilon', 0.00001, ispos);
-p.addParamValue('threads', 1, @isscalar);
+p.addParamValue('threads', getNumberOfCores, @isscalar);
 p.addParamValue('stacksize', 256*1024, ispos);
 p.addParamValue('algorithm', 'prombs', @ischar);
 p.addParamValue('which', 0, @isscalar);
