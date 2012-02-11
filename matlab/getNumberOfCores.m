@@ -1,15 +1,11 @@
 function NCores = getNumberOfCores
 
-if ~isempty(strfind(computer,'MAC'))
-  [S,R] = system('sysctl hw.ncpu | awk ''{print $2}''');
-  NCores = str2num(R);
-elseif ~isempty(strfind(computer,'WIN'))
-  % NEEDS TO BE IMPLEMENTED
-elseif ~isempty(strfind(computer,'GLNX'))
-  [S,R] = system(['x=$(awk ''/^processor/ {++n} END {print n}'' /proc/cpuinfo); print $x']);
-  NCores = str2num(R);
+if usejava('jvm')
+	import java.lang.*;
+	r=Runtime.getRuntime;
+	NCores=r.availableProcessors;
 else
-  warning(['OS Type ',computer,' not implemented for getting number of cores!\n Setting NCores to 1.']);
-  NCores = 1;
+	warning('No JVM running. Cannot determine number of processors. Only 1 core used.');
+	NCores=1;
 end
-  
+
