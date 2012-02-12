@@ -109,13 +109,14 @@ AC_ARG_ENABLE([mini-gsl],
     no)  enable_mini_gsl=no ;;
     *) AC_MSG_ERROR([bad value ${enableval} for --enable-mini-gsl]) ;;
   esac],[enable_mini_gsl=no])
-AM_CONDITIONAL([ENABLE_MINI_GSL], [test x$enable_mini_gsl = xyes])
 
-AM_COND_IF([ENABLE_MINI_GSL],[],
+AS_IF([test "x$enable_mini_gsl" = "xyes"],[],
 	[AC_CHECK_LIB([gslcblas],[cblas_dgemm],,
 			AC_MSG_ERROR([this library is required]))
 	 AC_CHECK_LIB([gsl], [gsl_blas_dgemm],,
 	 		AC_MSG_ERROR([this library is required]))])
+
+AM_CONDITIONAL([ENABLE_MINI_GSL], [test x$enable_mini_gsl = xyes])
 
 dnl ,---------------------------- 
 dnl | GETOPT_LONG
