@@ -24,7 +24,7 @@ function result = adsamp(counts, varargin)
 %  'marginal_step', 0.01: step size for the marginal distribution
 %  'marginal_range', [0.0 1.0]: limit range for the marginal distribution
 %  'epsilon', 0.00001: epsilon for entropy estimations
-%  'threads', 1: number of threads
+%  'threads', getNumberOfCores: number of threads
 %  'stacksize', 256*1024: thread stack size
 %  'algorithm', 'prombs': select an algorithm 
 %      [mgs | prombstree | prombs]
@@ -71,7 +71,7 @@ p.addParamValue('marginal', 1, @isscalar);
 p.addParamValue('marginal_step', 0.01, ispos);
 p.addParamValue('marginal_range', [0.0 1.0], isinterval);
 p.addParamValue('epsilon', 0.00001, ispos);
-p.addParamValue('threads', 1, @isscalar);
+p.addParamValue('threads', getNumberOfCores, @isscalar);
 p.addParamValue('stacksize', 256*1024, ispos);
 p.addParamValue('algorithm', 'prombs', @ischar);
 p.addParamValue('which', 0, @isscalar);
