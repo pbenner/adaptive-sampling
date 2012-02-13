@@ -49,8 +49,8 @@ echo ' '
 . $MATLAB/bin/mexopts.sh
 
 # remove -pthread since clang doesn't support it
-CFLAGS=$(echo $CFLAGS | sed -e s/-pthread//)
-LDFLAGS=$(echo $LDFLAGS | sed -e s/-pthread//)
+CFLAGS=$(echo $CFLAGS | sed s/-pthread//)
+LDFLAGS=$(echo $LDFLAGS | sed s/-pthread//)
 
 echo MATLAB_RPATH=\'$RPATH\'\;
 echo MATLAB_CFLAGS=\'-I\"$MATLAB/extern/include\" $CFLAGS\'\;
