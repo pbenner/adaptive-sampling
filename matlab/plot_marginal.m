@@ -39,6 +39,7 @@ function plot_marginal(results, varargin)
 %  'show_legend', 1: show legend
 %  'legend_location', 'Best': location of the legend (see help legend)
 %  'XAxisLocation', 'bottom'
+%  'X' : X Labels
 %
 % Examples:
 %  counts = [10 11 10 10 12 10 11 20 21 19 19 20 20 19 21 20; ...
@@ -75,6 +76,8 @@ p.addParamValue('bprob_color', [0 0.5 0], @(x) ischar(x) || length(x) == 3);
 p.addParamValue('show_legend', 1, @isscalar);
 p.addParamValue('legend_location', 'Best', @(x) ischar(x) || length(x) == 4);
 p.addParamValue('XAxisLocation', 'bottom', @ischar);
+p.addParamValue('X',[1:length(results.bprob)],@(x) isnumeric(x) && length(x) == length(results.bprob));
+p.addParamValue('YLim',[0,1],@isnumeric);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
 
@@ -109,7 +112,7 @@ if isfield(results, 'marginals')
 				image_matrix);
 		else
 			imagesc(...
-				[1 n], ...
+				p.Results.X, ...
 				[1 0], ...
 				image_matrix);
 		end
@@ -119,8 +122,8 @@ if isfield(results, 'marginals')
 		if ~strcmp(p.Results.marginal_colorbar_location, 'off')
 			colorbar('location', p.Results.marginal_colorbar_location)
 		end
-		xlim([1 length(results.marginals(:,1))]);
-		if p.Results.autoclip_marginal
+		xlim(p.Results.X([1,end]));
+    if p.Results.autoclip_marginal
 			if p.Results.outer_quantiles
 				ylim([min(quantiles(1, :)) max(quantiles(5, :))]);
 			else
@@ -134,22 +137,22 @@ if isfield(results, 'marginals')
 	end
 	
 	% plot quantiles:
-	l_med = plot(quantiles(3, :), p.Results.median_plotprobs);
+	l_med = plot(p.Results.X,quantiles(3, :), p.Results.median_plotprobs);
 	legend_strings{end+1} = 'median';
 	legend_handles(end+1) = l_med;
 	
 	hold on
 	if p.Results.quartiles
-		l_quart = plot(quantiles(2, :), p.Results.quartiles_plotprobs);
+		l_quart = plot(p.Results.X,quantiles(2, :), p.Results.quartiles_plotprobs);
 		legend_strings{end+1} = 'quantiles .25/.75';
 		legend_handles(end+1) = l_quart;
-		plot(quantiles(4, :), p.Results.quartiles_plotprobs);
+		plot(p.Results.X,quantiles(4, :), p.Results.quartiles_plotprobs);
 	end
 	if p.Results.outer_quantiles
-		l_outer = plot(quantiles(1, :), p.Results.outer_quantiles_plotprobs);
+		l_outer = plot(p.Results.X,quantiles(1, :), p.Results.outer_quantiles_plotprobs);
 		legend_strings{end+1} = 'quantiles .025/.975';
 		legend_handles(end+1) = l_outer;
-		plot(quantiles(5, :), p.Results.outer_quantiles_plotprobs);
+		plot(p.Results.X,quantiles(5, :), p.Results.outer_quantiles_plotprobs);
 	end
 end
 
@@ -160,7 +163,7 @@ if ~isfield(results, 'marginals') ||  p.Results.add_moments
 	end
 	% plot expected value (1st moment):
 	m1 = results.moments(1, :);
-	l_exp = plot(m1, p.Results.moment1_plotprops);
+	l_exp = plot(p.Results.X,m1, p.Results.moment1_plotprops);
 	legend_strings{end+1} = 'expected val.';
 	legend_handles(end+1) = l_exp;
 	hold on
@@ -173,10 +176,10 @@ if ~isfield(results, 'marginals') ||  p.Results.add_moments
 		stdev = sqrt(variance);
 		std_top = m1 + stdev;
 		std_bot = m1 - stdev;
-		l_std = plot(std_top, p.Results.moment2_plotprops);
+		l_std = plot(p.Results.X,std_top, p.Results.moment2_plotprops);
 		legend_strings{end+1} = 'standard dev.';
 		legend_handles(end+1) = l_std;
-		plot(std_bot, p.Results.moment2_plotprops);
+		plot(p.Results.X,std_bot, p.Results.moment2_plotprops);
 	end
 end
 
@@ -209,7 +212,7 @@ if p.Results.bprob
 	l_bprob = line(1:length(bprob), bprob, 'Color', col, 'Parent', ax2);
 	legend_strings{end+1} = 'break prob.';
 	legend_handles(end+1) = l_bprob;
-	xlim([1 length(bprob)]);
+	xlim(p.Results.X([1,end]));
 	ylimits = get(ax1,'YLim');
 	yinc = (ylimits(2)-ylimits(1))/5;
 	set(ax1,'YTick',[ylimits(1):yinc:ylimits(2)]);
@@ -225,6 +228,8 @@ if p.Results.show_legend
 		legend_strings{:},  ...
 		'Location', p.Results.legend_location);
 end
+
+if ~isempty(p.Results.YLim) ylim(p.Results.YLim); end
 
 hold off
 
