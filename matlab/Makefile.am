@@ -2,13 +2,9 @@
 
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/include
 
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CFLAGS) $(CFLAGS)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 MATLAB_LDFLAGS_EXTRA = ../src/.libs/libadaptive-sampling.a
-
-if ENABLE_MINI_GSL
-LDFLAGS += $(top_builddir)/libmini-gsl/libmini-gsl.la
-endif
 
 all: adaptive_sampling$(MATLAB_LDEXTENSION)
 
