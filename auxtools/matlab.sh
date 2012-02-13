@@ -7,7 +7,7 @@ fi
 
 MATLAB=$1
 MAPFILE=mexFunction.map
-ARCH_LIST='glnx86 glnxa64 mac maci sol2 sol64'
+ARCH_LIST='glnx86 glnxa64 mac maci maci64 sol2 sol64'
 
 # check_archlist 
 # ------------------------------------------------------------------------------
