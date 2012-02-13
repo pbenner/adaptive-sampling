@@ -50,6 +50,7 @@ echo ' '
 
 # remove -pthread since clang doesn't support it
 CFLAGS=$(echo $CFLAGS | sed -e s/-pthread//)
+LDFLAGS=$(echo $LDFLAGS | sed -e s/-pthread//)
 
 echo MATLAB_RPATH=\'$RPATH\'\;
 echo MATLAB_CFLAGS=\'-I\"$MATLAB/extern/include\" $CFLAGS\'\;
