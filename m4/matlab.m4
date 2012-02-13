@@ -16,6 +16,7 @@ dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 AC_DEFUN([CHECK_MATLAB],
 [
+AC_SUBST([CONFIG_STATUS_DEPENDENCIES], ['$(top_srcdir)/auxtools/matlab.sh'])
 AC_ARG_WITH(matlab,
 	[  --with-matlab=DIR	the directory where Matlab is installed ],
 	[if test -n "${withval}" -a ! "${withval}" = "yes"; then
