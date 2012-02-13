@@ -2,15 +2,20 @@
 
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/include
 
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-        $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CFLAGS) $(CFLAGS)
 
-all: adaptive_sampling.$(MEXEXT)
+MATLAB_LDFLAGS_EXTRA = ../src/.libs/libadaptive-sampling.a
+
+if ENABLE_MINI_GSL
+LDFLAGS += $(top_builddir)/libmini-gsl/libmini-gsl.la
+endif
+
+all: adaptive_sampling$(MATLAB_LDEXTENSION)
 
 adaptive_sampling.o: adaptive_sampling.c
-	$(COMPILE) $(DEFS) $(INCLUDES) $(MATLAB_FLAGS) -c -o $@ $<
-adaptive_sampling.$(MEXEXT): adaptive_sampling.o
-	$(CC) -o $@ $< $(LDFLAGS) $(MATLAB_LIB) $(MATLAB_LINK) $(MATLAB_LINK_EXTRA) $(LIBS) $(LIB_PTHREAD)
+	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
+adaptive_sampling$(MATLAB_LDEXTENSION): adaptive_sampling.o
+	$(CC) -o $@ $< $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_EXTRA) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
 
 tar:
 	mkdir adaptive-sampling-matlab
@@ -20,4 +25,4 @@ tar:
 
 clean-local:
 	$(RM) adaptive_sampling.o
-	$(RM) adaptive_sampling.$(MEXEXT)
+	$(RM) adaptive_sampling$(MATLAB_LDEXTENSION)

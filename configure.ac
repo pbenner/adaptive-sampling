@@ -235,7 +235,7 @@ AS_IF([test "x$enable_debug" = "xyes"],
    AX_CFLAGS_GCC_OPTION([-ggdb])
    AX_CFLAGS_GCC_OPTION([-pg])
 	 CFLAGS="$CFLAGS -DDEBUG"],
-  [AX_CFLAGS_GCC_OPTION([-O4])
+  [AX_CFLAGS_GCC_OPTION([-O3])
    AX_CFLAGS_GCC_OPTION([-ffast-math])])
 
 AX_CFLAGS_GCC_OPTION([-Wall])
