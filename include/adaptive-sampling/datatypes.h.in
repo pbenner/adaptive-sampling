@@ -45,6 +45,7 @@ typedef struct options {
         /* specify components of the utility function */
         int differential_entropy;
         int multibin_entropy;
+        int predictive_entropy;
         int effective_counts;
         /* which event */
         int which;

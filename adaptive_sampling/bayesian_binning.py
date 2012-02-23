@@ -228,6 +228,7 @@ options = {
     'utility'              : False,
     'differential_entropy' : False,
     'multibin_entropy'     : False,
+    'predictive_entropy'   : False,
     'effective_counts'     : False,
     'model_posterior'      : True,
     }

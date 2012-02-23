@@ -209,6 +209,9 @@ void computeEntropicUtility(
                                 multibin_entropy = multibinEntropy(evidence_log, &bp);
                                 result->content[i] += expectation*multibin_entropy;
                         }
+                        if (bd->options->predictive_entropy) {
+                                result->content[i] += -expectation*LOG(expectation);
+                        }
                 }
                 /* entropy -> utility */
                 result->content[i] = -result->content[i];

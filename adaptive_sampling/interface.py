@@ -67,6 +67,7 @@ class OPTIONS(Structure):
                  ("utility",              c_int),
                  ("differential_entropy", c_int),
                  ("multibin_entropy",     c_int),
+                 ("predictive_entropy",   c_int),
                  ("effective_counts",     c_int),
                  ("which",                c_int),
                  ("algorithm",            c_int),
@@ -95,6 +96,7 @@ class OPTIONS(Structure):
           self.utility              = c_int(1) if options["utility"]    else c_int(0)
           self.differential_entropy = c_int(1) if options["differential_entropy"] else c_int(0)
           self.multibin_entropy     = c_int(1) if options["multibin_entropy"]  else c_int(0)
+          self.predictive_entropy   = c_int(1) if options["predictive_entropy"]  else c_int(0)
           self.effective_counts     = c_int(1) if options["effective_counts"]  else c_int(0)
           self.model_posterior      = c_int(1) if options["model_posterior"]   else c_int(0)
           if options["algorithm"] == "prombs":
