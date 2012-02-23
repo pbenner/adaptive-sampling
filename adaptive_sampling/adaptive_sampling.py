@@ -90,6 +90,7 @@ def usage():
     print "                                        effective-counts, or variance"
     print "       --differential-entropy         - include differential entropy for entropy based sampling"
     print "       --multibin-entropy             - include multibin entropy for entropy based sampling"
+    print "       --predictive-entropy           - include predictive entropy for entropy based sampling"
     print
 
 # tools
@@ -602,8 +603,9 @@ options = {
     'compare'              : False,
     'bprob'                : False,
     'utility'              : False,
-    'multibin_entropy'     : False,
     'differential_entropy' : False,
+    'multibin_entropy'     : False,
+    'predictive_entropy'   : False,
     'effective_counts'     : False,
     'model_posterior'      : True,
     }
@@ -614,7 +616,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
-                      "strategy=", "differential-entropy", "multibin-entropy",
+                      "strategy=", "differential-entropy", "multibin-entropy", "predictive-entropy",
                       "algorithm=", "samples=", "mgs-samples", "no-model-posterior",
                       "video="]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
@@ -658,6 +660,8 @@ def main():
             options["differential_entropy"] = True
         if o == "--multibin-entropy":
             options["multibin_entropy"] = True
+        if o == "--predictive-entropy":
+            options["predictive_entropy"] = True
         if o == "--load":
             options["load"] = a
         if o == "--port":
@@ -694,7 +698,8 @@ def main():
         options["effective_counts"] = True
     if (options["strategy"] == "entropy"    and 
         not options["differential_entropy"] and
-        not options["multibin_entropy"]):
+        not options["multibin_entropy"] and
+        not options["predictive_entropy"]):
         options["differential_entropy"] = True
     if len(tail) != 1:
         usage()

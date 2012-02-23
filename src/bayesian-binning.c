@@ -68,7 +68,9 @@ void computeModelPrior(binData* bd)
 static
 void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
 {
-        if (bd->options->differential_entropy || bd->options->multibin_entropy) {
+        if (bd->options->differential_entropy ||
+            bd->options->multibin_entropy ||
+            bd->options->predictive_entropy) {
                 computeEntropicUtility(utility, evidence_ref, bd);
         }
         /* compute effective counts */
