@@ -65,9 +65,8 @@ class OPTIONS(Structure):
                  ("threads",              c_int),
                  ("stacksize",            c_int),
                  ("utility",              c_int),
-                 ("differential_entropy", c_int),
-                 ("multibin_entropy",     c_int),
-                 ("predictive_entropy",   c_int),
+                 ("kl_divergence",        c_int),
+                 ("kl_multibin",          c_int),
                  ("effective_counts",     c_int),
                  ("which",                c_int),
                  ("algorithm",            c_int),
@@ -94,9 +93,8 @@ class OPTIONS(Structure):
           self.prombsTest           = c_int(1) if options["prombsTest"] else c_int(0)
           self.bprob                = c_int(1) if options["bprob"]      else c_int(0)
           self.utility              = c_int(1) if options["utility"]    else c_int(0)
-          self.differential_entropy = c_int(1) if options["differential_entropy"] else c_int(0)
-          self.multibin_entropy     = c_int(1) if options["multibin_entropy"]  else c_int(0)
-          self.predictive_entropy   = c_int(1) if options["predictive_entropy"]  else c_int(0)
+          self.kl_divergence        = c_int(1) if options["kl_divergence"] else c_int(0)
+          self.kl_multibin          = c_int(1) if options["kl_multibin"] else c_int(0)
           self.effective_counts     = c_int(1) if options["effective_counts"]  else c_int(0)
           self.model_posterior      = c_int(1) if options["model_posterior"]   else c_int(0)
           if options["algorithm"] == "prombs":
@@ -139,9 +137,6 @@ _lib._init_.argtype         = [c_double]
 _lib._free_.restype         = None
 _lib._free_.argtype         = []
 
-_lib.entropy.restype        = c_double
-_lib.entropy.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
-
 _lib.binning.restype        = POINTER(BINNING_RESULT)
 _lib.binning.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
@@ -180,31 +175,6 @@ def init(epsilon):
 
 def free():
      _lib._free_()
-
-def entropy(events, counts, alpha, beta, gamma, options):
-     c_events = c_int(events)
-     c_counts = (events*POINTER(MATRIX))()
-     c_alpha  = (events*POINTER(MATRIX))()
-     for i in range(0, events):
-          c_counts[i]  = _lib._alloc_matrix(len(counts[i]), len(counts[i][0]))
-          copyMatrixToC(counts[i], c_counts[i])
-          c_alpha[i]   = _lib._alloc_matrix(len(alpha[i]), len(alpha[i][0]))
-          copyMatrixToC(alpha[i],  c_alpha[i])
-     c_beta  = _lib._alloc_vector(len(beta))
-     copyVectorToC(beta,  c_beta)
-     c_gamma = _lib._alloc_matrix(len(gamma), len(gamma[0]))
-     copyMatrixToC(gamma,  c_gamma)
-     c_options = pointer(OPTIONS(options))
-
-     tmp = _lib.entropy(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
-
-     for i in range(0, events):
-          _lib._free_matrix(c_counts[i])
-          _lib._free_matrix(c_alpha[i])
-     _lib._free_vector(c_beta)
-     _lib._free_matrix(c_gamma)
-
-     return tmp
 
 def binning(events, counts, alpha, beta, gamma, options):
      c_events = c_int(events)

@@ -35,7 +35,7 @@
 
 #include <datatypes.h>
 #include <model.h>
-#include <utility.h>
+#include <tools.h>
 
 /******************************************************************************
  * Prombs effective counts functions

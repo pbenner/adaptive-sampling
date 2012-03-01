@@ -55,7 +55,7 @@ def usage():
     print "   -r  --marginal-range=(FROM,TO)    - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP          - step size for the marginal distribution"
     print "       --no-model-posterior          - do not compute the model posterior"
-    print "       --epsilon=EPSILON             - epsilon for entropy estimations"
+    print "       --epsilon=EPSILON             - epsilon for the extended prombs"
     print "   -k  --moments=N                   - compute the first N>=2 moments"
     print "       --which=EVENT                 - for which event to compute the binning"
     print "       --algorithm=NAME              - select an algorithm [mgs, prombstree, default: prombs]"
@@ -226,9 +226,8 @@ options = {
     'compare'              : False,
     'bprob'                : False,
     'utility'              : False,
-    'differential_entropy' : False,
-    'multibin_entropy'     : False,
-    'predictive_entropy'   : False,
+    'kl_divergence'        : False,
+    'kl_multibin'          : False,
     'effective_counts'     : False,
     'model_posterior'      : True,
     }

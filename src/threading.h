@@ -26,6 +26,7 @@ typedef struct {
         binProblem *bp;
         int i;
         void *result;
+//        matrix_t* moments;
         prob_t evidence_ref;
 } pthread_data_t;
 

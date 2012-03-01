@@ -23,7 +23,7 @@
 
 #include <datatypes.h>
 #include <threading.h>
-#include <utility.h>
+#include <tools.h>
 
 #include <limits.h>
 #ifdef HAVE_LIB_PTHREAD
