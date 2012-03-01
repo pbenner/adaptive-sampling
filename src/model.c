@@ -37,7 +37,7 @@
 
 #include <datatypes.h>
 #include <model.h>
-#include <utility.h>
+#include <tools.h>
 
 #ifdef HAVE_LIB_PTHREAD
 #include <pthread.h>

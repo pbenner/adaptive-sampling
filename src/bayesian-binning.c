@@ -1,4 +1,4 @@
-/* Copyright (C) 2010, 2011 Philipp Benner
+/* Copyright (C) 2010, 2011, 2012 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,12 +39,12 @@
 #include <break-probabilities.h>
 #include <datatypes.h>
 #include <effective-counts.h>
-#include <entropy.h>
 #include <marginal.h>
 #include <model.h>
 #include <model-posterior.h>
 #include <moment.h>
 #include <utility.h>
+#include <tools.h>
 
 /******************************************************************************
  * Main binning function
@@ -68,10 +68,13 @@ void computeModelPrior(binData* bd)
 static
 void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
 {
-        if (bd->options->differential_entropy ||
-            bd->options->multibin_entropy ||
-            bd->options->predictive_entropy) {
-                computeEntropicUtility(utility, evidence_ref, bd);
+        /* compute kl-divergence */
+        if (bd->options->kl_divergence) {
+                computeKLUtility(utility, evidence_ref, bd);
+        }
+        /* compute kl-multibin */
+        else if (bd->options->kl_multibin) {
+                computeKLMultibinUtility(utility, evidence_ref, bd);
         }
         /* compute effective counts */
         else if (bd->options->effective_counts) {
@@ -99,7 +102,7 @@ void computeBinning(
         if (bd->options->model_posterior) {
                 computeModelPosteriors(evidence_log_tmp, result->mpost, evidence_ref, bd);
         }
-        /* compute moments */
+        /* compute marginal */
         if (bd->options->marginal) {
                 computeMarginal(result->marginals, evidence_ref, bd);
         }
@@ -179,34 +182,6 @@ void bin_init(
 void bin_free(binData* bd)
 {
         free(bd->prior_log);
-}
-
-prob_t
-entropy(
-        int events,
-        matrix_t **counts,
-        matrix_t **alpha,
-        vector_t  *beta,
-        matrix_t  *gamma,
-        Options *options)
-{
-        binData bd;
-        bin_init(events, counts, alpha, beta, gamma, options, &bd);
-
-        prob_t entropy;
-        prob_t evidence_ref;
-        prob_t evidence_ref_tmp[bd.L];
-
-        binProblem bp; binProblemInit(&bp, &bd);
-
-        evidence_ref = evidence(evidence_ref_tmp, &bp);
-        entropy = computeEntropy(evidence_ref, &bd);
-
-        binProblemFree(&bp);
-
-        bin_free(&bd);
-
-        return entropy;
 }
 
 BinningResult *

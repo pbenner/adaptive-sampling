@@ -36,7 +36,7 @@
 #include <datatypes.h>
 #include <model.h>
 #include <threading.h>
-#include <utility.h>
+#include <tools.h>
 
 /******************************************************************************
  * Prombs entropy functions

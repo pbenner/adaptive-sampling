@@ -43,9 +43,8 @@ typedef struct options {
         /* compute sampling utility */
         int utility;
         /* specify components of the utility function */
-        int differential_entropy;
-        int multibin_entropy;
-        int predictive_entropy;
+        int kl_divergence;
+        int kl_multibin;
         int effective_counts;
         /* which event */
         int which;

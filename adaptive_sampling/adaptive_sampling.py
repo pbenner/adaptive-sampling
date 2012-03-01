@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# Copyright (C) 2010 Philipp Benner
+# Copyright (C) 2010, 2011, 2012 Philipp Benner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ def usage():
     print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
     print "       --no-model-posterior           - do not compute the model posterior"
-    print "       --epsilon=EPSILON              - epsilon for entropy estimations"
+    print "       --epsilon=EPSILON              - epsilon for the extended prombs"
     print "   -n  --samples=N                    - number of samples"
     print "   -k  --moments=N                    - compute the first N>=2 moments"
     print "       --which=EVENT                  - for which event to compute the binning"
@@ -86,11 +86,8 @@ def usage():
     print "   -t, --prombsTest                   - test prombs algorithm"
     print
     print "Sampling strategies:"
-    print "       --strategy=STRATEGY            - uniform, uniform-random, entropy (default),"
-    print "                                        effective-counts, or variance"
-    print "       --differential-entropy         - include differential entropy for entropy based sampling"
-    print "       --multibin-entropy             - include multibin entropy for entropy based sampling"
-    print "       --predictive-entropy           - include predictive entropy for entropy based sampling"
+    print "       --strategy=STRATEGY            - uniform, uniform-random, kl-divergence (default),"
+    print "                                        kl-multibin, effective-counts, or variance"
     print
 
 # tools
@@ -109,6 +106,9 @@ def argmax(array):
         if i[0] == max(array):
             result.append(i[1])
     return result
+
+def roundArray(array, precision):
+    return map(lambda x: round(x, precision), array)
 
 def selectRandom(array):
     length = len(array)-1
@@ -137,7 +137,6 @@ def saveResult(result):
     config.set('Sampling Result', 'moments',   "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
     config.set('Sampling Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
     config.set('Sampling Result', 'samples',   " ".join(map(str, result['samples'])))
-    config.set('Sampling Result', 'entropy',   " ".join(map(str, result['entropy'])))
     config.set('Sampling Result', 'utility',   " ".join(map(str, result['utility'])))
     config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
     config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
@@ -161,7 +160,6 @@ def loadResult():
         marginals = config.readMatrix(config_parser, 'Sampling Result', 'marginals', float)
         samples   = config.readVector(config_parser, 'Sampling Result', 'samples',   int)
         mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',     float)
-        entropy   = config.readVector(config_parser, 'Sampling Result', 'entropy',   float)
         states    = config.readStates(config_parser, 'Sampling Result', 'states')
         if config_parser.has_option('Sampling Result', 'bprob'):
             bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',     float)
@@ -174,7 +172,6 @@ def loadResult():
             'mpost'     : mpost,
             'counts'    : counts,
             'samples'   : samples,
-            'entropy'   : entropy,
             'states'    : states }
     else:
         result = {
@@ -184,21 +181,11 @@ def loadResult():
             'mpost'     : [],
             'counts'    : [],
             'samples'   : [],
-            'entropy'   : [],
             'states'    : [] }
     return result
 
 # binning interface
 # ------------------------------------------------------------------------------
-
-def bin_entropy(counts_v, data, bin_options):
-    """Call the binning library."""
-    events = len(counts_v)
-    counts = statistics.countStatistic(counts_v)
-    alpha  = data['alpha']
-    beta   = data['beta']
-    gamma  = data['gamma']
-    return interface.entropy(events, counts, alpha, beta, gamma, bin_options)
 
 def bin(counts_v, data, bin_options):
     """Call the binning library."""
@@ -212,10 +199,6 @@ def bin(counts_v, data, bin_options):
 # prombs wrapper
 # ------------------------------------------------------------------------------
 
-def prombsEntropy(counts, data):
-    bin_options = options.copy()
-    return bin_entropy(counts, data, bin_options)
-
 def prombsUtility(counts, data):
     bin_options = options.copy()
     bin_options['utility']         = True
@@ -227,7 +210,9 @@ def prombsUtility(counts, data):
     result = bin(counts, data, bin_options)
     if options['strategy'] == 'variance':
         return map(math.sqrt, statistics.centralMoments(result['moments'], 2))
-    if options['strategy'] == 'entropy':
+    if options['strategy'] == 'kl-divergence':
+        return result['utility']
+    if options['strategy'] == 'kl-multibin':
         return result['utility']
     if options['strategy'] == 'effective-counts':
         return result['utility']
@@ -399,7 +384,9 @@ def selectItem(counts, data):
         utility = map(operator.neg, map(sum, zip(*counts)))
     elif options['strategy'] == 'uniform-random':
         utility = [ 0.0 for i in range(0, len(counts[0])) ]
-    elif options['strategy'] == 'entropy':
+    elif options['strategy'] == 'kl-divergence':
+        utility = computeUtility(counts, data)
+    elif options['strategy'] == 'kl-multibin':
         utility = computeUtility(counts, data)
     elif options['strategy'] == 'effective-counts':
         utility = computeUtility(counts, data)
@@ -413,6 +400,7 @@ def selectItem(counts, data):
         exec options['filter']
         if not gainFilter is None:
             utility = gainFilter(utility, map(sum, zip(*counts)))
+    utility = roundArray(utility, 10)
     return selectRandom(argmax(utility)), utility
 
 # experiment
@@ -462,7 +450,6 @@ def save_frame(result, data, utility, i):
     bin_result = bin(result['counts'], data, options)
     bin_result['counts']  = result['counts']
     bin_result['samples'] = result['samples']
-    bin_result['entropy'] = result['entropy']
     bin_result['states']  = result['states']
     bin_result['utility'] = utility
     vis.plotSampling(bin_result, options, data)
@@ -499,7 +486,6 @@ def sample(result, data):
         index, utility = selectItem(result['counts'], data)
         event  = experiment(index, data, result, msocket)
         result['samples'].append(index)
-        result['entropy'].append(prombsEntropy(result['counts'], data))
         result['counts'][event][index] += 1
         if options['video']:
             save_frame(result, data, utility, i)
@@ -508,7 +494,6 @@ def sample(result, data):
     bin_result = bin(result['counts'], data, options)
     bin_result['counts']  = result['counts']
     bin_result['samples'] = result['samples']
-    bin_result['entropy'] = result['entropy']
     bin_result['states']  = result['states']
     bin_result['utility'] = utility
     if options['port']:
@@ -590,7 +575,7 @@ options = {
     'threads'              : 1,
     'stacksize'            : 256*1024,
     'algorithm'            : 'prombs',
-    'strategy'             : 'entropy',
+    'strategy'             : 'kl-divergence',
     'video'                : None,
     'port'                 : None,
     'filter'               : None,
@@ -603,9 +588,8 @@ options = {
     'compare'              : False,
     'bprob'                : False,
     'utility'              : False,
-    'differential_entropy' : False,
-    'multibin_entropy'     : False,
-    'predictive_entropy'   : False,
+    'kl_divergence'        : False,
+    'kl_multibin'          : False,
     'effective_counts'     : False,
     'model_posterior'      : True,
     }
@@ -616,8 +600,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
-                      "strategy=", "differential-entropy", "multibin-entropy", "predictive-entropy",
-                      "algorithm=", "samples=", "mgs-samples", "no-model-posterior",
+                      "strategy=", "algorithm=", "samples=", "mgs-samples", "no-model-posterior",
                       "video="]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
@@ -656,12 +639,6 @@ def main():
             options["lapsing"] = float(a)
         if o == "--strategy":
             options["strategy"] = a
-        if o == "--differential-entropy":
-            options["differential_entropy"] = True
-        if o == "--multibin-entropy":
-            options["multibin_entropy"] = True
-        if o == "--predictive-entropy":
-            options["predictive_entropy"] = True
         if o == "--load":
             options["load"] = a
         if o == "--port":
@@ -694,13 +671,12 @@ def main():
             options["model_posterior"] = False
         if o == "--video":
             options["video"] = a
+    if options["strategy"] == "kl-divergence":
+        options["kl_divergence"] = True
+    if options["strategy"] == "kl-multibin":
+        options["kl_multibin"] = True
     if options["strategy"] == "effective-counts":
         options["effective_counts"] = True
-    if (options["strategy"] == "entropy"    and 
-        not options["differential_entropy"] and
-        not options["multibin_entropy"] and
-        not options["predictive_entropy"]):
-        options["differential_entropy"] = True
     if len(tail) != 1:
         usage()
         return 1
