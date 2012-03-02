@@ -463,14 +463,14 @@ def save_frame(result, data, utility, i):
     bin_result['states']  = result['states']
     bin_result['utility'] = utility
     vis.plotSampling(bin_result, options, data)
-    savefig('%s_%03d.png' % (options['video'], i), bbox_inches='tight', pad_inches=0, dpi=250)
+    savefig('%s_%03d.png' % (options['video'], i), bbox_inches='tight', pad_inches=0)
 
 def save_video():
     import subprocess
     command = ('mencoder',
                'mf://%s_*.png' % options['video'],
                '-mf',
-               'type=png:w=800:h=600:fps=4',
+               'type=png:fps=4',
                '-ovc',
                'lavc',
                '-lavcopts',
