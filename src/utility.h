@@ -25,6 +25,5 @@
 #include <adaptive-sampling/datatypes.h>
 
 void computeKLUtility(vector_t *result, prob_t evidence_ref, binData *bd);
-void computeKLMultibinUtility(vector_t *result, prob_t evidence_ref, binData *bd);
 
 #endif /* LOCAL_UTILITY_H */

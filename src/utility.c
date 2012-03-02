@@ -85,7 +85,7 @@ prob_t predictive_f(int kk, int k, binProblem *bp)
  ******************************************************************************/
 
 static
-prob_t KLUtility_f(int kk, int k, void *data)
+prob_t KLComponentUtility_f(int kk, int k, void *data)
 {
         binProblem *bp = (binProblem *)data;
         size_t i;
@@ -109,7 +109,7 @@ prob_t KLUtility_f(int kk, int k, void *data)
 }
 
 static
-prob_t KLUtility_g(int kk, int k, void *data)
+prob_t KLComponentUtility_g(int kk, int k, void *data)
 {
         binProblem *bp = (binProblem *)data;
         size_t i;
@@ -135,7 +135,7 @@ prob_t KLUtility_g(int kk, int k, void *data)
 }
 
 static
-prob_t KLUtility(size_t i, prob_t evidence_ref, binProblem *bp)
+prob_t KLComponentUtility(size_t i, prob_t evidence_ref, binProblem *bp)
 {
         prob_t ev_log[bp->bd->L];
         prob_t sum1, sum2, result = 0;
@@ -148,10 +148,10 @@ prob_t KLUtility(size_t i, prob_t evidence_ref, binProblem *bp)
                 bp->add_event.which = j;
 
                 /* localUtility_f */
-                prombs(ev_log, bp->ak, bp->bd->prior_log, KLUtility_f, bp->bd->L, minM(bp), (void *)bp);
+                prombs(ev_log, bp->ak, bp->bd->prior_log, KLComponentUtility_f, bp->bd->L, minM(bp), (void *)bp);
                 sum1    = sumModels(ev_log, bp);
                 /* localUtility_g */
-                prombs(ev_log, bp->ak, bp->bd->prior_log, KLUtility_g, bp->bd->L, minM(bp), (void *)bp);
+                prombs(ev_log, bp->ak, bp->bd->prior_log, KLComponentUtility_g, bp->bd->L, minM(bp), (void *)bp);
                 sum2    = sumModels(ev_log, bp);
 
                 result += +EXP(sum1 - evidence_ref);
@@ -161,7 +161,7 @@ prob_t KLUtility(size_t i, prob_t evidence_ref, binProblem *bp)
 }
 
 /******************************************************************************
- * KL Multibin Divergence
+ * KL Multibin Divergence D_KL (P(B|x,y) || P(B))
  ******************************************************************************/
 
 static
@@ -227,21 +227,14 @@ void * computeKLUtility_thread(void* data_)
         vector_t *result    = (vector_t *)data->result;
         prob_t evidence_ref = data->evidence_ref;
 
-//        result->content[i] = KLMultibinUtility(i, evidence_ref, bp)+KLUtility(i, evidence_ref, bp);
-        result->content[i] = KLUtility(i, evidence_ref, bp);
-        return NULL;
-}
+        result->content[i] = 0;
+        if (bp->bd->options->kl_component) {
+                result->content[i] += KLComponentUtility(i, evidence_ref, bp);
+        }
+        if (bp->bd->options->kl_multibin) {
+                result->content[i] += KLMultibinUtility(i, evidence_ref, bp);
+        }
 
-static
-void * computeKLMultibinUtility_thread(void* data_)
-{
-        pthread_data_t *data  = (pthread_data_t *)data_;
-        binProblem *bp = data->bp;
-        int i = data->i;
-        vector_t *result    = (vector_t *)data->result;
-        prob_t evidence_ref = data->evidence_ref;
-
-        result->content[i] = KLMultibinUtility(i, evidence_ref, bp);
         return NULL;
 }
 
@@ -256,15 +249,5 @@ void computeKLUtility(
 {
         /* compute utilities */
         threaded_computation((void *)result, evidence_ref, bd, computeKLUtility_thread,
-                             "Computing utility: %.1f%%");
-}
-
-void computeKLMultibinUtility(
-        vector_t *result,
-        prob_t evidence_ref,
-        binData* bd)
-{
-        /* compute utilities */
-        threaded_computation((void *)result, evidence_ref, bd, computeKLMultibinUtility_thread,
                              "Computing utility: %.1f%%");
 }

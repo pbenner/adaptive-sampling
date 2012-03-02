@@ -69,12 +69,8 @@ static
 void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
 {
         /* compute kl-divergence */
-        if (bd->options->kl_divergence) {
+        if (bd->options->kl_component || bd->options->kl_multibin) {
                 computeKLUtility(utility, evidence_ref, bd);
-        }
-        /* compute kl-multibin */
-        else if (bd->options->kl_multibin) {
-                computeKLMultibinUtility(utility, evidence_ref, bd);
         }
         /* compute effective counts */
         else if (bd->options->effective_counts) {

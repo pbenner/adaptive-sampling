@@ -87,7 +87,11 @@ def usage():
     print
     print "Sampling strategies:"
     print "       --strategy=STRATEGY            - uniform, uniform-random, kl-divergence (default),"
-    print "                                        kl-multibin, effective-counts, or variance"
+    print "                                        effective-counts, or variance"
+    print "       --kl-component                 - if kl-divergence is selected as strategy then use"
+    print "                                        add the component divergence"
+    print "       --kl-multibin                  - if kl-divergence is selected as strategy then use"
+    print "                                        add the multibin divergence"
     print
 
 # tools
@@ -588,7 +592,7 @@ options = {
     'compare'              : False,
     'bprob'                : False,
     'utility'              : False,
-    'kl_divergence'        : False,
+    'kl_component'         : False,
     'kl_multibin'          : False,
     'effective_counts'     : False,
     'model_posterior'      : True,
@@ -600,8 +604,8 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
-                      "strategy=", "algorithm=", "samples=", "mgs-samples", "no-model-posterior",
-                      "video="]
+                      "strategy=", "kl-component", "kl-multibin", "algorithm=", "samples=",
+                      "mgs-samples", "no-model-posterior", "video="]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -639,6 +643,10 @@ def main():
             options["lapsing"] = float(a)
         if o == "--strategy":
             options["strategy"] = a
+        if o == "--kl-component":
+            options["kl_component"] = True
+        if o == "--kl-multibin":
+            options["kl_multibin"] = True
         if o == "--load":
             options["load"] = a
         if o == "--port":
@@ -671,10 +679,11 @@ def main():
             options["model_posterior"] = False
         if o == "--video":
             options["video"] = a
-    if options["strategy"] == "kl-divergence":
-        options["kl_divergence"] = True
-    if options["strategy"] == "kl-multibin":
-        options["kl_multibin"] = True
+    if (options["strategy"] == "kl-divergence" and
+        options["kl_component"] == False       and
+        options["kl_multibin"]  == False):
+       # set default kl divergence
+       options["kl_component"]  = True
     if options["strategy"] == "effective-counts":
         options["effective_counts"] = True
     if len(tail) != 1:
