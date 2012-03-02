@@ -33,10 +33,15 @@ from itertools import izip
 
 def importMatplotlib(backend=None):
     global vis
-    from matplotlib import use
-    if backend:
-        use(backend)
-    import visualization as vis
+    global use
+    global pyplot
+    if not globals().has_key('use'):
+        from matplotlib import use
+        if backend:
+            use(backend)
+    from matplotlib import pyplot
+    if not globals().has_key('vis'):
+        import visualization as vis
 
 import config
 import interface
@@ -451,6 +456,7 @@ def experiment(index, data, result, msocket):
 def save_frame(result, data, utility, i):
     importMatplotlib('Agg')
     from matplotlib.pyplot import savefig
+    pyplot.clf()
     bin_result = bin(result['counts'], data, options)
     bin_result['counts']  = result['counts']
     bin_result['samples'] = result['samples']
@@ -462,7 +468,7 @@ def save_frame(result, data, utility, i):
 def save_video():
     import subprocess
     command = ('mencoder',
-               'mf://%s_*.png',
+               'mf://%s_*.png' % options['video'],
                '-mf',
                'type=png:w=800:h=600:fps=4',
                '-ovc',
@@ -472,7 +478,7 @@ def save_video():
                '-oac',
                'copy',
                '-o',
-               '%s.avi' % (options['video'], options['video']))
+               '%s.avi' % options['video'])
     subprocess.check_call(command)
 
 # sampling
