@@ -65,7 +65,7 @@ class OPTIONS(Structure):
                  ("threads",              c_int),
                  ("stacksize",            c_int),
                  ("utility",              c_int),
-                 ("kl_divergence",        c_int),
+                 ("kl_component",         c_int),
                  ("kl_multibin",          c_int),
                  ("effective_counts",     c_int),
                  ("which",                c_int),
@@ -93,7 +93,7 @@ class OPTIONS(Structure):
           self.prombsTest           = c_int(1) if options["prombsTest"] else c_int(0)
           self.bprob                = c_int(1) if options["bprob"]      else c_int(0)
           self.utility              = c_int(1) if options["utility"]    else c_int(0)
-          self.kl_divergence        = c_int(1) if options["kl_divergence"] else c_int(0)
+          self.kl_component         = c_int(1) if options["kl_component"] else c_int(0)
           self.kl_multibin          = c_int(1) if options["kl_multibin"] else c_int(0)
           self.effective_counts     = c_int(1) if options["effective_counts"]  else c_int(0)
           self.model_posterior      = c_int(1) if options["model_posterior"]   else c_int(0)

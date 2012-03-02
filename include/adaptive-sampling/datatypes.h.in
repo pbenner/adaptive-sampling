@@ -43,7 +43,7 @@ typedef struct options {
         /* compute sampling utility */
         int utility;
         /* specify components of the utility function */
-        int kl_divergence;
+        int kl_component;
         int kl_multibin;
         int effective_counts;
         /* which event */

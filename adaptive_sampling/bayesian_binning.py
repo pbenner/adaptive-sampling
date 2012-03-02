@@ -226,7 +226,7 @@ options = {
     'compare'              : False,
     'bprob'                : False,
     'utility'              : False,
-    'kl_divergence'        : False,
+    'kl_component'         : False,
     'kl_multibin'          : False,
     'effective_counts'     : False,
     'model_posterior'      : True,
