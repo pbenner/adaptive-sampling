@@ -464,7 +464,7 @@ def save_video():
     command = ('mencoder',
                'mf://%s_*.png',
                '-mf',
-               'type=png:w=800:h=600:fps=5',
+               'type=png:w=800:h=600:fps=4',
                '-ovc',
                'lavc',
                '-lavcopts',
