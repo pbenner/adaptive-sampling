@@ -17,13 +17,13 @@ function result = adsamp(counts, varargin)
 %  'model_posterior', 2
 %  'bprob', 1
 %  'utility', 1
-%  'differential_entropy', 1
-%  'multibin_entropy', 0
+%  'kl_component', 1
+%  'kl_multibin', 0
 %  'effective_counts', 0
 %  'marginal', 1: compute full marginal distribution
 %  'marginal_step', 0.01: step size for the marginal distribution
 %  'marginal_range', [0.0 1.0]: limit range for the marginal distribution
-%  'epsilon', 0.00001: epsilon for entropy estimations
+%  'epsilon', 0.00001: precision for the extended prombs
 %  'threads', getNumberOfCores: number of threads
 %  'stacksize', 256*1024: thread stack size
 %  'algorithm', 'prombs': select an algorithm 
@@ -64,8 +64,8 @@ p.addParamValue('n_moments', 2, @isscalar);
 p.addParamValue('model_posterior', 2, @isscalar);
 p.addParamValue('bprob', 1, @isscalar);
 p.addParamValue('utility', 1, @isscalar);
-p.addParamValue('differential_entropy', 1, @isscalar);
-p.addParamValue('multibin_entropy', 0, @isscalar);
+p.addParamValue('kl_component', 1, @isscalar);
+p.addParamValue('kl_multibin', 0, @isscalar);
 p.addParamValue('effective_counts', 0, @isscalar);
 p.addParamValue('marginal', 1, @isscalar);
 p.addParamValue('marginal_step', 0.01, ispos);

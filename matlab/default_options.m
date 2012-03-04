@@ -7,8 +7,8 @@ options.model_posterior = 1;  % and we want a model
 			      % posterior
 options.bprob = 1;            % we want break probabilities
 options.utility = 1;          % compute utility gain
-options.differential_entropy = 1;
-options.multibin_entropy = 0;
+options.kl_component = 1;
+options.kl_multibin = 0;
 options.effective_counts = 0;
 options.marginal = 1;         % we also want the marginal
 

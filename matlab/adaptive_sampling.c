@@ -57,8 +57,8 @@ Options* getOptions(const mxArray *array)
 
         options->model_posterior = getScalar(array, "model_posterior");
         options->utility = getScalar(array, "utility");
-        options->differential_entropy = getScalar(array, "differential_entropy");
-        options->multibin_entropy = getScalar(array, "multibin_entropy");
+        options->kl_component = getScalar(array, "kl_component");
+        options->kl_multibin  = getScalar(array, "kl_multibin");
         options->effective_counts = getScalar(array, "effective_counts");
         options->bprob = getScalar(array, "bprob");
 
@@ -129,8 +129,8 @@ void copyVector(vector_t* to, const mxArray* from) {
 
 static
 matrix_t** getCounts(const mxArray* array) {
-        size_t  L = mxGetN(array);
-        size_t  K = mxGetM(array)/L;
+        size_t L = mxGetN(array);
+        size_t K = mxGetM(array)/L;
         size_t k;
         matrix_t** counts = (matrix_t**)malloc((K+1)*sizeof(matrix_t*));
 
