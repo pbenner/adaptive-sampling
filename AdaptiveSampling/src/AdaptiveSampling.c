@@ -176,7 +176,7 @@ SEXP copyResult(BinningResult* result) {
         SEXP r_vector;
         SEXP r_result;
 
-        PROTECT(r_result = allocSExp(ENVSXP));
+        PROTECT(r_result = allocSExp(LISTSXP));
 
         if (result->moments) {
                 PROTECT(r_matrix = copyMatrixToR(result->moments));
