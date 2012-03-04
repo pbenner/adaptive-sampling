@@ -79,8 +79,8 @@ adaptive_sampling <- function(counts, alpha, beta, gamma, options) {
   storage.mode(beta)   <- "double"
   storage.mode(gamma)  <- "double"
 
-  .Call("adaptive_sampling",
-     counts, alpha, beta, gamma, options)
+  as.list(.Call("adaptive_sampling",
+                counts, alpha, beta, gamma, options))
 }
 
 plot_result <- function(result) {
