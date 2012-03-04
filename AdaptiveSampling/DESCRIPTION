@@ -4,15 +4,11 @@ Depends: R (>= 2.10.0)
 Date: 03-03-2012
 Title: wrapper for the Gnu Scientific Library
 Author: Philipp Benner <philipp.benner@mis.mpg.de>
+	Tobias Elze <tobias-elze@tobias-elze.de>
 SystemRequirements: Gnu Scientific Library version >= 1.12
-Description: An R wrapper for the special functions and quasi random
-        number generators of the Gnu Scientific Library
-        (http://www.gnu.org/software/gsl/).  See gsl-package.Rd for
-        details of overall package organization, and Misc.Rd for some
-        functions that are widely used in the package, and some tips on
-        installation.
+Description: A wrapper for the adaptive-sampling library.
 Maintainer: Philipp Benner <philipp.benner@mis.mpg.de>
 License: GPL-2
-Packaged: 2012-03-03 20:34:30 UTC; rksh
+Packaged: 2012-03-03 20:34:30 UTC; philipp
 Repository: CRAN
 Date/Publication: 2012-03-03 03:28:12
