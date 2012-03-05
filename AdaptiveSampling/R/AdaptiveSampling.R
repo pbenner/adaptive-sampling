@@ -1,36 +1,51 @@
-default_options <- function() {
+make.options <- function(
+	n_moments=2, 
+	model_posterior=1, 
+	bprob = 1, utility = 1, 
+	kl_component=1, 
+	kl_multibin=0, 
+	effective_counts = 0,
+	marginal = 1,
+	marginal_step = 0.01,
+	marginal_range = c(0, 1),
+	epsilon = 0.00001,
+	threads = 1,
+	stacksize = 256*1024,
+	algorithm = 0,
+	which = 0,
+	samples = c(100, 2000)) {
   env <- environment()
-  env$n_moments             <- 2
-  env$model_posterior       <- 1
-  env$bprob                 <- 1 
-  env$utility               <- 1
-  env$kl_component          <- 1
-  env$kl_multibin           <- 0
-  env$effective_counts      <- 0
-  env$marginal              <- 1
-  env$marginal_step         <- 0.01
-  env$marginal_range        <- c(0,1)
-  env$epsilon               <- 0.00001
-  env$threads               <- 1
-  env$stacksize             <- 256*1024
-  env$algorithm             <- 0
-  env$which                 <- 0
-  env$samples               <- c(100, 2000)
+  env$n_moments             <- n_moments
+  env$model_posterior       <- model_posterior
+  env$bprob                 <- bprob
+  env$utility               <- utility
+  env$kl_component          <- kl_component
+  env$kl_multibin           <- kl_multibin
+  env$effective_counts      <- effective_counts
+  env$marginal              <- marginal
+  env$marginal_step         <- marginal_step
+  env$marginal_range        <- marginal_range
+  env$epsilon               <- epsilon
+  env$threads               <- threads
+  env$stacksize             <- stacksize
+  env$algorithm             <- algorithm
+  env$which                 <- which
+  env$samples               <- samples
 
   env
 }
 
-default_alpha <- function(alpha) {
+default.alpha <- function(alpha) {
   K <- dim(alpha)[1]
   L <- dim(alpha)[2]
   result <- array(dim=c(L,L,K))
   for (k in 1:K) {
-    result[,,k] <- generate_alpha(alpha[k,])
+    result[,,k] <- generate.alpha(alpha[k,])
   }
   result
 }
 
-generate_alpha <- function(alpha) {
+generate.alpha <- function(alpha) {
   result <- outer(rep(1,length(alpha)),alpha)
   result[lower.tri(result)] <- 0
   for (i in 1:length(alpha)) {
@@ -42,27 +57,27 @@ generate_alpha <- function(alpha) {
   result
 }
 
-default_beta <- function(n) {
+default.beta <- function(n) {
   return(rep(1, n))
 }
 
-default_gamma <- function(n) {
+default.gamma <- function(n) {
   result <- outer(rep(1,n),rep(1,n))
   result[lower.tri(result)] <- 0
   result
 }
 
-count_statistic <- function(counts) {
+count.statistic <- function(counts) {
   K <- dim(counts)[1]
   L <- dim(counts)[2]
   result <- array(dim=c(L,L,K))
   for (k in 1:K) {
-    result[,,k] <- generate_statistic(counts[k,])
+    result[,,k] <- generate.statistic(counts[k,])
   }
   result
 }
 
-generate_statistic <- function(counts) {
+generate.statistic <- function(counts) {
   result <- outer(rep(1,length(counts)),counts)
   result[lower.tri(result)] <- 0
   for (i in 1:length(counts)) {
@@ -71,19 +86,23 @@ generate_statistic <- function(counts) {
   result
 }
 
-adaptive_sampling <- function(counts, alpha, beta, gamma, options) {
+adaptive.sampling <- function(counts, alpha, beta, gamma, ...) {
   L <- dim(counts)[1]
   K <- dim(counts)[3]
   storage.mode(counts) <- "double"
   storage.mode(alpha)  <- "double"
   storage.mode(beta)   <- "double"
   storage.mode(gamma)  <- "double"
+  
+  options <- make.options(...)
 
-  as.list(.Call("adaptive_sampling",
+  result <- as.list(.Call("adaptive_sampling",
                 counts, alpha, beta, gamma, options))
+  attr(result, 'class') <- 'sampling'
+  result
 }
 
-plot_result <- function(result) {
+plotResult <- function(result) {
   expectation <- result$moments[1,]
   utility <- result$utility
   par(mfrow=c(3,1))
@@ -92,19 +111,20 @@ plot_result <- function(result) {
   barplot(result$mpost, space=0.0, xlab="m", ylab=expression(P(M==m ~~ "|" ~~ Y^X)), xaxs="i", ylim=c(0,1), main="Model posterior")
 }
 
-sampling_demo <- function() {
+plot.sampling <- function(samplingresult, ...)
+	plotResult(unclass(samplingresult), ...)
+
+sampling.demo <- function() {
   L = 6 # number of stimuli
   K = 2 # number of responses
   counts_success <- c(2,3,2,4,7,7)
   counts_failure <- c(8,7,7,6,3,2)
-  counts <- count_statistic(t(matrix(c(counts_success, counts_failure), L)))
+  counts <- count.statistic(t(matrix(c(counts_success, counts_failure), L)))
   alpha_success  <- c(1,1,1,1,1,1)
   alpha_failure  <- c(1,1,1,1,1,1)
-  alpha  <- default_alpha(t(matrix(c(alpha_success, alpha_failure), L)))
-  beta   <- default_beta(L)
-  gamma  <- default_gamma(L)
+  alpha  <- default.alpha(t(matrix(c(alpha_success, alpha_failure), L)))
+  beta   <- default.beta(L)
+  gamma  <- default.gamma(L)
 
-  options <- default_options()
-
-  adaptive_sampling(counts, alpha, beta, gamma, options)
+  adaptive.sampling(counts, alpha, beta, gamma)
 }
