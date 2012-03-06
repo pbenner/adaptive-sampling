@@ -1,12 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-#pkginclude_HEADERS =
-
-## install headers
-#include_HEADERS =
-
-## include headers in distribution
-EXTRA_DIST = \
+pkginclude_HEADERS = \
 	adaptive-sampling/interface.h \
 	adaptive-sampling/linalg.h \
 	adaptive-sampling/prombs.h \
@@ -14,6 +8,13 @@ EXTRA_DIST = \
 	adaptive-sampling/logarithmetic.h \
 	adaptive-sampling/exception.h \
 	adaptive-sampling/mgs.h
-	adaptive-sampling/datatypes.h.in \
+
+## install headers
+include_HEADERS = \
+	probtype.h
+
+## include headers in distribution
+EXTRA_DIST = \
+	probtype.h.in \
 	adaptive-sampling/uthash.h \
 	gnugetopt.h
