@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+INCLUDES = -I$(top_srcdir)/include
+
 ## bayesian-binning library
 lib_LTLIBRARIES  = libadaptive-sampling.la
 libadaptive_sampling_la_SOURCES = \

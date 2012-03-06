@@ -23,8 +23,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <probtype.h>
-
 typedef PROB_T prob_t;
 
 /******************************************************************************

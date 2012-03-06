@@ -10,11 +10,9 @@ pkginclude_HEADERS = \
 	adaptive-sampling/mgs.h
 
 ## install headers
-include_HEADERS = \
-	probtype.h
+include_HEADERS =
 
 ## include headers in distribution
 EXTRA_DIST = \
-	probtype.h.in \
 	adaptive-sampling/uthash.h \
 	gnugetopt.h
