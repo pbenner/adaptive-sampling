@@ -1,5 +1,5 @@
 
-static inline int
+static int
 cheb_eval_e(const cheb_series * cs,
             const double x,
             gsl_sf_result * result)
