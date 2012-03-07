@@ -133,7 +133,7 @@ void __init_rand__() {
         srand(seed);
 }
 
-void __init__(prob_t epsilon)
+void __init__(double epsilon)
 {
         __init_rand__();
         __init_model__();

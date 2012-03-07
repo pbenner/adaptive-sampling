@@ -1,4 +1,3 @@
-/* include/adaptive-sampling/datatypes.h.  Generated from datatypes.h.in by configure.  */
 /* Copyright (C) 2010 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +21,6 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
-
-typedef PROB_T prob_t;
 
 /******************************************************************************
  * Data structures

@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Philipp Benner
+/* Copyright (C) 2010 Philipp Benner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,21 +15,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _MGS_H_
-#define _MGS_H_
+#ifndef PROBTYPE_H
+#define PROBTYPE_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <adaptive-sampling/datatypes.h>
-#include <adaptive-sampling/linalg.h>
-#include <adaptive-sampling/probtype.h>
+typedef PROB_T prob_t;
 
-extern void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
-extern void mgs_init(size_t R, size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
-extern void mgs_free();
-extern size_t * mgs_get_counts();
-extern void mgs_get_bprob(vector_t *bprob, size_t L);
-
-#endif /* _MGS_H_ */
+#endif /* PROBTYPE_H */
