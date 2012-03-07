@@ -24,10 +24,9 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-void __init__(prob_t epsilon);
+void __init__(double epsilon);
 void __free__();
 
-prob_t entropy(int events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
 BinningResult * binning(int events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
 
 #endif /* BAYESIAN_BINNING */

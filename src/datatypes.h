@@ -24,6 +24,7 @@
 
 #include <adaptive-sampling/linalg.h>
 #include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/probtype.h>
 
 /******************************************************************************
  * Data structures

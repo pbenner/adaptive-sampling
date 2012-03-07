@@ -20,6 +20,7 @@
 
 #include <adaptive-sampling/datatypes.h>
 #include <adaptive-sampling/linalg.h>
+#include <adaptive-sampling/probtype.h>
 
 extern void __init_prombs__(prob_t epsilon);
 extern void prombs(prob_t *result, matrix_t *ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);

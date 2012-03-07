@@ -25,6 +25,7 @@
 #include <math.h>
 
 #include <adaptive-sampling/datatypes.h>
+#include <adaptive-sampling/probtype.h>
 
 /* Log Sum of Exponentials Algorithm */
 
