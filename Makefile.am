@@ -8,6 +8,8 @@ SUBDIRS += libmini-gsl
 endif
 SUBDIRS += adaptive_sampling src
 
+DIST_SUBDIRS = auxtools data include libexception libprombs libmgs libmini-gsl adaptive_sampling src matlab math
+
 dist_bin_SCRIPTS  = bayesian-binning adaptive-sampling
 CLEANFILES        = $(dist_bin_SCRIPTS)
 
@@ -16,17 +18,6 @@ man1_MANS         = adaptive-sampling.1 bayesian-binning.1
 EXTRA_DIST        = adaptive-sampling.1 bayesian-binning.1      \
                     adaptive-sampling.in bayesian-binning.in    \
                     adaptive-sampling.xml bayesian-binning.xml  \
-                    data/binning/*.cfg                          \
-                    data/binning/*.py                           \
-                    data/binning/*.pdf                          \
-                    data/binning-spikes/*.cfg                   \
-                    data/binning-spikes/*.py                    \
-                    data/binning-spikes/*.pdf                   \
-                    data/binning-spikes/*.result*               \
-                    data/sampling/*.cfg                         \
-                    data/sampling/*.py                          \
-                    data/sampling/*.pdf                         \
-                    data/sampling/*.result*                     \
                     debian/control                              \
                     debian/copyright                            \
                     debian/compat                               \
