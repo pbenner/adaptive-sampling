@@ -102,6 +102,88 @@ adaptive.sampling <- function(counts, alpha, beta, gamma, ...) {
   result
 }
 
+plot.binning.marginal <- function(
+	results,
+	plot.marginal = TRUE,
+	marginalcolor = gray((256:0)/256),
+	autoclip.marginal = TRUE,
+	normalize.marginal.plot = FALSE,
+	median.color = 'red',
+	median.lty = 'solid',
+	plot.quartiles = TRUE,
+	quartiles.color = 'red',
+	quartiles.lty = 'dashed',
+	plot.outer.quantiles = TRUE,
+	outer.quantiles.color = 'red',
+	outer.quantiles.lty = 'dotted',
+	plot.moments = FALSE,
+	moment1.color = 'red',
+	moment1.lty = 'solid',
+	moment2.color = 'red',
+	moment2.lty = 'dashed',
+	plot.std = TRUE,
+	plot.bprob = FALSE,
+	bprob.color = 'darkgreen',
+	show.legend = TRUE,
+	legend.location = 'best',
+	xaxis.location = 'bottom',
+	x.labels = NULL
+)
+{
+	isfield <- function(x) { x %in% names(results) }
+	if(isfield('marginals'))
+	{
+		n <- dim(results$marginals)[1]
+		quantiles.p <- c(.025, .25, .50, .75, .975)
+		quantiles <- matrix(numeric(5*n), ncol=n)
+		for(i in 1:n)
+		{
+			v = results$marginals[i,]
+			# normalized cumsum:
+			ncumsum = cumsum(v)/sum(v)
+			# make data distinct:
+			ncd = unique(ncumsum)
+			ind = (1:length(ncumsum))[!duplicated(ncumsum)]
+			# interpolate:
+			interp <- approxfun(ncd, ind/tail(ind,1))
+			quantiles[, i] = sapply(quantiles.p, interp)
+		}
+		
+		if(plot.marginal)
+		{
+			imagematrix = results$marginals
+			if(normalize.marginal.plot)
+			{
+				imagematrix = log(1+imagematrix)
+				maplength = length(marginalcolor)
+				imagematrix = maplength*(imagematrix/5);
+			}
+			if(is.null(x.labels)) { x.labels = 1:n }
+			image(
+				x = x.labels,
+				z = imagematrix, 
+				col=marginalcolor, 
+				axes=T)
+			#axis(ifelse(xaxis.location == 'bottom', 1, 3), xaxp=c(min(x.labels), max(x.labels), min(length(x.labels), 10)))
+			#axis(1, labels=TRUE)
+			#axis(2, yaxp=c(0, 1, 5))
+			
+			# plot quantiles:
+			lines(x.labels, quantiles[3,], col = median.color, lty = median.lty)
+			if(plot.quartiles)
+			{
+				lines(x.labels, quantiles[2,], col = quartiles.color, lty = quartiles.lty)
+				lines(x.labels, quantiles[4,], col = quartiles.color, lty = quartiles.lty)
+			}
+			if(plot.outer.quantiles)
+			{
+				lines(x.labels, quantiles[1,], col = outer.quantiles.color, lty = outer.quantiles.lty)
+				lines(x.labels, quantiles[5,], col = outer.quantiles.color, lty = outer.quantiles.lty)
+			}
+		}
+	}
+}
+
 plotResult <- function(result) {
   expectation <- result$moments[1,]
   utility <- result$utility
