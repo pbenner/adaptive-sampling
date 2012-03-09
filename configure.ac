@@ -292,14 +292,17 @@ AC_CONFIG_HEADER([config.h:config.h.in])
 AC_CONFIG_FILES([
 	Makefile
 	version.h
+	auxtools/Makefile
+	data/Makefile
+	include/Makefile
 	libprombs/Makefile
 	libmgs/Makefile
 	libexception/Makefile
 	libmini-gsl/Makefile
 	adaptive_sampling/Makefile
 	matlab/Makefile
+	math/Makefile
 	src/Makefile
-	include/Makefile
  	])
 
 AC_OUTPUT
