@@ -127,12 +127,16 @@ plot.binning.marginal <- function(
 	show.legend = TRUE,
 	legend.location = 'best',
 	xaxis.location = 'bottom',
-	x.labels = NULL
+	x.labels = NULL,
+	xlab = "stimuli",
+	...
 )
 {
 	isfield <- function(x) { x %in% names(results) }
+	plotActive = FALSE
 	if(isfield('marginals'))
 	{
+		plotActive = TRUE
 		n <- dim(results$marginals)[1]
 		quantiles.p <- c(.025, .25, .50, .75, .975)
 		quantiles <- matrix(numeric(5*n), ncol=n)
@@ -159,15 +163,16 @@ plot.binning.marginal <- function(
 				imagematrix = maplength*(imagematrix/5);
 			}
 			if(is.null(x.labels)) { x.labels = 1:n }
+			xaxislabel = ifelse(xaxis.location == 'bottom', xlab, "")
 			image(
 				x = x.labels,
 				z = imagematrix, 
 				col=marginalcolor, 
-				axes=T)
-			#axis(ifelse(xaxis.location == 'bottom', 1, 3), xaxp=c(min(x.labels), max(x.labels), min(length(x.labels), 10)))
-			#axis(1, labels=TRUE)
-			#axis(2, yaxp=c(0, 1, 5))
-			
+				xaxt='n',
+				xlab = xaxislabel,
+				...)
+			axis(ifelse(xaxis.location == 'bottom', 1, 3), xaxp = par("xaxp"))
+
 			# plot quantiles:
 			lines(x.labels, quantiles[3,], col = median.color, lty = median.lty)
 			if(plot.quartiles)
@@ -179,6 +184,52 @@ plot.binning.marginal <- function(
 			{
 				lines(x.labels, quantiles[1,], col = outer.quantiles.color, lty = outer.quantiles.lty)
 				lines(x.labels, quantiles[5,], col = outer.quantiles.color, lty = outer.quantiles.lty)
+			}
+		}
+		
+		# plot moments:
+		if(!isfield('marginals') || plot.moments)
+		{
+			if(!isfield('moments')) { warning("could not find moments", call.=F) }
+			else
+			{
+				m1 = results$moments[1, ]
+				if(is.null(x.labels)) { x.labels = 1:length(m1) }
+				if(plotActive) { lines(x.labels, m1, col = moment1.color, lty = moment1.lty) }
+				else { plot(x.labels, m1, col = moment1.color, type = 'l', lty = moment1.lty, xlab=xlab, ...) }
+				
+				if(plot.std && dim(results$moments)[1]>1)
+				{
+					variance = results$moments[2, ] - results$moments[1, ]**2;
+					stdev = sqrt(variance);
+					std.top = m1 + stdev;
+					std.bot = m1 - stdev;
+					lines(x.labels, std.top, col = moment2.color, lty = moment2.lty);
+					lines(x.labels, std.bot, col = moment2.color, lty = moment2.lty);
+				}
+			}
+		}
+		
+		# plot bprob:
+		if(plot.bprob)
+		{
+			if(!isfield('bprob')) { warning("could not find bprob", call.=F) }
+			else
+			{
+				bprob = results$bprob
+				bprob[1] = NaN; bprob[length(bprob)] = NaN; 
+				yticks = par("yaxp")
+				# rescale:
+				bprob = bprob*(yticks[2] - yticks[1]) + yticks[1]
+				labs = sapply(seq(0, 1, length.out = yticks[3]+1), function(s) sprintf("%.2f", s))
+				axis(
+					4, 
+					at = seq(yticks[1], yticks[2], length.out = yticks[3]+1),
+					labels=labs,
+					col = bprob.color,
+					col.ticks = bprob.color,
+					col.axis = bprob.color)
+				lines(x.labels, bprob, col = bprob.color)
 			}
 		}
 	}
