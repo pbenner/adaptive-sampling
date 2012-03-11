@@ -128,6 +128,7 @@ plot.binning.marginal <- function(
 	bprob.label = "break probabilities",
 	show.legend = TRUE,
 	legend.location = 'bottomright',	# given either as string or as list or vector of 2 values, e.g. list(0, 1)
+	show.grid = TRUE,
 	xaxis.location = 'bottom',
 	x.labels = NULL,
 	xlab = "s",
@@ -268,13 +269,13 @@ plot.binning.marginal <- function(
 			par(op)
 		}
 	}
-	grid(col='gray')
+	if(show.grid) grid(col='gray')
 	if(show.legend)
 	{
 		legendloc = if(length(legend.location)<2) list(legend.location, NULL) else as.list(legend.location)
 		ltynames = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
 		ltys = sapply(legendentries$lty, function(x) ifelse(is.numeric(x), x, which(ltynames==x)))
-		legend(x=legendloc[[1]], y=legendloc[[2]], legend=legendentries$legend, col=legendentries$col, lty=ltys)
+		legend(x=legendloc[[1]], y=legendloc[[2]], legend=legendentries$legend, col=legendentries$col, lty=ltys, bg="white")
 	}
 }
 
@@ -301,7 +302,16 @@ plot.binning <- function(
 		xaxs="i",
 		yaxs="r")
 	axis(1, at=bb, labels=FALSE)
-	grid(nx=0, ny=xaxp[3], col="gray")
+	grid(nx=0, ny=NULL, col="gray")
+	barplot(
+		results$mpost, 
+		col=bar.color, 
+		xlab = xlab, 
+		ylab=posterior.label,
+		names.arg = 1:length(results$mpost),
+		xaxs="i",
+		yaxs="r",
+		add=TRUE)
 	box()
 	par(op)
 }
