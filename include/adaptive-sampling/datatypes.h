@@ -42,6 +42,7 @@ typedef struct options {
         int kl_component;
         int kl_multibin;
         int effective_counts;
+        int effective_posterior_counts;
         /* which event */
         int which;
         /* binning algorithm */
