@@ -76,6 +76,9 @@ void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
         else if (bd->options->effective_counts) {
                 computeEffectiveCountsUtility(utility, evidence_ref, bd);
         }
+        else if (bd->options->effective_posterior_counts) {
+                computeEffectivePosteriorCountsUtility(utility, evidence_ref, bd);
+        }
 }
 
 static

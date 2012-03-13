@@ -92,7 +92,7 @@ def usage():
     print
     print "Sampling strategies:"
     print "       --strategy=STRATEGY            - uniform, uniform-random, kl-divergence (default),"
-    print "                                        effective-counts, or variance"
+    print "                                        effective-counts, effective-posterior-counts, or variance"
     print "       --kl-component                 - if kl-divergence is selected as strategy then use"
     print "                                        add the component divergence"
     print "       --kl-multibin                  - if kl-divergence is selected as strategy then use"
@@ -224,6 +224,8 @@ def prombsUtility(counts, data):
     if options['strategy'] == 'kl-multibin':
         return result['utility']
     if options['strategy'] == 'effective-counts':
+        return result['utility']
+    if options['strategy'] == 'effective-posterior-counts':
         return result['utility']
 
 def prombsExpectation(y, counts, data):
@@ -399,6 +401,8 @@ def selectItem(counts, data):
         utility = computeUtility(counts, data)
     elif options['strategy'] == 'effective-counts':
         utility = computeUtility(counts, data)
+    elif options['strategy'] == 'effective-posterior-counts':
+        utility = computeUtility(counts, data)
     elif options['strategy'] == 'variance':
         utility = computeUtility(counts, data)
     else:
@@ -572,36 +576,37 @@ def parseConfig(config_file):
 # ------------------------------------------------------------------------------
 
 options = {
-    'samples'              : 0,
-    'look_ahead'           : 0,
-    'epsilon'              : 0.00001,
-    'n_moments'            : 2,
-    'mgs_samples'          : (100,2000),
-    'marginal'             : 0,
-    'marginal_step'        : 0.01,
-    'marginal_range'       : (0.0,1.0),
-    'which'                : 0,
-    'lapsing'              : 0.0,
-    'threads'              : 1,
-    'stacksize'            : 256*1024,
-    'algorithm'            : 'prombs',
-    'strategy'             : 'kl-divergence',
-    'video'                : None,
-    'port'                 : None,
-    'filter'               : None,
-    'visualization'        : None,
-    'load'                 : None,
-    'save'                 : None,
-    'savefig'              : None,
-    'verbose'              : False,
-    'prombsTest'           : False,
-    'compare'              : False,
-    'bprob'                : False,
-    'utility'              : False,
-    'kl_component'         : False,
-    'kl_multibin'          : False,
-    'effective_counts'     : False,
-    'model_posterior'      : True,
+    'samples'                    : 0,
+    'look_ahead'                 : 0,
+    'epsilon'                    : 0.00001,
+    'n_moments'                  : 2,
+    'mgs_samples'                : (100,2000),
+    'marginal'                   : 0,
+    'marginal_step'              : 0.01,
+    'marginal_range'             : (0.0,1.0),
+    'which'                      : 0,
+    'lapsing'                    : 0.0,
+    'threads'                    : 1,
+    'stacksize'                  : 256*1024,
+    'algorithm'                  : 'prombs',
+    'strategy'                   : 'kl-divergence',
+    'video'                      : None,
+    'port'                       : None,
+    'filter'                     : None,
+    'visualization'              : None,
+    'load'                       : None,
+    'save'                       : None,
+    'savefig'                    : None,
+    'verbose'                    : False,
+    'prombsTest'                 : False,
+    'compare'                    : False,
+    'bprob'                      : False,
+    'utility'                    : False,
+    'kl_component'               : False,
+    'kl_multibin'                : False,
+    'effective_counts'           : False,
+    'effective_posterior_counts' : False,
+    'model_posterior'            : True,
     }
 
 def main():
@@ -692,6 +697,8 @@ def main():
        options["kl_component"]  = True
     if options["strategy"] == "effective-counts":
         options["effective_counts"] = True
+    if options["strategy"] == "effective-posterior-counts":
+        options["effective_posterior_counts"] = True
     if len(tail) != 1:
         usage()
         return 1

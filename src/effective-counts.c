@@ -42,7 +42,7 @@
  ******************************************************************************/
 
 static
-prob_t effectiveCounts_f(int i, int j, void *data)
+prob_t effectivePosteriorCounts_f(int i, int j, void *data)
 {
         binProblem *bp = (binProblem *)data;
 
@@ -59,14 +59,54 @@ prob_t effectiveCounts_f(int i, int j, void *data)
         }
 }
 static
-prob_t effectiveCounts(size_t pos, prob_t evidence_ref, binProblem *bp)
+prob_t effectivePosteriorCounts(size_t pos, prob_t evidence_ref, binProblem *bp)
 {
         prob_t ev_log[bp->bd->L];
 
         bp->counts_pos = pos;
-        prombs(ev_log, bp->ak, bp->bd->prior_log, &effectiveCounts_f, bp->bd->L, minM(bp), (void *)bp);
+        prombs(ev_log, bp->ak, bp->bd->prior_log, &effectivePosteriorCounts_f, bp->bd->L, minM(bp), (void *)bp);
 
         return EXP(sumModels(ev_log, bp) - evidence_ref);
+}
+
+static
+prob_t effectiveCounts_f(int i, int j, void *data)
+{
+        binProblem *bp = (binProblem *)data;
+
+        if (i <= bp->counts_pos && bp->counts_pos <= j) {
+                int k;
+                prob_t n = 0;
+                for (k = 0; k < bp->bd->events; k++) {
+                        n += countStatistic(k, i, j, bp);
+                }
+                if (n == 0) {
+                        return -HUGE_VAL;
+                }
+                else {
+                        return log(n) + iec_log(i, j, bp);
+                }
+        }
+        else {
+                return iec_log(i, j, bp);
+        }
+}
+static
+prob_t effectiveCounts(size_t pos, prob_t evidence_ref, binProblem *bp)
+{
+        prob_t ev_log[bp->bd->L];
+        prob_t sum;
+
+        bp->counts_pos = pos;
+        prombs(ev_log, bp->ak, bp->bd->prior_log, &effectiveCounts_f, bp->bd->L, minM(bp), (void *)bp);
+
+        sum = sumModels(ev_log, bp);
+        if (sum == -HUGE_VAL) {
+                return 0;
+        }
+        else {
+                return EXP(sum - evidence_ref);
+        }
 }
 
 /******************************************************************************
@@ -84,6 +124,22 @@ void computeEffectiveCountsUtility(
         for (i = 0; i < bd->L; i++) {
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd->L);
                 result->content[i] = -effectiveCounts(i, evidence_ref, &bp);
+        }
+
+        binProblemFree(&bp);
+}
+
+void computeEffectivePosteriorCountsUtility(
+        vector_t *result,
+        prob_t evidence_ref,
+        binData* bd)
+{
+        binProblem bp; binProblemInit(&bp, bd);
+        size_t i;
+
+        for (i = 0; i < bd->L; i++) {
+                notice(NONE, "Computing posterior effective counts... %.1f%%", (float)100*(i+1)/bd->L);
+                result->content[i] = -effectivePosteriorCounts(i, evidence_ref, &bp);
         }
 
         binProblemFree(&bp);
