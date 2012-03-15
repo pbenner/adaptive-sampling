@@ -30,4 +30,5 @@ adaptive-sampling -n 100 -m --plot-utility data/sampling/data1.cfg
 adaptive-sampling -m -n 400 --strategy=uniform --save=data/sampling/data1.result4 data/sampling/data1.cfg
 
 adaptive-sampling -n 5 -m --strategy=effective-counts data/sampling/data4.cfg 2>/dev/null
-adaptive-sampling -n 5 -m --strategy=differential-gain data/sampling/data4.cfg 2>/dev/null
+adaptive-sampling -n 5 -m --strategy=kl-divergence data/sampling/data4.cfg 2>/dev/null
+adaptive-sampling -n 5 -m --strategy=kl-divergence --kl-multibin data/sampling/data4.cfg 2>/dev/null
