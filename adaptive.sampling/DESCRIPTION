@@ -1,4 +1,4 @@
-Package: AdaptiveSampling
+Package: adaptive.sampling
 Version: 1.0-1
 Depends: R (>= 2.10.0)
 Date: 03-03-2012
