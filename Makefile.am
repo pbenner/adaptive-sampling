@@ -15,7 +15,13 @@ CLEANFILES        = $(dist_bin_SCRIPTS)
 
 man1_MANS         = adaptive-sampling.1 bayesian-binning.1
 
-EXTRA_DIST        = adaptive-sampling.1 bayesian-binning.1      \
+EXTRA_DIST        = adaptive.sampling/R/adaptive.sampling.R     \
+                    adaptive.sampling/src                       \
+                    adaptive.sampling/src/adaptive.sampling.c   \
+                    adaptive.sampling/src/Makevars              \
+                    adaptive.sampling/DESCRIPTION               \
+                    adaptive.sampling/NAMESPACE                 \
+                    adaptive-sampling.1 bayesian-binning.1      \
                     adaptive-sampling.in bayesian-binning.in    \
                     adaptive-sampling.xml bayesian-binning.xml  \
                     debian/control                              \
