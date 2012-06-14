@@ -31,7 +31,7 @@
 #include "error.h"
 
 #include "chebyshev.h"
-#include "cheb_eval.c"
+#include "cheb_eval.h"
 
 #define LogTwoPi_  1.8378770664093454835606594728111235279723
 

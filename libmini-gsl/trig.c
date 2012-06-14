@@ -28,7 +28,7 @@
 #include "error.h"
 
 #include "chebyshev.h"
-#include "cheb_eval.c"
+#include "cheb_eval.h"
 
 /* sinh(x) series
  * double-precision for |x| < 1.0
