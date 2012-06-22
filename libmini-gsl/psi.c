@@ -33,7 +33,7 @@
 #include "error.h"
 
 #include "chebyshev.h"
-#include "cheb_eval.c"
+#include "cheb_eval.h"
 
 /*-*-*-*-*-*-*-*-*-*-*-* Private Section *-*-*-*-*-*-*-*-*-*-*-*/
 

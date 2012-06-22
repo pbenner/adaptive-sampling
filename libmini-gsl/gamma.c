@@ -32,7 +32,7 @@
 #include "check.h"
 
 #include "chebyshev.h"
-#include "cheb_eval.c"
+#include "cheb_eval.h"
 
 #define LogRootTwoPi_  0.9189385332046727418
 
