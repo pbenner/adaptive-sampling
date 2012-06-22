@@ -316,15 +316,6 @@ plot.binning <- function(
 	par(op)
 }
 
-plotResult <- function(result) {
-  expectation <- result$moments[1,]
-  utility <- result$utility
-  par(mfrow=c(3,1))
-  plot(expectation , type="l", ylab=expression(p["x,s"]), xaxs="i", ylim=c(0,1), main="Expectation")
-  plot(utility, type="l", ylab=expression(U(x)), xaxs="i", main="Utility")
-  barplot(result$mpost, space=0.0, xlab="m", ylab=expression(P(M==m ~~ "|" ~~ Y^X)), xaxs="i", ylim=c(0,1), main="Model posterior")
-}
-
 plot.sampling <- function(samplingresult, ...)
 	plot.binning(unclass(samplingresult), ...)
 
