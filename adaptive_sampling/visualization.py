@@ -45,12 +45,12 @@ smallfont = {'family'     : 'serif',
 def plotGroundTruth(ax, x, gt):
     p = ax.plot(x, gt)
     ax.set_ylim(0,1)
-    return p
+    return p[0]
 
 def plotUtility(ax, x, result):
     p = ax.plot(x, result['utility'])
     ax.ticklabel_format(style='sci', scilimits=(0,0), axis='y')
-    return p
+    return p[0]
 
 def plotModelPosterior(ax, result):
     data = result['mpost'][:]
@@ -86,7 +86,7 @@ def plotEffectiveCounts(ax, xorig, result):
     patch   = patches.PathPatch(barpath, facecolor='yellow', edgecolor='gray', alpha=0.3)
     ax.add_patch(patch)
     ax.set_ylim(0, ax.get_ylim()[1]+1)
-    return p
+    return p[0]
 
 def plotCounts(ax, x, result):
     N = len(result['moments'][0])
@@ -126,7 +126,7 @@ def plotMoments(ax, x, result):
     if y1 < 0: y1 = 0
     if y2 > 1: y2 = 1
     ax.set_ylim(y1, y2)
-    return p
+    return p[0]
 
 def plotSpikeRate(ax, x, result, dt):
     """Plot the binning result."""
@@ -142,7 +142,7 @@ def plotSpikeRate(ax, x, result, dt):
     [y1,y2] = ax.get_ylim()
     if y1 < 0: y1 = 0
     ax.set_ylim(y1, y2)
-    return p
+    return p[0]
 
 def plotMarginal(ax, x, result):
     N = len(result['moments'][0])
