@@ -229,6 +229,7 @@ options = {
     'kl_component'         : False,
     'kl_multibin'          : False,
     'effective_counts'     : False,
+    'effective_posterior_counts' : False,
     'model_posterior'      : True,
     }
 
