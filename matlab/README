@@ -1,0 +1,35 @@
+
+--------------------------------------------------------------------------------
+- Unix including MacOS X
+--------------------------------------------------------------------------------
+
+./configure --with-matlab
+
+make
+cd matlab
+make
+
+--------------------------------------------------------------------------------
+- Windows with MinGW
+--------------------------------------------------------------------------------
+
+./configure --enable-mini-gsl --enable-pthread=no --with-matlab
+
+cd matlab
+
+export MATLAB_DIR=/path/to/matlab
+
+gcc -DHAVE_CONFIG_H -DMATLAB_MEX_FILE -DNDEBUG -I. -I.. -I../include -I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -O3 -fno-exceptions -ffast-math -Wall -Wwrite-strings -Winline -Wno-trigraphs -fPIC -c -o adaptive_sampling.o adaptive_sampling.c
+gcc -shared -o adaptive-sampling.mexw32 adaptive_sampling.o -Wl,--rpath-link,${MATLAB_DIR}/bin/win32 -L${MATLAB_DIR}/bin/win32 -Wl,-version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.map -Wl,--no-undefined -static-libgcc -lm -lmx -lmex -lmat ../src/.libs/libadaptive-sampling.a
+
+In case mexFunction.map does not exist:
+
+cat <<EOF >mexFunction.map
+MEX {
+        global:
+                mexFunction;
+                mexVersion;
+        local:
+                *;
+};
+EOF
