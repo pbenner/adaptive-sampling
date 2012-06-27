@@ -3,6 +3,7 @@
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/include
 
 EXTRA_DIST = \
+	README \
 	adaptive_sampling.c \
 	adsamp.m \
 	categorial_sample.m \
