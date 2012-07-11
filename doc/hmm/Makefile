@@ -16,7 +16,7 @@ all: $(TEX_OUTPUT)
 ## latex&co build rules
 $(TEX_OUTPUT): $(wildcard *.texinput)
 $(TEX_OUTPUT): $(wildcard *.bib)
-$(TEX_OUTPUT): macros.sty
+$(TEX_OUTPUT): nips2011_macros.sty
 $(TEX_OUTPUT): %.pdf: %.tex
 # texi2dvi runs latex as often as needed and generates a
 # bibliography by invoking bibtex
