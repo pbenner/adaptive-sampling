@@ -2,8 +2,8 @@
 %
 \section*{Model}
 %
-\tikzstyle{rv}=        [shape=circle,    fill=black!0,  minimum size=1.2cm]
-\tikzstyle{parameter}= [shape=rectangle, fill=black!0,  minimum size=1.2cm]
+\tikzstyle{rv}=              [shape=circle,       minimum size=1.2cm]
+\tikzstyle{parameter}= [shape=rectangle, minimum size=1.2cm]
 \begin{figure}[htbp]
   \begin{center}
     \begin{tikzpicture}[]
@@ -16,45 +16,71 @@
       ;
       \node[parameter] (A4) at (6,4) {$\alpha_{i+2}$}
       ;
-      % theta
-      \node[] (T0) at (-2,2) {}
+      % theta 1
+      \node[rv] (T0) at (-2,2) {}
       ;
-      \node[rv] (T1) at (0,2) {$\Thetab_{i-1}$}
+      \node[rv] (T1) at (0,2) {$\Thetab^1_{i-1}$}
         edge [<-] (T0)
         edge [<-] (A1)
       ;
-      \node[rv] (T2) at (2,2) {$\Thetab_{i}$}
+      \node[rv] (T2) at (2,2) {$\Thetab^1_{i}$}
         edge [<-] (T1)
         edge [<-] (A2)
       ;
-      \node[rv] (T3) at (4,2) {$\Thetab_{i+1}$}
+      \node[rv] (T3) at (4,2) {$\Thetab^1_{i+1}$}
         edge [<-] (T2)
         edge [<-] (A3)
       ;
-      \node[rv] (T4) at (6,2) {$\Thetab_{i+2}$}
+      \node[rv] (T4) at (6,2) {$\Thetab^1_{i+2}$}
         edge [<-] (T3)
         edge [<-] (A4)
       ;
-      \node[] (T5) at (8,2) {}
+      \node[rv] (T5) at (8,2) {}
         edge [<-] (T4)
+      ;
+      % theta 2
+      \node[rv] (S0) at (-1.5,2.5) {}
+      ;
+      \node[rv] (S1) at (0.5,2.5) {$\Thetab^2_{i-1}$}
+        edge [->] (S0)
+        edge [<-] (A1)
+      ;
+      \node[rv] (S2) at (2.5,2.5) {$\Thetab^2_{i}$}
+        edge [->] (S1)
+        edge [<-] (A2)
+      ;
+      \node[rv] (S3) at (4.5,2.5) {$\Thetab^2_{i+1}$}
+        edge [->] (S2)
+        edge [<-] (A3)
+      ;
+      \node[rv] (S4) at (6.5,2.5) {$\Thetab^2_{i+2}$}
+        edge [->] (S3)
+        edge [<-] (A4)
+      ;
+      \node[rv] (S5) at (8.5,2.5) {}
+        edge [->] (S4)
       ;
       % observations
       \node[rv] (X1) at (0,0) {$\Xb_{i-1}$}
         edge [<-] (T1)
+        edge [<-] (S1)
       ;
       \node[rv] (X2) at (2,0) {$\Xb_{i}$}
         edge [<-] (T2)
+        edge [<-] (S2)
       ;
       \node[rv] (X3) at (4,0) {$\Xb_{i+1}$}
         edge [<-] (T3)
+        edge [<-] (S3)
       ;
       \node[rv] (X4) at (6,0) {$\Xb_{i+2}$}
         edge [<-] (T4)
+        edge [<-] (S4)
       ;
     \end{tikzpicture}
   \end{center}
-  \caption{Polya urn hidden Markov process.}
-  \label{fig:2}
+  \caption{Polya urn hidden Markov mixture process.}
+  \label{fig:1}
 \end{figure}
 
 Define the transition kernel

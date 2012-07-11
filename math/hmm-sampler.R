@@ -107,24 +107,60 @@ f.density <- function(parameter, j, theta) {
   return(f(parameter, j, h))
 }
 
-# init
+# mixture chain (reverse parameters)
 ################################################################################
 
-parameter.init <- function(parameter, extended=TRUE) {
-  parameter$L <- length(parameter$success)
-  parameter$alpha.success <- rep(1, parameter$L)
-  parameter$alpha.failure <- rep(1, parameter$L)
-  parameter$phi <- phi.init(parameter)
-  if (extended) {
-    parameter$psi     <- psi.init(parameter)
-    parameter$expect  <- sapply(1:parameter$L, function(j) f.expectation(parameter, j))
-    parameter$stddev  <- sapply(1:parameter$L, function(j) f.stddev(parameter, j))
-    parameter$utility <- sapply(1:parameter$L, function(j) f.utility(parameter, j))
+parameter.reverse <- function(parameter.1) {
+  parameter.2 <- list()
+  parameter.2$success <- rev(parameter.1$success)
+  parameter.2$failure <- rev(parameter.1$failure)
+  if (is.element('alpha.success', names(parameter.1))) {
+    parameter.2$alpha.success <- rev(parameter.1$alpha.success)
   }
-  return(parameter)
+  if (is.element('alpha.failure', names(parameter.1))) {
+    parameter.2$alpha.failure <- rev(parameter.1$alpha.failure)
+  }
+  parameter.2$rho <- parameter.1$rho
+  
+  return(parameter.2)
 }
 
-# utility (full posterior)
+# init parameters and compute posterior
+################################################################################
+
+parameter.init <- function(parameter.1, extended=TRUE) {
+  parameter.1$L <- length(parameter.1$success)
+  if (!is.element('alpha.success', names(parameter.1))) {
+    parameter.1$alpha.success <- rep(1, parameter.1$L)
+  }
+  if (!is.element('alpha.failure', names(parameter.1))) {
+    parameter.1$alpha.failure <- rep(1, parameter.1$L)
+  }
+  parameter.1$phi <- phi.init(parameter.1)
+  if (extended) {
+    # first chain
+    parameter.1$psi     <- psi.init(parameter.1)
+    parameter.1$expect  <- sapply(1:parameter.1$L, function(j) f.expectation(parameter.1, j))
+    parameter.1$stddev  <- sapply(1:parameter.1$L, function(j) f.stddev(parameter.1, j))
+    parameter.1$utility <- sapply(1:parameter.1$L, function(j) f.utility(parameter.1, j))
+
+    # second chain
+    parameter.2         <- parameter.reverse(parameter.1)
+    parameter.2         <- parameter.init(parameter.2, FALSE)
+    parameter.2$psi     <- psi.init(parameter.2)
+    parameter.2$expect  <- sapply(1:parameter.2$L, function(j) f.expectation(parameter.2, j))
+    parameter.2$stddev  <- sapply(1:parameter.2$L, function(j) f.stddev(parameter.2, j))
+    parameter.2$utility <- sapply(1:parameter.2$L, function(j) f.utility(parameter.2, j))
+
+    # mix results
+    parameter.1$expect  <- sapply(1:parameter.1$L, function(j) (parameter.1$expect[,j]+parameter.2$expect [,parameter.1$L-j+1])/2)
+    parameter.1$stddev  <- sapply(1:parameter.1$L, function(j) (parameter.1$stddev[,j]+parameter.2$stddev [,parameter.1$L-j+1])/2)
+    parameter.1$utility <- sapply(1:parameter.1$L, function(j) (parameter.1$utility[j]+parameter.2$utility[ parameter.1$L-j+1])/2)
+  }
+  return(parameter.1)
+}
+
+# utility (on the full joint posterior)
 ################################################################################
 
 f.utility.rec <- function(parameter, j, h) {
@@ -162,9 +198,6 @@ f.utility.prime <- function(parameter, j, l) {
   parameter.new <- parameter.init(parameter.new, FALSE)
 
   result <- log(parameter$phi[L])-log(parameter.new$phi[L])
-  print(result)
-  print(f.utility.rec(parameter.new, L, h))
-  print(parameter.new$phi[L])
   result <- result + f.utility.rec(parameter.new, L, h)/parameter.new$phi[L]
   return(result)
 }
@@ -245,13 +278,21 @@ sample.prime <- function(parameter) {
 
 sample <- function(parameter, n, video=FALSE) {
   parameter <- parameter.init(parameter)
+  if (video) {
+    png(filename=sprintf("plot_%03d.png", 0), width = 800, height = 600)
+    plot.sampling(parameter, groundtruth, FALSE)
+    dev.off()
+  }
+  else {
+    plot.sampling(parameter, groundtruth)
+  }
   if (n > 0) {
     for (i in 1:n) {
       parameter <- sample.prime(parameter)
       print(parameter$utility)
       if (video) {
         png(filename=sprintf("plot_%03d.png", i), width = 800, height = 600)
-        plot.sampling(parameter, groundtruth, TRUE)
+        plot.sampling(parameter, groundtruth, FALSE)
         dev.off()
       }
       else {
@@ -268,11 +309,15 @@ sample <- function(parameter, n, video=FALSE) {
 groundtruth <- c(0.977895, 0.959606, 0.927331, 0.872769, 0.786948, 0.666468, 0.523201, 0.388603, 0.307012, 0.327954, 0.481978, 0.705735, 0.924494, 0.956063, 0.986731, 0.996743, 0.999621)
 #groundtruth <- c(0.983707, 0.977895, 0.970075, 0.959606, 0.945683, 0.927331, 0.903428, 0.872769, 0.834219, 0.786948, 0.730763, 0.666468, 0.59614, 0.523201, 0.452233, 0.388603, 0.338142, 0.307012, 0.301628, 0.327954, 0.38205, 0.481978, 0.593685, 0.705735, 0.901878, 0.924494, 0.944262, 0.956063, 0.975398, 0.986731, 0.993179, 0.996743, 0.998648, 0.999621, 1.00000)
 
-parameter   <- list(rho = 0.4,
-                    success = rep(0, length(groundtruth)),
-                    failure = rep(0, length(groundtruth))
-                    )
+parameter <- list(rho = 0.4,
+                  success = rep(0, length(groundtruth)),
+                  failure = rep(0, length(groundtruth))
+                  )
+parameter <- parameter.init(parameter, FALSE)
 
-parameter <- sample(parameter, 250, video=TRUE)
+parameter$alpha.success[ 1] = 100
+parameter$alpha.success[17] = 100
+
+parameter <- sample(parameter, 250, video=FALSE)
 
 #mencoder mf://plot_*.png -mf type=png:fps=4 -ovc lavc -lavcopts vcodec=mpeg4 -oac copy -o plot.avi
