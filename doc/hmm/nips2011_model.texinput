@@ -8,30 +8,30 @@
   \begin{center}
     \begin{tikzpicture}[]
       % states
-      \node[parameter] (A1) at (0,4) {$\alpha_{i-1}$}
+      \node[parameter] (A1) at (0,4) {$\alpha_{j-1}$}
       ;
-      \node[parameter] (A2) at (2,4) {$\alpha_{i}$}
+      \node[parameter] (A2) at (2,4) {$\alpha_{j}$}
       ;
-      \node[parameter] (A3) at (4,4) {$\alpha_{i+1}$}
+      \node[parameter] (A3) at (4,4) {$\alpha_{j+1}$}
       ;
-      \node[parameter] (A4) at (6,4) {$\alpha_{i+2}$}
+      \node[parameter] (A4) at (6,4) {$\alpha_{j+2}$}
       ;
       % theta 1
       \node[rv] (T0) at (-2,2) {}
       ;
-      \node[rv] (T1) at (0,2) {$\Thetab^1_{i-1}$}
+      \node[rv] (T1) at (0,2) {$\Thetab^1_{j-1}$}
         edge [<-] (T0)
         edge [<-] (A1)
       ;
-      \node[rv] (T2) at (2,2) {$\Thetab^1_{i}$}
+      \node[rv] (T2) at (2,2) {$\Thetab^1_{j}$}
         edge [<-] (T1)
         edge [<-] (A2)
       ;
-      \node[rv] (T3) at (4,2) {$\Thetab^1_{i+1}$}
+      \node[rv] (T3) at (4,2) {$\Thetab^1_{j+1}$}
         edge [<-] (T2)
         edge [<-] (A3)
       ;
-      \node[rv] (T4) at (6,2) {$\Thetab^1_{i+2}$}
+      \node[rv] (T4) at (6,2) {$\Thetab^1_{j+2}$}
         edge [<-] (T3)
         edge [<-] (A4)
       ;
@@ -41,19 +41,19 @@
       % theta 2
       \node[rv] (S0) at (-1.5,2.5) {}
       ;
-      \node[rv] (S1) at (0.5,2.5) {$\Thetab^2_{i-1}$}
+      \node[rv] (S1) at (0.5,2.5) {$\Thetab^2_{j-1}$}
         edge [->] (S0)
         edge [<-] (A1)
       ;
-      \node[rv] (S2) at (2.5,2.5) {$\Thetab^2_{i}$}
+      \node[rv] (S2) at (2.5,2.5) {$\Thetab^2_{j}$}
         edge [->] (S1)
         edge [<-] (A2)
       ;
-      \node[rv] (S3) at (4.5,2.5) {$\Thetab^2_{i+1}$}
+      \node[rv] (S3) at (4.5,2.5) {$\Thetab^2_{j+1}$}
         edge [->] (S2)
         edge [<-] (A3)
       ;
-      \node[rv] (S4) at (6.5,2.5) {$\Thetab^2_{i+2}$}
+      \node[rv] (S4) at (6.5,2.5) {$\Thetab^2_{j+2}$}
         edge [->] (S3)
         edge [<-] (A4)
       ;
@@ -61,19 +61,19 @@
         edge [->] (S4)
       ;
       % observations
-      \node[rv] (X1) at (0,0) {$\Xb_{i-1}$}
+      \node[rv] (X1) at (0,0) {$\Xb_{j-1}$}
         edge [<-] (T1)
         edge [<-] (S1)
       ;
-      \node[rv] (X2) at (2,0) {$\Xb_{i}$}
+      \node[rv] (X2) at (2,0) {$\Xb_{j}$}
         edge [<-] (T2)
         edge [<-] (S2)
       ;
-      \node[rv] (X3) at (4,0) {$\Xb_{i+1}$}
+      \node[rv] (X3) at (4,0) {$\Xb_{j+1}$}
         edge [<-] (T3)
         edge [<-] (S3)
       ;
-      \node[rv] (X4) at (6,0) {$\Xb_{i+2}$}
+      \node[rv] (X4) at (6,0) {$\Xb_{j+2}$}
         edge [<-] (T4)
         edge [<-] (S4)
       ;
@@ -82,6 +82,42 @@
   \caption{Polya urn hidden Markov mixture process.}
   \label{fig:1}
 \end{figure}
+
+\begin{equation*}
+  \begin{aligned}
+    \Thetab^1_j
+    &\given
+    \Thetab^1_{j-1} = \thetab^1_{j-1}
+    &\sim&\quad
+    \rho
+    \delta_{\theta^1_{j-1}}
+    +
+    (1-\rho)
+    \mu_{\Dir(\alpha_j)}
+    \\
+    \Thetab^2_j
+    &\given
+    \Thetab^2_{j+1} = \thetab^2_{j+1}
+    &\sim&\quad
+    \rho
+    \delta_{\theta^2_{j+1}}
+    +
+    (1-\rho)
+    \mu_{\Dir(\alpha_j)}
+    \\
+    X_{j,m}
+    &\given
+    \Thetab^1_j = \thetab^1_j,
+    \Thetab^2_j = \thetab^2_j
+    &\sim&\quad
+    \gamma
+    \Discrete(\thetab^1_j)
+    +
+    (1-\gamma)
+    \Discrete(\thetab^2_j)
+  \end{aligned}
+\end{equation*}
+with $\Xb_j = (X_{j,m})_m$ and mixture parameter $\gamma \in [0, 1]$.
 
 Define the transition kernel
 \begin{equation*}
@@ -153,37 +189,59 @@ with $\mu_{\Theta_{1} \given \Xb_{1:1}}(d\theta_{1} \given \xb_{1:1})
 
 \section*{Utility}
 %
-Utility at position $j$ for response $l$
+Assume that at position $j$ we already have $m$ samples. A suitable
+utility measure $u(j, \xb_{1:n})$ for sampling at position $j$ is
+defined by the mutual information between $\Thetab_{1:n}$ and $X_{j,m+1}$
+given our previous observations $\{\Xb_{1:n} = \xb_{1:n} \}$, i.e.
 \begin{equation*}
   \begin{aligned}
-    u(j, l, \xb_{1:n})
+    u(j, \xb_{1:n})
     &=
-    \Dkl\left(
-    \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n}^{+(j,l)})
-    \ggiven
-    \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
-    \right)
+    \I(\Thetab_{1:n} ; X_{j,m+1}) \given \Xb_{1:n} = \xb_{1:n}
     \\
+    &=
+    \E_{X_{j,m+1}}\left[
+      \Dkl\left(
+      \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+      \ggiven
+      \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+      \right)
+      \given
+      \Xb_{1:n} = \xb_{1:n}
+    \right]
+    \ ,
+  \end{aligned}
+\end{equation*}
+with
+\begin{multline*}
+  \Dkl\left(
+  \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+  \ggiven
+  \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+  \right)
+  \\
+  \begin{aligned}
     &=
     \ln
     \frac{
       p_{\Xb_{1:n}}(\xb_{1:n})
     }{
-      p_{\Xb_{1:n}}(\xb_{1:n}^{+(j,l)})
+      p_{\Xb_{1:n}, X_{j,m+1}}(\xb_{1:n}, x)
     }
     +
     \frac{
       1
     }{
-      p_{\Xb_{1:j+1}}(\xb_{1:n}^{+(j,l)})
+      p_{\Xb_{1:j+1}, X_{j,m+1}}(\xb_{1:n}, x)
     }
     \int
-    \theta_{j,l} \ln(\theta_{j,l})
+    \theta_{j,x} \ln(\theta_{j,x})
     \prod_{i=1}^n
-    p_{X_{i}\given \Theta_{i}}(x_{i} \given \theta_{i})
-    \mu_T(d\theta_{i} \given \theta_{i-1})
+    p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
+    \mu_T(d\thetab_{i} \given \thetab_{i-1})
+    \ .
   \end{aligned}
-\end{equation*}
+\end{multline*}
 
 \section*{Computation}
 %
