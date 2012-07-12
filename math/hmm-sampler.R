@@ -74,7 +74,7 @@ psi.init <- function(parameter) {
 ################################################################################
 
 g <- function(parameter, j, h) {
-  result <- parameter$rho^(parameter$L-j)*phi(parameter, parameter$phi, j, h)
+  result <- parameter$rho^(parameter$L-j)*phi(parameter, parameter$phi, parameter$L, h)
   if (j+1 <= parameter$L) {
     for (k in (j+1):parameter$L) {
       result <- result + (1-parameter$rho)*parameter$rho^(k-1-j)*phi(parameter, parameter$phi, k-1, h)*parameter$psi[k]
@@ -83,7 +83,7 @@ g <- function(parameter, j, h) {
   return(result)
 }
 g.norm <- function(parameter, j) {
-  result <- parameter$rho^(parameter$L-j)*parameter$phi[j]
+  result <- parameter$rho^(parameter$L-j)*parameter$phi[parameter$L]
   if (j+1 <= parameter$L) {
     for (k in (j+1):parameter$L) {
       result <- result + (1-parameter$rho)*parameter$rho^(k-1-j)*parameter$phi[k-1]*parameter$psi[k]
@@ -163,7 +163,7 @@ parameter.init <- function(parameter.1, extended=TRUE) {
 # utility (on the full joint posterior)
 ################################################################################
 
-f.utility.rec <- function(parameter, j, h) {
+f.utility.rec <- function(parameter, h) {
   result <- rep(0, parameter$L)
   for (j in 1:parameter$L) {
     result[j] <- phi(parameter, result, j, h)
@@ -198,7 +198,7 @@ f.utility.prime <- function(parameter, j, l) {
   parameter.new <- parameter.init(parameter.new, FALSE)
 
   result <- log(parameter$phi[L])-log(parameter.new$phi[L])
-  result <- result + f.utility.rec(parameter.new, L, h)/parameter.new$phi[L]
+  result <- result + f.utility.rec(parameter.new, h)/parameter.new$phi[L]
   return(result)
 }
 
