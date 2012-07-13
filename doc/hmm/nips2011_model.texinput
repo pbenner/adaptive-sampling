@@ -2,7 +2,7 @@
 %
 \section*{Model}
 %
-\tikzstyle{rv}=              [shape=circle,       minimum size=1.2cm]
+\tikzstyle{rv}=        [shape=circle,    minimum size=1.2cm]
 \tikzstyle{parameter}= [shape=rectangle, minimum size=1.2cm]
 \begin{figure}[htbp]
   \begin{center}
@@ -19,23 +19,23 @@
       % theta 1
       \node[rv] (T0) at (-2,2) {}
       ;
-      \node[rv] (T1) at (0,2) {$\Thetab^1_{j-1}$}
+      \node[rv] (T1) at (-0.25,2) {$\Thetab^1_{j-1}$}
         edge [<-] (T0)
         edge [<-] (A1)
       ;
-      \node[rv] (T2) at (2,2) {$\Thetab^1_{j}$}
+      \node[rv] (T2) at (1.75,2) {$\Thetab^1_{j}$}
         edge [<-] (T1)
         edge [<-] (A2)
       ;
-      \node[rv] (T3) at (4,2) {$\Thetab^1_{j+1}$}
+      \node[rv] (T3) at (3.75,2) {$\Thetab^1_{j+1}$}
         edge [<-] (T2)
         edge [<-] (A3)
       ;
-      \node[rv] (T4) at (6,2) {$\Thetab^1_{j+2}$}
+      \node[rv] (T4) at (5.75,2) {$\Thetab^1_{j+2}$}
         edge [<-] (T3)
         edge [<-] (A4)
       ;
-      \node[rv] (T5) at (8,2) {}
+      \node[rv] (T5) at (7.75,2) {}
         edge [<-] (T4)
       ;
       % theta 2
@@ -245,68 +245,61 @@ with
 
 \section*{Computation}
 %
+For $0 \le i \le j \le k \le n$ we define
 \begin{equation*}
   \begin{aligned}
-    \lambda^F_{i,j}(h)
+    \lambda^F_k(h)
     &=
-    \begin{cases}
-      h(i, j)
-      &
-      \text{if} ~ i = 1
-      \\
-      \rho
-      \lambda^F_{i-1,j}(h)
-      +
-      (1-\rho)
-      \lambda^F_{i-1,j-1}(h)
-      h(i,j)
-      &
-      \text{if} ~ i > 1
-    \end{cases}
+    \rho^{k-1} h(1, k)
+    +
+    \sum_{j=1}^{k-1} \lambda^F_j(h) (1-\rho)\rho^{k-j-1}h(j+1, k)
     \\
-    \lambda^B_{j,k}(h)
+    \lambda^B_i(h)
     &=
-    \begin{cases}
-      h(j, k)
-      &
-      \text{if} ~ k = n
-      \\
-      \rho
-      \lambda^B_{j,k+1}(h)
-      +
-      (1-\rho)
-      \lambda^B_{j+1,k+1}(h)
-      h(j,k)
-      &
-      \text{if} ~ k < n
-    \end{cases}
+    \rho^{n-i} h(i, n)
+    +
+    \sum_{j=i+1}^{n} \lambda^B_j(h) (1-\rho)\rho^{j-i-1}h(i, j-1)
+    \\
+    \lambda^{FB}_j(h_1, h_2)
+    &=
+    \rho^{n-j} \lambda^F_n(h_1)
+    +
+    \sum_{k=j+1}^{n} \lambda^F_{k-1}(h_1) (1-\rho)\rho^{k-j-1}\lambda^B_k(h_2)
   \end{aligned}
 \end{equation*}
 Posterior marginal expectation
 \begin{equation*}
-  \E[\theta_j \given \Xb_{1:n} = \xb_{1:n}]
+  \E[\Thetab_j \given \Xb_{1:n} = \xb_{1:n}]
   =
   \int
-  \theta_j
-  \mu_{\Theta_j \given \Xb_{1:n}}(d\theta_j \given x_{1:n})
+  \thetab_j
+  \mu_{\Theta_j \given \Xb_{1:n}}(d\thetab_j \given x_{1:n})
   =
-  \lambda^F_{j,j}(h_e) \cdot \lambda^B_{j,j}(h_e)
+  \lambda^{FB}_j(h_e, h_p)
 \end{equation*}
 with
 \begin{equation*}
-  h_e(i,k)
-  =
-  \frac{
-    \Beta(\alphab_i + \sum_{j=i}^k \nb_j)
-  }{
-    \Beta(\alphab_i)
-  }
-  \frac{
-    \alphab_i + \sum_{j=i}^k \nb_j
-  }{
-    \sum_{l'}
-    \alpha_{i,l'} + \sum_{j=i}^k n_{j,l'}
-  }
+  \begin{aligned}
+    h_p(i,k)
+    =
+    \frac{
+      \Beta(\alphab_i + \sum_{j=i}^k \nb_j)
+    }{
+      \Beta(\alphab_i)
+    }
+    \ 
+    ,
+    \quad
+    h_e(i,k)
+    =
+    h_p(i,k)
+    \frac{
+      \alphab_i + \sum_{j=i}^k \nb_j
+    }{
+      \sum_{l'}
+      \alpha_{i,l'} + \sum_{j=i}^k n_{j,l'}
+    }
+  \end{aligned}
 \end{equation*}
 Utility
 \begin{equation*}
