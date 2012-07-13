@@ -2,20 +2,20 @@
 # forward recursion (marginal posterior)
 ################################################################################
 
-phi <- function(parameter, phi.result, j, h) {
+phi <- function(parameter, phi.result, j, jp, h) {
   a1 <- parameter$alpha.success[1]
   a2 <- parameter$alpha.failure[1]
-  n1 <- parameter$alpha.success[1] + sum(parameter$success[1:j])
-  n2 <- parameter$alpha.failure[1] + sum(parameter$failure[1:j])
+  n1 <- parameter$alpha.success[1] + sum(parameter$success[1:jp])
+  n2 <- parameter$alpha.failure[1] + sum(parameter$failure[1:jp])
 
-  result <- parameter$rho^(j-1)*beta(n1, n2)/beta(a1, a2)*h(1, j, n1, n2)
+  result <- parameter$rho^(jp-1)*beta(n1, n2)/beta(a1, a2)*h(1, jp, n1, n2)
   if (j > 1) {
     for (k in 1:(j-1)) {
       a1 <- parameter$alpha.success[k+1]
       a2 <- parameter$alpha.failure[k+1]
-      n1 <- parameter$alpha.success[k+1] + sum(parameter$success[(k+1):j])
-      n2 <- parameter$alpha.failure[k+1] + sum(parameter$failure[(k+1):j])
-      result <- result + (1-parameter$rho)*parameter$rho^(j-k-1)*phi.result[k]*beta(n1, n2)/beta(a1, a2)*h(k+1, j, n1, n2)
+      n1 <- parameter$alpha.success[k+1] + sum(parameter$success[(k+1):jp])
+      n2 <- parameter$alpha.failure[k+1] + sum(parameter$failure[(k+1):jp])
+      result <- result + (1-parameter$rho)*parameter$rho^(jp-k-1)*phi.result[k]*beta(n1, n2)/beta(a1, a2)*h(k+1, jp, n1, n2)
     }
   }
   return(result)
@@ -24,12 +24,12 @@ phi.init <- function(parameter) {
   result <- rep(0, parameter$L)
   h <- function(i, j, n1, n2) 1
   for (j in 1:parameter$L) {
-    result[j] <- phi(parameter, result, j, h)
+    result[j] <- phi(parameter, result, j, j, h)
   }
   return(result)
 }
 f.forward <- function(parameter, j, h) {
-  return (phi(parameter, parameter$phi, j, h)/parameter$phi[j])
+  return (phi(parameter, parameter$phi, j, j, h)/parameter$phi[j])
 }
 f.forward.expectation <- function(parameter, j) {
   h <- function(i, j, n1, n2) c(n1/(n1+n2), n2/(n1+n2))
@@ -74,22 +74,16 @@ psi.init <- function(parameter) {
 ################################################################################
 
 g <- function(parameter, j, h) {
-  result <- parameter$rho^(parameter$L-j)*phi(parameter, parameter$phi, parameter$L, h)
+  result <- phi(parameter, parameter$phi, j, parameter$L, h)
   if (j+1 <= parameter$L) {
     for (k in (j+1):parameter$L) {
-      result <- result + (1-parameter$rho)*parameter$rho^(k-1-j)*phi(parameter, parameter$phi, k-1, h)*parameter$psi[k]
+      result <- result + (1-parameter$rho)*phi(parameter, parameter$phi, j, k-1, h)*parameter$psi[k]
     }
   }
-  return(result)
+  return(result/parameter$phi[j])
 }
 g.norm <- function(parameter, j) {
-  result <- parameter$rho^(parameter$L-j)*parameter$phi[parameter$L]
-  if (j+1 <= parameter$L) {
-    for (k in (j+1):parameter$L) {
-      result <- result + (1-parameter$rho)*parameter$rho^(k-1-j)*parameter$phi[k-1]*parameter$psi[k]
-    }
-  }
-  return(result)
+  return(parameter$phi[parameter$L]/parameter$phi[j])
 }
 f <- function(parameter, j, h) {
   return (g(parameter, j, h)/g.norm(parameter, j))
@@ -101,10 +95,6 @@ f.expectation <- function(parameter, j) {
 f.stddev <- function(parameter, j) {
   h <- function(i, j, n1, n2) c(n1*(n1+n2 - n1)/((n1+n2)^2*(n1+n2+1)), n2*(n1+n2 - n2)/((n1+n2)^2*(n1+n2+1)))
   return(sqrt(f(parameter, j, h)))
-}
-f.density <- function(parameter, j, theta) {
-  h <- function(i, j, n1, n2) 1/beta(n1, n2)*theta^n1*(1-theta)^n2
-  return(f(parameter, j, h))
 }
 
 # mixture chain (reverse parameters)
@@ -163,42 +153,25 @@ parameter.init <- function(parameter.1, extended=TRUE) {
 # utility (on the full joint posterior)
 ################################################################################
 
-f.utility.rec <- function(parameter, h) {
-  result <- rep(0, parameter$L)
-  for (j in 1:parameter$L) {
-    result[j] <- phi(parameter, result, j, h)
-  }
-  return(result[parameter$L])
-}
 f.utility.prime <- function(parameter, j, l) {
   L <- parameter$L
   parameter.new <- parameter
   if (l == 1) {
     h <- function(p, q, n1, n2) {
-      if (p <= j && j <= q) {
-        return(digamma(n1) - digamma(n1 + n2))
-      }
-      else {
-        return(1)
-      }
+      return(digamma(n1) - digamma(n1 + n2))
     }
     parameter.new$success[j] <- parameter.new$success[j] + 1
   }
   else {
     h <- function(p, q, n1, n2) {
-      if (p <= j && j <= q) {
-        return(digamma(n2) - digamma(n1 + n2))
-      }
-      else {
-        return(1)
-      }
+      return(digamma(n2) - digamma(n1 + n2))
     }
     parameter.new$failure[j] <- parameter.new$failure[j] + 1
   }
   parameter.new <- parameter.init(parameter.new, FALSE)
 
   result <- log(parameter$phi[L])-log(parameter.new$phi[L])
-  result <- result + f.utility.rec(parameter.new, h)/parameter.new$phi[L]
+  result <- result + f(parameter.new, j, h)
   return(result)
 }
 
@@ -209,28 +182,12 @@ f.utility <- function(parameter, j, l) {
 # plotting
 ################################################################################
 
-plot.density <- function(parameter) {
-  K <- 50
-  result <- matrix(0, parameter$L, K)
-  for (i in 1:parameter$L) {
-    for (j in 1:K) {
-      result[i, j] <- f.density(parameter, i, j/K)
-    }
-  }
-  image(1:parameter$L,1:K/K,result, col=gray(1-1:K/K/2), xlab="x", ylab=expression(hat(theta)[1]))
-}
-
 plot.sampling <- function(parameter, groundtruth=c(), density=FALSE) {
 
   par(mfrow=c(3,1), mar=c(4.3, 4.3, 2, 1))
 
-  if (density) {
-    plot.density(parameter)
-  }
-  else {
-    plot(c(1,parameter$L),c(0,1.0), type='n', xaxp=c(1,parameter$L,parameter$L-1))
-    grid(parameter$L,parameter$L)
-  }
+  plot(c(1,parameter$L),c(0,1.0), type='n', xaxp=c(1,parameter$L,parameter$L-1), xlab="x", ylab=expression(hat(theta)[1]))
+  grid(parameter$L,parameter$L)
 
   if (length(groundtruth) != 0) {
     lines(1:parameter$L, groundtruth, type='l', col='blue', lwd=1.5)
@@ -296,7 +253,7 @@ sample <- function(parameter, n, video=FALSE) {
         dev.off()
       }
       else {
-        plot.sampling(parameter, groundtruth)
+        plot.sampling(parameter, groundtruth, TRUE)
       }
     }
   }
@@ -315,9 +272,9 @@ parameter <- list(rho = 0.4,
                   )
 parameter <- parameter.init(parameter, FALSE)
 
-parameter$alpha.success[ 1] = 100
-parameter$alpha.success[17] = 100
+parameter$alpha.success[ 1] = 10
+parameter$alpha.success[17] = 10
 
-parameter <- sample(parameter, 250, video=FALSE)
+parameter <- sample(parameter, 100, video=FALSE)
 
 #mencoder mf://plot_*.png -mf type=png:fps=4 -ovc lavc -lavcopts vcodec=mpeg4 -oac copy -o plot.avi
