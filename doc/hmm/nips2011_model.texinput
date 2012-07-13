@@ -82,108 +82,161 @@
   \caption{Polya urn hidden Markov mixture process.}
   \label{fig:1}
 \end{figure}
-
+The model consists of two hidden Markov chains $M_1 =
+\{\Thetab_j^1\}_{j=1}^n$ and $M_2 = \{\Thetab_j^2\}_{j=1}^n$ on a
+probability space $(\Omega, \Bc(\Omega), P)$. The transition kernels
+$\mu^1_T, \mu^2_T: \Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$
+with
 \begin{equation*}
   \begin{aligned}
-    \Thetab^1_j
-    &\given
-    \Thetab^1_{j-1} = \thetab^1_{j-1}
-    &\sim&\quad
-    \rho
-    \delta_{\theta^1_{j-1}}
-    +
-    (1-\rho)
-    \mu_{\Dir(\alpha_j)}
-    \\
-    \Thetab^2_j
-    &\given
-    \Thetab^2_{j+1} = \thetab^2_{j+1}
-    &\sim&\quad
-    \rho
-    \delta_{\theta^2_{j+1}}
-    +
-    (1-\rho)
-    \mu_{\Dir(\alpha_j)}
-    \\
-    X_{j,m}
-    &\given
-    \Thetab^1_j = \thetab^1_j,
-    \Thetab^2_j = \thetab^2_j
-    &\sim&\quad
-    \gamma
-    \Discrete(\thetab^1_j)
-    +
-    (1-\gamma)
-    \Discrete(\thetab^2_j)
+    P(\Theta^1_{j} \in A \given \Theta^1_{j-1} = \thetab_{j-1})
+    =
+    \mu^1_T(A \given \thetab_{j-1})
+    \ ,
+    \quad
+    P(\Theta^2_{j} \in A \given \Theta^2_{j+1} = \thetab_{j+1})
+    =
+    \mu^2_T(A \given \thetab_{j+1})
+    \ ,
   \end{aligned}
 \end{equation*}
-with $\Xb_j = (X_{j,m})_m$ and mixture parameter $\gamma \in [0, 1]$.
-
-Define the transition kernel
+are defined as
 \begin{equation*}
-  \mu_T(d\theta_{j+1} \given \theta_j)
-  =
-  \rho
-  \delta_{\theta_j}(d\theta_{j+1})
+  \begin{aligned}
+    \mu^1_T(d\thetab_j \given \thetab_{j-1})
+    &=
+    \rho
+    \delta_{\thetab_{j-1}}(d\thetab_j)
+    +
+    (1-\rho)
+    \mu_{\Dir(\alphab_j)}(d\thetab_j)
+    \ ,
+    \\
+    \mu^2_T(d\thetab_j \given \thetab_{j+1})
+    &=
+    \rho
+    \delta_{\thetab_{j+1}}(d\thetab_j)
+    +
+    (1-\rho)
+    \mu_{\Dir(\alphab_j)}(d\thetab_j)
+    \ ,
+  \end{aligned}
+\end{equation*}
+where $\mu_{\Dir(\alphab_j)}$ is the Dirichlet distribution on $\Omega$
+with parameters $\alphab_j$ and $\rho \in [0,1]$ a mixture parameter.
+At each position $j$ we have $m = m(j)$ emissions $\Xb_j =
+(X_{j,m})_m$ obtained from a mixture of the two Markov chains, i.e.
+\begin{equation*}
+  X_{j,m}
+  \given
+  \Thetab^1_j = \thetab^1_j,
+  \Thetab^2_j = \thetab^2_j
+  \sim 
+  \gamma
+  \Discrete(\thetab^1_j)
   +
-  (1-\rho)
-  \mu_{\Dir(\alpha_{j+1})}(d\theta_{j+1})
+  (1-\gamma)
+  \Discrete(\thetab^2_j)
+  \ ,
 \end{equation*}
-and multinomial emission probabilities $p_{X_{j}\given
-  \Theta_{j}}(x_{j} \given \theta_{j})$.
+with $\gamma \in [0, 1]$. Each $X_{j,m}$ takes values in some finite
+alphabet $\Ac$ such that $\Omega = \Delta_{|\Ac|}$, the
+$|\Ac|$-dimensional probability simplex. The full model is depicted in
+Figure~\ref{fig:1}.
+%% \begin{equation*}
+%%   \begin{aligned}
+%%     \Thetab^1_j
+%%     &\given
+%%     \Thetab^1_{j-1} = \thetab^1_{j-1}
+%%     &\sim&\quad
+%%     \rho
+%%     \delta_{\theta^1_{j-1}}
+%%     +
+%%     (1-\rho)
+%%     \mu_{\Dir(\alpha_j)}
+%%     \\
+%%     \Thetab^2_j
+%%     &\given
+%%     \Thetab^2_{j+1} = \thetab^2_{j+1}
+%%     &\sim&\quad
+%%     \rho
+%%     \delta_{\theta^2_{j+1}}
+%%     +
+%%     (1-\rho)
+%%     \mu_{\Dir(\alpha_j)}
+%%     \\
+%%     X_{j,m}
+%%     &\given
+%%     \Thetab^1_j = \thetab^1_j,
+%%     \Thetab^2_j = \thetab^2_j
+%%     &\sim&\quad
+%%     \gamma
+%%     \Discrete(\thetab^1_j)
+%%     +
+%%     (1-\gamma)
+%%     \Discrete(\thetab^2_j)
+%%   \end{aligned}
+%% \end{equation*}
+%% with $\Xb_j = (X_{j,m})_m$ where each $X_{j,m}$ takes values in some
+%% finite alphabet $\Ac$ and $\Thetab^1_j, \Thetab^2_j \in \Omega = \Delta_{|\Ac|}$.
+%% Mixture parameter $\gamma \in [0, 1]$.
 
-The marginal posterior measure is given by
+Since both Markov chains have the same transition kernel it suffices
+to discuss inference with only one chain. Most posterior quantities of
+interest, including the utility measure, can be computed with the
+marginal posterior measure
 \begin{equation*}
-  \mu_{\Theta_j \given \Xb_{1:n}}(d\theta_j \given x_{1:n})
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   \propto
-  \mu_{\Theta_{j} \given \Xb_{1:j}}(d\theta_{j} \given \xb_{1:j})
-  p_{\Xb_{j+1:n} \given \Theta_j}(\xb_{j+1:n} \given \theta_j)
+  \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
+  p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
+  \ ,
 \end{equation*}
-
-Forward measures
+which consists of the forward measure
 \begin{multline*}
-  \mu_{\Theta_{j+1} \given \Xb_{1:j+1}}(d\theta_{j+1} \given \xb_{1:j+1})
+  \mu_{\Thetab_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
   \\
   \begin{aligned}
     &=
     \frac{1}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
-    \int
-    p_{X_{j+1}\given \Theta_{j+1}}(x_{j+1} \given \theta_{j+1})
-    \mu_T(d\theta_{j+1} \given \theta_j)
-    \mu_{\Theta_{j} \given \Xb_{1:j}}(d\theta_{j} \given \xb_{1:j})
+    \int_{\Omega}
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    \mu_T(d\thetab_{j+1} \given \thetab_j)
+    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
     \\
     &=
     \frac{\rho}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
-    p_{X_{j+1}\given \Theta_{j+1}}(x_{j+1} \given \theta_{j+1})
-    \mu_{\Theta_{j} \given \Xb_{1:j}}(d\theta_{j+1} \given \xb_{1:j})
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
     +
     (1-\rho)
-    \mu_{\Dir(\alpha_{j+1})}(d\theta_{j+1})
+    \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
   \end{aligned}
 \end{multline*}
-with $\mu_{\Theta_{1} \given \Xb_{1:1}}(d\theta_{1} \given \xb_{1:1})
-= p_{X_{1}\given \Theta_{1}}(x_{1} \given \theta_{1})
-\mu_{\Dir(\alpha_{1})}(d\theta_{1})$ and the backward probabilities
+with $\mu_{\Thetab_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
+= p_{\Xb_{1}\given \Thetab_{1}}(\xb_{1} \given \thetab_{1})
+\mu_{\Dir(\alpha_{1})}(d\thetab_{1})$ and backward probabilities
 \begin{multline*}
   \begin{aligned}
-    p_{\Xb_{j+1:n} \given \Theta_j}(\xb_{j+1:n} \given \theta_j)
+    p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
     &=
-    \int
-    p_{X_{j+1}\given \Theta_{j+1}}(x_{j+1} \given \theta_{j+1})
-    p_{\Xb_{j+2:n} \given \Theta_{j+1}}(\xb_{j+2:n} \given \theta_{j+1})
-    \mu_T(d\theta_{j+1} \given \theta_j)
+    \int_{\Omega}
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
+    \mu_T(d\thetab_{j+1} \given \thetab_j)
     \\
     &=
     \rho
-    p_{X_{j+1}\given \Theta_{j+1}}(x_{j+1} \given \theta_{j})
-    p_{\Xb_{j+2:n} \given \Theta_{j+1}}(\xb_{j+2:n} \given \theta_{j})
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j})
+    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
     \\
     &\quad+
     (1-\rho)
-    \int
-    p_{X_{j+1}\given \Theta_{j+1}}(x_{j+1} \given \theta_{j+1})
-    p_{\Xb_{j+2:n} \given \Theta_{j+1}}(\xb_{j+2:n} \given \theta_{j+1})
-    \mu_{\Dir(\alpha_{j+1})}(d\theta_{j+1})
+    \int_{\Omega}
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
+    \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
+    \ .
   \end{aligned}
 \end{multline*}
 
@@ -197,7 +250,7 @@ given our previous observations $\{\Xb_{1:n} = \xb_{1:n} \}$, i.e.
   \begin{aligned}
     u(j, \xb_{1:n})
     &=
-    \I(\Thetab_{1:n} ; X_{j,m+1}) \given \Xb_{1:n} = \xb_{1:n}
+    \I(\Thetab_{1:n} ; X_{j,m+1} \given \Xb_{1:n} = \xb_{1:n})
     \\
     &=
     \E_{X_{j,m+1}}\left[
@@ -221,6 +274,25 @@ with
   \right)
   \\
   \begin{aligned}
+    %% &=
+    %% \ln
+    %% \frac{
+    %%   p_{\Xb_{1:n}}(\xb_{1:n})
+    %% }{
+    %%   p_{\Xb_{1:n}, X_{j,m+1}}(\xb_{1:n}, x)
+    %% }
+    %% +
+    %% \frac{
+    %%   1
+    %% }{
+    %%   p_{\Xb_{1:j+1}, X_{j,m+1}}(\xb_{1:n}, x)
+    %% }
+    %% \int_{\Omega^n}
+    %% \theta_{j,x} \ln(\theta_{j,x})
+    %% \prod_{i=1}^n
+    %% p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
+    %% \mu_T(d\thetab_{i} \given \thetab_{i-1})
+    %% \\
     &=
     \ln
     \frac{
@@ -234,18 +306,32 @@ with
     }{
       p_{\Xb_{1:j+1}, X_{j,m+1}}(\xb_{1:n}, x)
     }
-    \int
+    \int_{\Omega}
     \theta_{j,x} \ln(\theta_{j,x})
-    \prod_{i=1}^n
-    p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
-    \mu_T(d\thetab_{i} \given \thetab_{i-1})
-    \ .
+    \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+    \ ,
   \end{aligned}
 \end{multline*}
+where we used
+\begin{equation*}
+  \int_{\Omega^n}
+  \theta_{j,x} \ln(\theta_{j,x})
+  \prod_{i=1}^n
+  p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
+  \mu_T(d\thetab_{i} \given \thetab_{i-1})
+  =
+  \int_{\Omega}
+  \theta_{j,x} \ln(\theta_{j,x})
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \ .
+\end{equation*}
 
 \section*{Computation}
 %
-For $0 \le i \le j \le k \le n$ we define
+By solving the recursive definitions of the forward measures and
+backward probabilities we obtain the same computational structure as
+in \cite{Yao1984} or \cite{Barry1992}.
+For $0 \le i \le j \le k \le n$ we define the operators
 \begin{equation*}
   \begin{aligned}
     \lambda^F_k(h)
@@ -253,27 +339,66 @@ For $0 \le i \le j \le k \le n$ we define
     \rho^{k-1} h(1, k)
     +
     \sum_{j=1}^{k-1} \lambda^F_j(h) (1-\rho)\rho^{k-j-1}h(j+1, k)
+    \ ,
     \\
     \lambda^B_i(h)
     &=
     \rho^{n-i} h(i, n)
     +
     \sum_{j=i+1}^{n} \lambda^B_j(h) (1-\rho)\rho^{j-i-1}h(i, j-1)
-    \\
-    \lambda^{FB}_j(h_1, h_2)
-    &=
-    \rho^{n-j} \lambda^F_n(h_1)
-    +
-    \sum_{k=j+1}^{n} \lambda^F_{k-1}(h_1) (1-\rho)\rho^{k-j-1}\lambda^B_k(h_2)
+    \ ,
   \end{aligned}
 \end{equation*}
+so that, for instance,
+\begin{equation*}
+  p_{\Xb_{1:n}}(\xb_{1:n}) = \lambda^F_n(h_p) = \lambda^B_1(h_p)
+  \ ,
+  \quad
+  \text{with}
+  \quad
+  h_p(i,k)
+  =
+  \frac{
+    \Beta\left(\alphab_i + \sum_{j=i}^k \cb(\xb_j)\right)
+  }{
+      \Beta(\alphab_i)
+  }
+  \ 
+  ,
+\end{equation*}
+where $\cb(\xb_j)$ is the count statistic of $\{\Xb_j = \xb_j\}$. Our
+main interest however is to compute
+\begin{equation*}
+  \int_{\Omega}
+  f(\thetab_j)
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+\end{equation*}
+for some $f \in L^1$.
+\begin{multline*}
+  \lambda^{FB}_j(h)
+  =
+  \rho^{n-1}h(1, n)
+  +
+  \sum_{i=1}^{j-1}(1-\rho)\rho^{n-i-1}\lambda^F_i(h_p) h(i+1, n)
+  \\
+  +
+  \sum_{k=j+1}^n (1-\rho)
+  \left[
+    \rho^{k-2} h(1, k-1)
+    +
+    \sum_{i=1}^{j-1} (1-\rho) \rho^{k-i-2}
+    \lambda^F_i(h_p) h(i+1, k-1)
+  \right]
+  \lambda^B_k(h_p)
+\end{multline*}
+
 Posterior marginal expectation
 \begin{equation*}
   \E[\Thetab_j \given \Xb_{1:n} = \xb_{1:n}]
   =
-  \int
+  \int_{\Omega}
   \thetab_j
-  \mu_{\Theta_j \given \Xb_{1:n}}(d\thetab_j \given x_{1:n})
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   =
   \lambda^{FB}_j(h_e, h_p)
 \end{equation*}
