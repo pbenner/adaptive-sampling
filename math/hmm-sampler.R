@@ -266,15 +266,15 @@ sample <- function(parameter, n, video=FALSE) {
 groundtruth <- c(0.977895, 0.959606, 0.927331, 0.872769, 0.786948, 0.666468, 0.523201, 0.388603, 0.307012, 0.327954, 0.481978, 0.705735, 0.924494, 0.956063, 0.986731, 0.996743, 0.999621)
 #groundtruth <- c(0.983707, 0.977895, 0.970075, 0.959606, 0.945683, 0.927331, 0.903428, 0.872769, 0.834219, 0.786948, 0.730763, 0.666468, 0.59614, 0.523201, 0.452233, 0.388603, 0.338142, 0.307012, 0.301628, 0.327954, 0.38205, 0.481978, 0.593685, 0.705735, 0.901878, 0.924494, 0.944262, 0.956063, 0.975398, 0.986731, 0.993179, 0.996743, 0.998648, 0.999621, 1.00000)
 
-parameter <- list(rho = 0.4,
+parameter <- list(rho = 0.3,
                   success = rep(0, length(groundtruth)),
                   failure = rep(0, length(groundtruth))
                   )
 parameter <- parameter.init(parameter, FALSE)
 
-parameter$alpha.success[ 1] = 10
-parameter$alpha.success[17] = 10
+parameter$alpha.success[ 1] = 100
+parameter$alpha.success[17] = 100
 
-parameter <- sample(parameter, 100, video=FALSE)
+parameter <- sample(parameter, 250, video=FALSE)
 
 #mencoder mf://plot_*.png -mf type=png:fps=4 -ovc lavc -lavcopts vcodec=mpeg4 -oac copy -o plot.avi

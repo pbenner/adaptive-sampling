@@ -331,7 +331,7 @@ where we used
 By solving the recursive definitions of the forward measures and
 backward probabilities we obtain the same computational structure as
 in \cite{Yao1984} or \cite{Barry1992}.
-For $0 \le i \le j \le k \le n$ we define the operators
+For $0 \le i \le j \le k \le n$ we define
 \begin{equation*}
   \begin{aligned}
     \lambda^F_k(h)
@@ -373,7 +373,7 @@ main interest however is to compute
   f(\thetab_j)
   \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
 \end{equation*}
-for some $f \in L^1$.
+for some $f \in L^1$. We define
 \begin{multline*}
   \lambda^{FB}_j(h)
   =
@@ -391,70 +391,56 @@ for some $f \in L^1$.
   \right]
   \lambda^B_k(h_p)
 \end{multline*}
-
-Posterior marginal expectation
+with
 \begin{equation*}
-  \E[\Thetab_j \given \Xb_{1:n} = \xb_{1:n}]
+  h(i,k)
   =
+  \frac{1}{\Beta(\alphab_i)}
   \int_{\Omega}
-  \thetab_j
+  f(\thetab)
+  \left[
+    \prod_{j=i}^k
+    \prod_{x\in\Ac}
+    \theta_x^{c_x(\xb_j)}
+  \right]
+  \prod_{x\in\Ac}
+  \theta_x^{\alpha_x-1}
+  d\thetab
+\end{equation*}
+so that
+\begin{equation*}
+  \int_{\Omega}
+  f(\thetab_j)
   \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   =
-  \lambda^{FB}_j(h_e, h_p)
+  \lambda^{FB}_j(h)
+  \ .
 \end{equation*}
-with
+
+For instance, with $f(\thetab) = \thetab$ we obtain the marginal
+posterior expectation with
 \begin{equation*}
-  \begin{aligned}
-    h_p(i,k)
-    =
-    \frac{
-      \Beta(\alphab_i + \sum_{j=i}^k \nb_j)
-    }{
-      \Beta(\alphab_i)
-    }
-    \ 
-    ,
-    \quad
-    h_e(i,k)
-    =
-    h_p(i,k)
-    \frac{
-      \alphab_i + \sum_{j=i}^k \nb_j
-    }{
-      \sum_{l'}
-      \alpha_{i,l'} + \sum_{j=i}^k n_{j,l'}
-    }
-  \end{aligned}
-\end{equation*}
-Utility
-\begin{equation*}
-  u(j, l, \xb_{1:n})
+  h(i,k) = h_e(i,k)
   =
-  \ln
+  h_p(i,k)
   \frac{
-    p_{\Xb_{1:n}}(\xb_{1:n})
+    \alphab_i + \sum_{j=i}^k \nb_j
   }{
-    p_{\Xb_{1:n}}(\xb_{1:n}^{+(j,l)})
+    \sum_{x}
+    \alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j)
   }
-  +
-  \frac{
-    \lambda^F_{n,n}(h_u^{(j,l)})
-  }{
-    p_{\Xb_{1:j+1}}(\xb_{1:n}^{+(j,l)})
-  }
+  \ .
 \end{equation*}
-with
+The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
+= \theta_x \ln \theta_x$ so that
 \begin{equation*}
-  h_u^{(j,l)}(i, k)
+  h(i,k) = h^x_u(i,k)
   =
-  \frac{
-    \Beta(\alphab_i + \sum_{j'=i}^k \nb_{j'})
-  }{
-    \Beta(\alphab_i)
-  }
+  h_p(i,k)
   \left(
-  \psi\left(\alpha_{i,l} + \sum_{j'=i}^k n_{j',l}\right)
+  \psi\left(\alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j)\right)
   -
-  \psi\left(\sum_{l'} \alpha_{i,l'} + \sum_{j'=i}^k n_{j',l'}\right)
-  \right)^{\1(i \le j \le k)}
+  \psi\left(\sum_{y\in \Ac} \alpha_{i,y} + \sum_{j=i}^k c_y(\xb_j)\right)
+  \right)
+  \ .
 \end{equation*}
