@@ -63,6 +63,49 @@ prob_t moment(
 }
 
 /******************************************************************************
+ * HMM moment function
+ ******************************************************************************/
+
+static
+prob_t hmm_he(int from, int to, binProblem* bp)
+{
+        size_t i;
+        prob_t ca[bp->bd->events];
+        prob_t cb[bp->bd->events];
+
+        for (i = 0; i < bp->bd->events; i++) {
+                ca[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                cb[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+        }
+        ca[bp->add_event.which] += bp->add_event.n;
+
+        return mbeta_log(ca, bp) - mbeta_log(cb, bp);
+}
+
+void hmm_computeMoments(
+        matrix_t *moments,
+        vector_t *forward,
+        vector_t *backward,
+        binProblem *bp)
+{
+        size_t i, j;
+        vector_t* tmp = alloc_vector(bp->bd->L);
+
+        for (i = 0; i < bp->bd->options->n_moments; i++) {
+                bp->add_event.n     = i+1;
+                bp->add_event.which = bp->bd->options->which;
+                hmm_fb(tmp, forward, backward, &hmm_he, bp);
+                bp->add_event.pos   = -1;
+                bp->add_event.n     = 0;
+
+                for (j = 0; j < bp->bd->L; j++) {
+                        moments->content[i][j] = exp(tmp->content[j]);
+                }
+        }
+        free_vector(tmp);
+}
+
+/******************************************************************************
  * Main
  ******************************************************************************/
 

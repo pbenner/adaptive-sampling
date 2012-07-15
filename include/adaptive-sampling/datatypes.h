@@ -59,6 +59,8 @@ typedef struct options {
         int n_moments;
         int n_marginals;
         int model_posterior;
+        /* use hidden markov model instead of prombs */
+        int hmm;
 } Options;
 
 typedef struct binningResult{

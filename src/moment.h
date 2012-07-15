@@ -25,5 +25,10 @@
 #include <adaptive-sampling/datatypes.h>
 
 void computeMoments(matrix_t *moments, prob_t evidence_ref, binData *bd);
+prob_t hmm_computeMoments(
+        matrix_t *moments,
+        vector_t *forward,
+        vector_t *backward,
+        binProblem *bp);
 
 #endif /* MOMENT_H */

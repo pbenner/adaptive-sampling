@@ -64,6 +64,7 @@ def usage():
     print "   -b                                 - compute break probabilities"
     print "       --lapsing=p                    - specify a lapsing probability"
     print "       --look-ahead=N                 - recursion depth for the sampling look ahead"
+    print "       --hmm                          - use hidden Markov model"
     print "   -m  --marginal                     - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
@@ -607,6 +608,7 @@ options = {
     'effective_counts'           : False,
     'effective_posterior_counts' : False,
     'model_posterior'            : True,
+    'hmm'                        : False,
     }
 
 def main():
@@ -616,7 +618,7 @@ def main():
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
                       "strategy=", "kl-component", "kl-multibin", "algorithm=", "samples=",
-                      "mgs-samples", "no-model-posterior", "video="]
+                      "mgs-samples", "no-model-posterior", "video=", "hmm"]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -690,6 +692,8 @@ def main():
             options["model_posterior"] = False
         if o == "--video":
             options["video"] = a
+        if o == "--hmm":
+            options["hmm"] = True
     if (options["strategy"] == "kl-divergence" and
         options["kl_component"] == False       and
         options["kl_multibin"]  == False):

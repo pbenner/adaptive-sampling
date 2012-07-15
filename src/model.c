@@ -155,6 +155,104 @@ prob_t iec_log(int kk, int k, binProblem *bp)
 }
 
 /******************************************************************************
+ * Hidden Markov model
+ ******************************************************************************/
+
+static
+prob_t hmm_hp(int from, int to, binProblem* bp)
+{
+        return 0.0;
+}
+
+static
+prob_t hmm_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t i, k;
+
+        prob_t c[bp->bd->events];
+        prob_t alpha[bp->bd->events];
+        prob_t tmp;
+
+        for (i = 0; i < bp->bd->events; i++) {
+                c[i]     = countAlpha(i, 0, 0, bp) + countStatistic(i, 0, to, bp);
+                alpha[i] = countAlpha(i, 0, 0, bp);
+        }
+        tmp = to*log(bp->bd->rho) + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(0, to, bp);
+        for (k = 0; k < j; k++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        c[i]     = countAlpha(i, k+1, k+1, bp) + countStatistic(i, k+1, to, bp);
+                        alpha[i] = countAlpha(i, k+1, k+1, bp);
+                }
+                tmp = logadd(tmp, (to-k-1)*log(bp->bd->rho) + log(1.0-bp->bd->rho) + result->content[k] + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(k+1, to, bp));
+        }
+        return tmp;
+}
+
+void hmm_forward(vector_t *result, binProblem* bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->L; j++) {
+                result->content[j] = hmm_forward_rec(result, j, j, &hmm_hp, bp);
+        }
+}
+
+static
+prob_t hmm_backward_rec(vector_t *result, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t i, k;
+
+        prob_t c[bp->bd->events];
+        prob_t alpha[bp->bd->events];
+        prob_t tmp;
+
+        for (i = 0; i < bp->bd->events; i++) {
+                c[i]     = countAlpha(i, j, j, bp) + countStatistic(i, j, bp->bd->L-1, bp);
+                alpha[i] = countAlpha(i, j, j, bp);
+        }
+        tmp = (bp->bd->L-j-1)*log(bp->bd->rho) + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(j, bp->bd->L-1, bp);
+        for (k = j+1; k < bp->bd->L; k++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        c[i]     = countAlpha(i, j, j, bp) + countStatistic(i, j, k-1, bp);
+                        alpha[i] = countAlpha(i, j, j, bp);
+                }
+                tmp = logadd(tmp, (k-1-j)*log(bp->bd->rho) + log(1.0-bp->bd->rho) + result->content[k] + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(j, k-1, bp));
+        }
+        return tmp;
+}
+
+void hmm_backward(vector_t *result, binProblem* bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->L; j++) {
+                result->content[bp->bd->L-j-1] = hmm_backward_rec(result, bp->bd->L-j-1, &hmm_hp, bp);
+        }
+}
+
+static
+prob_t hmm_fb_rec(vector_t *forward, vector_t *backward, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t k;
+        prob_t tmp;
+
+        tmp = hmm_forward_rec(forward, j, bp->bd->L-1, f, bp);
+        for (k = j+1; k < bp->bd->L; k++) {
+                tmp = logadd(tmp, log(1-bp->bd->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward->content[k]);
+        }
+        return tmp;
+}
+
+void hmm_fb(vector_t *result, vector_t *forward, vector_t *backward, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->L; j++) {
+                result->content[j] = hmm_fb_rec(forward, backward, j, f, bp) - forward->content[bp->bd->L-1];
+        }
+}
+
+/******************************************************************************
  * Model init
  ******************************************************************************/
 

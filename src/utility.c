@@ -239,6 +239,79 @@ void * computeKLUtility_thread(void* data_)
 }
 
 /******************************************************************************
+ * HMM utility
+ ******************************************************************************/
+
+static
+prob_t hmm_he(int from, int to, binProblem* bp)
+{
+        size_t i;
+        prob_t ca[bp->bd->events];
+        prob_t cb[bp->bd->events];
+
+        for (i = 0; i < bp->bd->events; i++) {
+                ca[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                cb[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+        }
+        ca[bp->add_event.which] += bp->add_event.n;
+
+        return mbeta_log(ca, bp) - mbeta_log(cb, bp);
+}
+
+static
+prob_t hmm_hu(int from, int to, binProblem* bp)
+{
+        size_t i;
+        prob_t sum1, sum2 = 0;
+
+        sum1 = countAlpha(bp->add_event.which, from, from, bp) + countStatistic(bp->add_event.which, from, to, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                sum2 += countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+        }
+        return LOG(-(gsl_sf_psi(sum1+1) - gsl_sf_psi(sum2+1))*sum1/sum2);
+}
+
+void hmm_computeUtility(
+        vector_t *utility,
+        vector_t *forward,
+        vector_t *backward,
+        binProblem *bp)
+{
+        size_t i, j;
+        vector_t* tmp = alloc_vector(bp->bd->L);
+        matrix_t* expectation = alloc_matrix(bp->bd->events, bp->bd->L);
+        matrix_t* utility_tmp = alloc_matrix(bp->bd->events, bp->bd->L);
+
+        for (i = 0; i < bp->bd->events; i++) {
+                bp->add_event.n     = 1;
+                bp->add_event.which = i;
+                // compute expectation
+                hmm_fb(tmp, forward, backward, &hmm_he, bp);
+                for (j = 0; j < bp->bd->L; j++) {
+                        expectation->content[i][j] = +EXP(tmp->content[j]);
+                }
+                // compute utility
+                hmm_fb(tmp, forward, backward, &hmm_hu, bp);
+                for (j = 0; j < bp->bd->L; j++) {
+                        utility_tmp->content[i][j] = -LOG(expectation->content[i][j])-EXP(tmp->content[j])/expectation->content[i][j];
+                }
+                bp->add_event.pos   = -1;
+                bp->add_event.n     = 0;
+        }
+        // compute average
+        for (j = 0; j < bp->bd->L; j++) {
+                utility->content[j] = 0;
+                for (i = 0; i < bp->bd->events; i++) {
+                        utility->content[j] += expectation->content[i][j]*utility_tmp->content[i][j];
+                }
+        }
+        free_vector(tmp);
+        free_matrix(expectation);
+        free_matrix(utility_tmp);
+}
+
+
+/******************************************************************************
  * Main
  ******************************************************************************/
 
