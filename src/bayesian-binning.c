@@ -124,6 +124,35 @@ void computeBinning(
         binProblemFree(&bp);
 }
 
+static
+void computeHMM(
+        BinningResult* result,
+        binData *bd)
+{
+        binProblem bp; binProblemInit(&bp, bd);
+
+        bd->rho = 0.8;
+
+        vector_t *forward  = alloc_vector(bd->L);
+        vector_t *backward = alloc_vector(bd->L);
+
+        hmm_forward (forward,  &bp);
+        hmm_backward(backward, &bp);
+
+        /* compute the first n moments */
+        if (bd->options->n_moments > 0) {
+                hmm_computeMoments(result->moments, forward, backward, &bp);
+        }
+        /* compute sampling utility */
+        if (bd->options->utility && bd->options->algorithm == 0) {
+                hmm_computeUtility(result->utility, forward, backward, &bp);
+        }
+        free_vector(forward);
+        free_vector(backward);
+
+        binProblemFree(&bp);
+}
+
 /******************************************************************************
  * Initialization of common data structures
  ******************************************************************************/
@@ -207,8 +236,12 @@ binning(
         if (options->prombsTest) {
                 prombsTest(&bd);
         }
-        computeBinning(result, &bd);
-
+        if (options->hmm) {
+                computeHMM(result, &bd);
+        }
+        else {
+                computeBinning(result, &bd);
+        }
         bin_free(&bd);
 
         return result;

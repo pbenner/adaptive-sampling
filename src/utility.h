@@ -25,5 +25,10 @@
 #include <adaptive-sampling/datatypes.h>
 
 void computeKLUtility(vector_t *result, prob_t evidence_ref, binData *bd);
+void hmm_computeUtility(
+        vector_t *utility,
+        vector_t *forward,
+        vector_t *backward,
+        binProblem *bp);
 
 #endif /* LOCAL_UTILITY_H */
