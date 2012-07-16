@@ -42,8 +42,6 @@ typedef struct {
         matrix_t **alpha;
         vector_t  *beta;       /* P(m_B) */
         matrix_t  *gamma;
-        /* hmm parameters */
-        prob_t rho;
 } binData;
 
 /* mutable data, local to each thread */

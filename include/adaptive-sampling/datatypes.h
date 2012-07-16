@@ -61,6 +61,8 @@ typedef struct options {
         int model_posterior;
         /* use hidden markov model instead of prombs */
         int hmm;
+        /* hmm parameters */
+        float rho;
 } Options;
 
 typedef struct binningResult{

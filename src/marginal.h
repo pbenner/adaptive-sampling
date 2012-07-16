@@ -25,5 +25,10 @@
 #include <adaptive-sampling/datatypes.h>
 
 void computeMarginal(matrix_t *marginals, prob_t evidence_ref, binData *bd);
+void hmm_computeMarginal(
+       matrix_t *marginal,
+       vector_t *forward,
+       vector_t *backward,
+       binProblem *bp);
 
 #endif /* MARGINAL_H */

@@ -39,6 +39,70 @@
 #include <tools.h>
 
 /******************************************************************************
+ * HMM marginal functions
+ ******************************************************************************/
+
+static
+prob_t hmm_hd(int from, int to, binProblem* bp)
+{
+        size_t i;
+        prob_t sum = 0;
+        prob_t counts[bp->bd->events];
+
+        for (i = 0; i < bp->bd->events; i++) {
+                counts[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+        }
+
+        for (i = 0; i < bp->bd->events; i++) {
+                if (i == bp->fix_prob.which) {
+                        sum += (counts[i]-1)*LOG(bp->fix_prob.val);
+                }
+                else {
+                        sum += (counts[i]-1)*LOG(1-bp->fix_prob.val);
+                }
+        }
+
+        return sum - mbeta_log(counts, bp);
+}
+
+void hmm_computeMarginal(
+       matrix_t *marginal,
+       vector_t *forward,
+       vector_t *backward,
+       binProblem *bp)
+{
+        size_t i, j;
+        vector_t* tmp = alloc_vector(bp->bd->L);
+
+        for (j = 0; j < bp->bd->options->n_marginals; j++) {
+                prob_t p = j*bp->bd->options->marginal_step;
+                if (bp->bd->options->marginal_range.from <= p &&
+                    bp->bd->options->marginal_range.to   >= p &&
+                    p != 0.0 && p != 1.0) {
+
+                        bp->fix_prob.pos   = -1;
+                        bp->fix_prob.val   = p;
+                        bp->fix_prob.which = bp->bd->options->which;
+
+                        hmm_fb(tmp, forward, backward, &hmm_hd, bp);
+                        for (i = 0; i < bp->bd->L; i++) {
+                                marginal->content[i][j] = EXP(tmp->content[i]);
+                        }
+
+                        bp->fix_prob.pos   = -1;
+                        bp->fix_prob.val   =  0;
+                        bp->fix_prob.which =  0;
+                }
+                else {
+                        for (i = 0; i < bp->bd->L; i++) {
+                                marginal->content[i][j] = 0;
+                        }
+                }
+        }
+        free_vector(tmp);
+}
+
+/******************************************************************************
  * Prombs marginal functions
  ******************************************************************************/
 

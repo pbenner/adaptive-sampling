@@ -177,13 +177,13 @@ prob_t hmm_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, i
                 c[i]     = countAlpha(i, 0, 0, bp) + countStatistic(i, 0, to, bp);
                 alpha[i] = countAlpha(i, 0, 0, bp);
         }
-        tmp = to*log(bp->bd->rho) + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(0, to, bp);
+        tmp = to*log(bp->bd->options->rho) + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(0, to, bp);
         for (k = 0; k < j; k++) {
                 for (i = 0; i < bp->bd->events; i++) {
                         c[i]     = countAlpha(i, k+1, k+1, bp) + countStatistic(i, k+1, to, bp);
                         alpha[i] = countAlpha(i, k+1, k+1, bp);
                 }
-                tmp = logadd(tmp, (to-k-1)*log(bp->bd->rho) + log(1.0-bp->bd->rho) + result->content[k] + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(k+1, to, bp));
+                tmp = logadd(tmp, (to-k-1)*log(bp->bd->options->rho) + log(1.0-bp->bd->options->rho) + result->content[k] + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(k+1, to, bp));
         }
         return tmp;
 }
@@ -210,13 +210,13 @@ prob_t hmm_backward_rec(vector_t *result, size_t j, prob_t (*f)(int, int, binPro
                 c[i]     = countAlpha(i, j, j, bp) + countStatistic(i, j, bp->bd->L-1, bp);
                 alpha[i] = countAlpha(i, j, j, bp);
         }
-        tmp = (bp->bd->L-j-1)*log(bp->bd->rho) + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(j, bp->bd->L-1, bp);
+        tmp = (bp->bd->L-j-1)*log(bp->bd->options->rho) + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(j, bp->bd->L-1, bp);
         for (k = j+1; k < bp->bd->L; k++) {
                 for (i = 0; i < bp->bd->events; i++) {
                         c[i]     = countAlpha(i, j, j, bp) + countStatistic(i, j, k-1, bp);
                         alpha[i] = countAlpha(i, j, j, bp);
                 }
-                tmp = logadd(tmp, (k-1-j)*log(bp->bd->rho) + log(1.0-bp->bd->rho) + result->content[k] + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(j, k-1, bp));
+                tmp = logadd(tmp, (k-1-j)*log(bp->bd->options->rho) + log(1.0-bp->bd->options->rho) + result->content[k] + mbeta_log(c, bp) - mbeta_log(alpha, bp) + f(j, k-1, bp));
         }
         return tmp;
 }
@@ -238,7 +238,7 @@ prob_t hmm_fb_rec(vector_t *forward, vector_t *backward, size_t j, prob_t (*f)(i
 
         tmp = hmm_forward_rec(forward, j, bp->bd->L-1, f, bp);
         for (k = j+1; k < bp->bd->L; k++) {
-                tmp = logadd(tmp, log(1-bp->bd->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward->content[k]);
+                tmp = logadd(tmp, log(1-bp->bd->options->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward->content[k]);
         }
         return tmp;
 }

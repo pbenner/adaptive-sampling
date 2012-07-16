@@ -78,7 +78,8 @@ class OPTIONS(Structure):
                  ("n_moments",            c_int),
                  ("n_marginals",          c_int),
                  ("model_posterior",      c_int),
-                 ("hmm",                  c_int)]
+                 ("hmm",                  c_int),
+                 ("rho",                  c_float)]
      def __init__(self, options):
           self.which                = c_int(options["which"])
           self.threads              = c_int(options["threads"])
@@ -101,6 +102,7 @@ class OPTIONS(Structure):
           self.effective_posterior_counts = c_int(1) if options["effective_posterior_counts"]  else c_int(0)
           self.model_posterior      = c_int(1) if options["model_posterior"]   else c_int(0)
           self.hmm                  = c_int(1) if options["hmm"]   else c_int(0)
+          self.rho                  = c_float(options["rho"])
           if options["algorithm"] == "prombs":
                self.algorithm = c_int(0)
           elif options["algorithm"] == "prombstree":

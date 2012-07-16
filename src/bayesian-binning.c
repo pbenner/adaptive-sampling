@@ -131,8 +131,6 @@ void computeHMM(
 {
         binProblem bp; binProblemInit(&bp, bd);
 
-        bd->rho = 0.8;
-
         vector_t *forward  = alloc_vector(bd->L);
         vector_t *backward = alloc_vector(bd->L);
 
@@ -142,6 +140,10 @@ void computeHMM(
         /* compute the first n moments */
         if (bd->options->n_moments > 0) {
                 hmm_computeMoments(result->moments, forward, backward, &bp);
+        }
+        /* compute marginal */
+        if (bd->options->marginal) {
+                hmm_computeMarginal(result->marginals, forward, backward, &bp);
         }
         /* compute sampling utility */
         if (bd->options->utility && bd->options->algorithm == 0) {
