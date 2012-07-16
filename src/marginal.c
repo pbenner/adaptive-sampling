@@ -46,23 +46,39 @@ static
 prob_t hmm_hd(int from, int to, binProblem* bp)
 {
         size_t i;
-        prob_t sum = 0;
         prob_t counts[bp->bd->events];
+        prob_t alpha [bp->bd->events];
+        prob_t result1 = 0;
+        prob_t result2 = 0;
 
         for (i = 0; i < bp->bd->events; i++) {
                 counts[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                alpha [i] = countAlpha(i, from, from, bp);
         }
-
         for (i = 0; i < bp->bd->events; i++) {
                 if (i == bp->fix_prob.which) {
-                        sum += (counts[i]-1)*LOG(bp->fix_prob.val);
+                        result1 += (counts[i]-1)*LOG(bp->fix_prob.val);
                 }
                 else {
-                        sum += (counts[i]-1)*LOG(1-bp->fix_prob.val);
+                        result1 += (counts[i]-1)*LOG(1-bp->fix_prob.val);
                 }
         }
+        result1 -= mbeta_log(alpha, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                counts[i] = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
+                alpha [i] = countAlpha(i, to, to, bp);
+        }
+        for (i = 0; i < bp->bd->events; i++) {
+                if (i == bp->fix_prob.which) {
+                        result2 += (counts[i]-1)*LOG(bp->fix_prob.val);
+                }
+                else {
+                        result2 += (counts[i]-1)*LOG(1-bp->fix_prob.val);
+                }
+        }
+        result2 -= mbeta_log(alpha, bp);
 
-        return sum - mbeta_log(counts, bp);
+                return logadd(result1, result2) - LOG(2);
 }
 
 void hmm_computeMarginal(
