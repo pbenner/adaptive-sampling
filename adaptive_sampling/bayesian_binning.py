@@ -52,6 +52,7 @@ def usage():
     print "Options:"
     print "   -b                                - compute break probabilities"
     print "       --hmm                         - use hidden Markov model"
+    print "       --rho                         - rho parameter for the HMM"
     print "   -m  --marginal                    - compute full marginal distribution"
     print "   -r  --marginal-range=(FROM,TO)    - limit range for the marginal distribution"
     print "   -s  --marginal-step=STEP          - step size for the marginal distribution"
@@ -233,6 +234,7 @@ options = {
     'effective_posterior_counts' : False,
     'model_posterior'      : True,
     'hmm'                  : False,
+    'rho'                  : 0.4
     }
 
 def main():
@@ -241,7 +243,7 @@ def main():
         longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
                       "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
                       "savefig=", "threads=", "stacksize=", "algorithm=",
-                      "mgs-samples=", "no-model-posterior", "hmm"]
+                      "mgs-samples=", "no-model-posterior", "hmm", "rho="]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -301,6 +303,8 @@ def main():
             options["model_posterior"] = False
         if o == "--hmm":
             options["hmm"] = True
+        if o == "--rho":
+            options["rho"] = float(a)
     if len(tail) != 1:
         usage()
         return 1
