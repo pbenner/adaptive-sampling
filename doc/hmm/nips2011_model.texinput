@@ -122,119 +122,96 @@ are defined as
     \ ,
   \end{aligned}
 \end{equation*}
-where $\mu_{\Dir(\alphab_j)}$ is the Dirichlet distribution on $\Omega$
-with parameters $\alphab_j$ and $\rho \in [0,1]$ a mixture parameter.
-At each position $j$ we have $m = m(j)$ emissions $\Xb_j =
-(X_{j,m})_m$ obtained from a mixture of the two Markov chains, i.e.
+where $\mu_{\Dir(\alphab_j)}$ is the Dirichlet distribution on
+$\Omega$ with parameters $\alphab_j$ and $\rho \in [0,1]$ a mixture
+parameter.  We also define $\Thetab_j = \gamma \Thetab^1_j +
+(1-\gamma) \Thetab^2_j$ for $j = 1, 2, \dots, n$, so that at each
+position $j$ we have $m = m(j)$ emissions $\Xb_j = (X_{j,m})_m$
+obtained from a mixture of the two Markov chains, i.e.
 \begin{equation*}
   X_{j,m}
   \given
-  \Thetab^1_j = \thetab^1_j,
-  \Thetab^2_j = \thetab^2_j
+  \Thetab_j = \thetab_j
   \sim 
-  \gamma
-  \Discrete(\thetab^1_j)
-  +
-  (1-\gamma)
-  \Discrete(\thetab^2_j)
+  \Discrete(\thetab_j)
   \ ,
 \end{equation*}
 with $\gamma \in [0, 1]$. Each $X_{j,m}$ takes values in some finite
 alphabet $\Ac$ such that $\Omega = \Delta_{|\Ac|}$, the
 $|\Ac|$-dimensional probability simplex. The full model is depicted in
-Figure~\ref{fig:1}.
-%% \begin{equation*}
-%%   \begin{aligned}
-%%     \Thetab^1_j
-%%     &\given
-%%     \Thetab^1_{j-1} = \thetab^1_{j-1}
-%%     &\sim&\quad
-%%     \rho
-%%     \delta_{\theta^1_{j-1}}
-%%     +
-%%     (1-\rho)
-%%     \mu_{\Dir(\alpha_j)}
-%%     \\
-%%     \Thetab^2_j
-%%     &\given
-%%     \Thetab^2_{j+1} = \thetab^2_{j+1}
-%%     &\sim&\quad
-%%     \rho
-%%     \delta_{\theta^2_{j+1}}
-%%     +
-%%     (1-\rho)
-%%     \mu_{\Dir(\alpha_j)}
-%%     \\
-%%     X_{j,m}
-%%     &\given
-%%     \Thetab^1_j = \thetab^1_j,
-%%     \Thetab^2_j = \thetab^2_j
-%%     &\sim&\quad
-%%     \gamma
-%%     \Discrete(\thetab^1_j)
-%%     +
-%%     (1-\gamma)
-%%     \Discrete(\thetab^2_j)
-%%   \end{aligned}
-%% \end{equation*}
-%% with $\Xb_j = (X_{j,m})_m$ where each $X_{j,m}$ takes values in some
-%% finite alphabet $\Ac$ and $\Thetab^1_j, \Thetab^2_j \in \Omega = \Delta_{|\Ac|}$.
-%% Mixture parameter $\gamma \in [0, 1]$.
+Figure~\ref{fig:1}. Our main interest is to compute
+\begin{equation*}
+  \mu_{\Thetab_j \given \Xb_{1:n}}
+  f
+  =
+  \int_{\Omega}
+  f(\thetab)
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
+  =
+  \int_{\Omega^n}
+  f(\thetab_j)
+  \prod_{i=1}^n
+  p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
+  \mu_T(d\thetab_{i} \given \thetab_{i-1})
+  \ .
+\end{equation*}
+for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$, that is to obtain
+the measure $\mu_{\Thetab_j \given \Xb_{1:n}}$.
 
 Since both Markov chains have the same transition kernel it suffices
 to discuss inference with only one chain. Most posterior quantities of
 interest, including the utility measure, can be computed with the
 marginal posterior measure
 \begin{equation*}
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \mu_{\Thetab^1_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   \propto
-  \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
-  p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
+  \mu_{\Thetab^1_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
+  p_{\Xb_{j+1:n} \given \Thetab^1_j}(\xb_{j+1:n} \given \thetab_j)
   \ ,
 \end{equation*}
 which consists of the forward measure
 \begin{multline*}
-  \mu_{\Thetab_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
+  \mu_{\Thetab^1_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
   \\
   \begin{aligned}
     &=
     \frac{1}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
     \mu_T(d\thetab_{j+1} \given \thetab_j)
-    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
+    \mu_{\Thetab^1_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
     \\
     &=
     \frac{\rho}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
+    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    \mu_{\Thetab^1_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
     +
     (1-\rho)
     \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
   \end{aligned}
 \end{multline*}
-with $\mu_{\Thetab_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
-= p_{\Xb_{1}\given \Thetab_{1}}(\xb_{1} \given \thetab_{1})
+with $\mu_{\Thetab^1_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
+= p_{\Xb_{1}\given \Thetab^1_{1}}(\xb_{1} \given \thetab_{1})
 \mu_{\Dir(\alpha_{1})}(d\thetab_{1})$ and backward probabilities
 \begin{multline*}
   \begin{aligned}
-    p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
+    p_{\Xb_{j+1:n} \given \Thetab^1_j}(\xb_{j+1:n} \given \thetab_j)
     &=
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
+    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+2:n} \given \Thetab^1_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
     \mu_T(d\thetab_{j+1} \given \thetab_j)
     \\
     &=
     \rho
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j})
-    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
+    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j})
+    p_{\Xb_{j+2:n} \given \Thetab^1_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
     \\
     &\quad+
     (1-\rho)
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
+    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+2:n} \given \Thetab^1_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
     \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
     \ .
   \end{aligned}
@@ -274,33 +251,7 @@ with
   \right)
   \\
   \begin{aligned}
-    %% &=
-    %% \ln
-    %% \frac{
-    %%   p_{\Xb_{1:n}}(\xb_{1:n})
-    %% }{
-    %%   p_{\Xb_{1:n}, X_{j,m+1}}(\xb_{1:n}, x)
-    %% }
-    %% +
-    %% \frac{
-    %%   1
-    %% }{
-    %%   p_{\Xb_{1:j+1}, X_{j,m+1}}(\xb_{1:n}, x)
-    %% }
-    %% \int_{\Omega^n}
-    %% \theta_{j,x} \ln(\theta_{j,x})
-    %% \prod_{i=1}^n
-    %% p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
-    %% \mu_T(d\thetab_{i} \given \thetab_{i-1})
-    %% \\
     &=
-    \ln
-    \frac{
-      p_{\Xb_{1:n}}(\xb_{1:n})
-    }{
-      p_{\Xb_{1:n}, X_{j,m+1}}(\xb_{1:n}, x)
-    }
-    +
     \frac{
       1
     }{
@@ -309,6 +260,9 @@ with
     \int_{\Omega}
     \theta_{j,x} \ln(\theta_{j,x})
     \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+    -
+    \ln
+    p_{X_{j,m+1} \given \Xb_{1:n}}(x \given \xb_{1:n})
     \ ,
   \end{aligned}
 \end{multline*}
@@ -349,31 +303,29 @@ For $0 \le i \le j \le k \le n$ we define
     \ ,
   \end{aligned}
 \end{equation*}
-so that, for instance,
+so that, for instance, $p_{\Xb_{1:n}}(\xb_{1:n}) = \lambda^F_n(h_p) =
+\lambda^B_1(h_p)$ with
 \begin{equation*}
-  p_{\Xb_{1:n}}(\xb_{1:n}) = \lambda^F_n(h_p) = \lambda^B_1(h_p)
-  \ ,
-  \quad
-  \text{with}
-  \quad
   h_p(i,k)
   =
+  \gamma
   \frac{
     \Beta\left(\alphab_i + \sum_{j=i}^k \cb(\xb_j)\right)
   }{
-      \Beta(\alphab_i)
+    \Beta(\alphab_i)
   }
-  \ 
-  ,
+  +
+  (1-\gamma)
+  \frac{
+    \Beta\left(\alphab_k + \sum_{j=i}^k \cb(\xb_j)\right)
+  }{
+    \Beta(\alphab_k)
+  }
+  \ ,
 \end{equation*}
-where $\cb(\xb_j)$ is the count statistic of $\{\Xb_j = \xb_j\}$. Our
-main interest however is to compute
-\begin{equation*}
-  \int_{\Omega}
-  f(\thetab_j)
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
-\end{equation*}
-for some $f \in L^1$. We define
+where $\cb(\xb_j)$ is the count statistic of $\{\Xb_j = \xb_j\}$.
+To compute $\mu_{\Thetab_j \given \Xb_{1:n}} f$ for some $f \in L^1$
+we define
 \begin{multline*}
   \lambda^{FB}_j(h)
   =
@@ -395,54 +347,78 @@ with
 \begin{equation*}
   h(i,k)
   =
-  \frac{1}{\Beta(\alphab_i)}
   \int_{\Omega}
   f(\thetab)
+  \prod_{j=i}^k
+  p_{\Xb_j \given \Thetab_j}(\xb_j \given \thetab)
   \left[
-    \prod_{j=i}^k
-    \prod_{x\in\Ac}
-    \theta_x^{c_x(\xb_j)}
+    \gamma
+    \mu_{\Dir(\alphab_i)}(d\thetab)
+    +
+    (1-\gamma)
+    \mu_{\Dir(\alphab_k)}(d\thetab)
   \right]
-  \prod_{x\in\Ac}
-  \theta_x^{\alpha_x-1}
-  d\thetab
 \end{equation*}
 so that
 \begin{equation*}
-  \int_{\Omega}
-  f(\thetab_j)
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \mu_{\Thetab_j \given \Xb_{1:n}} f
   =
-  \lambda^{FB}_j(h)
+  \frac{
+    \lambda^{FB}_j(h)
+  }{
+    \lambda^F_n(h_p)
+  }
   \ .
 \end{equation*}
 
-For instance, with $f(\thetab) = \thetab$ we obtain the marginal
-posterior expectation with
+For instance, the marginal posterior expectation $\mu_{\Thetab_j \given
+  \Xb_{1:n}} \thetab$ can be obtained with
 \begin{equation*}
-  h(i,k) = h_e(i,k)
+  h(i,k)
   =
-  h_p(i,k)
+  \frac{h_e(i,k)}{h_p(i,k)}
+  =
+  \gamma
   \frac{
     \alphab_i + \sum_{j=i}^k \nb_j
   }{
     \sum_{x}
     \alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j)
   }
+  +
+  (1-\gamma)
+  \frac{
+    \alphab_k + \sum_{j=i}^k \nb_j
+  }{
+    \sum_{x}
+    \alpha_{k,x} + \sum_{j=i}^k c_x(\xb_j)
+  }
   \ .
 \end{equation*}
 The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
 = \theta_x \ln \theta_x$ so that
 \begin{equation*}
-  h(i,k) = h^x_u(i,k)
-  =
-  h_p(i,k)
-  \left(
-  \psi\left(\alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j)\right)
-  -
-  \psi\left(\sum_{y\in \Ac} \alpha_{i,y} + \sum_{j=i}^k c_y(\xb_j)\right)
-  \right)
-  \ .
+  \begin{aligned}
+    h(i,k)
+    =
+    \frac{h^x_u(i,k)}{h_e(i,k)}
+    &=
+    \gamma
+    \left[
+    \psi\left(\alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j) + 1\right)
+    -
+    \psi\left(\sum_{y\in \Ac} \alpha_{i,y} + \sum_{j=i}^k c_y(\xb_j) + 1\right)
+    \right]
+    \\
+    &+
+    (1-\gamma)
+    \left[
+    \psi\left(\alpha_{k,x} + \sum_{j=i}^k c_x(\xb_j) + 1\right)
+    -
+    \psi\left(\sum_{y\in \Ac} \alpha_{k,y} + \sum_{j=i}^k c_y(\xb_j) + 1\right)
+    \right]
+    \ .
+  \end{aligned}
 \end{equation*}
 
 \begin{figure}[ht]
@@ -453,14 +429,16 @@ The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
   \includegraphics[width=0.495\textwidth,page=5]{example/example1.pdf}\\
   \includegraphics[width=0.495\textwidth,page=6]{example/example1.pdf}
   \includegraphics[width=0.495\textwidth,page=7]{example/example1.pdf}
-  \caption{Adaptive sampling in a hypothetical experiment. The figure
-    shows the experiment after $1$, $2$, $10$, $50$, $100$, and $200$
-    samples. At first, samples are uniformly distributed. In (a) only one
-    measurement was taken and the expected utility is largest at the left
-    boundary. (d) shows the experiment after 50 samples where the
-    algorithm starts to locate measurements at sloped regions. The general
-    shape of the stimulus-response function is already well established
-    after 100 samples (e). Many measurements are also taken at $x=1$ and
-    $x=35$ since those $x$ have only one neighbor.}
+  \caption{
+    Adaptive sampling in a hypothetical experiment with $\gamma = 0.5$
+    and $\rho = 0.8$. The figure shows the experiment after $1$, $2$,
+    $10$, $50$, $100$, and $200$ samples. At first, samples are
+    uniformly distributed. In (a) only one measurement was taken and
+    the expected utility is largest at the left boundary. (d) shows the
+    experiment after 50 samples where the algorithm starts to locate
+    measurements at sloped regions. The general shape of the
+    stimulus-response function is already well established after 100
+    samples (e). Many measurements are also taken at $x=1$ and $x=35$
+    since those $x$ have only one neighbor.}
   \label{fig:05}
 \end{figure}
