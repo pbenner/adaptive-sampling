@@ -444,3 +444,23 @@ The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
   \right)
   \ .
 \end{equation*}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.495\textwidth,page=2]{example/example1.pdf}
+  \includegraphics[width=0.495\textwidth,page=3]{example/example1.pdf}\\
+  \includegraphics[width=0.495\textwidth,page=4]{example/example1.pdf}
+  \includegraphics[width=0.495\textwidth,page=5]{example/example1.pdf}\\
+  \includegraphics[width=0.495\textwidth,page=6]{example/example1.pdf}
+  \includegraphics[width=0.495\textwidth,page=7]{example/example1.pdf}
+  \caption{Adaptive sampling in a hypothetical experiment. The figure
+    shows the experiment after $1$, $2$, $10$, $50$, $100$, and $200$
+    samples. At first, samples are uniformly distributed. In (a) only one
+    measurement was taken and the expected utility is largest at the left
+    boundary. (d) shows the experiment after 50 samples where the
+    algorithm starts to locate measurements at sloped regions. The general
+    shape of the stimulus-response function is already well established
+    after 100 samples (e). Many measurements are also taken at $x=1$ and
+    $x=35$ since those $x$ have only one neighbor.}
+  \label{fig:05}
+\end{figure}

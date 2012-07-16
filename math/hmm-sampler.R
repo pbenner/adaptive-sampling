@@ -135,17 +135,17 @@ parameter.init <- function(parameter.1, extended=TRUE) {
     parameter.1$utility <- sapply(1:parameter.1$L, function(j) f.utility(parameter.1, j))
 
     # second chain
-    parameter.2         <- parameter.reverse(parameter.1)
-    parameter.2         <- parameter.init(parameter.2, FALSE)
-    parameter.2$psi     <- psi.init(parameter.2)
-    parameter.2$expect  <- sapply(1:parameter.2$L, function(j) f.expectation(parameter.2, j))
-    parameter.2$stddev  <- sapply(1:parameter.2$L, function(j) f.stddev(parameter.2, j))
-    parameter.2$utility <- sapply(1:parameter.2$L, function(j) f.utility(parameter.2, j))
+    #parameter.2         <- parameter.reverse(parameter.1)
+    #parameter.2         <- parameter.init(parameter.2, FALSE)
+    #parameter.2$psi     <- psi.init(parameter.2)
+    #parameter.2$expect  <- sapply(1:parameter.2$L, function(j) f.expectation(parameter.2, j))
+    #parameter.2$stddev  <- sapply(1:parameter.2$L, function(j) f.stddev(parameter.2, j))
+    #parameter.2$utility <- sapply(1:parameter.2$L, function(j) f.utility(parameter.2, j))
 
     # mix results
-    parameter.1$expect  <- sapply(1:parameter.1$L, function(j) (parameter.1$expect[,j]+parameter.2$expect [,parameter.1$L-j+1])/2)
-    parameter.1$stddev  <- sapply(1:parameter.1$L, function(j) (parameter.1$stddev[,j]+parameter.2$stddev [,parameter.1$L-j+1])/2)
-    parameter.1$utility <- sapply(1:parameter.1$L, function(j) (parameter.1$utility[j]+parameter.2$utility[ parameter.1$L-j+1])/2)
+    #parameter.1$expect  <- sapply(1:parameter.1$L, function(j) (parameter.1$expect[,j]+parameter.2$expect [,parameter.1$L-j+1])/2)
+    #parameter.1$stddev  <- sapply(1:parameter.1$L, function(j) (parameter.1$stddev[,j]+parameter.2$stddev [,parameter.1$L-j+1])/2)
+    #parameter.1$utility <- sapply(1:parameter.1$L, function(j) (parameter.1$utility[j]+parameter.2$utility[ parameter.1$L-j+1])/2)
   }
   return(parameter.1)
 }
@@ -275,6 +275,14 @@ parameter <- parameter.init(parameter, FALSE)
 parameter$alpha.success[ 1] = 100
 parameter$alpha.success[17] = 100
 
-parameter <- sample(parameter, 250, video=FALSE)
+#parameter <- sample(parameter, 250, video=FALSE)
 
 #mencoder mf://plot_*.png -mf type=png:fps=4 -ovc lavc -lavcopts vcodec=mpeg4 -oac copy -o plot.avi
+
+parameter.1 <- list(rho = 0.3,
+                  success = c(10, 11, 12, 13),
+                  failure = c( 1,  2,  3,  4)
+                  )
+
+parameter.1 <- parameter.init(parameter.1)
+parameter.2 <- parameter.init(parameter.reverse(parameter.1))

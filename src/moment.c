@@ -70,16 +70,29 @@ static
 prob_t hmm_he(int from, int to, binProblem* bp)
 {
         size_t i;
-        prob_t ca[bp->bd->events];
-        prob_t cb[bp->bd->events];
+        prob_t c1[bp->bd->events];
+        prob_t c2[bp->bd->events];
+        prob_t alpha[bp->bd->events];
+        prob_t result1;
+        prob_t result2;
 
         for (i = 0; i < bp->bd->events; i++) {
-                ca[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
-                cb[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                c1[i]    = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                c2[i]    = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                alpha[i] = countAlpha(i, from, from, bp);
         }
-        ca[bp->add_event.which] += bp->add_event.n;
+        c2[bp->add_event.which] += bp->add_event.n;
+        result1 = mbeta_log(c1, bp) - mbeta_log(alpha, bp) + mbeta_log(c2, bp) - mbeta_log(c1, bp);
 
-        return mbeta_log(ca, bp) - mbeta_log(cb, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                c1[i]    = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
+                c2[i]    = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
+                alpha[i] = countAlpha(i, to, to, bp);
+        }
+        c2[bp->add_event.which] += bp->add_event.n;
+        result2 = mbeta_log(c1, bp) - mbeta_log(alpha, bp) + mbeta_log(c2, bp) - mbeta_log(c1, bp);
+
+        return logadd(result1, result2) - LOG(2);
 }
 
 void hmm_computeMoments(
