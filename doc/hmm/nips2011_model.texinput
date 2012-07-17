@@ -123,23 +123,24 @@ are defined as
   \end{aligned}
 \end{equation*}
 where $\mu_{\Dir(\alphab_j)}$ is the Dirichlet distribution on
-$\Omega$ with parameters $\alphab_j$ and $\rho \in [0,1]$ a mixture
-parameter.  We also define $\Thetab_j = \gamma \Thetab^1_j +
-(1-\gamma) \Thetab^2_j$ for $j = 1, 2, \dots, n$, so that at each
-position $j$ we have $m = m(j)$ emissions $\Xb_j = (X_{j,m})_m$
-obtained from a mixture of the two Markov chains, i.e.
+$\Omega$ with parameters $\alphab_j$ and $\rho \in [0,1]$ the cohesion
+parameter. We also define the auxiliary random variables $\Thetab_j =
+\gamma \Thetab^1_j + (1-\gamma) \Thetab^2_j$ for $j = 1, 2, \dots, n$
+and $\gamma \in [0, 1]$. At each position $j$ we have $m = m(j)$
+emissions $\Xb_j = (X_{j,m})_m$ obtained from a mixture of the two
+Markov chains, i.e.
 \begin{equation*}
   X_{j,m}
   \given
   \Thetab_j = \thetab_j
   \sim 
   \Discrete(\thetab_j)
-  \ ,
+  \ .
 \end{equation*}
-with $\gamma \in [0, 1]$. Each $X_{j,m}$ takes values in some finite
-alphabet $\Ac$ such that $\Omega = \Delta_{|\Ac|}$, the
-$|\Ac|$-dimensional probability simplex. The full model is depicted in
-Figure~\ref{fig:1}. Our main interest is to compute
+Each $X_{j,m}$ takes values in some finite alphabet $\Ac$ such that
+$\Omega = \Delta_{|\Ac|}$, the $|\Ac|$-dimensional probability
+simplex. The full model is depicted in Figure~\ref{fig:1}. Our main
+interest is to compute
 \begin{equation*}
   \mu_{\Thetab_j \given \Xb_{1:n}}
   f
@@ -155,13 +156,20 @@ Figure~\ref{fig:1}. Our main interest is to compute
   \mu_T(d\thetab_{i} \given \thetab_{i-1})
   \ .
 \end{equation*}
-for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$, that is to obtain
-the measure $\mu_{\Thetab_j \given \Xb_{1:n}}$.
-
-Since both Markov chains have the same transition kernel it suffices
-to discuss inference with only one chain. Most posterior quantities of
-interest, including the utility measure, can be computed with the
-marginal posterior measure
+for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$, where
+\begin{equation*}
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
+  =
+  \gamma
+  \mu_{\Thetab^1_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
+  +
+  (1-\gamma)
+  \mu_{\Thetab^2_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
+  \ .
+\end{equation*}
+Since both Markov chains have the same transition kernel it is
+sufficient to discuss inference for only one chain, say $M_1$.
+The measure
 \begin{equation*}
   \mu_{\Thetab^1_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   \propto
@@ -169,7 +177,7 @@ marginal posterior measure
   p_{\Xb_{j+1:n} \given \Thetab^1_j}(\xb_{j+1:n} \given \thetab_j)
   \ ,
 \end{equation*}
-which consists of the forward measure
+consists of the forward measure
 \begin{multline*}
   \mu_{\Thetab^1_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
   \\
@@ -188,6 +196,7 @@ which consists of the forward measure
     +
     (1-\rho)
     \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
+    \ ,
   \end{aligned}
 \end{multline*}
 with $\mu_{\Thetab^1_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
@@ -216,6 +225,8 @@ with $\mu_{\Thetab^1_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
     \ .
   \end{aligned}
 \end{multline*}
+Both, the forward measure and the backward probabilities can be
+computed in $\Oc(n^2)$.
 
 \section*{Utility}
 %
