@@ -19,116 +19,72 @@
       % theta 1
       \node[rv] (T0) at (-2,2) {}
       ;
-      \node[rv] (T1) at (-0.25,2) {$\Thetab^1_{j-1}$}
+      \node[rv] (T1) at (0.0,2) {$\Thetab_{j-1}$}
         edge [<-] (T0)
         edge [<-] (A1)
       ;
-      \node[rv] (T2) at (1.75,2) {$\Thetab^1_{j}$}
+      \node[rv] (T2) at (2.0,2) {$\Thetab_{j}$}
         edge [<-] (T1)
         edge [<-] (A2)
       ;
-      \node[rv] (T3) at (3.75,2) {$\Thetab^1_{j+1}$}
+      \node[rv] (T3) at (4.0,2) {$\Thetab_{j+1}$}
         edge [<-] (T2)
         edge [<-] (A3)
       ;
-      \node[rv] (T4) at (5.75,2) {$\Thetab^1_{j+2}$}
+      \node[rv] (T4) at (6.0,2) {$\Thetab_{j+2}$}
         edge [<-] (T3)
         edge [<-] (A4)
       ;
-      \node[rv] (T5) at (7.75,2) {}
+      \node[rv] (T5) at (8.0,2) {}
         edge [<-] (T4)
-      ;
-      % theta 2
-      \node[rv] (S0) at (-1.5,2.5) {}
-      ;
-      \node[rv] (S1) at (0.5,2.5) {$\Thetab^2_{j-1}$}
-        edge [->] (S0)
-        edge [<-] (A1)
-      ;
-      \node[rv] (S2) at (2.5,2.5) {$\Thetab^2_{j}$}
-        edge [->] (S1)
-        edge [<-] (A2)
-      ;
-      \node[rv] (S3) at (4.5,2.5) {$\Thetab^2_{j+1}$}
-        edge [->] (S2)
-        edge [<-] (A3)
-      ;
-      \node[rv] (S4) at (6.5,2.5) {$\Thetab^2_{j+2}$}
-        edge [->] (S3)
-        edge [<-] (A4)
-      ;
-      \node[rv] (S5) at (8.5,2.5) {}
-        edge [->] (S4)
       ;
       % observations
       \node[rv] (X1) at (0,0) {$\Xb_{j-1}$}
         edge [<-] (T1)
-        edge [<-] (S1)
       ;
       \node[rv] (X2) at (2,0) {$\Xb_{j}$}
         edge [<-] (T2)
-        edge [<-] (S2)
       ;
       \node[rv] (X3) at (4,0) {$\Xb_{j+1}$}
         edge [<-] (T3)
-        edge [<-] (S3)
       ;
       \node[rv] (X4) at (6,0) {$\Xb_{j+2}$}
         edge [<-] (T4)
-        edge [<-] (S4)
       ;
     \end{tikzpicture}
   \end{center}
-  \caption{Polya urn hidden Markov mixture process.}
+  \caption{Polya urn hidden Markov process.}
   \label{fig:1}
 \end{figure}
-The model consists of two hidden Markov chains $M_1 =
-\{\Thetab_j^1\}_{j=1}^n$ and $M_2 = \{\Thetab_j^2\}_{j=1}^n$ on a
-probability space $(\Omega, \Bc(\Omega), P)$. The transition kernels
-$\mu^1_T, \mu^2_T: \Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$
+The model consists of hidden Markov chain $M = \{\Thetab_j\}_{j=1}^n$
+on a probability space $(\Omega, \Bc(\Omega), P)$. The transition
+kernel $\mu_T: \Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$
 with
 \begin{equation*}
-  \begin{aligned}
-    P(\Theta^1_{j} \in A \given \Theta^1_{j-1} = \thetab_{j-1})
-    =
-    \mu^1_T(A \given \thetab_{j-1})
-    \ ,
-    \quad
-    P(\Theta^2_{j} \in A \given \Theta^2_{j+1} = \thetab_{j+1})
-    =
-    \mu^2_T(A \given \thetab_{j+1})
-    \ ,
-  \end{aligned}
+  P(\Theta_{j} \in A \given \Theta_{j-1} = \thetab_{j-1})
+  =
+  \mu_T(A \given \thetab_{j-1})
+  \ ,
 \end{equation*}
-are defined as
+is defined as
 \begin{equation*}
-  \begin{aligned}
-    \mu^1_T(d\thetab_j \given \thetab_{j-1})
-    &=
+  \mu_T(d\thetab_j \given \thetab_{j-1})
+  =
+  f_{\Dir(\alphab_j)}(\thetab_{j-1})
+  \left[
     \rho
     \delta_{\thetab_{j-1}}(d\thetab_j)
     +
     (1-\rho)
-    \mu_{\Dir(\alphab_j)}(d\thetab_j)
-    \ ,
-    \\
-    \mu^2_T(d\thetab_j \given \thetab_{j+1})
-    &=
-    \rho
-    \delta_{\thetab_{j+1}}(d\thetab_j)
-    +
-    (1-\rho)
-    \mu_{\Dir(\alphab_j)}(d\thetab_j)
-    \ ,
-  \end{aligned}
+    d\thetab_j
+  \right]
+  \ ,
 \end{equation*}
-where $\mu_{\Dir(\alphab_j)}$ is the Dirichlet distribution on
+where $f_{\Dir(\alphab_j)}(\thetab)d\thetab =
+\mu_{\Dir(\alphab_j)}(d\thetab)$ is the Dirichlet distribution on
 $\Omega$ with parameters $\alphab_j$ and $\rho \in [0,1]$ the cohesion
-parameter. We also define the auxiliary random variables $\Thetab_j =
-\gamma \Thetab^1_j + (1-\gamma) \Thetab^2_j$ for $j = 1, 2, \dots, n$
-and $\gamma \in [0, 1]$. At each position $j$ we have $m = m(j)$
-emissions $\Xb_j = (X_{j,m})_m$ obtained from a mixture of the two
-Markov chains, i.e.
+parameter. At each position $j$ we have $m = m(j)$ emissions $\Xb_j =
+(X_{j,m})_m$ obtained from a mixture of the two Markov chains, i.e.
 \begin{equation*}
   X_{j,m}
   \given
@@ -156,72 +112,83 @@ interest is to compute
   \mu_T(d\thetab_{i} \given \thetab_{i-1})
   \ .
 \end{equation*}
-for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$, where
+for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$.
+With the transition kernel $\mu_T$ we obtain a posterior distribution
+that can be written as a sum over all consecutive partitions of $\{1,
+2, \dots, n\}$. An element of a consecutive partition consists of
+consecutive integers. We denote the set of all such partitions as
+$\Pc(1:n)$. For instance, the marginal likelihood
+$p_{\Xb_{1:n}}(\xb_{1:n})$ can be written as
 \begin{equation*}
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
-  =
-  \gamma
-  \mu_{\Thetab^1_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
-  +
-  (1-\gamma)
-  \mu_{\Thetab^2_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
+  \sum_{P\in \Pc(1:n)}
+  \rho^{n-|P|}
+  (1-\rho)^{|P|-1}
+  \prod_{B\in P}
+  \frac{
+    \Beta\left(1-|B|+\sum_{j \in B} \alphab_j + \cb(\xb_j)\right)
+  }{
+    \prod_{j \in B} \Beta\left(\alphab_j\right)
+  }
   \ .
 \end{equation*}
-Since both Markov chains have the same transition kernel it is
-sufficient to discuss inference for only one chain, say $M_1$.
-The measure
+An efficient way of computing the posterior distribution can be
+derived by considering the forward-backward algorithm of hidden Markov
+models. The measure
 \begin{equation*}
-  \mu_{\Thetab^1_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   \propto
-  \mu_{\Thetab^1_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
-  p_{\Xb_{j+1:n} \given \Thetab^1_j}(\xb_{j+1:n} \given \thetab_j)
+  \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
+  p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
   \ ,
 \end{equation*}
 consists of the forward measure
 \begin{multline*}
-  \mu_{\Thetab^1_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
+  \mu_{\Thetab_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
   \\
   \begin{aligned}
     &=
     \frac{1}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
     \mu_T(d\thetab_{j+1} \given \thetab_j)
-    \mu_{\Thetab^1_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
+    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
     \\
     &=
     \frac{\rho}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
-    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    \mu_{\Thetab^1_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
-    +
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    f_{\Dir(\alphab_{j+1})}(\thetab_{j+1})
+    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
+    \\
+    &\quad+
     (1-\rho)
-    \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
+    \mu_{\Dir(\alphab_{j+1})}(d\thetab_{j+1})
     \ ,
   \end{aligned}
 \end{multline*}
-with $\mu_{\Thetab^1_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
-= p_{\Xb_{1}\given \Thetab^1_{1}}(\xb_{1} \given \thetab_{1})
-\mu_{\Dir(\alpha_{1})}(d\thetab_{1})$ and backward probabilities
+with $\mu_{\Thetab_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
+= p_{\Xb_{1}\given \Thetab_{1}}(\xb_{1} \given \thetab_{1})
+\mu_{\Dir(\alphab_{1})}(d\thetab_{1})$ and backward probabilities
 \begin{multline*}
   \begin{aligned}
-    p_{\Xb_{j+1:n} \given \Thetab^1_j}(\xb_{j+1:n} \given \thetab_j)
+    p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
     &=
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    p_{\Xb_{j+2:n} \given \Thetab^1_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
     \mu_T(d\thetab_{j+1} \given \thetab_j)
     \\
     &=
     \rho
-    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j})
-    p_{\Xb_{j+2:n} \given \Thetab^1_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j})
+    f_{\Dir(\alphab_{j+1})}(\thetab_{j})
+    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
     \\
     &\quad+
     (1-\rho)
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab^1_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    p_{\Xb_{j+2:n} \given \Thetab^1_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
-    \mu_{\Dir(\alpha_{j+1})}(d\thetab_{j+1})
+    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
+    \mu_{\Dir(\alphab_{j+1})}(d\thetab_{j+1})
     \ .
   \end{aligned}
 \end{multline*}
@@ -319,18 +286,10 @@ so that, for instance, $p_{\Xb_{1:n}}(\xb_{1:n}) = \lambda^F_n(h_p) =
 \begin{equation*}
   h_p(i,k)
   =
-  \gamma
   \frac{
-    \Beta\left(\alphab_i + \sum_{j=i}^k \cb(\xb_j)\right)
+    \Beta\left(i-k+\sum_{j=i}^k \alphab_j + \cb(\xb_j)\right)
   }{
-    \Beta(\alphab_i)
-  }
-  +
-  (1-\gamma)
-  \frac{
-    \Beta\left(\alphab_k + \sum_{j=i}^k \cb(\xb_j)\right)
-  }{
-    \Beta(\alphab_k)
+    \prod_{j=i}^k \Beta(\alphab_j)
   }
   \ ,
 \end{equation*}
@@ -362,13 +321,7 @@ with
   f(\thetab)
   \prod_{j=i}^k
   p_{\Xb_j \given \Thetab_j}(\xb_j \given \thetab)
-  \left[
-    \gamma
-    \mu_{\Dir(\alphab_i)}(d\thetab)
-    +
-    (1-\gamma)
-    \mu_{\Dir(\alphab_k)}(d\thetab)
-  \right]
+  \mu_{\Dir(\alphab_j)}(d\thetab)
 \end{equation*}
 so that
 \begin{equation*}
@@ -389,20 +342,11 @@ For instance, the marginal posterior expectation $\mu_{\Thetab_j \given
   =
   \frac{h_e(i,k)}{h_p(i,k)}
   =
-  \gamma
   \frac{
-    \alphab_i + \sum_{j=i}^k \nb_j
+    i-k+\sum_{j=i}^k\alphab_j + \cb(\xb_j)
   }{
-    \sum_{x}
-    \alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j)
-  }
-  +
-  (1-\gamma)
-  \frac{
-    \alphab_k + \sum_{j=i}^k \nb_j
-  }{
-    \sum_{x}
-    \alpha_{k,x} + \sum_{j=i}^k c_x(\xb_j)
+    |\Ac|(i-k)+\sum_{y\in\Ac}
+    \sum_{j=i}^k \alpha_{j,y} + c_y(\xb_j)
   }
   \ .
 \end{equation*}
@@ -414,20 +358,9 @@ The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
     =
     \frac{h^x_u(i,k)}{h_e(i,k)}
     &=
-    \gamma
-    \left[
-    \psi\left(\alpha_{i,x} + \sum_{j=i}^k c_x(\xb_j) + 1\right)
+    \psi\left(i-k+1 + \sum_{j=i}^k \alpha_{j,x} + c_x(\xb_j)\right)
     -
-    \psi\left(\sum_{y\in \Ac} \alpha_{i,y} + \sum_{j=i}^k c_y(\xb_j) + 1\right)
-    \right]
-    \\
-    &+
-    (1-\gamma)
-    \left[
-    \psi\left(\alpha_{k,x} + \sum_{j=i}^k c_x(\xb_j) + 1\right)
-    -
-    \psi\left(\sum_{y\in \Ac} \alpha_{k,y} + \sum_{j=i}^k c_y(\xb_j) + 1\right)
-    \right]
+    \psi\left(|\Ac|(i-k)+1 + \sum_{y\in \Ac} \sum_{j=i}^k \alpha_{j,y} + c_y(\xb_j)\right)
     \ .
   \end{aligned}
 \end{equation*}

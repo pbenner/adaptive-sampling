@@ -45,40 +45,28 @@
 static
 prob_t hmm_hd(int from, int to, binProblem* bp)
 {
-        size_t i;
-        prob_t counts[bp->bd->events];
+        size_t i, j;
+        prob_t counts;
         prob_t alpha [bp->bd->events];
-        prob_t result1 = 0;
-        prob_t result2 = 0;
+        prob_t result = 0;
 
-        for (i = 0; i < bp->bd->events; i++) {
-                counts[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
-                alpha [i] = countAlpha(i, from, from, bp);
+        for (j = from; j <= to; j++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        alpha[i] = countAlpha(i, j, j, bp); 
+                }
+                result -= mbeta_log(alpha, bp);
         }
         for (i = 0; i < bp->bd->events; i++) {
+                counts = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
                 if (i == bp->fix_prob.which) {
-                        result1 += (counts[i]-1)*LOG(bp->fix_prob.val);
+                        result += (counts-1)*LOG(bp->fix_prob.val);
                 }
                 else {
-                        result1 += (counts[i]-1)*LOG(1-bp->fix_prob.val);
+                        result += (counts-1)*LOG(1-bp->fix_prob.val);
                 }
         }
-        result1 -= mbeta_log(alpha, bp);
-        for (i = 0; i < bp->bd->events; i++) {
-                counts[i] = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
-                alpha [i] = countAlpha(i, to, to, bp);
-        }
-        for (i = 0; i < bp->bd->events; i++) {
-                if (i == bp->fix_prob.which) {
-                        result2 += (counts[i]-1)*LOG(bp->fix_prob.val);
-                }
-                else {
-                        result2 += (counts[i]-1)*LOG(1-bp->fix_prob.val);
-                }
-        }
-        result2 -= mbeta_log(alpha, bp);
 
-                return logadd(result1, result2) - LOG(2);
+        return result;
 }
 
 void hmm_computeMarginal(

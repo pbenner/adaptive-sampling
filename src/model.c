@@ -161,24 +161,24 @@ prob_t iec_log(int kk, int k, binProblem *bp)
 static
 prob_t hmm_hp(int from, int to, binProblem* bp)
 {
-        size_t i;
+        size_t i, j;
         prob_t c[bp->bd->events];
         prob_t alpha[bp->bd->events];
-        prob_t result1;
-        prob_t result2;
+        prob_t result = 0;
 
-        for (i = 0; i < bp->bd->events; i++) {
-                c[i]     = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
-                alpha[i] = countAlpha(i, from, from, bp);
+        for (j = from; j <= to; j++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        alpha[i] = countAlpha(i, j, j, bp); 
+                }
+                result -= mbeta_log(alpha, bp);
         }
-        result1 = mbeta_log(c, bp) - mbeta_log(alpha, bp);
         for (i = 0; i < bp->bd->events; i++) {
-                c[i]     = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
-                alpha[i] = countAlpha(i, to, to, bp);
+                c[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
         }
-        result2 = mbeta_log(c, bp) - mbeta_log(alpha, bp);
+        /* marginal */
+        result += mbeta_log(c, bp);
 
-        return logadd(result1, result2) - LOG(2);
+        return result;
 }
 
 static
