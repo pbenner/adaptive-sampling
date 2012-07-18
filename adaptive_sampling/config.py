@@ -120,6 +120,15 @@ def generate_gamma(num_models):
     gamma = np.ones([num_models, num_models])
     return np.triu(gamma)
 
+def generate_counts(events):
+    K = len(events)
+    L = len(events[0])
+    ones   = np.ones(L, dtype=float)
+    counts = np.zeros([K, L, L])
+    for k in range(0, K):
+        counts[k] = np.triu(np.outer(ones,events[k])).cumsum(axis=1)
+    return counts
+
 ## read additional scripts
 ################################################################################
 

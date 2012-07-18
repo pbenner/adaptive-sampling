@@ -245,65 +245,56 @@ void * computeKLUtility_thread(void* data_)
 static
 prob_t hmm_he(int from, int to, binProblem* bp)
 {
-        size_t i;
+        size_t i, j;
         prob_t c1[bp->bd->events];
         prob_t c2[bp->bd->events];
         prob_t alpha[bp->bd->events];
-        prob_t result1;
-        prob_t result2;
+        prob_t result = 0;
 
+        for (j = from; j <= to; j++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        alpha[i] = countAlpha(i, j, j, bp); 
+                }
+                result -= mbeta_log(alpha, bp);
+        }
         for (i = 0; i < bp->bd->events; i++) {
-                c1[i]    = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
-                c2[i]    = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
-                alpha[i] = countAlpha(i, from, from, bp);
+                c1[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
+                c2[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
         }
         c2[bp->add_event.which] += bp->add_event.n;
-        result1 = mbeta_log(c1, bp) - mbeta_log(alpha, bp) + mbeta_log(c2, bp) - mbeta_log(c1, bp);
-
-        for (i = 0; i < bp->bd->events; i++) {
-                c1[i]    = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
-                c2[i]    = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
-                alpha[i] = countAlpha(i, to, to, bp);
-        }
-        c2[bp->add_event.which] += bp->add_event.n;
-        result2 = mbeta_log(c1, bp) - mbeta_log(alpha, bp) + mbeta_log(c2, bp) - mbeta_log(c1, bp);
-
-        return logadd(result1, result2) - LOG(2);
+        /* marginal */
+        result += mbeta_log(c1, bp);
+        /* expectation */
+        result += mbeta_log(c2, bp) - mbeta_log(c1, bp);
+        return result;
 }
 
 static
 prob_t hmm_hu(int from, int to, binProblem* bp)
 {
-        size_t i;
-        prob_t sum1, sum2;
+        size_t i, j;
         prob_t c[bp->bd->events];
         prob_t alpha[bp->bd->events];
-        prob_t result1;
-        prob_t result2;
+        prob_t result = 0;
+        prob_t sum1, sum2;
 
-        // first chain
-        sum1 = countAlpha(bp->add_event.which, from, from, bp) + countStatistic(bp->add_event.which, from, to, bp);
+        for (j = from; j <= to; j++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        alpha[i] = countAlpha(i, j, j, bp); 
+                }
+                result -= mbeta_log(alpha, bp);
+        }
+        sum1 = countAlpha(bp->add_event.which, from, to, bp) + countStatistic(bp->add_event.which, from, to, bp) + from - to;
         sum2 = 0;
         for (i = 0; i < bp->bd->events; i++) {
-                c[i]     = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
-                alpha[i] = countAlpha(i, from, from, bp);
-                sum2    += c[i];
+                c[i]  = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
+                sum2 += c[i];
         }
         c[bp->add_event.which] += 1;
-        result1 = LOG(-(gsl_sf_psi(sum1+1) - gsl_sf_psi(sum2+1))) + mbeta_log(c, bp) - mbeta_log(alpha, bp);
+        result += mbeta_log(c, bp);
+        result += LOG(-(gsl_sf_psi(sum1+1) - gsl_sf_psi(sum2+1)));
 
-        // second chain
-        sum1 = countAlpha(bp->add_event.which, to, to, bp) + countStatistic(bp->add_event.which, from, to, bp);
-        sum2 = 0;
-        for (i = 0; i < bp->bd->events; i++) {
-                c[i]     = countAlpha(i, to, to, bp) + countStatistic(i, from, to, bp);
-                alpha[i] = countAlpha(i, to, to, bp);
-                sum2    += c[i];
-        }
-        c[bp->add_event.which] += 1;
-        result2 = LOG(-(gsl_sf_psi(sum1+1) - gsl_sf_psi(sum2+1))) + mbeta_log(c, bp) - mbeta_log(alpha, bp);
-
-        return logadd(result1, result2) - LOG(2);
+        return result;
 }
 
 void hmm_computeUtility(
