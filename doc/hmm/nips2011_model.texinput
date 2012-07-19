@@ -305,6 +305,29 @@ where we used
   \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
   \ .
 \end{equation*}
+We obtain the utility
+\begin{equation*}
+  u(j, \xb_{1:n})
+  =
+  \Entropy\left[X_{j,m+1} \given \Xb_{1:n} = \xb_{1:n}\right]
+  -
+  \sum_{x\in\Ac}
+  \Entropy\left[\Theta_{j,x} \given \Xb_{1:n} = \xb_{1:n}\right]
+  \ ,
+\end{equation*}
+with
+\begin{equation*}
+  \Entropy\left[\Theta_{j,x} \given \Xb_{1:n} = \xb_{1:n}\right]
+  =
+  -
+  \int_{\Omega}
+  \theta_{j,x} \ln(\theta_{j,x})
+  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \ .
+\end{equation*}
+The utility of sampling at position $j$ can therefore be expressed as
+the uncertainty about predicting the next outcome at $j$ from which we
+substract the uncertainty about the model parameters $\Thetab_j$.
 
 \section*{Computation}
 %
