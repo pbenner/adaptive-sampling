@@ -12,8 +12,9 @@ introduced by \cite{Poppe2012}, which allows sharing of statistical
 strength of neighboring stimuli to improve inference. Here we present
 a model oriented perspective of adaptive sampling and show how the
 method by \cite{Poppe2012} with simplified cohesion structure relates
-to our approach which is based on hidden Markov models. We use the
-forward-backward decomposition of marginal posterior distributions in
-hidden Markov models to derive an efficient computational
-method. Finally, we extend the method to sampling strategies with
-$n$-step look-aheads.
+to our approach which is based on hidden Markov models. The local
+prior structure of hidden Markov models, in terms of transition
+kernels, allows a more efficient computation of posterior
+quantities. We use the forward-backward decomposition of marginal
+posterior distributions to derive an efficient algorithm. Finally, we
+extend the method to sampling strategies with $n$-step look-aheads.

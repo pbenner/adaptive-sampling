@@ -243,10 +243,44 @@ with
   \\
   \begin{aligned}
     &=
+    \int_{\Omega^n}
+    \ln
+    \frac{
+      \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+    }{
+      \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+    }
+    \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(d\thetab_{1:n} \given \xb_{1:n}, x)
+    \ ,
+  \end{aligned}
+\end{multline*}
+where
+\begin{equation*}
+  \frac{
+    \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+  }{
+    \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+  }
+  =
+  \frac{1}{p_{X_{j,m+1} \given \Xb_{1:n}}(x \given \xb_{1:n})}
+  \theta_{j,x}
+\end{equation*}
+is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:n} \given
+  \Xb_{1:n}, X_{j,m+1}}$ with respect to $\mu_{\Thetab_{1:n} \given \Xb_{1:n}}$.
+Therefore, we obtain
+\begin{multline*}
+  \Dkl\left(
+  \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+  \ggiven
+  \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+  \right)
+  \\
+  \begin{aligned}
+    &=
     \frac{
       1
     }{
-      p_{\Xb_{1:j+1}, X_{j,m+1}}(\xb_{1:n}, x)
+      p_{X_{j,m+1} \given \Xb_{1:j+1}}(x \given \xb_{1:n})
     }
     \int_{\Omega}
     \theta_{j,x} \ln(\theta_{j,x})
@@ -257,6 +291,7 @@ with
     \ ,
   \end{aligned}
 \end{multline*}
+
 where we used
 \begin{equation*}
   \int_{\Omega^n}
