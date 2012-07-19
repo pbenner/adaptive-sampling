@@ -1,9 +1,11 @@
 % -*- mode: latex -*-
 %
+\section*{Motivation}
 \section*{Model}
 %
-\tikzstyle{rv}=        [shape=circle,    minimum size=1.2cm]
-\tikzstyle{parameter}= [shape=rectangle, minimum size=1.2cm]
+\tikzstyle{rv}=        [shape=circle,    minimum size=1.08cm, fill=black!10]
+\tikzstyle{empty}=     [shape=circle,    minimum size=1.08cm]
+\tikzstyle{parameter}= [shape=rectangle, minimum size=1.08cm]
 \begin{figure}[htbp]
   \begin{center}
     \begin{tikzpicture}[]
@@ -17,7 +19,7 @@
       \node[parameter] (A4) at (6,4) {$\alpha_{j+2}$}
       ;
       % theta 1
-      \node[rv] (T0) at (-2,2) {}
+      \node[empty] (T0) at (-2,2) {}
       ;
       \node[rv] (T1) at (0.0,2) {$\Thetab_{j-1}$}
         edge [<-] (T0)
@@ -35,7 +37,7 @@
         edge [<-] (T3)
         edge [<-] (A4)
       ;
-      \node[rv] (T5) at (8.0,2) {}
+      \node[empty] (T5) at (8.0,2) {}
         edge [<-] (T4)
       ;
       % observations
@@ -53,7 +55,18 @@
       ;
     \end{tikzpicture}
   \end{center}
-  \caption{Polya urn hidden Markov process.}
+  \caption{
+    \Polya urn hidden Markov process. The generative process can be
+    sketched as follows: Every two consecutive nodes $\Thetab_{j-1}$
+    and $\Thetab_j$ are either identical with probability $\rho$ or
+    fully independent with probability $1-\rho$. A realization of a
+    set of identical random variables $\{\Thetab_i, \Thetab_{i+1},
+    \dots, \Thetab_k\}_{i \le k}$ is drawn from a Dirichlet
+    distribution with pseudocounts $i-k+\sum_{j=i}^k \alphab_j$.
+    Emissions $\Xb_j = (X_{j,1}, X_{j,2}, \dots, X_{j,m})$ are then
+    drawn i.i.d. from a multinomial distribution with parameters
+    $\Thetab_j$.
+  }
   \label{fig:1}
 \end{figure}
 The model consists of hidden Markov chain $M = \{\Thetab_j\}_{j=1}^n$
@@ -70,7 +83,7 @@ is defined as
 \begin{equation*}
   \mu_T(d\thetab_j \given \thetab_{j-1})
   =
-  f_{\Dir(\alphab_j)}(\thetab_{j-1})
+  f_{\Thetab_j}(\thetab_j)
   \left[
     \rho
     \delta_{\thetab_{j-1}}(d\thetab_j)
@@ -80,8 +93,8 @@ is defined as
   \right]
   \ ,
 \end{equation*}
-where $f_{\Dir(\alphab_j)}(\thetab)d\thetab =
-\mu_{\Dir(\alphab_j)}(d\thetab)$ is the Dirichlet distribution on
+where $f_{\Thetab_j}(\thetab)d\thetab =
+\mu_{\Thetab_j}(d\thetab)$ is the Dirichlet distribution on
 $\Omega$ with parameters $\alphab_j$ and $\rho \in [0,1]$ the cohesion
 parameter. At each position $j$ we have $m = m(j)$ emissions $\Xb_j =
 (X_{j,m})_m$ obtained from a mixture of the two Markov chains, i.e.
@@ -156,12 +169,12 @@ consists of the forward measure
     &=
     \frac{\rho}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
     p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    f_{\Dir(\alphab_{j+1})}(\thetab_{j+1})
+    f_{\Thetab_{j+1}}(\thetab_{j+1})
     \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
     \\
     &\quad+
     (1-\rho)
-    \mu_{\Dir(\alphab_{j+1})}(d\thetab_{j+1})
+    \mu_{\Thetab_{j+1}}(d\thetab_{j+1})
     \ ,
   \end{aligned}
 \end{multline*}
@@ -180,7 +193,7 @@ with $\mu_{\Thetab_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
     &=
     \rho
     p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j})
-    f_{\Dir(\alphab_{j+1})}(\thetab_{j})
+    f_{\Thetab_{j+1}}(\thetab_{j})
     p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
     \\
     &\quad+
@@ -188,7 +201,7 @@ with $\mu_{\Thetab_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
     \int_{\Omega}
     p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
     p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
-    \mu_{\Dir(\alphab_{j+1})}(d\thetab_{j+1})
+    \mu_{\Thetab_{j+1}}(d\thetab_{j+1})
     \ .
   \end{aligned}
 \end{multline*}
@@ -321,7 +334,7 @@ with
   f(\thetab)
   \prod_{j=i}^k
   p_{\Xb_j \given \Thetab_j}(\xb_j \given \thetab)
-  \mu_{\Dir(\alphab_j)}(d\thetab)
+  \mu_{\Thetab_j}(d\thetab)
 \end{equation*}
 so that
 \begin{equation*}
@@ -374,15 +387,16 @@ The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
   \includegraphics[width=0.495\textwidth,page=6]{example/example1.pdf}
   \includegraphics[width=0.495\textwidth,page=7]{example/example1.pdf}
   \caption{
-    Adaptive sampling in a hypothetical experiment with $\gamma = 0.5$
-    and $\rho = 0.8$. The figure shows the experiment after $1$, $2$,
-    $10$, $50$, $100$, and $200$ samples. At first, samples are
-    uniformly distributed. In (a) only one measurement was taken and
-    the expected utility is largest at the left boundary. (d) shows the
+    Adaptive sampling in a hypothetical experiment with $\rho =
+    0.8$. The figure shows the experiment after $1$, $2$, $10$, $50$,
+    $100$, and $200$ samples. At first, samples are uniformly
+    distributed. In (a) only one measurement was taken and the
+    expected utility is largest at the left boundary. (d) shows the
     experiment after 50 samples where the algorithm starts to locate
     measurements at sloped regions. The general shape of the
     stimulus-response function is already well established after 100
     samples (e). Many measurements are also taken at $x=1$ and $x=35$
-    since those $x$ have only one neighbor.}
+    since those $x$ have only one neighbor.
+  }
   \label{fig:05}
 \end{figure}

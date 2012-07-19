@@ -1,2 +1,19 @@
 % -*- mode: latex -*-
 %
+Whenever the gathering of data is costly or simply limited by the
+nature of an experiment, it is essential for the inferential task to
+optimize the measurement process so that we learn as much as possible
+with each data point. Such experiments include for instance the
+estimation of stimulus-response relations in psychophysics. We focus
+on experimental setups with an ordinal structure of the stimulus
+space, where no parametric form of the stimulus-response relation can
+be assumed. A method for such experimental setups has been recently
+introduced by \cite{Poppe2012}, which allows sharing of statistical
+strength of neighboring stimuli to improve inference. Here we present
+a model oriented perspective of adaptive sampling and show how the
+method by \cite{Poppe2012} with simplified cohesion structure relates
+to our approach which is based on hidden Markov models. We use the
+forward-backward decomposition of marginal posterior distributions in
+hidden Markov models to derive an efficient computational
+method. Finally, we extend the method to sampling strategies with
+$n$-step look-aheads.
