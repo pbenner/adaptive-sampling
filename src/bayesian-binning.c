@@ -195,15 +195,16 @@ void bin_init(
 
         assert(options->which < events);
 
-        verbose       = options->verbose;
-        bd->options   = options;
-        bd->L         = L;
-        bd->events    = events;
-        bd->counts    = counts;
-        bd->alpha     = alpha;
-        bd->beta      = beta;
-        bd->gamma     = gamma;
-        bd->prior_log = (prob_t *)malloc(L*sizeof(prob_t));
+        verbose         = options->verbose;
+        bd->options     = options;
+        bd->L           = L;
+        bd->events      = events;
+        bd->counts      = counts;
+        bd->counts_diff = NULL;
+        bd->alpha       = alpha;
+        bd->beta        = beta;
+        bd->gamma       = gamma;
+        bd->prior_log   = (prob_t *)malloc(L*sizeof(prob_t));
 
         /* compute the model prior once for all computations */
         computeModelPrior(bd);
@@ -247,4 +248,29 @@ binning(
         bin_free(&bd);
 
         return result;
+}
+
+vector_t*
+utility(
+        int events,
+        matrix_t **counts,
+        matrix_t **counts_diff,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
+        Options *options)
+{
+        binData bd;
+
+        bin_init(events, counts, alpha, beta, gamma, options, &bd);
+        // init counts difference between prior and posterior
+        bd.counts_diff = counts_diff;
+
+        binProblem bp; binProblemInit(&bp, &bd);
+        vector_t* utility = alloc_vector(bp.bd->L);
+        hmm_computeNStepUtility(utility, &bp);
+
+        bin_free(&bd);
+
+        return utility;
 }

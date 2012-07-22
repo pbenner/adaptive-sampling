@@ -322,7 +322,7 @@ void hmm_computeUtility(
                         utility_tmp->content[i][j] = -LOG(expectation->content[i][j])-EXP(tmp->content[j])/expectation->content[i][j];
                 }
                 bp->add_event.pos   = -1;
-                bp->add_event.n     = 0;
+                bp->add_event.n     =  0;
         }
         // compute average
         for (j = 0; j < bp->bd->L; j++) {
@@ -336,6 +336,197 @@ void hmm_computeUtility(
         free_matrix(utility_tmp);
 }
 
+/******************************************************************************
+ * HMM N-Step utility
+ ******************************************************************************/
+
+static
+prob_t hmm_marginal_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t k;
+
+        prob_t tmp;
+
+        tmp = to*LOG(bp->bd->options->rho) + f(0, to, bp);
+        for (k = 0; k < j; k++) {
+                tmp = logadd(tmp, (to-k-1)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result->content[k] + f(k+1, to, bp));
+        }
+        return tmp;
+}
+
+void hmm_marginal_forward(vector_t *result, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->L; j++) {
+                result->content[j] = hmm_marginal_forward_rec(result, j, j, f, bp);
+        }
+}
+
+static
+prob_t hmm_marginal_backward_rec(vector_t *result, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t k;
+
+        prob_t tmp;
+
+        tmp = (bp->bd->L-j-1)*LOG(bp->bd->options->rho) + f(j, bp->bd->L-1, bp);
+        for (k = j+1; k < bp->bd->L; k++) {
+                tmp = logadd(tmp, (k-1-j)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result->content[k] + f(j, k-1, bp));
+        }
+        return tmp;
+}
+
+void hmm_marginal_backward(vector_t *result, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->L; j++) {
+                result->content[bp->bd->L-j-1] = hmm_marginal_backward_rec(result, bp->bd->L-j-1, f, bp);
+        }
+}
+
+static
+prob_t hmm_marginal_fb_rec(vector_t *forward, vector_t *backward, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t k;
+        prob_t tmp;
+
+        tmp = hmm_marginal_forward_rec(forward, j, bp->bd->L-1, f, bp);
+        for (k = j+1; k < bp->bd->L; k++) {
+                tmp = logadd(tmp, LOG(1-bp->bd->options->rho) + hmm_marginal_forward_rec(forward, j, k-1, f, bp) + backward->content[k]);
+        }
+        return tmp;
+}
+
+void hmm_marginal_fb(vector_t *result, vector_t *forward, vector_t *backward, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->L; j++) {
+                result->content[j] = hmm_marginal_fb_rec(forward, backward, j, f, bp);
+        }
+}
+
+static
+prob_t hmm_hnu(int from, int to, binProblem* bp)
+{
+        size_t i, j;
+        prob_t c[bp->bd->events];
+        prob_t alpha[bp->bd->events];
+        prob_t result = 0;
+        prob_t sum;
+
+        // alpha
+        for (j = from; j <= to; j++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        alpha[i] = countAlpha(i, j, j, bp);
+                }
+                result -= mbeta_log(alpha, bp);
+        }
+        // counts
+        for (i = 0; i < bp->bd->events; i++) {
+                c[i]  = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to + bp->bd->counts_diff[i]->content[from][to];
+        }
+        c[bp->add_event.which] += 1;
+        result += mbeta_log(c, bp);
+        // psi
+        sum = 0;
+        for (i = 0; i < bp->bd->events; i++) {
+                sum += c[i];
+        }
+        for (i = 0; i < bp->bd->events; i++) {
+                double events = bp->bd->counts_diff[i]->content[from][to];
+                if (i == bp->add_event.which) {
+                        events++;
+                }
+                result += events*LOG(-(gsl_sf_psi(c[i]) - gsl_sf_psi(sum)));
+        }
+        return result;
+}
+
+static
+prob_t hmm_hne(int from, int to, binProblem* bp)
+{
+        size_t i, j;
+        prob_t c1[bp->bd->events];
+        prob_t c2[bp->bd->events];
+        prob_t alpha[bp->bd->events];
+        prob_t result = 0;
+
+        // alpha
+        for (j = from; j <= to; j++) {
+                for (i = 0; i < bp->bd->events; i++) {
+                        alpha[i] = countAlpha(i, j, j, bp);
+                }
+                result -= mbeta_log(alpha, bp);
+        }
+        // counts
+        for (i = 0; i < bp->bd->events; i++) {
+                c1[i]  = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
+                c2[i]  = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to + bp->bd->counts_diff[i]->content[from][to];
+        }
+        c2[bp->add_event.which] += bp->add_event.n;
+        /* marginal */
+        result += mbeta_log(c1, bp);
+        /* expectation */
+        result += mbeta_log(c2, bp) - mbeta_log(c1, bp);
+
+        return result;
+}
+
+void hmm_computeNStepUtility(
+        vector_t *utility,
+        binProblem *bp)
+{
+        size_t i, j;
+        vector_t* forward  = alloc_vector(bp->bd->L);
+        vector_t* backward = alloc_vector(bp->bd->L);
+        vector_t* tmp      = alloc_vector(bp->bd->L);
+        double marginal;
+
+        hmm_forward (forward, bp);
+        marginal   = forward->content[bp->bd->L-1];
+
+        // clean utility
+        for (j = 0; j < bp->bd->L; j++) {
+                utility->content[j] = 0.0;
+        }
+        // compute predictive entropy
+        bp->add_event.n     =  0;
+        bp->add_event.which = -1;
+        hmm_marginal_forward (forward,  &hmm_hne, bp);
+        hmm_marginal_backward(backward, &hmm_hne, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                bp->add_event.n     = 1;
+                bp->add_event.which = i;
+
+                hmm_marginal_fb(tmp, forward, backward, &hmm_hne, bp);
+                for (j = 0; j < bp->bd->L; j++) {
+                        utility->content[j] += -EXP(tmp->content[j]-marginal)*(tmp->content[j]-marginal);
+                }
+        }
+        // compute parameter entropy
+        bp->add_event.n     =  0;
+        bp->add_event.which = -1;
+        hmm_marginal_forward (forward,  &hmm_hnu, bp);
+        hmm_marginal_backward(backward, &hmm_hnu, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                bp->add_event.n     = 1;
+                bp->add_event.which = i;
+
+                hmm_marginal_fb(tmp, forward, backward, &hmm_hnu, bp);
+                for (j = 0; j < bp->bd->L; j++) {
+                        utility->content[j] += -EXP(tmp->content[j]-marginal);
+                }
+        }
+        bp->add_event.n     =  0;
+        bp->add_event.which = -1;
+
+        free_vector(backward);
+        free_vector(forward);
+        free_vector(tmp);
+}
 
 /******************************************************************************
  * Main

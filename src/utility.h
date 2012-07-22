@@ -30,5 +30,8 @@ void hmm_computeUtility(
         vector_t *forward,
         vector_t *backward,
         binProblem *bp);
+void hmm_computeNStepUtility(
+        vector_t *utility,
+        binProblem *bp);
 
 #endif /* LOCAL_UTILITY_H */
