@@ -3,7 +3,8 @@
 \section*{Motivation}
 \section*{Model}
 %
-\tikzstyle{rv}=        [shape=circle,    minimum size=1.08cm, fill=black!10]
+\tikzstyle{rv}=        [shape=circle,    minimum size=1.08cm, fill=blue!10]
+\tikzstyle{rvback}=    [shape=circle,    minimum size=1.08cm, fill=blue!5]
 \tikzstyle{empty}=     [shape=circle,    minimum size=1.08cm]
 \tikzstyle{parameter}= [shape=rectangle, minimum size=1.08cm]
 \begin{figure}[htbp]
@@ -18,217 +19,269 @@
       ;
       \node[parameter] (A4) at (6,4) {$\alpha_{j+2}$}
       ;
+      % theta 2
+      \node[empty] (S0) at (-1.5,2.5) {}
+      ;
+      \node[rvback] (S1) at (0.5,2.5) {$\Thetab^2_{j-1}$}
+        edge [->] (S0)
+        edge [<-] (A1)
+      ;
+      \node[rvback] (S2) at (2.5,2.5) {$\Thetab^2_{j}$}
+        edge [->] (S1)
+        edge [<-] (A2)
+      ;
+      \node[rvback] (S3) at (4.5,2.5) {$\Thetab^2_{j+1}$}
+        edge [->] (S2)
+        edge [<-] (A3)
+      ;
+      \node[rvback] (S4) at (6.5,2.5) {$\Thetab^2_{j+2}$}
+        edge [->] (S3)
+        edge [<-] (A4)
+      ;
+      \node[empty] (S5) at (8.5,2.5) {}
+        edge [->] (S4)
+      ;
       % theta 1
       \node[empty] (T0) at (-2,2) {}
       ;
-      \node[rv] (T1) at (0.0,2) {$\Thetab_{j-1}$}
+      \node[rv] (T1) at (-0.25,2) {$\Thetab^1_{j-1}$}
         edge [<-] (T0)
         edge [<-] (A1)
       ;
-      \node[rv] (T2) at (2.0,2) {$\Thetab_{j}$}
+      \node[rv] (T2) at (1.75,2) {$\Thetab^1_{j}$}
         edge [<-] (T1)
         edge [<-] (A2)
       ;
-      \node[rv] (T3) at (4.0,2) {$\Thetab_{j+1}$}
+      \node[rv] (T3) at (3.75,2) {$\Thetab^1_{j+1}$}
         edge [<-] (T2)
         edge [<-] (A3)
       ;
-      \node[rv] (T4) at (6.0,2) {$\Thetab_{j+2}$}
+      \node[rv] (T4) at (5.75,2) {$\Thetab^1_{j+2}$}
         edge [<-] (T3)
         edge [<-] (A4)
       ;
-      \node[empty] (T5) at (8.0,2) {}
+      \node[empty] (T5) at (7.75,2) {}
         edge [<-] (T4)
       ;
       % observations
-      \node[rv] (X1) at (0,0) {$\Xb_{j-1}$}
+      \node[rv] (X1) at (0,0) {$\Zb_{j-1}$}
         edge [<-] (T1)
+        edge [<-] (S1)
       ;
-      \node[rv] (X2) at (2,0) {$\Xb_{j}$}
+      \node[rv] (X2) at (2,0) {$\Zb_{j}$}
         edge [<-] (T2)
+        edge [<-] (S2)
       ;
-      \node[rv] (X3) at (4,0) {$\Xb_{j+1}$}
+      \node[rv] (X3) at (4,0) {$\Zb_{j+1}$}
         edge [<-] (T3)
+        edge [<-] (S3)
       ;
-      \node[rv] (X4) at (6,0) {$\Xb_{j+2}$}
+      \node[rv] (X4) at (6,0) {$\Zb_{j+2}$}
         edge [<-] (T4)
+        edge [<-] (S4)
       ;
     \end{tikzpicture}
   \end{center}
   \caption{
     \Polya urn hidden Markov process. The generative process can be
-    sketched as follows: Every two consecutive nodes $\Thetab_{j-1}$
-    and $\Thetab_j$ are either identical with probability $\rho$ or
-    fully independent with probability $1-\rho$. A realization of a
-    set of identical random variables $\{\Thetab_i, \Thetab_{i+1},
-    \dots, \Thetab_k\}_{i \le k}$ is drawn from a Dirichlet
-    distribution with pseudocounts $i-k+\sum_{j=i}^k \alphab_j$.
-    Emissions $\Xb_j = (X_{j,1}, X_{j,2}, \dots, X_{j,m})$ are then
-    drawn i.i.d. from a multinomial distribution with parameters
-    $\Thetab_j$.
+    sketched as follows: For the chain $M_1$ we decide at each
+    position $j$ whether or not the random variable $\Thetab^1_j$
+    shares its event with its predecessor $\Thetab^2_{j-1}$. It shares
+    the same event with probability $\rho$, whereas with probability
+    $1-\rho$ a new value is drawn from a Dirichlet distribution with
+    parameters $\alphab_j$. For $M_2$ we do the same in reverse
+    direction. Emissions $\Zb_j = (Z_{j,1}, Z_{j,2}, \dots, Z_{j,m})$
+    are then drawn i.i.d. from the mixture $\Thetab_j = \gamma
+    \Thetab^1_j + (1-\gamma) \Thetab^2_j$.
   }
   \label{fig:1}
 \end{figure}
-The model consists of hidden Markov chain $M = \{\Thetab_j\}_{j=1}^n$
-on a probability space $(\Omega, \Bc(\Omega), P)$. The transition
-kernel $\mu_T: \Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$
+The model consists of two hidden Markov chains $M^1 =
+\{\Thetab^1_j\}_{j=1}^L$ and $M^2 = \{\Thetab^2_j\}_{j=1}^L$ on a
+probability space $(\Omega, \Bc(\Omega), P)$. The transition kernels
+$\mu^1_T, \mu^2_T: \Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$
 with
 \begin{equation*}
-  P(\Theta_{j} \in A \given \Theta_{j-1} = \thetab_{j-1})
+  P(\Theta^1_{j} \in A \given \Theta^1_{j-1} = \thetab_{j-1})
   =
-  \mu_T(A \given \thetab_{j-1})
+  \mu^1_T(A \given \thetab_{j-1})
+  \ ,
+  \quad
+  P(\Theta^2_{j} \in A \given \Theta^2_{j+1} = \thetab_{j+1})
+  =
+  \mu^2_T(A \given \thetab_{j+1})
   \ ,
 \end{equation*}
-is defined as
+are defined as
 \begin{equation*}
-  \mu_T(d\thetab_j \given \thetab_{j-1})
-  =
-  f_{\Thetab_j}(\thetab_j)
-  \left[
+  \begin{aligned}
+    \mu^1_T(d\thetab_j \given \thetab_{j-1})
+    &=
     \rho
     \delta_{\thetab_{j-1}}(d\thetab_j)
     +
     (1-\rho)
-    d\thetab_j
-  \right]
-  \ ,
+    \mu_{\Thetab^1_j}(d\thetab_j)
+    \ ,
+    \\
+    \mu^2_T(d\thetab_j \given \thetab_{j+1})
+    &=
+    \rho
+    \delta_{\thetab_{j+1}}(d\thetab_j)
+    +
+    (1-\rho)
+    \mu_{\Thetab^2_j}(d\thetab_j)
+    \ ,
+  \end{aligned}
 \end{equation*}
-where $f_{\Thetab_j}(\thetab)d\thetab =
-\mu_{\Thetab_j}(d\thetab)$ is the Dirichlet distribution on
-$\Omega$ with parameters $\alphab_j$ and $\rho \in [0,1]$ the cohesion
-parameter. At each position $j$ we have $m = m(j)$ emissions $\Xb_j =
-(X_{j,m})_m$ obtained from a mixture of the two Markov chains, i.e.
+where $\mu_{\Thetab^1_j}$ and $\mu_{\Thetab^2_j}$ are Dirichlet
+distributions on $\Omega$ with parameters $\alphab_j$ and $\rho \in
+[0,1]$ is the cohesion parameter. We also define the auxiliary random
+variables $\Thetab_j = \gamma \Thetab^1_j + (1-\gamma)\Thetab^2_j$
+with mixture parameter $\gamma \in [0, 1]$. At each position $j$ we have $m =
+m(j)$ emissions $\Zb_j = (Z_{j,m})_m$ with distribution
 \begin{equation*}
-  X_{j,m}
+  Z_{j,m}
   \given
   \Thetab_j = \thetab_j
   \sim 
   \Discrete(\thetab_j)
   \ .
 \end{equation*}
-Each $X_{j,m}$ takes values in some finite alphabet $\Ac$ such that
+Each $Z_{j,m}$ takes values in some finite alphabet $\Ac$ such that
 $\Omega = \Delta_{|\Ac|}$, the $|\Ac|$-dimensional probability
 simplex. The full model is depicted in Figure~\ref{fig:1}. Our main
 interest is to compute
 \begin{equation*}
-  \mu_{\Thetab_j \given \Xb_{1:n}}
+  \mu_{\Thetab_j \given \Zb_{1:L}}
   f
   =
   \int_{\Omega}
   f(\thetab)
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab \given \xb_{1:n})
+  \mu_{\Thetab_j \given \Zb_{1:L}}(d\thetab \given \zb_{1:L})
   =
-  \int_{\Omega^n}
+  \int_{\Omega^L}
   f(\thetab_j)
-  \prod_{i=1}^n
-  p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
+  \prod_{i=1}^L
+  p_{\Zb_{i}\given \Thetab_{i}}(\zb_{i} \given \thetab_{i})
   \mu_T(d\thetab_{i} \given \thetab_{i-1})
   \ .
 \end{equation*}
 for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$.
 With the transition kernel $\mu_T$ we obtain a posterior distribution
 that can be written as a sum over all consecutive partitions of $\{1,
-2, \dots, n\}$. An element of a consecutive partition consists of
+2, \dots, L\}$. An element of a consecutive partition consists of
 consecutive integers. We denote the set of all such partitions as
-$\Pc(1:n)$. For instance, the marginal likelihood
-$p_{\Xb_{1:n}}(\xb_{1:n})$ can be written as
+$\Pc(1:L)$. For instance, the marginal likelihood
+$p_{\Zb_{1:L}}(\zb_{1:L})$ can be written as
 \begin{equation*}
-  \sum_{P\in \Pc(1:n)}
+  \sum_{P\in \Pc(1:L)}
   \rho^{n-|P|}
   (1-\rho)^{|P|-1}
-  \prod_{B\in P}
-  \frac{
-    \Beta\left(1-|B|+\sum_{j \in B} \alphab_j + \cb(\xb_j)\right)
-  }{
-    \prod_{j \in B} \Beta\left(\alphab_j\right)
-  }
+  \left[
+    \gamma
+    \prod_{B\in P}
+    \frac{
+      \Beta\left(\alphab_{\min(B)} + \sum_{j \in B} \cb(\zb_j)\right)
+    }{
+      \Beta\left(\alphab_{\min(B)}\right)
+    }
+    +
+    (1-\gamma)
+    \prod_{B\in P}
+    \frac{
+      \Beta\left(\alphab_{\max(B)} + \sum_{j \in B} \cb(\zb_j)\right)
+    }{
+      \Beta\left(\alphab_{\max(B)}\right)
+    }
+  \right]
   \ .
 \end{equation*}
 An efficient way of computing the posterior distribution can be
 derived by considering the forward-backward algorithm of hidden Markov
 models. The measure
 \begin{equation*}
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \mu_{\Thetab^1_j \given \Zb_{1:L}}(d\thetab_j \given \zb_{1:L})
   \propto
-  \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
-  p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
+  \mu_{\Thetab^1_j \given \Zb_{1:j}}(d\thetab_{j} \given \zb_{1:j})
+  p_{\Zb_{j+1:L} \given \Thetab^1_j}(\zb_{j+1:L} \given \thetab_j)
   \ ,
 \end{equation*}
 consists of the forward measure
 \begin{multline*}
-  \mu_{\Thetab_{j+1} \given \Xb_{1:j+1}}(d\thetab_{j+1} \given \xb_{1:j+1})
+  \mu_{\Thetab^1_{j+1} \given \Zb_{1:j+1}}(d\thetab_{j+1} \given \zb_{1:j+1})
   \\
   \begin{aligned}
     &=
-    \frac{1}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
+    \frac{1}{p_{\Zb_{1:j+1}}(\zb_{1:j+1})}
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
+    p_{\Zb_{j+1}\given \Thetab^1_{j+1}}(\zb_{j+1} \given \thetab_{j+1})
     \mu_T(d\thetab_{j+1} \given \thetab_j)
-    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j} \given \xb_{1:j})
+    \mu_{\Thetab^1_{j} \given \Zb_{1:j}}(d\thetab_{j} \given \zb_{1:j})
     \\
     &=
-    \frac{\rho}{p_{\Xb_{1:j+1}}(\xb_{1:j+1})}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    f_{\Thetab_{j+1}}(\thetab_{j+1})
-    \mu_{\Thetab_{j} \given \Xb_{1:j}}(d\thetab_{j+1} \given \xb_{1:j})
-    \\
-    &\quad+
+    \frac{\rho}{p_{\Zb_{1:j+1}}(\zb_{1:j+1})}
+    p_{\Zb_{j+1}\given \Thetab^1_{j+1}}(\zb_{j+1} \given \thetab_{j+1})
+    \mu_{\Thetab^1_{j} \given \Zb_{1:j}}(d\thetab_{j+1} \given \zb_{1:j})
+    +
     (1-\rho)
-    \mu_{\Thetab_{j+1}}(d\thetab_{j+1})
+    \mu_{\Thetab^1_{j+1}}(d\thetab_{j+1})
     \ ,
   \end{aligned}
 \end{multline*}
-with $\mu_{\Thetab_{1} \given \Xb_{1:1}}(d\thetab_{1} \given \xb_{1:1})
-= p_{\Xb_{1}\given \Thetab_{1}}(\xb_{1} \given \thetab_{1})
-\mu_{\Dir(\alphab_{1})}(d\thetab_{1})$ and backward probabilities
+with $\mu_{\Thetab^1_1 \given \Zb_{1:1}}(d\thetab_{1} \given \zb_{1:1})
+= p_{\Zb_{1}\given \Thetab^1_1}(\zb_{1} \given \thetab_{1})
+\mu_{\Thetab^1_1}(d\thetab_{1})$ and backward probabilities
 \begin{multline*}
   \begin{aligned}
-    p_{\Xb_{j+1:n} \given \Thetab_j}(\xb_{j+1:n} \given \thetab_j)
+    p_{\Zb_{j+1:L} \given \Thetab^1_j}(\zb_{j+1:L} \given \thetab_j)
     &=
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
-    \mu_T(d\thetab_{j+1} \given \thetab_j)
+    p_{\Zb_{j+1}\given \Thetab^1_{j+1}}(\zb_{j+1} \given \thetab_{j+1})
+    p_{\Zb_{j+2:L} \given \Thetab^1_{j+1}}(\zb_{j+2:L} \given \thetab_{j+1})
+    \mu^1_T(d\thetab_{j+1} \given \thetab_j)
     \\
     &=
     \rho
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j})
-    f_{\Thetab_{j+1}}(\thetab_{j})
-    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j})
+    p_{\Zb_{j+1}\given \Thetab^1_{j+1}}(\zb_{j+1} \given \thetab_{j})
+    f_{\Thetab^1_{j+1}}(\thetab_{j})
+    p_{\Zb_{j+2:L} \given \Thetab^1_{j+1}}(\zb_{j+2:L} \given \thetab_{j})
     \\
     &\quad+
     (1-\rho)
     \int_{\Omega}
-    p_{\Xb_{j+1}\given \Thetab_{j+1}}(\xb_{j+1} \given \thetab_{j+1})
-    p_{\Xb_{j+2:n} \given \Thetab_{j+1}}(\xb_{j+2:n} \given \thetab_{j+1})
-    \mu_{\Thetab_{j+1}}(d\thetab_{j+1})
+    p_{\Zb_{j+1}\given \Thetab^1_{j+1}}(\zb_{j+1} \given \thetab_{j+1})
+    p_{\Zb_{j+2:L} \given \Thetab^1_{j+1}}(\zb_{j+2:L} \given \thetab_{j+1})
+    \mu_{\Thetab^1_{j+1}}(d\thetab_{j+1})
     \ .
   \end{aligned}
 \end{multline*}
 Both, the forward measure and the backward probabilities can be
-computed in $\Oc(n^2)$.
+computed in $\Oc(L^2)$.
 
-\section*{Utility}
-%
-Assume that at position $j$ we already have $m$ samples. A suitable
-utility measure $u(j, \xb_{1:n})$ for sampling at position $j$ is
-defined by the mutual information between $\Thetab_{1:n}$ and $X_{j,m+1}$
-given our previous observations $\{\Xb_{1:n} = \xb_{1:n} \}$, i.e.
+\section*{Adaptive sequential sampling}
+To formalize the sequential sampling process we introduce the random
+variables $Y_n = Z_{j,m}$ with $m = \sum_{i=1}^n \1(X_i = j)$ at the
+$n$th sampling step. That is, $X_n$ gives the stimulus for the $n$th
+sample and $Y_n$ is the response.  A suitable utility measure $u(j,
+\zb_{1:L})$ for stimulus $j$ is defined by the mutual information
+between $\Thetab_{1:L}$ and $Y_{n+1}$ given $X_{n+1} = j$ and our
+previous observations $\{\Zb_{1:L} = \zb_{1:L} \}$, i.e.
 \begin{equation*}
   \begin{aligned}
-    u(j, \xb_{1:n})
+    u(j, \zb_{1:L})
     &=
-    \I(\Thetab_{1:n} ; X_{j,m+1} \given \Xb_{1:n} = \xb_{1:n})
+    \I(\Thetab_{1:L} ; Y_{n+1} \given X_{n+1} = j, \Zb_{1:L} = \zb_{1:L})
     \\
     &=
-    \E_{X_{j,m+1}}\left[
+    \E_{Y_{n+1}}\left[
       \Dkl\left(
-      \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+      \mu_{\Thetab_{1:L} \given \Zb_{1:L}, X_{n+1}, Y_{n+1}}(\cdot \given \zb_{1:L}, j, y)
       \ggiven
-      \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+      \mu_{\Thetab_{1:L} \given \Zb_{1:L}}(\cdot \given \zb_{1:L})
       \right)
       \given
-      \Xb_{1:n} = \xb_{1:n}
+      \Zb_{1:L} = \zb_{1:L}
     \right]
     \ ,
   \end{aligned}
@@ -236,43 +289,43 @@ given our previous observations $\{\Xb_{1:n} = \xb_{1:n} \}$, i.e.
 with
 \begin{multline*}
   \Dkl\left(
-  \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+  \mu_{\Thetab_{1:L} \given \Zb_{1:L}, X_{n+1}, Y_{n+1}}(\cdot \given \zb_{1:L}, j, y)
   \ggiven
-  \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+  \mu_{\Thetab_{1:L} \given \Zb_{1:L}}(\cdot \given \zb_{1:L})
   \right)
   \\
   \begin{aligned}
     &=
-    \int_{\Omega^n}
+    \int_{\Omega^L}
     \ln
     \frac{
-      \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+      \mu_{\Thetab_{1:L} \given \Zb_{1:L}, X_{n+1}, Y_{n+1}}(\cdot \given \zb_{1:L}, j, y)
     }{
-      \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+      \mu_{\Thetab_{1:L} \given \Zb_{1:L}}(\cdot \given \zb_{1:L})
     }
-    \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(d\thetab_{1:n} \given \xb_{1:n}, x)
+    \mu_{\Thetab_{1:L} \given \Zb_{1:L}, X_{n+1}, Y_{n+1}}(d\Thetab_{1:L} \given \zb_{1:L}, j, y)
     \ ,
   \end{aligned}
 \end{multline*}
 where
 \begin{equation*}
-  \frac{
-    \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
-  }{
-    \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
-  }
+    \frac{
+      \mu_{\Thetab_{1:L} \given \Zb_{1:L}, X_{n+1}, Y_{n+1}}(\cdot \given \zb_{1:L}, j, y)
+    }{
+      \mu_{\Thetab_{1:L} \given \Zb_{1:L}}(\cdot \given \zb_{1:L})
+    }
   =
-  \frac{1}{p_{X_{j,m+1} \given \Xb_{1:n}}(x \given \xb_{1:n})}
-  \theta_{j,x}
+  \frac{1}{p_{X_{n+1}, Y_{n+1} \given \Zb_{1:L}}(j, y \given \zb_{1:L})}
+  \theta_{j,y}
 \end{equation*}
-is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:n} \given
-  \Xb_{1:n}, X_{j,m+1}}$ with respect to $\mu_{\Thetab_{1:n} \given \Xb_{1:n}}$.
-Therefore, we obtain
+is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:L} \given
+  \Zb_{1:L}, X_{n+1}, Y_{n+1}}$ with respect to $\mu_{\Thetab_{1:L}
+  \given \Zb_{1:L}}$. Therefore, we obtain
 \begin{multline*}
   \Dkl\left(
-  \mu_{\Thetab_{1:n} \given \Xb_{1:n}, X_{j,m+1}}(\cdot \given \xb_{1:n}, x)
+  \mu_{\Thetab_{1:L} \given \Zb_{1:L}, X_{n+1}, Y_{n+1}}(\cdot \given \zb_{1:L}, j, y)
   \ggiven
-  \mu_{\Thetab_{1:n} \given \Xb_{1:n}}(\cdot \given \xb_{1:n})
+  \mu_{\Thetab_{1:L} \given \Zb_{1:L}}(\cdot \given \zb_{1:L})
   \right)
   \\
   \begin{aligned}
@@ -280,61 +333,78 @@ Therefore, we obtain
     \frac{
       1
     }{
-      p_{X_{j,m+1} \given \Xb_{1:j+1}}(x \given \xb_{1:n})
+      p_{X_{n+1}, Y_{n+1} \given \Xb_{1:j+1}}(j, y \given \zb_{1:L})
     }
     \int_{\Omega}
-    \theta_{j,x} \ln(\theta_{j,x})
-    \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+    \theta_{j,y} \ln(\theta_{j,y})
+    \mu_{\Thetab_j \given \Zb_{1:L}}(d\thetab_j \given \zb_{1:L})
     -
     \ln
-    p_{X_{j,m+1} \given \Xb_{1:n}}(x \given \xb_{1:n})
+    p_{X_{n+1}, Y_{n+1} \given \Zb_{1:L}}(j, y \given \zb_{1:L})
     \ ,
   \end{aligned}
 \end{multline*}
-
 where we used
 \begin{equation*}
-  \int_{\Omega^n}
-  \theta_{j,x} \ln(\theta_{j,x})
-  \prod_{i=1}^n
-  p_{\Xb_{i}\given \Thetab_{i}}(\xb_{i} \given \thetab_{i})
-  \mu_T(d\thetab_{i} \given \thetab_{i-1})
+  \int_{\Omega^L}
+  \theta_{j,y} \ln(\theta_{j,y})
+  \prod_{i=1}^L
+  p_{\Zb_i \given \Thetab_i}(\zb_i \given \thetab_i)
+  \mu_T(d\thetab_i \given \thetab_{i-1})
   =
   \int_{\Omega}
-  \theta_{j,x} \ln(\theta_{j,x})
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \theta_{j,y} \ln(\theta_{j,y})
+  \mu_{\Thetab_j \given \Zb_{1:L}}(d\thetab_j \given \zb_{1:L})
   \ .
 \end{equation*}
 We obtain the utility
 \begin{equation*}
-  u(j, \xb_{1:n})
+  u(j, \zb_{1:L})
   =
-  \Entropy\left[X_{j,m+1} \given \Xb_{1:n} = \xb_{1:n}\right]
+  \Entropy\left[Y_{n+1} \given \Zb_{1:L} = \zb_{1:L}, X_{n+1} = j\right]
   -
-  \sum_{x\in\Ac}
-  \Entropy\left[\Theta_{j,x} \given \Xb_{1:n} = \xb_{1:n}\right]
+  \sum_{y\in\Ac}
+  \Entropy\left[\Theta_{j,y} \given \Zb_{1:L} = \zb_{1:L}\right]
   \ ,
 \end{equation*}
 with
 \begin{equation*}
-  \Entropy\left[\Theta_{j,x} \given \Xb_{1:n} = \xb_{1:n}\right]
+  \Entropy\left[\Theta_{j,y} \given \Zb_{1:L} = \zb_{1:L}\right]
   =
   -
   \int_{\Omega}
-  \theta_{j,x} \ln(\theta_{j,x})
-  \mu_{\Thetab_j \given \Xb_{1:n}}(d\thetab_j \given \xb_{1:n})
+  \theta_{j,y} \ln(\theta_{j,y})
+  \mu_{\Thetab_j \given \Zb_{1:L}}(d\thetab_j \given \zb_{1:L})
   \ .
 \end{equation*}
-The utility of sampling at position $j$ can therefore be expressed as
-the uncertainty about predicting the next outcome at $j$ from which we
-substract the uncertainty about the model parameters $\Thetab_j$.
+The utility of sampling at position $j$ could in principle be
+interpreted as the uncertainty about predicting the next outcome at
+$j$ from which we substract the uncertainty about the model parameters
+$\Thetab_j$. However, the interpretation of the differential entropy
+is problematic. Similarly, we obtain for a set of $p$ stimuli $\{j_1,
+  j_2, \dots, j_p\}$ the utility
+\begin{equation*}
+  \begin{aligned}
+    u(j_1, j_2, \dots, j_p, \zb_{1:L})
+    &=
+    \Entropy\left[Y_{n+1}, Y_{n+p}, \dots, Y_{n+p} \given \Zb_{1:L} =
+      \zb_{1:L}, X_{n+1} = j_1, X_{n+2} = j_2, \dots, X_{n+p} = j_p\right]
+    \\
+    &\quad
+    -
+    \sum_{y\in\Ac}
+    \Entropy\left[\Theta_{j_1,y}, \Theta_{j_2,y}, \dots, \Theta_{j_p,y} \given \Zb_{1:L} = \zb_{1:L}\right]
+    \ .
+  \end{aligned}
+\end{equation*}
+
 
 \section*{Computation}
 %
 By solving the recursive definitions of the forward measures and
 backward probabilities we obtain the same computational structure as
-in \cite{Yao1984} or \cite{Barry1992}.
-For $0 \le i \le j \le k \le n$ we define
+in \cite{Yao1984} or \cite{Barry1992}. We discuss the computation for
+the Markov chain $M_1$. For $0 \le i \le j \le k \le L$ we define
 \begin{equation*}
   \begin{aligned}
     \lambda^F_k(h)
@@ -352,30 +422,30 @@ For $0 \le i \le j \le k \le n$ we define
     \ ,
   \end{aligned}
 \end{equation*}
-so that, for instance, $p_{\Xb_{1:n}}(\xb_{1:n}) = \lambda^F_n(h_p) =
+so that, for instance, $p_{\Zb_{1:L}}(\zb_{1:L}) = \lambda^F_L(h_p) =
 \lambda^B_1(h_p)$ with
 \begin{equation*}
   h_p(i,k)
   =
   \frac{
-    \Beta\left(i-k+\sum_{j=i}^k \alphab_j + \cb(\xb_j)\right)
+    \Beta\left(\alphab_i + \sum_{j=i}^k \cb(\zb_j)\right)
   }{
-    \prod_{j=i}^k \Beta(\alphab_j)
+    \Beta(\alphab_i)
   }
   \ ,
 \end{equation*}
-where $\cb(\xb_j)$ is the count statistic of $\{\Xb_j = \xb_j\}$.
-To compute $\mu_{\Thetab_j \given \Xb_{1:n}} f$ for some $f \in L^1$
+where $\cb(\zb_j)$ is the count statistic of $\{\Zb_j = \zb_j\}$.
+To compute $\mu_{\Thetab_j \given \Zb_{1:L}} f$ for some $f \in L^1$
 we define
 \begin{multline*}
   \lambda^{FB}_j(h)
   =
-  \rho^{n-1}h(1, n)
+  \rho^{L-1}h(1, L)
   +
-  \sum_{i=1}^{j-1}(1-\rho)\rho^{n-i-1}\lambda^F_i(h_p) h(i+1, n)
+  \sum_{i=1}^{j-1}(1-\rho)\rho^{L-i-1}\lambda^F_i(h_p) h(i+1, L)
   \\
   +
-  \sum_{k=j+1}^n (1-\rho)
+  \sum_{k=j+1}^L (1-\rho)
   \left[
     \rho^{k-2} h(1, k-1)
     +
@@ -391,47 +461,48 @@ with
   \int_{\Omega}
   f(\thetab)
   \prod_{j=i}^k
-  p_{\Xb_j \given \Thetab_j}(\xb_j \given \thetab)
+  p_{\Zb_j \given \Thetab_j}(\zb_j \given \thetab)
   \mu_{\Thetab_j}(d\thetab)
 \end{equation*}
 so that
 \begin{equation*}
-  \mu_{\Thetab_j \given \Xb_{1:n}} f
+  \mu_{\Thetab_j \given \Zb_{1:L}} f
   =
   \frac{
     \lambda^{FB}_j(h)
   }{
-    \lambda^F_n(h_p)
+    \lambda^F_L(h_p)
   }
   \ .
 \end{equation*}
 
 For instance, the marginal posterior expectation $\mu_{\Thetab_j \given
-  \Xb_{1:n}} \thetab$ can be obtained with
+  \Zb_{1:L}} \thetab$ can be obtained with
 \begin{equation*}
   h(i,k)
   =
   \frac{h_e(i,k)}{h_p(i,k)}
   =
   \frac{
-    i-k+\sum_{j=i}^k\alphab_j + \cb(\xb_j)
+    \alphab_i+\sum_{j=i}^k\cb(\zb_j)
   }{
-    |\Ac|(i-k)+\sum_{y\in\Ac}
-    \sum_{j=i}^k \alpha_{j,y} + c_y(\xb_j)
+    \sum_{y\in\Ac}
+    \alpha_{i,y}
+    \sum_{j=i}^k c_y(\zb_j)
   }
   \ .
 \end{equation*}
-The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
-= \theta_x \ln \theta_x$ so that
+The utility for an event $y \in \Ac$ can be computed with $f(\thetab)
+= \theta_y \ln \theta_y$ so that
 \begin{equation*}
   \begin{aligned}
     h(i,k)
     =
-    \frac{h^x_u(i,k)}{h_e(i,k)}
+    \frac{h^y_u(i,k)}{h_e(i,k)}
     &=
-    \psi\left(i-k+1 + \sum_{j=i}^k \alpha_{j,x} + c_x(\xb_j)\right)
+    \psi\left(1 + \alpha_{i,y} + \sum_{j=i}^k c_y(\zb_j)\right)
     -
-    \psi\left(|\Ac|(i-k)+1 + \sum_{y\in \Ac} \sum_{j=i}^k \alpha_{j,y} + c_y(\xb_j)\right)
+    \psi\left(1 + \sum_{y\in \Ac} \alpha_{i,y} + \sum_{j=i}^k c_y(\zb_j)\right)
     \ .
   \end{aligned}
 \end{equation*}
@@ -457,4 +528,23 @@ The utility for an event $x \in \Ac$ can be computed with $f(\thetab)
     since those $x$ have only one neighbor.
   }
   \label{fig:05}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\textwidth,page=1]{example/example2.pdf}\\
+  \includegraphics[width=0.8\textwidth,page=4]{example/example2.pdf}
+  \caption{
+    Adaptive sampling in a hypothetical experiment with $\rho =
+    0.8$. The figure shows the experiment after $1$, $2$, $10$, $50$,
+    $100$, and $200$ samples. At first, samples are uniformly
+    distributed. In (a) only one measurement was taken and the
+    expected utility is largest at the left boundary. (d) shows the
+    experiment after 50 samples where the algorithm starts to locate
+    measurements at sloped regions. The general shape of the
+    stimulus-response function is already well established after 100
+    samples (e). Many measurements are also taken at $x=1$ and $x=35$
+    since those $x$ have only one neighbor.
+  }
+  \label{fig:06}
 \end{figure}
