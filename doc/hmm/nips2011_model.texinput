@@ -266,68 +266,68 @@ $n$th sampling step. That is, $X_n$ gives the stimulus for the $n$th
 sample and $Y_n$ the response.  Furthermore, we summarize the first
 $n$ experiments $(X_i, Y_i)_{i=1}^n$ as $\Eb_{1:n}$. Let's assume that
 we want to take $N$ measurements in total and we have already taken
-$n$ samples. A sequence of $p = N-n$ measurements $\xb^*_{1:p} = \{
-x^*_1, x^*_2, \dots, x^*_p\}$ is optimal if the \emph{expected utility}
+$n$ samples. A sequence of $p = N-n$ measurements $\xb^*_{n+1:n+p} = \{
+x^*_{n+1}, x^*_{n+2}, \dots, x^*_{n+p}\}$ is optimal if the
+\emph{expected utility}
 \begin{multline*}
-  U_p(\Xb_{n+1:n+p} = \xb^*_{1:p} \given \Eb_{1:n} = \eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \xb^*_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
   \\
   =
   \E_{\Yb_{n+1:n+p}}[
-    u(\Xb_{n+1:n+p} = \xb^*_{1:p}, \Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+    u_p(\Xb_{n+1:n+p} = \xb^*_{n+1:n+p}, \Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
     \given
-    \Xb_{n+1:n+p} = \xb^*_{1:p},
+    \Xb_{n+1:n+p} = \xb^*_{n+1:n+p},
     \Eb_{1:n} = \eb_{1:n}
   ]
 \end{multline*}
-is maximized, where $u$ is some utility function. Our goal is then to
-select a stimulus $x^*_1$ for the next measurement $X_{n+1}$ that
+is maximized, where $u_p$ is some utility function. Our goal is then to
+select a stimulus $x^*_{n+1}$ for the next measurement $X_{n+1}$ that
 leads to a maximal expected utility in the next $p$ experiments, i.e.
 \begin{equation*}
-  x^*_1
+  x^*_{n+1}
   =
-  \argmax_{x_1 \in 1:L}
+  \argmax_{x_{n+1} \in 1:L}
   \max_{\xb_{2:p-1} \in (1:L)^{p-1}}
-  U_p(\Xb_{n+1:n+p} = \xb_{1:n} \given \Eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+n} \given \Eb_{1:n})
   \ .
 \end{equation*}
-With a $p$-step look-ahead we define the \emph{expected optimal
+With a $p$-step look-ahead we define the \emph{optimal expected
   utility} $U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} = y_{n+1} \given
 \Eb_{1:n} = \eb_{1:n})$ recursively as
 \begin{equation*}
-  \max_{x\in1:L}
-  \E_{Y_{n+1}}[U^*_{p-1}(X_{n+2} = x, Y_{n+2}, \Eb_{n+1:n+1} = \eb_{n+1:n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+2} = x, \Eb_{1:n+1} = \eb_{1:n+1}]
+  \max_{x_{n+2}\in1:L}
+  \E_{Y_{n+2}}[U^*_{p-1}(X_{n+2} = x_{n+2}, Y_{n+2}, \Eb_{n+1:n+1} = \eb_{n+1:n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+2} = x_{n+2}, \Eb_{1:n+1} = \eb_{1:n+1}]
   \ ,
 \end{equation*}
-where 
+where
 \begin{equation*}
-  U^*_0(\Eb_{n+1:n+p} = \eb_{1:p}, \Yb_{n+1:n+m} = \yb_{1:p} \given \Eb_{1:n} = \eb_{1:n})
+  U^*_0(\Eb_{n+1:n+p} = \eb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
   =
-  u(\Xb_{n+1:n+p} = \xb^*_{1:p}, \Yb_{n+1:n+p} = \yb_{1:p} \given \Eb_{1:n} = \eb_{1:n}) \ .
+  u_p(\Eb_{n+1:n+p} = \eb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n}) \ .
 \end{equation*}
-We obtain the optimal stimulus $x^*_1$ from
+We obtain the optimal stimulus $x^*_{n+1}$ from
 \begin{multline*}
-  x^*_1
+  x^*_{n+1}
   =
-  \argmax_{x_1 \in 1:L}
+  \argmax_{x_{n+1} \in 1:L}
   \max_{\xb_{2:p-1} \in (1:L)^{p-1}}
-  U_p(\Xb_{n+1:n+p} = \xb_{1:n} \given \Eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
   \\
   =
-  \argmax_{x_1\in 1:L}
-  \E_{Y_{n+1}}[U^*_p(X_{n+1} = x_1, Y_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_1, \Eb_{1:n} = \eb_{1:n}]
+  \argmax_{x_{n+1}\in 1:L}
+  \E_{Y_{n+1}}[U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_{n+1}, \Eb_{1:n} = \eb_{1:n}]
   \ .
 \end{multline*}
 
-A suitable utility measure $u(x \given \eb_{1:n})$ for stimulus $x$ is
-defined by the mutual information between $\Thetab_{1:L}$ and
-$Y_{n+1}$ given $X_{n+1} = x$ and our previous observations
-$\{\Eb_{1:n} = \eb_{1:n} \}$, i.e.
-\begin{equation*}
+We first consider the case of one-step look-ahead. A suitable utility
+measure $u_1(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})$ for a
+stimulus $x$ is given by the Kullback-Leibler divergence between
+the measures $\mu_{\Thetab_{1:L} \given \Eb_{1:n+1}}$ and
+$\mu_{\Thetab_{1:L} \given \Eb_{1:n}}$, i.e.
+\begin{multline*}
+  U_1(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})
+  \\
   \begin{aligned}
-    U_1(X_{n+1} = x \given \eb_{1:n})
-    &=
-    \I(\Thetab_{1:L} ; Y_{n+1} \given X_{n+1} = x, \Eb_{1:n} = \eb_{1:n})
-    \\
     &=
     \E_{Y_{n+1}}\left[
       \Dkl\left(
@@ -338,10 +338,15 @@ $\{\Eb_{1:n} = \eb_{1:n} \}$, i.e.
       \given
       \Eb_{1:n} = \eb_{1:n}
     \right]
+    \\
+    &=
+    \I(\Thetab_{1:L} ; Y_{n+1} \given X_{n+1} = x, \Eb_{1:n} = \eb_{1:n})
     \ ,
   \end{aligned}
-\end{equation*}
-with
+\end{multline*}
+which is the mutual information between $\Thetab_{1:L}$ and $Y_{n+1}$
+given $X_{n+1} = x$ and our previous observations $\{\Eb_{1:n} =
+\eb_{1:n} \}$. We obtain
 \begin{multline*}
   \Dkl\left(
   \mu_{\Thetab_{1:L} \given \Eb_{1:n}, X_{n+1}, Y_{n+1}}(\cdot \given \eb_{1:n}, x, y)
@@ -374,8 +379,8 @@ where
   \theta_{x,y}
 \end{equation*}
 is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:L} \given
-  \Eb_{1:n}, X_{n+1}, Y_{n+1}}$ with respect to $\mu_{\Thetab_{1:L}
-  \given \Eb_{1:n}}$. Therefore, we obtain
+  \Eb_{1:n+1}}$ with respect to $\mu_{\Thetab_{1:L} \given
+  \Eb_{1:n}}$. Therefore, we obtain
 \begin{multline*}
   \Dkl\left(
   \mu_{\Thetab_{1:L} \given \Eb_{1:n}, X_{n+1}, Y_{n+1}}(\cdot \given \eb_{1:n}, x, y)
@@ -388,7 +393,7 @@ is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:L} \given
     \frac{
       1
     }{
-      p_{X_{n+1}, Y_{n+1} \given \Eb_{1:x+1}}(x, y \given \eb_{1:n})
+      p_{X_{n+1}, Y_{n+1} \given \Eb_{1:n}}(x, y \given \eb_{1:n})
     }
     \int_{\Omega}
     \theta_{x,y} \ln(\theta_{x,y})
@@ -412,11 +417,11 @@ where we used
   \mu_{\Thetab_x \given \Eb_{1:n}}(d\thetab_x \given \eb_{1:n})
   \ .
 \end{equation*}
-We obtain the utility
+We obtain the expected utility
 \begin{equation*}
-  u(x, \eb_{1:n})
+  U_1(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})
   =
-  \Entropy\left[Y_{n+1} \given \Eb_{1:n} = \eb_{1:n}, X_{n+1} = x\right]
+  \Entropy\left[Y_{n+1} \given X_{n+1} = x, \Eb_{1:n} = \eb_{1:n}\right]
   +
   \sum_{y\in\Ac}
   \int_{\Omega}
@@ -424,14 +429,15 @@ We obtain the utility
   \mu_{\Thetab_x \given \Eb_{1:n}}(d\thetab_x \given \eb_{1:n})
   \ .
 \end{equation*}
-Similarly, we obtain for a set of $p$ stimuli $\xb_{1:p} = \{x_1, x_2, \dots,
-x_p\}$ the expected utility
+Similarly, for a set of $p$ stimuli $\xb_{n+1:n+p} = \{x_{n+1}, x_
+{n+2}, \dots, x_{n+p}\}$ the expected utility is
 \begin{multline*}
   \begin{aligned}
-    U^p(\Xb_{n+1:n+p} = \xb_{1:p} \given \Eb_{1:n} = \eb_{1:n})
+    U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
     &=
-    \sum_{i=1}^p
-    \Entropy\left[Y_{n+i} \given \Eb_{1:n} = \eb_{1:n}, X_{n+1} = x_1, Y_{n+1}, \dots, X_{n+i} = x_i\right]
+%    \sum_{i=1}^p
+%    \Entropy\left[Y_{n+i} \given \Eb_{1:n} = \eb_{1:n}, X_{n+1} = x_{n+1}, Y_{n+1}, \dots, X_{n+i} = x_{n+i}\right]
+    \Entropy\left[\Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n}, \Xb_{n+1:n+p} = \xb_{n+1:n+p}\right]
     \\
     &\quad
     +
@@ -439,7 +445,7 @@ x_p\}$ the expected utility
     \sum_{y \in\Ac}
     \int_{\Omega}
     \theta_{y} \ln(\theta_{y})
-    \mu_{\Thetab_{x_i} \given \Eb_{1:n}}(d\thetab \given \eb_{1:n})
+    \mu_{\Thetab_{x_{n+i}} \given \Eb_{1:n}}(d\thetab \given \eb_{1:n})
     \ .
   \end{aligned}
 \end{multline*}
