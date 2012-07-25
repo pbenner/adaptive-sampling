@@ -51,7 +51,7 @@ def parseConfig(config_file):
 
 font = {'family'     : 'serif',
         'weight'     : 'normal',
-        'size'       : 13 }
+        'size'       : 12 }
 
 def plotMaxima(ax, utility):
     x = map(lambda x: x+1, argmax(utility))
@@ -76,10 +76,10 @@ def plotEntropies(targets, filename, title):
     ax4.plot(x, targets[3]['utility'], label=targets[3]['name'], color=targets[3]['color'], lw=2)
     plotMaxima(ax4, targets[3]['utility'])
     ax4.set_xlabel('x')
-    ax1.set_ylabel(r'$U^1({\bf X}_n, {\bf Y}_n)$')
-    ax2.set_ylabel(r'$U^2({\bf X}_n, {\bf Y}_n)$')
-    ax3.set_ylabel(r'$U^3({\bf X}_n, {\bf Y}_n)$')
-    ax4.set_ylabel(r'$U^4({\bf X}_n, {\bf Y}_n)$')
+    ax1.set_ylabel(targets[0]['name'], font)
+    ax2.set_ylabel(targets[1]['name'], font)
+    ax3.set_ylabel(targets[2]['name'], font)
+    ax4.set_ylabel(targets[3]['name'], font)
     ax1.set_xlim(1, 35)
     ax2.set_xlim(1, 35)
     ax3.set_xlim(1, 35)
@@ -99,34 +99,34 @@ def plotEntropies(targets, filename, title):
 # ------------------------------------------------------------------------------
 
 targets1 = [
-    { 'file': 'example2.result01', 'color': 'blue',    'name': r'$U^1({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result02', 'color': 'red',     'name': r'$U^2({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result03', 'color': '#ee8d18', 'name': r'$U^3({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result04', 'color': 'green',   'name': r'$U^4({\bf X}_n, {\bf Y}_n)$' }
+    { 'file': 'example2.result01', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2.result02', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2.result03', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2.result04', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets2 = [
-    { 'file': 'example2.result05', 'color': 'blue',    'name': r'$U^1({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result06', 'color': 'red',     'name': r'$U^2({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result07', 'color': '#ee8d18', 'name': r'$U^3({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result08', 'color': 'green',   'name': r'$U^4({\bf X}_n, {\bf Y}_n)$' }
+    { 'file': 'example2.result05', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2.result06', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2.result07', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2.result08', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets3 = [
-    { 'file': 'example2.result09', 'color': 'blue',    'name': r'$U^1({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result10', 'color': 'red',     'name': r'$U^2({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result11', 'color': '#ee8d18', 'name': r'$U^3({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result12', 'color': 'green',   'name': r'$U^4({\bf X}_n, {\bf Y}_n)$' }
+    { 'file': 'example2.result09', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2.result10', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2.result11', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2.result12', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets4 = [
-    { 'file': 'example2.result13', 'color': 'blue',    'name': r'$U^1({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result14', 'color': 'red',     'name': r'$U^2({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result15', 'color': '#ee8d18', 'name': r'$U^3({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result16', 'color': 'green',   'name': r'$U^4({\bf X}_n, {\bf Y}_n)$' }
+    { 'file': 'example2.result13', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2.result14', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2.result15', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2.result16', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets5 = [
-    { 'file': 'example2.result17', 'color': 'blue',    'name': r'$U^1({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result18', 'color': 'red',     'name': r'$U^2({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result19', 'color': '#ee8d18', 'name': r'$U^3({\bf X}_n, {\bf Y}_n)$' },
-    { 'file': 'example2.result20', 'color': 'green',   'name': r'$U^4({\bf X}_n, {\bf Y}_n)$' }
+    { 'file': 'example2.result17', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2.result18', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2.result19', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2.result20', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 
 def main():
