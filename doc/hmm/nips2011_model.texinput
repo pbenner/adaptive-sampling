@@ -176,7 +176,7 @@ $\Pc(1:L)$. For instance, the marginal likelihood
 $p_{\Zb_{1:L}}(\zb_{1:L})$ can be written as
 \begin{equation*}
   \sum_{P\in \Pc(1:L)}
-  \rho^{n-|P|}
+  \rho^{L-|P|}
   (1-\rho)^{|P|-1}
   \left[
     \gamma
@@ -198,8 +198,8 @@ $p_{\Zb_{1:L}}(\zb_{1:L})$ can be written as
   \ .
 \end{equation*}
 An efficient way of computing the posterior distribution can be
-derived by considering the forward-backward algorithm of hidden Markov
-models. The measure
+derived by considering the forward-backward decomposition of hidden
+Markov models. The measure
 \begin{equation*}
   \mu_{\Thetab^1_j \given \Zb_{1:L}}(d\thetab_j \given \zb_{1:L})
   \propto
@@ -266,23 +266,26 @@ $n$th sampling step. That is, $X_n$ gives the stimulus for the $n$th
 sample and $Y_n$ the response.  Furthermore, we summarize the first
 $n$ experiments $(X_i, Y_i)_{i=1}^n$ as $\Eb_{1:n}$. Let's assume that
 we want to take $N$ measurements in total and we have already taken
-$n$ samples. A sequence of $p = N-n$ measurements $\xb^*_{n+1:n+p} = \{
-x^*_{n+1}, x^*_{n+2}, \dots, x^*_{n+p}\}$ is optimal if the
+$n$ samples. We define a utility measure $u_p$ that quantifies how
+much we value a sequence of $p = N-n$ measurements $\xb_{n+1:n+p} = \{
+x_{n+1}, x_{n+2}, \dots, x_{n+p}\}$ with responses $\yb_{n+1:n+p} = \{
+y_{n+1}, y_{n+2}, \dots, y_{n+p}\}$. Furthermore, we define the
 \emph{expected utility}
 \begin{multline*}
-  U_p(\Xb_{n+1:n+p} = \xb^*_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
   \\
   =
   \E_{\Yb_{n+1:n+p}}[
-    u_p(\Xb_{n+1:n+p} = \xb^*_{n+1:n+p}, \Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+    u_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p}, \Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
     \given
-    \Xb_{n+1:n+p} = \xb^*_{n+1:n+p},
+    \Xb_{n+1:n+p} = \xb_{n+1:n+p},
     \Eb_{1:n} = \eb_{1:n}
   ]
+  \ .
 \end{multline*}
-is maximized, where $u_p$ is some utility function. Our goal is then to
-select a stimulus $x^*_{n+1}$ for the next measurement $X_{n+1}$ that
-leads to a maximal expected utility in the next $p$ experiments, i.e.
+Our goal is then to select a stimulus $x^*_{n+1}$ for the next
+measurement $X_{n+1}$ that leads to a maximal expected utility in the
+next $p$ experiments, i.e.
 \begin{equation*}
   x^*_{n+1}
   =
@@ -296,7 +299,11 @@ With a $p$-step look-ahead we define the \emph{optimal expected
 \Eb_{1:n} = \eb_{1:n})$ recursively as
 \begin{equation*}
   \max_{x_{n+2}\in1:L}
-  \E_{Y_{n+2}}[U^*_{p-1}(X_{n+2} = x_{n+2}, Y_{n+2}, \Eb_{n+1:n+1} = \eb_{n+1:n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+2} = x_{n+2}, \Eb_{1:n+1} = \eb_{1:n+1}]
+  \E_{Y_{n+2}}[
+    U^*_{p-1}(X_{n+2} = x_{n+2}, Y_{n+2}, \Eb_{n+1:n+1} = \eb_{n+1:n+1}
+    \given
+    \Eb_{1:n} = \eb_{1:n}) \given X_{n+2} = x_{n+2}, \Eb_{1:n+1} = \eb_{1:n+1}
+  ]
   \ ,
 \end{equation*}
 where
@@ -318,12 +325,11 @@ We obtain the optimal stimulus $x^*_{n+1}$ from
   \E_{Y_{n+1}}[U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_{n+1}, \Eb_{1:n} = \eb_{1:n}]
   \ .
 \end{multline*}
-
 We first consider the case of one-step look-ahead. A suitable utility
-measure $u_1(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})$ for a
-stimulus $x$ is given by the Kullback-Leibler divergence between
-the measures $\mu_{\Thetab_{1:L} \given \Eb_{1:n+1}}$ and
-$\mu_{\Thetab_{1:L} \given \Eb_{1:n}}$, i.e.
+measure $u_1(X_{n+1} = x,  Y_{n+1} = y \given \Eb_{1:n} = \eb_{1:n})$ for a
+stimulus $x$ with response $y$ is given by the Kullback-Leibler
+divergence between the measures $\mu_{\Thetab_{1:L} \given \Eb_{1:n+1}}$ and 
+$\mu_{\Thetab_{1:L} \given \Eb_{1:n}}$, so that the expected utility
 \begin{multline*}
   U_1(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})
   \\
@@ -344,9 +350,9 @@ $\mu_{\Thetab_{1:L} \given \Eb_{1:n}}$, i.e.
     \ ,
   \end{aligned}
 \end{multline*}
-which is the mutual information between $\Thetab_{1:L}$ and $Y_{n+1}$
-given $X_{n+1} = x$ and our previous observations $\{\Eb_{1:n} =
-\eb_{1:n} \}$. We obtain
+is given by the mutual information between $\Thetab_{1:L}$ and
+$Y_{n+1}$ given $X_{n+1} = x$ and our previous observations
+$\{\Eb_{1:n} = \eb_{1:n} \}$. We obtain
 \begin{multline*}
   \Dkl\left(
   \mu_{\Thetab_{1:L} \given \Eb_{1:n}, X_{n+1}, Y_{n+1}}(\cdot \given \eb_{1:n}, x, y)
@@ -437,7 +443,7 @@ Similarly, for a set of $p$ stimuli $\xb_{n+1:n+p} = \{x_{n+1}, x_
     &=
 %    \sum_{i=1}^p
 %    \Entropy\left[Y_{n+i} \given \Eb_{1:n} = \eb_{1:n}, X_{n+1} = x_{n+1}, Y_{n+1}, \dots, X_{n+i} = x_{n+i}\right]
-    \Entropy\left[\Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n}, \Xb_{n+1:n+p} = \xb_{n+1:n+p}\right]
+    \Entropy\left[\Yb_{n+1:n+p} \given \Xb_{n+1:n+p} = \xb_{n+1:n+p}, \Eb_{1:n} = \eb_{1:n}\right]
     \\
     &\quad
     +
@@ -578,7 +584,7 @@ The utility for an event $y \in \Ac$ can be computed with $f(\thetab)
     samples (e). Many measurements are also taken at $x=1$ and $x=35$
     since those $x$ have only one neighbor.
   }
-  \label{fig:05}
+  \label{fig:2}
 \end{figure}
 
 \begin{figure}[ht]
@@ -586,16 +592,12 @@ The utility for an event $y \in \Ac$ can be computed with $f(\thetab)
   \includegraphics[width=0.8\textwidth,page=1]{example/example2.pdf}\\
   \includegraphics[width=0.8\textwidth,page=4]{example/example2.pdf}
   \caption{
-    Adaptive sampling in a hypothetical experiment with $\rho =
-    0.8$. The figure shows the experiment after $1$, $2$, $10$, $50$,
-    $100$, and $200$ samples. At first, samples are uniformly
-    distributed. In (a) only one measurement was taken and the
-    expected utility is largest at the left boundary. (d) shows the
-    experiment after 50 samples where the algorithm starts to locate
-    measurements at sloped regions. The general shape of the
-    stimulus-response function is already well established after 100
-    samples (e). Many measurements are also taken at $x=1$ and $x=35$
-    since those $x$ have only one neighbor.
+    $U^*_p(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})$ for varying
+    look-aheads.
+    (a) $U^*_p (X_1 = x)$ with no prior samples.
+    (b) $U^*_p (X_7 = x \given \Eb_{1:6} = \eb_{1:6})$ with six prior
+    experiments.
+    %$\eb_{1:6} = \{(1,1), (10, 1), (15, 2), (20, 2), (28, 1), (25, 1)\}.$
   }
-  \label{fig:06}
+  \label{fig:3}
 \end{figure}
