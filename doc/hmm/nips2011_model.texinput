@@ -455,6 +455,50 @@ Similarly, for a set of $p$ stimuli $\xb_{n+1:n+p} = \{x_{n+1}, x_
     \ .
   \end{aligned}
 \end{multline*}
+The expected utility can also be written in a recursive way as
+\begin{multline*}
+  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+  \\
+  \begin{aligned}
+    &=
+    U_1(X_{n+1} = x_{n+1} \given \Eb_{1:n} = \eb_{1:n})
+    \\
+    &\quad
+    +
+    \sum_{y \in\Ac}
+    p_{Y_{n+1} \given X_{n+1}, \Eb_{1:n}} (y \given x_{n+1}, \eb_{1:n})
+    U_{p-1}(\Xb_{n+2:n+p} = \xb_{n+2:n+p} \given \Eb_{1:n+1} = \eb_{1:n+1})
+    \\
+    &=
+    \sum_{y \in\Ac}
+    p_{Y_{n+1} \given X_{n+1}, \Eb_{1:n}} (y \given x_{n+1}, \eb_{1:n})
+    \\
+    &\quad\quad\quad
+    \left[
+    u_1(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n})
+    +
+    U_{p-1}(\Xb_{n+2:n+p} = \xb_{n+2:n+p} \given \Eb_{1:n+1} = \eb_{1:n+1})
+    \right]
+    \ ,
+  \end{aligned}
+\end{multline*}
+which shows that the sampling process can be interpreted as a Markov
+decision process (MDP), since in every sampling step we receive an
+immediate reward given by the utility $u_1$. It also justifies myopic
+sampling strategies.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\textwidth,page=1]{example/decision-tree.pdf}
+  \caption{
+    Experiment with two stimuli $\{r, l\}$ and dichotomous outcome
+    $\{s, f\}$. The tree shows all experimental outcomes for $p = 2$.
+    Circles represent states, which are determined by the count statistic,
+    whereas rectangles represent decision nodes. An immediate utility
+    $u_1$ is received whenever one of the circles is visited.
+  }
+  \label{fig:4}
+\end{figure}
 
 \section*{Computation}
 %
