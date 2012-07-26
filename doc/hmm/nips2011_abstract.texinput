@@ -17,4 +17,5 @@ prior structure of hidden Markov models, in terms of transition
 kernels, allows a more efficient computation of posterior
 quantities. We use the forward-backward decomposition of marginal
 posterior distributions to derive an efficient algorithm. Finally, we
-extend the method to sampling strategies with $n$-step look-aheads.
+extend the method to sampling strategies with $n$-step look-aheads
+that allow us to justify myopic sampling strategies.
