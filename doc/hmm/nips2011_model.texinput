@@ -500,6 +500,35 @@ sampling strategies.
   \label{fig:4}
 \end{figure}
 
+\section*{Markov decision process}
+%
+We continue by describing the adaptive sampling process as a Markov
+decision process (MDP) with state space $S$ given by all possible
+count statistics $\cb(\zb_{1:L})$ and action space $A = 1:L$. Suppose
+we have performed $n$ experiments $\Eb_{1:n} = \eb_{1:n}$ and let
+$s_n = \cb(\eb_{1:n}) \in S$. The state transition probabilities are
+given by
+\begin{equation*}
+  p_{Tr}(s_{n+1} \given x_{n+1}, s_n)
+  =
+  p_{Y_{n+1}\given X_{n+1}, \Eb_{1:n}}(y_{n+1} \given x_{n+1}, \eb_{1:n})
+  \ ,
+\end{equation*}
+and the immediate reward is
+\begin{equation*}
+  r(s_{n+1} \given s_n)
+  =
+  u_1(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n})
+  \ .
+\end{equation*}
+Our goal is to find the policy $\pi(s)$ that finds for every state $s
+\in S$ an optimal action $a$ so that
+\begin{equation*}
+  \sum_{n=1}^N
+  u_1(E_{n} = e_{n} \given \Eb_{1:n-1} = \eb_{1:n-1})
+\end{equation*}
+is maximized.
+
 \section*{Computation}
 %
 By solving the recursive definitions of the forward measures and
