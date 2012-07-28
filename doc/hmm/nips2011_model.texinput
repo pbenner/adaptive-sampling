@@ -491,11 +491,13 @@ sampling strategies.
   \centering
   \includegraphics[width=0.9\textwidth,page=1]{example/decision-tree.pdf}
   \caption{
-    Experiment with two stimuli $\{r, l\}$ and dichotomous outcome
-    $\{s, f\}$. The tree shows all experimental outcomes for $p = 2$.
-    Circles represent states, which are determined by the count statistic,
-    whereas rectangles represent decision nodes. An immediate utility
-    $u_1$ is received whenever one of the circles is visited.
+    Sketch of the decision tree for an experiment with two stimuli
+    $\{l, r\}$ and dichotomous outcome $\{s, f\}$. The tree shows all
+    experimental outcomes for $N = 2$.  Circles represent states, which
+    are determined by the count statistic, whereas rectangles represent
+    decision nodes. Optimal paths are labeled by an arrow. An
+    immediate utility $u_1$ is received whenever one of the circles is
+    visited.
   }
   \label{fig:4}
 \end{figure}
