@@ -46,6 +46,7 @@ def importMatplotlib(backend=None):
 import config
 import interface
 import statistics
+import policy
 
 # global options
 # ------------------------------------------------------------------------------
@@ -76,6 +77,8 @@ def usage():
     print "       --which=EVENT                  - for which event to compute the binning"
     print "       --algorithm=NAME               - select an algorithm [mgs, prombstree, default: prombs]"
     print "       --mgs-samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000] for mgs"
+    print "       --path-iteratin                - use path iteration algorithm instead of backward"
+    print "                                        to compute n-step utilities"
     print
     print "       --port=PORT                    - connect to port from a matlab server for data collection"
     print
@@ -210,13 +213,11 @@ def bin(counts_v, data, bin_options):
 def bin_utility(counts_v, data, bin_options):
     """Call the binning library."""
     events        = len(counts_v)
-    counts        = statistics.countStatistic(data['counts'])
-    counts_diff_v = [ map(sum, zip(counts_v[i], map(lambda x: -x, data['counts'][i]))) for i in range(events) ]
-    counts_diff   = statistics.countStatistic(counts_diff_v)
+    counts        = statistics.countStatistic(counts_v)
     alpha         = data['alpha']
     beta          = data['beta']
     gamma         = data['gamma']
-    return interface.utility(events, counts, counts_diff, alpha, beta, gamma, bin_options)
+    return interface.utility(events, counts, alpha, beta, gamma, bin_options)
 
 # prombs wrapper
 # ------------------------------------------------------------------------------
@@ -267,20 +268,31 @@ def recursiveUtility(counts, data, m, hashtree, hashutil):
     if value:
         return value
     elif m == 0:
-        if not hashutil.get(key):
-            hashutil[key] = prombsUtility(counts, data)
-        return hashutil[key]
+        (expectation, local_utility) = hashutil[key]
+        return local_utility
     else:
         result = []
+        (expectation, local_utility) = hashutil[key]
+        # loop over events
         for y in range(0, data['K']):
-            utility     = []
+            utility = []
+            # loop over positions
             for x in range(0, data['L']):
                 counts[y][x] += 1
                 tmp = recursiveUtility(counts, data, m-1, hashtree, hashutil)
                 counts[y][x] -= 1
-                utility.append(max(tmp))
+                # utility becomes a vector [ v_1, v_2, ..., v_L ]
+                # of maximal expected utilities for each position
+                # and an experimental outcome of y
+                utility.append(expectation[y][x]*max(tmp))
+            # result is the cumulated utilities for all possible
+            # experimental outcomes
             result.append(utility)
+        # sum up all columns in result so that we obtain an average
+        # over all experimental outcomes
         result = map(sum, zip(*result))
+        # add the utility for the current state
+        result = map(sum, zip(local_utility, result))
         hashtree[key] = result
         return result
 
@@ -301,11 +313,13 @@ class ThreadUtility(threading.Thread):
             self.queue_in.task_done()
 
 def precomputeUtilityRec(counts, data, m, hashutil, queue, i_, j_):
-    if m == 0:
+    # put counts into the hashmap
+    if m >= 0:
         key = computeKey(counts)
         if not hashutil.get(key):
             queue.put(copy.deepcopy(counts))
-    elif m > 0:
+    # if recursion limit has not been reached then nest further
+    if m > 0:
         for j in range(j_, data['K']):
             if j == j_:
                 i_from = i_
@@ -316,11 +330,10 @@ def precomputeUtilityRec(counts, data, m, hashutil, queue, i_, j_):
                 precomputeUtilityRec(counts, data, m-1, hashutil, queue, i, j)
                 counts[j][i] -= 1
 
-utility_queue_in  = Queue.Queue()
-utility_queue_out = Queue.Queue()
-utility_threads   = []
 def precomputeUtility(counts, data, m, hashutil):
-    global utility_threads
+    utility_queue_in  = Queue.Queue()
+    utility_queue_out = Queue.Queue()
+    utility_threads   = []
     if not utility_threads:
         # launch daemon threads
         for i in range(options['threads']):
@@ -340,9 +353,16 @@ def precomputeUtility(counts, data, m, hashutil):
 # ------------------------------------------------------------------------------
 
 def computeUtility(counts, data):
-    data['counts'] = copy.deepcopy(counts)
-    precomputeUtility(counts, data, options['look_ahead'], hashutil)
-    return recursiveUtility(counts, data, options['look_ahead'], {}, hashutil)
+    bin_options = options.copy()
+    if options['path_iteration']:
+        # print policy.optimize([1,1,1,1], counts, data, bin_options)
+        # policy.optimal(counts, data, bin_options)
+        utility = policy.threaded_u_star(options['look_ahead']+1, counts, data, bin_options)
+    else:
+        precomputeUtility(counts, data, options['look_ahead'], hashutil)
+        utility = recursiveUtility(counts, data, options['look_ahead'], {}, hashutil)
+
+    return utility
 
 def selectItem(counts, data):
     # compute utility
@@ -369,6 +389,7 @@ def selectItem(counts, data):
         if not gainFilter is None:
             utility = gainFilter(utility, map(sum, zip(*counts)))
     utility = roundArray(utility, 10)
+    print utility
     return selectRandom(argmax(utility)), utility
 
 # experiment
@@ -563,6 +584,7 @@ options = {
     'effective_posterior_counts' : False,
     'model_posterior'            : True,
     'hmm'                        : False,
+    'path_iteration'             : False,
     'rho'                        : 0.4
     }
 
@@ -573,7 +595,8 @@ def main():
                       "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
                       "strategy=", "kl-component", "kl-multibin", "algorithm=", "samples=",
-                      "mgs-samples", "no-model-posterior", "video=", "hmm", "rho="]
+                      "mgs-samples", "no-model-posterior", "video=", "hmm", "rho=",
+                      "path-iteration" ]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -651,6 +674,8 @@ def main():
             options["hmm"] = True
         if o == "--rho":
             options["rho"] = float(a)
+        if o == "--path-iteration":
+            options["path_iteration"] = True
     if (options["strategy"] == "kl-divergence" and
         options["kl_component"] == False       and
         options["kl_multibin"]  == False):

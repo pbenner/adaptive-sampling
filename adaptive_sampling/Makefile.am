@@ -6,7 +6,7 @@ INCLUDES = -I$(top_srcdir)/include
 pkgpythondir = $(pyexecdir)/adaptive_sampling
 
 ## compile python files
-pkgpython_PYTHON = __init__.py adaptive_sampling.py bayesian_binning.py config.py interface.py statistics.py visualization.py
+pkgpython_PYTHON = __init__.py adaptive_sampling.py bayesian_binning.py config.py interface.py policy.py statistics.py visualization.py
 
 ## clean python files
 clean-local:

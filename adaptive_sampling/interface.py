@@ -146,8 +146,11 @@ _lib._free_.argtype         = []
 _lib.binning.restype        = POINTER(BINNING_RESULT)
 _lib.binning.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
-_lib.utility.restype        = POINTER(VECTOR)
-_lib.utility.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.utility.restype        = POINTER(MATRIX)
+_lib.utility.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+
+_lib.utilityAt.restype      = POINTER(VECTOR)
+_lib.utilityAt.argtypes     = [c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
 # convert datatypes
 # ------------------------------------------------------------------------------
@@ -229,16 +232,13 @@ def binning(events, counts, alpha, beta, gamma, options):
 
      return result
 
-def utility(events, counts, counts_diff, alpha, beta, gamma, options):
+def utility(events, counts, alpha, beta, gamma, options):
      c_events      = c_int(events)
      c_counts      = (events*POINTER(MATRIX))()
-     c_counts_diff = (events*POINTER(MATRIX))()
      c_alpha       = (events*POINTER(MATRIX))()
      for i in range(0, events):
           c_counts[i]  = _lib._alloc_matrix(len(counts[i]), len(counts[i][0]))
           copyMatrixToC(counts[i], c_counts[i])
-          c_counts_diff[i]  = _lib._alloc_matrix(len(counts_diff[i]), len(counts_diff[i][0]))
-          copyMatrixToC(counts_diff[i], c_counts_diff[i])
           c_alpha[i]   = _lib._alloc_matrix(len(alpha[i]), len(alpha[i][0]))
           copyMatrixToC(alpha[i],  c_alpha[i])
      c_beta  = _lib._alloc_vector(len(beta))
@@ -247,15 +247,42 @@ def utility(events, counts, counts_diff, alpha, beta, gamma, options):
      copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
-     result  = _lib.utility(c_events, c_counts, c_counts_diff, c_alpha, c_beta, c_gamma, c_options)
-     utility = getVector(result)
+     c_result = _lib.utility(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
+     result   = getMatrix(c_result)
 
      for i in range(0, events):
           _lib._free_matrix(c_counts[i])
-          _lib._free_matrix(c_counts_diff[i])
           _lib._free_matrix(c_alpha[i])
      _lib._free_vector(c_beta)
      _lib._free_matrix(c_gamma)
-     _lib._free_vector(result)
+     _lib._free_matrix(c_result)
 
-     return utility
+     return (result[0:-1], result[-1])
+
+def utilityAt(i, events, counts, alpha, beta, gamma, options):
+     c_i           = c_int(i)
+     c_events      = c_int(events)
+     c_counts      = (events*POINTER(MATRIX))()
+     c_alpha       = (events*POINTER(MATRIX))()
+     for i in range(0, events):
+          c_counts[i]  = _lib._alloc_matrix(len(counts[i]), len(counts[i][0]))
+          copyMatrixToC(counts[i], c_counts[i])
+          c_alpha[i]   = _lib._alloc_matrix(len(alpha[i]), len(alpha[i][0]))
+          copyMatrixToC(alpha[i],  c_alpha[i])
+     c_beta  = _lib._alloc_vector(len(beta))
+     copyVectorToC(beta,  c_beta)
+     c_gamma = _lib._alloc_matrix(len(gamma), len(gamma[0]))
+     copyMatrixToC(gamma,  c_gamma)
+     c_options = pointer(OPTIONS(options))
+
+     c_result = _lib.utilityAt(c_i, c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
+     result   = getVector(c_result)
+
+     for i in range(0, events):
+          _lib._free_matrix(c_counts[i])
+          _lib._free_matrix(c_alpha[i])
+     _lib._free_vector(c_beta)
+     _lib._free_matrix(c_gamma)
+     _lib._free_vector(c_result)
+
+     return (result[0:-1], result[-1])

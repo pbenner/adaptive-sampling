@@ -381,7 +381,7 @@ where
       \mu_{\Thetab_{1:L} \given \Eb_{1:n}}(\cdot \given \eb_{1:n})
     }
   =
-  \frac{1}{p_{X_{n+1}, Y_{n+1} \given \Eb_{1:n}}(x, y \given \eb_{1:n})}
+  \frac{1}{p_{Y_{n+1} \given X_{n+1}, \Eb_{1:n}}(y \given x, \eb_{1:n})}
   \theta_{x,y}
 \end{equation*}
 is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:L} \given
@@ -399,14 +399,14 @@ is the Radon-Nykod{\'y}m derivative of $\mu_{\Thetab_{1:L} \given
     \frac{
       1
     }{
-      p_{X_{n+1}, Y_{n+1} \given \Eb_{1:n}}(x, y \given \eb_{1:n})
+      p_{Y_{n+1} \given X_{n+1}, \Eb_{1:n}}(y \given x, \eb_{1:n})
     }
     \int_{\Omega}
     \theta_{x,y} \ln(\theta_{x,y})
     \mu_{\Thetab_x \given \Eb_{1:n}}(d\thetab_x \given \eb_{1:n})
     -
     \ln
-    p_{X_{n+1}, Y_{n+1} \given \Eb_{1:n}}(x, y \given \eb_{1:n})
+    p_{Y_{n+1} \given X_{n+1}, \Eb_{1:n}}(y \given x, \eb_{1:n})
     \ ,
   \end{aligned}
 \end{multline*}
@@ -529,7 +529,11 @@ Our goal is to find the policy $\pi(s)$ that finds for every state $s
   \sum_{n=1}^N
   u_1(E_{n} = e_{n} \given \Eb_{1:n-1} = \eb_{1:n-1})
 \end{equation*}
-is maximized.
+is maximized. The MDP that we describe is special in the sense that
+each state can be visited only once and after $N$ samples the
+experiment stops. This simplifies for instance the computation of the
+value function, given here as $U_p$, which can be computed
+directly.
 
 \section*{Computation}
 %
@@ -668,8 +672,8 @@ The utility for an event $y \in \Ac$ can be computed with $f(\thetab)
   \includegraphics[width=0.8\textwidth,page=4]{example/example2.pdf}
   \caption{
     $U^*_p(X_{n+1} = x \given \Eb_{1:n} = \eb_{1:n})$ for varying
-    look-aheads.
-    (a) $U^*_p (X_1 = x)$ with no prior samples.
+    look-aheads $p$.
+    (a) $U^*_p (X_1 = x)$ with no prior experiments.
     (b) $U^*_p (X_7 = x \given \Eb_{1:6} = \eb_{1:6})$ with six prior
     experiments.
     %$\eb_{1:6} = \{(1,1), (10, 1), (15, 2), (20, 2), (28, 1), (25, 1)\}.$
