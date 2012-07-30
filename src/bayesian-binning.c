@@ -147,7 +147,13 @@ void computeHMM(
         }
         /* compute sampling utility */
         if (bd->options->utility && bd->options->algorithm == 0) {
-                hmm_computeUtility(result->utility, forward, backward, &bp);
+                size_t i;
+                matrix_t *tmp = alloc_matrix(bd->events, bd->L);
+                hmm_computeUtility(tmp, forward, backward, &bp);
+                for (i = 0; i < bd->L; i++) {
+                        result->utility->content[i] = tmp->content[bd->events][i];
+                }
+                free_matrix(tmp);
         }
         free_vector(forward);
         free_vector(backward);
@@ -200,7 +206,6 @@ void bin_init(
         bd->L           = L;
         bd->events      = events;
         bd->counts      = counts;
-        bd->counts_diff = NULL;
         bd->alpha       = alpha;
         bd->beta        = beta;
         bd->gamma       = gamma;
@@ -250,27 +255,67 @@ binning(
         return result;
 }
 
-vector_t*
+/*
+ * Compute the expected utility N steps ahead
+ */
+matrix_t*
 utility(
         int events,
         matrix_t **counts,
-        matrix_t **counts_diff,
         matrix_t **alpha,
         vector_t  *beta,
         matrix_t  *gamma,
         Options *options)
 {
         binData bd;
-
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
-        // init counts difference between prior and posterior
-        bd.counts_diff = counts_diff;
-
         binProblem bp; binProblemInit(&bp, &bd);
-        vector_t* utility = alloc_vector(bp.bd->L);
-        hmm_computeNStepUtility(utility, &bp);
+
+        vector_t *forward  = alloc_vector(bd.L);
+        vector_t *backward = alloc_vector(bd.L);
+        matrix_t *result   = alloc_matrix(events+1, bp.bd->L);
+
+        hmm_forward (forward,  &bp);
+        hmm_backward(backward, &bp);
+        hmm_computeUtility(result, forward, backward, &bp);
 
         bin_free(&bd);
+        free_vector(backward);
+        free_vector(forward);
 
-        return utility;
+        return result;
+}
+
+/*
+ * Compute the expected utility for sampling at position j
+ * with a one-step look-ahead
+ */
+vector_t*
+utilityAt(
+        int pos,
+        int events,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
+        Options *options)
+{
+        binData bd;
+        bin_init(events, counts, alpha, beta, gamma, options, &bd);
+        binProblem bp; binProblemInit(&bp, &bd);
+
+        vector_t *forward  = alloc_vector(bd.L);
+        vector_t *backward = alloc_vector(bd.L);
+        /* result stores (expectation_1, ..., expectation_n, utility) */
+        vector_t *result   = alloc_vector(events+1);
+
+        hmm_forward (forward,  &bp);
+        hmm_backward(backward, &bp);
+        hmm_computeUtilityAt(pos, result, forward, backward, &bp);
+
+        bin_free(&bd);
+        free_vector(backward);
+        free_vector(forward);
+
+        return result;
 }

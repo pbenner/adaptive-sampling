@@ -39,7 +39,6 @@ typedef struct {
         prob_t *prior_log;     /* P(p,B|m_B) */
         /* counts and parameters */
         matrix_t **counts;
-        matrix_t **counts_diff;
         matrix_t **alpha;
         vector_t  *beta;       /* P(m_B) */
         matrix_t  *gamma;
