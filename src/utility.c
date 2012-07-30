@@ -307,12 +307,12 @@ prob_t hmm_hu(int from, int to, binProblem* bp)
 
 void hmm_computeUtility(
         matrix_t *result,
-        vector_t *forward,
-        vector_t *backward,
+        prob_t *forward,
+        prob_t *backward,
         binProblem *bp)
 {
         size_t i, j;
-        vector_t* tmp = alloc_vector(bp->bd->L);
+        prob_t tmp[bp->bd->L];
 
         for (i = 0; i < bp->bd->events; i++) {
                 bp->add_event.n     = 1;
@@ -320,7 +320,7 @@ void hmm_computeUtility(
                 /* compute expectation */
                 hmm_fb(tmp, forward, backward, &hmm_he, bp);
                 for (j = 0; j < bp->bd->L; j++) {
-                        result->content[i][j] = +EXP(tmp->content[j]);
+                        result->content[i][j] = +EXP(tmp[j]);
                 }
                 /* compute utility */
                 hmm_fb(tmp, forward, backward, &hmm_hu, bp);
@@ -328,12 +328,11 @@ void hmm_computeUtility(
                         /* predictive entropy */
                         result->content[bp->bd->events][j] += -result->content[i][j]*LOG(result->content[i][j]);
                         /* parameter entropy */
-                        result->content[bp->bd->events][j] += -EXP(tmp->content[j]);
+                        result->content[bp->bd->events][j] += -EXP(tmp[j]);
                 }
                 bp->add_event.pos   = -1;
                 bp->add_event.n     =  0;
         }
-        free_vector(tmp);
 }
 
 /******************************************************************************
@@ -341,7 +340,7 @@ void hmm_computeUtility(
  ******************************************************************************/
 
 static
-prob_t hmm_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+prob_t hmm_forward_rec(prob_t *result, size_t j, size_t to, prob_t (*f)(int, int, binProblem*), binProblem* bp)
 {
         size_t k;
 
@@ -349,20 +348,20 @@ prob_t hmm_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, i
 
         tmp = to*LOG(bp->bd->options->rho) + f(0, to, bp);
         for (k = 0; k < j; k++) {
-                tmp = logadd(tmp, (to-k-1)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result->content[k] + f(k+1, to, bp));
+                tmp = logadd(tmp, (to-k-1)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result[k] + f(k+1, to, bp));
         }
         return tmp;
 }
 
 static
-prob_t hmm_fb_rec(vector_t *forward, vector_t *backward, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+prob_t hmm_fb_rec(prob_t *forward, prob_t *backward, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
 {
         size_t k;
         prob_t tmp;
 
         tmp = hmm_forward_rec(forward, j, bp->bd->L-1, f, bp);
         for (k = j+1; k < bp->bd->L; k++) {
-                tmp = logadd(tmp, LOG(1-bp->bd->options->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward->content[k]);
+                tmp = logadd(tmp, LOG(1-bp->bd->options->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward[k]);
         }
         return tmp;
 }
@@ -370,8 +369,8 @@ prob_t hmm_fb_rec(vector_t *forward, vector_t *backward, size_t j, prob_t (*f)(i
 void hmm_computeUtilityAt(
         size_t pos,
         vector_t* result,
-        vector_t *forward,
-        vector_t *backward,
+        prob_t *forward,
+        prob_t *backward,
         binProblem *bp)
 {
         size_t i;
@@ -385,7 +384,7 @@ void hmm_computeUtilityAt(
                 bp->add_event.n     = 1;
                 bp->add_event.which = i;
 
-                tmp = hmm_fb_rec(forward, backward, pos, &hmm_he, bp) - forward->content[bp->bd->L-1];
+                tmp = hmm_fb_rec(forward, backward, pos, &hmm_he, bp) - forward[bp->bd->L-1];
 
                 utility += -EXP(tmp)*tmp;
                 result->content[i] = EXP(tmp);
@@ -395,7 +394,7 @@ void hmm_computeUtilityAt(
                 bp->add_event.n     = 1;
                 bp->add_event.which = i;
 
-                tmp = hmm_fb_rec(forward, backward, pos, &hmm_hu, bp) - forward->content[bp->bd->L-1];
+                tmp = hmm_fb_rec(forward, backward, pos, &hmm_hu, bp) - forward[bp->bd->L-1];
 
                 utility += -EXP(tmp);
         }

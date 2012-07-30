@@ -71,12 +71,12 @@ prob_t hmm_hd(int from, int to, binProblem* bp)
 
 void hmm_computeMarginal(
        matrix_t *marginal,
-       vector_t *forward,
-       vector_t *backward,
+       prob_t *forward,
+       prob_t *backward,
        binProblem *bp)
 {
         size_t i, j;
-        vector_t* tmp = alloc_vector(bp->bd->L);
+        prob_t tmp[bp->bd->L];
 
         for (j = 0; j < bp->bd->options->n_marginals; j++) {
                 prob_t p = j*bp->bd->options->marginal_step;
@@ -90,7 +90,7 @@ void hmm_computeMarginal(
 
                         hmm_fb(tmp, forward, backward, &hmm_hd, bp);
                         for (i = 0; i < bp->bd->L; i++) {
-                                marginal->content[i][j] = EXP(tmp->content[i]);
+                                marginal->content[i][j] = EXP(tmp[i]);
                         }
 
                         bp->fix_prob.pos   = -1;
@@ -103,7 +103,6 @@ void hmm_computeMarginal(
                         }
                 }
         }
-        free_vector(tmp);
 }
 
 /******************************************************************************

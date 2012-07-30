@@ -95,12 +95,12 @@ prob_t hmm_he(int from, int to, binProblem* bp)
 
 void hmm_computeMoments(
         matrix_t *moments,
-        vector_t *forward,
-        vector_t *backward,
+        prob_t *forward,
+        prob_t *backward,
         binProblem *bp)
 {
         size_t i, j;
-        vector_t* tmp = alloc_vector(bp->bd->L);
+        prob_t tmp[bp->bd->L];
 
         for (i = 0; i < bp->bd->options->n_moments; i++) {
                 bp->add_event.n     = i+1;
@@ -110,10 +110,9 @@ void hmm_computeMoments(
                 bp->add_event.n     = 0;
 
                 for (j = 0; j < bp->bd->L; j++) {
-                        moments->content[i][j] = exp(tmp->content[j]);
+                        moments->content[i][j] = exp(tmp[j]);
                 }
         }
-        free_vector(tmp);
 }
 
 /******************************************************************************

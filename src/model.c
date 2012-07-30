@@ -182,7 +182,7 @@ prob_t hmm_hp(int from, int to, binProblem* bp)
 }
 
 static
-prob_t hmm_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+prob_t hmm_forward_rec(prob_t *result, size_t j, size_t to, prob_t (*f)(int, int, binProblem*), binProblem* bp)
 {
         size_t k;
 
@@ -190,22 +190,22 @@ prob_t hmm_forward_rec(vector_t *result, size_t j, size_t to, prob_t (*f)(int, i
 
         tmp = to*LOG(bp->bd->options->rho) + f(0, to, bp);
         for (k = 0; k < j; k++) {
-                tmp = logadd(tmp, (to-k-1)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result->content[k] + f(k+1, to, bp));
+                tmp = logadd(tmp, (to-k-1)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result[k] + f(k+1, to, bp));
         }
         return tmp;
 }
 
-void hmm_forward(vector_t *result, binProblem* bp)
+void hmm_forward(prob_t *result, binProblem* bp)
 {
         size_t j;
 
         for (j = 0; j < bp->bd->L; j++) {
-                result->content[j] = hmm_forward_rec(result, j, j, &hmm_hp, bp);
+                result[j] = hmm_forward_rec(result, j, j, &hmm_hp, bp);
         }
 }
 
 static
-prob_t hmm_backward_rec(vector_t *result, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+prob_t hmm_backward_rec(prob_t *result, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
 {
         size_t k;
 
@@ -213,39 +213,39 @@ prob_t hmm_backward_rec(vector_t *result, size_t j, prob_t (*f)(int, int, binPro
 
         tmp = (bp->bd->L-j-1)*LOG(bp->bd->options->rho) + f(j, bp->bd->L-1, bp);
         for (k = j+1; k < bp->bd->L; k++) {
-                tmp = logadd(tmp, (k-1-j)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result->content[k] + f(j, k-1, bp));
+                tmp = logadd(tmp, (k-1-j)*LOG(bp->bd->options->rho) + LOG(1.0-bp->bd->options->rho) + result[k] + f(j, k-1, bp));
         }
         return tmp;
 }
 
-void hmm_backward(vector_t *result, binProblem* bp)
+void hmm_backward(prob_t *result, binProblem* bp)
 {
         size_t j;
 
         for (j = 0; j < bp->bd->L; j++) {
-                result->content[bp->bd->L-j-1] = hmm_backward_rec(result, bp->bd->L-j-1, &hmm_hp, bp);
+                result[bp->bd->L-j-1] = hmm_backward_rec(result, bp->bd->L-j-1, &hmm_hp, bp);
         }
 }
 
 static
-prob_t hmm_fb_rec(vector_t *forward, vector_t *backward, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+prob_t hmm_fb_rec(prob_t *forward, prob_t *backward, size_t j, prob_t (*f)(int, int, binProblem*), binProblem* bp)
 {
         size_t k;
         prob_t tmp;
 
         tmp = hmm_forward_rec(forward, j, bp->bd->L-1, f, bp);
         for (k = j+1; k < bp->bd->L; k++) {
-                tmp = logadd(tmp, LOG(1-bp->bd->options->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward->content[k]);
+                tmp = logadd(tmp, LOG(1-bp->bd->options->rho) + hmm_forward_rec(forward, j, k-1, f, bp) + backward[k]);
         }
         return tmp;
 }
 
-void hmm_fb(vector_t *result, vector_t *forward, vector_t *backward, prob_t (*f)(int, int, binProblem*), binProblem* bp)
+void hmm_fb(prob_t *result, prob_t *forward, prob_t *backward, prob_t (*f)(int, int, binProblem*), binProblem* bp)
 {
         size_t j;
 
         for (j = 0; j < bp->bd->L; j++) {
-                result->content[j] = hmm_fb_rec(forward, backward, j, f, bp) - forward->content[bp->bd->L-1];
+                result[j] = hmm_fb_rec(forward, backward, j, f, bp) - forward[bp->bd->L-1];
         }
 }
 

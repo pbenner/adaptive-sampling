@@ -272,11 +272,14 @@ def recursiveUtility(counts, data, m, hashtree, hashutil):
         return local_utility
     else:
         (expectation, local_utility) = hashutil[key]
+#        print local_utility
+#        print argmax(local_utility)
         # loop over events
         result = [ 0.0 ] * data['L']
         for y in range(0, data['K']):
             # loop over positions
-            for x in range(0, data['L']):
+ #           for x in range(0, data['L']):
+            for x in argmax(local_utility):
                 counts[y][x] += 1
                 tmp = recursiveUtility(counts, data, m-1, hashtree, hashutil)
                 counts[y][x] -= 1
