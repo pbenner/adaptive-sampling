@@ -265,6 +265,8 @@ def computeKey(counts):
 def recursiveUtility(counts, data, m, hashtree, hashutil):
     key   = computeKey(counts)
     value = hashtree.get(key)
+    if not hashutil.get(key):
+        hashutil[key] = prombsUtility(counts, data)
     if value:
         return value
     elif m == 0:
@@ -278,8 +280,8 @@ def recursiveUtility(counts, data, m, hashtree, hashutil):
         result = [ 0.0 ] * data['L']
         for y in range(0, data['K']):
             # loop over positions
- #           for x in range(0, data['L']):
-            for x in argmax(local_utility):
+            for x in range(0, data['L']):
+#            for x in argmax(local_utility):
                 counts[y][x] += 1
                 tmp = recursiveUtility(counts, data, m-1, hashtree, hashutil)
                 counts[y][x] -= 1
