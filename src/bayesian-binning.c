@@ -131,8 +131,8 @@ void computeHMM(
 {
         binProblem bp; binProblemInit(&bp, bd);
 
-        vector_t *forward  = alloc_vector(bd->L);
-        vector_t *backward = alloc_vector(bd->L);
+        prob_t forward [bd->L];
+        prob_t backward[bd->L];
 
         hmm_forward (forward,  &bp);
         hmm_backward(backward, &bp);
@@ -155,8 +155,6 @@ void computeHMM(
                 }
                 free_matrix(tmp);
         }
-        free_vector(forward);
-        free_vector(backward);
 
         binProblemFree(&bp);
 }
@@ -271,17 +269,15 @@ utility(
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
         binProblem bp; binProblemInit(&bp, &bd);
 
-        vector_t *forward  = alloc_vector(bd.L);
-        vector_t *backward = alloc_vector(bd.L);
-        matrix_t *result   = alloc_matrix(events+1, bp.bd->L);
+        prob_t forward [bd.L];
+        prob_t backward[bd.L];
+        matrix_t *result = alloc_matrix(events+1, bp.bd->L);
 
         hmm_forward (forward,  &bp);
         hmm_backward(backward, &bp);
         hmm_computeUtility(result, forward, backward, &bp);
 
         bin_free(&bd);
-        free_vector(backward);
-        free_vector(forward);
 
         return result;
 }
@@ -304,8 +300,8 @@ utilityAt(
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
         binProblem bp; binProblemInit(&bp, &bd);
 
-        vector_t *forward  = alloc_vector(bd.L);
-        vector_t *backward = alloc_vector(bd.L);
+        prob_t forward [bd.L];
+        prob_t backward[bd.L];
         /* result stores (expectation_1, ..., expectation_n, utility) */
         vector_t *result   = alloc_vector(events+1);
 
@@ -314,8 +310,6 @@ utilityAt(
         hmm_computeUtilityAt(pos, result, forward, backward, &bp);
 
         bin_free(&bd);
-        free_vector(backward);
-        free_vector(forward);
 
         return result;
 }

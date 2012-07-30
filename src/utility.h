@@ -27,14 +27,14 @@
 void computeKLUtility(vector_t *result, prob_t evidence_ref, binData *bd);
 void hmm_computeUtility(
         matrix_t *result,
-        vector_t *forward,
-        vector_t *backward,
+        prob_t *forward,
+        prob_t *backward,
         binProblem *bp);
 void hmm_computeUtilityAt(
         size_t pos,
         vector_t *result,
-        vector_t *forward,
-        vector_t *backward,
+        prob_t *forward,
+        prob_t *backward,
         binProblem *bp);
 
 #endif /* LOCAL_UTILITY_H */

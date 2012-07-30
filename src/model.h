@@ -31,8 +31,8 @@ void __free_model__();
 prob_t mbeta_log(prob_t *p, binProblem *bp);
 prob_t iec_log(int kk, int k, binProblem *bp);
 
-void hmm_forward(vector_t *result, binProblem* bp);
-void hmm_backward(vector_t *result, binProblem* bp);
-void hmm_fb(vector_t *result, vector_t *forward, vector_t *backward, prob_t (*f)(int, int, binProblem*), binProblem* bp);
+void hmm_forward(prob_t *result, binProblem* bp);
+void hmm_backward(prob_t *result, binProblem* bp);
+void hmm_fb(prob_t *result, prob_t *forward, prob_t *backward, prob_t (*f)(int, int, binProblem*), binProblem* bp);
 
 #endif /* MODEL_H */

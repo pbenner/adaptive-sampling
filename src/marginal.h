@@ -27,8 +27,8 @@
 void computeMarginal(matrix_t *marginals, prob_t evidence_ref, binData *bd);
 void hmm_computeMarginal(
        matrix_t *marginal,
-       vector_t *forward,
-       vector_t *backward,
+       prob_t *forward,
+       prob_t *backward,
        binProblem *bp);
 
 #endif /* MARGINAL_H */
