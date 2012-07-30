@@ -271,26 +271,18 @@ def recursiveUtility(counts, data, m, hashtree, hashutil):
         (expectation, local_utility) = hashutil[key]
         return local_utility
     else:
-        result = []
         (expectation, local_utility) = hashutil[key]
         # loop over events
+        result = [ 0.0 ] * data['L']
         for y in range(0, data['K']):
-            utility = []
             # loop over positions
             for x in range(0, data['L']):
                 counts[y][x] += 1
                 tmp = recursiveUtility(counts, data, m-1, hashtree, hashutil)
                 counts[y][x] -= 1
-                # utility becomes a vector [ v_1, v_2, ..., v_L ]
-                # of maximal expected utilities for each position
+                # maximal expected utilities for each position
                 # and an experimental outcome of y
-                utility.append(expectation[y][x]*max(tmp))
-            # result is the cumulated utilities for all possible
-            # experimental outcomes
-            result.append(utility)
-        # sum up all columns in result so that we obtain an average
-        # over all experimental outcomes
-        result = map(sum, zip(*result))
+                result[x] += expectation[y][x]*max(tmp)
         # add the utility for the current state
         result = map(sum, zip(local_utility, result))
         hashtree[key] = result
