@@ -485,7 +485,7 @@ The expected utility can also be written in a recursive way as
 which shows that the sampling process can be interpreted as a Markov
 decision process (MDP), since in every sampling step we receive an
 immediate reward given by the utility $u_1$. It also justifies myopic
-sampling strategies.
+sampling strategies. \cite{Bellman1957a} \cite{Bellman1957b}
 
 \begin{figure}[t]
   \centering
