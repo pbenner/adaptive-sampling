@@ -257,8 +257,6 @@ def prombsExpectation(y, counts, data):
 # recursive computation of utilities
 # ------------------------------------------------------------------------------
 
-hashutil = {}
-
 def computeKey(counts):
     return tuple(map(tuple, counts))
 
@@ -270,27 +268,27 @@ def recursiveUtility(counts, data, m, hashtree, hashutil):
     if value:
         return value
     elif m == 0:
-        (expectation, local_utility) = hashutil[key]
-        return local_utility
+        (expectation, utility) = hashutil[key]
+        return utility
     else:
-        (expectation, local_utility) = hashutil[key]
-#        print local_utility
-#        print argmax(local_utility)
-        # loop over events
+        (expectation, utility) = hashutil[key]
         result = [ 0.0 ] * data['L']
-        for y in range(0, data['K']):
-            # loop over positions
-            for x in range(0, data['L']):
-#            for x in argmax(local_utility):
-                counts[y][x] += 1
-                tmp = recursiveUtility(counts, data, m-1, hashtree, hashutil)
-                counts[y][x] -= 1
-                # maximal expected utilities for each position
-                # and an experimental outcome of y
-                result[x] += expectation[y][x]*max(tmp)
+        for x1 in range(0, data['L']):
+            # loop over events to compute the expectation
+            tmp = [ 0.0 ] * data['L']
+            for y1 in range(0, data['K']):
+                counts[y1][x1] += 1
+                u2 = recursiveUtility(counts, data, m-1, hashtree, hashutil)
+                counts[y1][x1] -= 1
+                # multiply result with the expectation of this
+                # experimental outcome
+                u2  = map(lambda s: expectation[y1][x1]*s, u2)
+                # add the result to the previous results
+                tmp = map(sum, zip(tmp, u2))
+            # take the maximum for each position x1
+            result[x1] = max(tmp)
         # add the utility for the current state
-        result = map(sum, zip(local_utility, result))
-        hashtree[key] = result
+        result = map(sum, zip(utility, result))
         return result
 
 # precompute utility
@@ -351,14 +349,14 @@ def precomputeUtility(counts, data, m, hashutil):
 
 def computeUtility(counts, data):
     bin_options = options.copy()
+    hashutil    = {}
     if options['path_iteration']:
         # print policy.optimize([1,1,1,1], counts, data, bin_options)
-        # policy.optimal(counts, data, bin_options)
+        # policy.test1(counts, data, bin_options)
         utility = policy.threaded_u_star(options['look_ahead']+1, counts, data, bin_options)
     else:
         precomputeUtility(counts, data, options['look_ahead'], hashutil)
         utility = recursiveUtility(counts, data, options['look_ahead'], {}, hashutil)
-
     return utility
 
 def selectItem(counts, data):
@@ -385,8 +383,7 @@ def selectItem(counts, data):
         exec options['filter']
         if not gainFilter is None:
             utility = gainFilter(utility, map(sum, zip(*counts)))
-    utility = roundArray(utility, 10)
-    print utility
+#    utility = roundArray(utility, 10)
     return selectRandom(argmax(utility)), utility
 
 # experiment
