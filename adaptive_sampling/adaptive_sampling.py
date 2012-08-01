@@ -260,34 +260,25 @@ def prombsExpectation(y, counts, data):
 def computeKey(counts):
     return tuple(map(tuple, counts))
 
-def recursiveUtility(counts, data, m, hashtree, hashutil):
-    key   = computeKey(counts)
-    value = hashtree.get(key)
+def recursiveUtility(counts, data, m, hashutil):
+    key = computeKey(counts)
+    # compute immediate utility if not done yet
     if not hashutil.get(key):
         hashutil[key] = prombsUtility(counts, data)
-    if value:
-        return value
-    elif m == 0:
-        (expectation, utility) = hashutil[key]
+    # receive utility and expectation
+    (expectation, utility) = hashutil[key]
+    if m == 0:
         return utility
     else:
-        (expectation, utility) = hashutil[key]
         result = [ 0.0 ] * data['L']
-        for x1 in range(0, data['L']):
+        # for all stimuli
+        for x in range(0, data['L']):
             # loop over events to compute the expectation
-            tmp = [ 0.0 ] * data['L']
-            for y1 in range(0, data['K']):
-                counts[y1][x1] += 1
-                u2 = recursiveUtility(counts, data, m-1, hashtree, hashutil)
-                counts[y1][x1] -= 1
-                # multiply result with the expectation of this
-                # experimental outcome
-                u2  = map(lambda s: expectation[y1][x1]*s, u2)
-                # add the result to the previous results
-                tmp = map(sum, zip(tmp, u2))
-            # take the maximum for each position x1
-            result[x1] = max(tmp)
-        # add the utility for the current state
+            for y in range(0, data['K']):
+                counts[y][x] += 1
+                result[x] += expectation[y][x]*max(recursiveUtility(counts, data, m-1, hashutil))
+                counts[y][x] -= 1
+        # add the utility for the result
         result = map(sum, zip(utility, result))
         return result
 
@@ -356,7 +347,7 @@ def computeUtility(counts, data):
         utility = policy.threaded_u_star(options['look_ahead']+1, counts, data, bin_options)
     else:
         precomputeUtility(counts, data, options['look_ahead'], hashutil)
-        utility = recursiveUtility(counts, data, options['look_ahead'], {}, hashutil)
+        utility = recursiveUtility(counts, data, options['look_ahead'], hashutil)
     return utility
 
 def selectItem(counts, data):
@@ -384,6 +375,8 @@ def selectItem(counts, data):
         if not gainFilter is None:
             utility = gainFilter(utility, map(sum, zip(*counts)))
 #    utility = roundArray(utility, 10)
+    if options['verbose']:
+        sys.stderr.write(str(utility) + '.\n')
     return selectRandom(argmax(utility)), utility
 
 # experiment
