@@ -541,9 +541,9 @@ define
     \\
     \lambda^B_i(h)
     &=
-    \rho^{n-i} h(i, n)
+    \rho^{L-i} h(i, L)
     +
-    \sum_{j=i+1}^{n} \lambda^B_j(h) (1-\rho)\rho^{j-i-1}h(i, j-1)
+    \sum_{j=i+1}^{L} \lambda^B_j(h) (1-\rho)\rho^{j-i-1}h(i, j-1)
     \ ,
   \end{aligned}
 \end{equation*}
@@ -672,7 +672,7 @@ The utility for an event $y \in \Ac$ can be computed with $f(\thetab)
 
 \section*{Appendix}
 The derivation of the forward measure depends on the following
-property of the dirac measure: Let $f,g \in L^1$ and $\mu$ be some
+property of the dirac measure: Let $f,g \in L^1$ and let $\mu$ be some
 measure. From
 \begin{equation*}
   \int_{x\in\Omega}
