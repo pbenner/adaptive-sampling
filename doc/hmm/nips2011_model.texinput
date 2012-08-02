@@ -1,6 +1,15 @@
 % -*- mode: latex -*-
 %
 \section*{Motivation}
+The learning problem we are considering is similar to an $L$-armed
+bandit problem, where you are repeatedly faced with a choice among $L$
+different actions. After each action an immediate reward is received
+that depends on the action you have chosen. The objective is then to
+maximize the sum of rewards over a period of $N$ trials. In the setup
+we are considering, our goal is not to maximize the sum of immediate
+rewards, but to learn as much as possible about a stimulus-response
+relation during an experiment.
+
 \section*{Model}
 %
 \tikzstyle{rv}=        [shape=circle,    minimum size=1.08cm, fill=blue!10]
@@ -97,10 +106,10 @@
   \label{fig:1}
 \end{figure}
 The model consists of two hidden Markov chains $M^1 =
-\{\Thetab^1_j\}_{j=1}^L$ and $M^2 = \{\Thetab^2_j\}_{j=1}^L$ on a
-probability space $(\Omega, \Bc(\Omega), P)$. The transition kernels
-$\mu^1_T, \mu^2_T: \Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$
-with
+\{\Thetab^1_j\}_{j\in\Xc}$ and $M^2 = \{\Thetab^2_j\}_{j\in\Xc}$ with
+$\Xc = \{ 1, 2, \dots, L \}$ on a probability space $(\Omega,
+\Bc(\Omega), P)$. The transition kernels $\mu^1_T, \mu^2_T:
+\Bc(\Omega) \times \Omega \rightarrow \mathbb{R}^+$ with
 \begin{equation*}
   P(\Theta^1_{j} \in A \given \Theta^1_{j-1} = \thetab_{j-1})
   =
@@ -138,8 +147,9 @@ where $\mu_{\Thetab^1_j}$ and $\mu_{\Thetab^2_j}$ are Dirichlet
 distributions on $\Omega$ with parameters $\alphab_j$ and $\rho \in
 [0,1]$ is the cohesion parameter. We also define the auxiliary random
 variables $\Thetab_j = \gamma \Thetab^1_j + (1-\gamma)\Thetab^2_j$
-with mixture parameter $\gamma \in [0, 1]$. At each position $j$ we have $m =
-m(j)$ emissions $\Zb_j = (Z_{j,m})_m$ with distribution
+with mixture parameter $\gamma \in [0, 1]$. At each position $j \in
+\Xc$ we have $m = m(j)$ emissions $\Zb_j = (Z_{j,m})_m$ with
+distribution
 \begin{equation*}
   Z_{j,m}
   \given
@@ -150,32 +160,15 @@ m(j)$ emissions $\Zb_j = (Z_{j,m})_m$ with distribution
 \end{equation*}
 Each $Z_{j,m}$ takes values in some finite alphabet $\Ac$ such that
 $\Omega = \Delta_{|\Ac|}$, the $|\Ac|$-dimensional probability
-simplex. The full model is depicted in Figure~\ref{fig:1}. Our main
-interest is to compute
+simplex. The full model is depicted in Figure~\ref{fig:1}.  With the
+transition kernel $\mu_T$ we obtain a posterior distribution that can
+be written as a sum over all consecutive partitions of $\Xc$. An
+element of a consecutive partition consists of consecutive
+integers. We denote the set of all such partitions as $\Pc(\Xc)$. For
+instance, the marginal likelihood $p_{\Zb_{1:L}}(\zb_{1:L})$ can be
+written as
 \begin{equation*}
-  \mu_{\Thetab_j \given \Zb_{1:L}}
-  f
-  =
-  \int_{\Omega}
-  f(\thetab)
-  \mu_{\Thetab_j \given \Zb_{1:L}}(d\thetab \given \zb_{1:L})
-  =
-  \int_{\Omega^L}
-  f(\thetab_j)
-  \prod_{i=1}^L
-  p_{\Zb_{i}\given \Thetab_{i}}(\zb_{i} \given \thetab_{i})
-  \mu_T(d\thetab_{i} \given \thetab_{i-1})
-  \ .
-\end{equation*}
-for some $f \in L^1$ and $j \in \{1, 2, \dots, n\}$.
-With the transition kernel $\mu_T$ we obtain a posterior distribution
-that can be written as a sum over all consecutive partitions of $\{1,
-2, \dots, L\}$. An element of a consecutive partition consists of
-consecutive integers. We denote the set of all such partitions as
-$\Pc(1:L)$. For instance, the marginal likelihood
-$p_{\Zb_{1:L}}(\zb_{1:L})$ can be written as
-\begin{equation*}
-  \sum_{P\in \Pc(1:L)}
+  \sum_{P\in \Pc(\Xc)}
   \rho^{L-|P|}
   (1-\rho)^{|P|-1}
   \left[
@@ -197,9 +190,26 @@ $p_{\Zb_{1:L}}(\zb_{1:L})$ can be written as
   \right]
   \ .
 \end{equation*}
-An efficient way of computing the posterior distribution can be
-derived by considering the forward-backward decomposition of hidden
-Markov models. The measure
+Our main interest is to compute
+\begin{equation*}
+  \mu_{\Thetab_j \given \Zb_{1:L}}
+  f
+  =
+  \int_{\Omega}
+  f(\thetab)
+  \mu_{\Thetab_j \given \Zb_{1:L}}(d\thetab \given \zb_{1:L})
+  =
+  \int_{\Omega^L}
+  f(\thetab_j)
+  \prod_{i=1}^L
+  p_{\Zb_{i}\given \Thetab_{i}}(\zb_{i} \given \thetab_{i})
+  \mu_T(d\thetab_{i} \given \thetab_{i-1})
+  \ .
+\end{equation*}
+for some $f \in L^1$ and $j \in \Xc$. An efficient way of computing
+posterior quantities can be derived by considering the
+forward-backward decomposition of the posterior distribution that is
+possible in hidden Markov models. The measure
 \begin{equation*}
   \mu_{\Thetab^1_j \given \Zb_{1:L}}(d\thetab_j \given \zb_{1:L})
   \propto
@@ -260,45 +270,91 @@ Both, the forward measure and the backward probabilities can be
 computed in $\Oc(L^2)$.
 
 \section*{Adaptive sequential sampling}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\textwidth,page=1]{example/decision-tree.pdf}
+  \caption{
+    Sketch of the decision tree for an experiment with two stimuli
+    $\Xc = \{l, r\}$ and dichotomous outcome $\Ac = \{s, f\}$. The tree
+    shows all experimental outcomes for $N = 2$.  Circles represent
+    decision nodes at which we have to decide for a stimulus $x \in
+    \Xc$. Chance nodes are shown as rectangles at which an experimental
+    outcome is obtained. A possible sampling policy $\pi$ is depicted as
+    arrows that origin from the decision nodes. The policy depends on the
+    count statistic of the previous experiments. An immediate utility
+    $u_1$ is received whenever one of the decision nodes is reached.
+  }
+  \label{fig:4}
+\end{figure}
 To formalize the sequential sampling process we introduce the random
 variables $Y_n = Z_{j,m}$ with $m = \sum_{i=1}^n \1(X_i = j)$ at the
 $n$th sampling step. That is, $X_n$ gives the stimulus for the $n$th
-sample and $Y_n$ the response.  Furthermore, we summarize the first
-$n$ experiments $(X_i, Y_i)_{i=1}^n$ as $\Eb_{1:n}$. Let's assume that
-we want to take $N$ measurements in total and we have already taken
-$n$ samples. We define a utility measure $u_p$ that quantifies how
-much we value a sequence of $p = N-n$ measurements $\xb_{n+1:n+p} = \{
-x_{n+1}, x_{n+2}, \dots, x_{n+p}\}$ with responses $\yb_{n+1:n+p} = \{
-y_{n+1}, y_{n+2}, \dots, y_{n+p}\}$. Furthermore, we define the
-\emph{expected utility}
+sample and $Y_n$ the response. Furthermore, we summarize the first $n$
+experiments $(X_i, Y_i)_{i=1}^n$ as $\Eb_{1:n}$. The adaptive
+sequential sampling process can be interpreted as a \emph{Markov
+decision process} with state space $\Sc = \bigcup_{n=1}^N \Sc_n$,
+where each $\Sc_n$ consists of the count statistics $\cb(\eb_{1:n})$
+of all experimental outcomes $\eb_{1:n}$. A \emph{policy} $\pi : \Sc
+\rightarrow \Xc$ maps each state $\cb(\eb_{1:n})$ to a stimulus
+$x_{n+1}$ (cf. Figure~\ref{fig:4}). Let's assume that we want to take
+$N$ measurements in total and we have already taken $n$ samples. We
+define a utility measure $u_p$ that quantifies how much we value a
+sequence of $p = N-n$ measurements $\xb_{n+1:n+p} = \{ x_{n+1},
+x_{n+2}, \dots, x_{n+p}\}$ with responses $\yb_{n+1:n+p} = \{ y_{n+1},
+y_{n+2}, \dots, y_{n+p}\}$.  Furthermore, let the next $p$ stimuli
+$\Xb_{n+1:n+p}$ be determined by the policy $\pi$, for which we use
+the short notation $\Xb_{n+1:n+p} = \pi$. We define the \emph{expected
+utility}
 \begin{multline*}
-  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+  U_p(\Xb_{n+1:n+p} =  \pi \given \Eb_{1:n} = \eb_{1:n})
   \\
   =
   \E_{\Yb_{n+1:n+p}}[
-    u_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p}, \Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+    u_p(\Xb_{n+1:n+p} = \pi, \Yb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
     \given
-    \Xb_{n+1:n+p} = \xb_{n+1:n+p},
+    \Xb_{n+1:n+p} = \pi,
     \Eb_{1:n} = \eb_{1:n}
   ]
   \ .
 \end{multline*}
-Our goal is then to select a stimulus $x^*_{n+1}$ for the next
-measurement $X_{n+1}$ that leads to a maximal expected utility in the
-next $p$ experiments, i.e.
+(cf. \cite{DeGroot1962}). In principle, for an experiment with $N$
+measurements our goal would be to compute an optimal policy
 \begin{equation*}
-  x^*_{n+1}
+  \pi^*
   =
-  \argmax_{x_{n+1} \in 1:L}
-  \max_{\xb_{2:p-1} \in (1:L)^{p-1}}
-  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+n} \given \Eb_{1:n})
+  \argmax_{\pi}
+  U_N(\Xb_{1:N} = \pi)
+  \ ,
+\end{equation*}
+that maximizes the expected utility for the entire experiment. Since
+the state space $\Sc$ grows exponentially with $N$ it becomes quickly
+impossible to determine an optimal policy. We therefore need to rely
+on a \emph{myopic approximation} of the expected utility. Suppose that
+we have already taken $n$ samples, then
+\begin{equation*}
+  \max_{\pi}
+  U_{N-n+1}(\Xb_{n+1:N} = \pi \given \Eb_{1:n})
+  =
+  \max_{\pi}
+  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n})
+  +
+  \epsilon
+\end{equation*}
+for large enough $p < N-n+1$. Our goal is then to select a stimulus
+$x^*_{n+1} = \pi^*(\eb_{1:n})$ for the next measurement $X_{n+1}$ that
+leads to a maximal expected utility in the next $p$ experiments, i.e.
+\begin{equation*}
+  \pi^*
+  =
+  \argmax_{\pi}
+  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n})
   \ .
 \end{equation*}
 With a $p$-step look-ahead we define the \emph{optimal expected
   utility} $U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} = y_{n+1} \given
 \Eb_{1:n} = \eb_{1:n})$ recursively as
 \begin{equation*}
-  \max_{x_{n+2}\in1:L}
+  \max_{x_{n+2} \in \Xc}
   \E_{Y_{n+2}}[
     U^*_{p-1}(X_{n+2} = x_{n+2}, Y_{n+2}, \Eb_{n+1:n+1} = \eb_{n+1:n+1}
     \given
@@ -313,18 +369,13 @@ where
   u_p(\Eb_{n+1:n+p} = \eb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n}) \ .
 \end{equation*}
 We obtain the optimal stimulus $x^*_{n+1}$ from
-\begin{multline*}
+\begin{equation*}
   x^*_{n+1}
   =
-  \argmax_{x_{n+1} \in 1:L}
-  \max_{\xb_{2:p-1} \in (1:L)^{p-1}}
-  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
-  \\
-  =
-  \argmax_{x_{n+1}\in 1:L}
+  \argmax_{x_{n+1}\in \Xc}
   \E_{Y_{n+1}}[U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_{n+1}, \Eb_{1:n} = \eb_{1:n}]
   \ .
-\end{multline*}
+\end{equation*}
 We first consider the case of one-step look-ahead. A suitable utility
 measure $u_1(X_{n+1} = x,  Y_{n+1} = y \given \Eb_{1:n} = \eb_{1:n})$ for a
 stimulus $x$ with response $y$ is given by the Kullback-Leibler
@@ -435,29 +486,9 @@ We obtain the expected utility
   \mu_{\Thetab_x \given \Eb_{1:n}}(d\thetab_x \given \eb_{1:n})
   \ .
 \end{equation*}
-Similarly, for a set of $p$ stimuli $\xb_{n+1:n+p} = \{x_{n+1}, x_
-{n+2}, \dots, x_{n+p}\}$ the expected utility is
+Similarly, for the next $p$ experiments we obtain the expected utility
 \begin{multline*}
-  \begin{aligned}
-    U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
-    &=
-%    \sum_{i=1}^p
-%    \Entropy\left[Y_{n+i} \given \Eb_{1:n} = \eb_{1:n}, X_{n+1} = x_{n+1}, Y_{n+1}, \dots, X_{n+i} = x_{n+i}\right]
-    \Entropy\left[\Yb_{n+1:n+p} \given \Xb_{n+1:n+p} = \xb_{n+1:n+p}, \Eb_{1:n} = \eb_{1:n}\right]
-    \\
-    &\quad
-    +
-    \sum_{i=1}^p
-    \sum_{y \in\Ac}
-    \int_{\Omega}
-    \theta_{y} \ln(\theta_{y})
-    \mu_{\Thetab_{x_{n+i}} \given \Eb_{1:n}}(d\thetab \given \eb_{1:n})
-    \ .
-  \end{aligned}
-\end{multline*}
-The expected utility can also be written in a recursive way as
-\begin{multline*}
-  U_p(\Xb_{n+1:n+p} = \xb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n} = \eb_{1:n})
   \\
   \begin{aligned}
     &=
@@ -467,7 +498,7 @@ The expected utility can also be written in a recursive way as
     +
     \sum_{y \in\Ac}
     p_{Y_{n+1} \given X_{n+1}, \Eb_{1:n}} (y \given x_{n+1}, \eb_{1:n})
-    U_{p-1}(\Xb_{n+2:n+p} = \xb_{n+2:n+p} \given \Eb_{1:n+1} = \eb_{1:n+1})
+    U_{p-1}(\Xb_{n+2:n+p} = \pi \given \Eb_{1:n+1} = \eb_{1:n+1})
     \\
     &=
     \sum_{y \in\Ac}
@@ -477,70 +508,28 @@ The expected utility can also be written in a recursive way as
     \left[
     u_1(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n})
     +
-    U_{p-1}(\Xb_{n+2:n+p} = \xb_{n+2:n+p} \given \Eb_{1:n+1} = \eb_{1:n+1})
+    U_{p-1}(\Xb_{n+2:n+p} = \pi \given \Eb_{1:n+1} = \eb_{1:n+1})
     \right]
     \ ,
   \end{aligned}
 \end{multline*}
-which shows that the sampling process can be interpreted as a Markov
-decision process (MDP), since in every sampling step we receive an
-immediate reward given by the utility $u_1$. It also justifies myopic
-sampling strategies. \cite{Bellman1957a} \cite{Bellman1957b}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.9\textwidth,page=1]{example/decision-tree.pdf}
-  \caption{
-    Sketch of the decision tree for an experiment with two stimuli
-    $\{l, r\}$ and dichotomous outcome $\{s, f\}$. The tree shows all
-    experimental outcomes for $N = 2$.  Circles represent states, which
-    are determined by the count statistic, whereas rectangles represent
-    decision nodes. Optimal paths are labeled by an arrow. An
-    immediate utility $u_1$ is received whenever one of the circles is
-    visited.
-  }
-  \label{fig:4}
-\end{figure}
-
-\section*{Markov decision process}
-%
-We continue by describing the adaptive sampling process as a Markov
-decision process (MDP) with state space $S$ given by all possible
-count statistics $\cb(\zb_{1:L})$ and action space $A = 1:L$. Suppose
-we have performed $n$ experiments $\Eb_{1:n} = \eb_{1:n}$ and let
-$s_n = \cb(\eb_{1:n}) \in S$. The state transition probabilities are
-given by
-\begin{equation*}
-  p_{Tr}(s_{n+1} \given x_{n+1}, s_n)
-  =
-  p_{Y_{n+1}\given X_{n+1}, \Eb_{1:n}}(y_{n+1} \given x_{n+1}, \eb_{1:n})
-  \ ,
-\end{equation*}
-and the immediate reward is
-\begin{equation*}
-  r(s_{n+1} \given s_n)
-  =
-  u_1(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n})
-  \ .
-\end{equation*}
-Our goal is to find the policy $\pi(s)$ that finds for every state $s
-\in S$ an optimal action $a$ so that
-\begin{equation*}
-  \sum_{n=1}^N
-  u_1(E_{n} = e_{n} \given \Eb_{1:n-1} = \eb_{1:n-1})
-\end{equation*}
-is maximized. The MDP that we describe is special in the sense that
-each state can be visited only once and after $N$ samples the
-experiment stops. This simplifies for instance the computation of the
-value function, given here as $U_p$, which can be computed
-directly.
+where $x_{n+1} = \pi(\eb_{1:n})$. This shows that the expected utility
+for a policy $\pi$ considered by \cite{DeGroot1962} can be written as
+a reinforcement learning problem as defined by \cite{Bellman1957a,
+Bellman1957b}), where $U_p$ is called the \emph{value function}
+(cf. \cite{Sutton1998}). Note also that the discount factor for future
+utilities is here implicit in the utility function. That is, if we
+have an optimal policy $\pi^*$ then the expected utility of future
+experiments should always be less or equal to the expected immediate
+utility. This also justifies the use of myopic sampling strategies.
 
 \section*{Computation}
 %
 By solving the recursive definitions of the forward measures and
 backward probabilities we obtain the same computational structure as
 in \cite{Yao1984} or \cite{Barry1992}. We discuss the computation for
-the Markov chain $M_1$. For $0 \le i \le j \le k \le L$ we define
+the Markov chain $M_1$. For integers $1 \le i \le j \le k \le L$ we
+define
 \begin{equation*}
   \begin{aligned}
     \lambda^F_k(h)
@@ -680,3 +669,27 @@ The utility for an event $y \in \Ac$ can be computed with $f(\thetab)
   }
   \label{fig:3}
 \end{figure}
+
+\section*{Appendix}
+The derivation of the forward measure depends on the following
+property of the dirac measure: Let $f,g \in L^1$ and $\mu$ be some
+measure. From
+\begin{equation*}
+  \int_{x\in\Omega}
+  \int_{y\in\Omega}
+  f(y)
+  \delta_y(dx)
+  \mu(dy)
+  =
+  \int_{y\in\Omega}
+  f(y)
+  \mu(dy)
+  \int_{x\in\Omega}
+  \delta_y(dx)
+  =
+  \int_{y\in\Omega}
+  f(y)
+  \mu(dy)
+\end{equation*}
+it follows that $\int_{y\in\Omega} f(y) \delta_y(dx) \mu(dy)$ can be
+written as $f(x)\mu(dx)$.
