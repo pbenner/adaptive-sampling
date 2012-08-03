@@ -8,7 +8,8 @@ that depends on the action you have chosen. The objective is then to
 maximize the sum of rewards over a period of $N$ trials. In the setup
 we are considering, our goal is not to maximize the sum of immediate
 rewards, but to learn as much as possible about a stimulus-response
-relation during an experiment.
+relation during an experiment. For instance \cite{Bellman1956}
+considered this problem for $L=2$ and independent arms.
 
 \section*{Model}
 %
@@ -294,17 +295,17 @@ experiments $(X_i, Y_i)_{i=1}^n$ as $\Eb_{1:n}$. The adaptive
 sequential sampling process can be interpreted as a \emph{Markov
 decision process} with state space $\Sc = \bigcup_{n=1}^N \Sc_n$,
 where each $\Sc_n$ consists of the count statistics $\cb(\eb_{1:n})$
-of all experimental outcomes $\eb_{1:n}$. A \emph{policy} $\pi : \Sc
-\rightarrow \Xc$ maps each state $\cb(\eb_{1:n})$ to a stimulus
-$x_{n+1}$ (cf. Figure~\ref{fig:4}). Let's assume that we want to take
-$N$ measurements in total and we have already taken $n$ samples. We
-define a utility measure $u_p$ that quantifies how much we value a
-sequence of $p = N-n$ measurements $\xb_{n+1:n+p} = \{ x_{n+1},
-x_{n+2}, \dots, x_{n+p}\}$ with responses $\yb_{n+1:n+p} = \{ y_{n+1},
-y_{n+2}, \dots, y_{n+p}\}$.  Furthermore, let the next $p$ stimuli
-$\Xb_{n+1:n+p}$ be determined by the policy $\pi$, for which we use
-the short notation $\Xb_{n+1:n+p} = \pi$. We define the \emph{expected
-utility}
+of all experimental outcomes $\eb_{1:n}$. A \emph{sampling policy}
+$\pi : \Sc \rightarrow \Xc$ maps each state $\cb(\eb_{1:n})$ to a
+stimulus $x_{n+1}$ (cf. Figure~\ref{fig:4}). Let's assume that we want
+to take $N$ measurements in total and we have already taken $n$
+samples. We define a utility measure $u_p$ that quantifies how much we
+value a sequence of $p = N-n$ measurements $\xb_{n+1:n+p} = \{
+x_{n+1}, x_{n+2}, \dots, x_{n+p}\}$ with responses $\yb_{n+1:n+p} = \{
+y_{n+1}, y_{n+2}, \dots, y_{n+p}\}$.  Furthermore, let the next $p$
+stimuli $\Xb_{n+1:n+p}$ be determined by the policy $\pi$, for which
+we use the short notation $\Xb_{n+1:n+p} = \pi$. We define the
+\emph{expected utility}
 \begin{multline*}
   U_p(\Xb_{n+1:n+p} =  \pi \given \Eb_{1:n} = \eb_{1:n})
   \\
@@ -333,14 +334,14 @@ on a \emph{myopic approximation} of the expected utility. Suppose that
 we have already taken $n$ samples, then
 \begin{equation*}
   \max_{\pi}
-  U_{N-n+1}(\Xb_{n+1:N} = \pi \given \Eb_{1:n} = \eb_{1:n})
+  U_{N-n-1}(\Xb_{n+1:N} = \pi \given \Eb_{1:n} = \eb_{1:n})
   =
   \max_{\pi}
   U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n} = \eb_{1:n})
   +
   \epsilon
 \end{equation*}
-for large enough $p < N-n+1$. Our goal is then to select a stimulus
+for large enough $p < N-n-1$. Our goal is then to select a stimulus
 $x^*_{n+1} = \pi^*(\eb_{1:n})$ for the next measurement $X_{n+1}$ that
 leads to a maximal expected utility in the next $p$ experiments, i.e.
 \begin{equation*}
@@ -350,19 +351,43 @@ leads to a maximal expected utility in the next $p$ experiments, i.e.
   U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n} = \eb_{1:n})
   \ .
 \end{equation*}
-With a $p$-step look-ahead we define the \emph{optimal expected
-  utility} $U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} = y_{n+1} \given
-\Eb_{1:n} = \eb_{1:n})$ recursively as
+The optimal policy $\pi^*$ can be computed recursively with backward
+induction. Suppose we have taken $n$ measurements. The \emph{optimal
+expected utility} for an experiment $E_{n+1} = e_{n+1}$ given that we
+follow an optimal policy $\pi^*$ in the next $p-1$ experiments is
+denoted $U^*_p(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n})$ and
+can be computed as
 \begin{equation*}
   \max_{x_{n+2} \in \Xc}
   \E_{Y_{n+2}}[
-    U^*_{p-1}(X_{n+2} = x_{n+2}, Y_{n+2}, \Eb_{n+1:n+1} = \eb_{n+1:n+1}
+    U^*_{p-1}(
+      \Eb_{n+1:n+2} = \eb_{n+1:n+2}
+      \given
+      \Eb_{1:n} = \eb_{1:n}
+    )
     \given
-    \Eb_{1:n} = \eb_{1:n}) \given X_{n+2} = x_{n+2}, \Eb_{1:n+1} = \eb_{1:n+1}
+    X_{n+2} = x_{n+2}, \Eb_{1:n+1} = \eb_{1:n+1}
+  ]
+  \ .
+\end{equation*}
+This leads to the recursive definition
+\begin{multline*}
+  U^*_{p-k+1}(\Eb_{n+1:n+k} = \eb_{n+1:n+k} \given \Eb_{1:n} = \eb_{1:n})
+  \\
+  =
+  \max_{x_{n+k+1} \in \Xc}
+  \E_{Y_{n+k+1}}[
+    U^*_{p-k}(
+      \Eb_{n+1:n+k+1} = \eb_{n+1:n+k+1}
+      \given
+      \Eb_{1:n} = \eb_{1:n}
+    )
+    \given
+    X_{n+k+1} = x_{n+k+1}, \Eb_{1:n+k} = \eb_{1:n+k}
   ]
   \ ,
-\end{equation*}
-where
+\end{multline*}
+for $k \in \{1, 2, \dots, p+1 \}$, where
 \begin{equation*}
   U^*_0(\Eb_{n+1:n+p} = \eb_{n+1:n+p} \given \Eb_{1:n} = \eb_{1:n})
   =
@@ -373,7 +398,7 @@ We obtain the optimal stimulus $x^*_{n+1}$ from
   x^*_{n+1}
   =
   \argmax_{x_{n+1}\in \Xc}
-  \E_{Y_{n+1}}[U^*_p(X_{n+1} = x_{n+1}, Y_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_{n+1}, \Eb_{1:n} = \eb_{1:n}]
+  \E_{Y_{n+1}}[U^*_p(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_{n+1}, \Eb_{1:n} = \eb_{1:n}]
   \ .
 \end{equation*}
 We first consider the case of one-step look-ahead. A suitable utility
