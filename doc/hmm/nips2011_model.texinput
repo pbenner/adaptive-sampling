@@ -333,10 +333,10 @@ on a \emph{myopic approximation} of the expected utility. Suppose that
 we have already taken $n$ samples, then
 \begin{equation*}
   \max_{\pi}
-  U_{N-n+1}(\Xb_{n+1:N} = \pi \given \Eb_{1:n})
+  U_{N-n+1}(\Xb_{n+1:N} = \pi \given \Eb_{1:n} = \eb_{1:n})
   =
   \max_{\pi}
-  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n} = \eb_{1:n})
   +
   \epsilon
 \end{equation*}
@@ -347,7 +347,7 @@ leads to a maximal expected utility in the next $p$ experiments, i.e.
   \pi^*
   =
   \argmax_{\pi}
-  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n})
+  U_p(\Xb_{n+1:n+p} = \pi \given \Eb_{1:n} = \eb_{1:n})
   \ .
 \end{equation*}
 With a $p$-step look-ahead we define the \emph{optimal expected
