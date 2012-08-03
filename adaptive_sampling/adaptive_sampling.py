@@ -63,6 +63,7 @@ def usage():
     print
     print "Options:"
     print "   -b                                 - compute break probabilities"
+    print "       --distances                    - compute Kullback-Leibler distance for each sample"
     print "       --lapsing=p                    - specify a lapsing probability"
     print "       --look-ahead=N                 - recursion depth for the sampling look ahead"
     print "       --hmm                          - use hidden Markov model"
@@ -154,6 +155,7 @@ def saveResult(result):
     config.set('Sampling Result', 'utility',   " ".join(map(str, result['utility'])))
     config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
     config.set('Sampling Result', 'mpost',     " ".join(map(str, result['mpost'])))
+    config.set('Sampling Result', 'distances', " ".join(map(str, result['distances'])))
     config.set('Sampling Result', 'states',    "\n".join(map(str, result['states'])))
     configfile = open(options['save'], 'wb')
     config.write(configfile)
@@ -169,17 +171,21 @@ def loadResult():
         if not config_parser.has_section('Sampling Result'):
             raise IOError("Invalid configuration file.")
 
+        distances = []
+        bprob     = []
+
         counts    = config.readMatrix(config_parser, 'Sampling Result', 'counts',    int)
         moments   = config.readMatrix(config_parser, 'Sampling Result', 'moments',   float)
         marginals = config.readMatrix(config_parser, 'Sampling Result', 'marginals', float)
         samples   = config.readVector(config_parser, 'Sampling Result', 'samples',   int)
         mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',     float)
         states    = config.readStates(config_parser, 'Sampling Result', 'states')
+        if config_parser.has_option('Sampling Result', 'distances'):
+            distances = config.readVector(config_parser, 'Sampling Result', 'distances', float)
         if config_parser.has_option('Sampling Result', 'bprob'):
             bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',     float)
-        else:
-            bprob     = []
         result = {
+            'distances' : distances,
             'moments'   : moments,
             'marginals' : marginals,
             'bprob'     : bprob,
@@ -189,6 +195,7 @@ def loadResult():
             'states'    : states }
     else:
         result = {
+            'distances' : [],
             'moments'   : [],
             'marginals' : [],
             'bprob'     : [],
@@ -218,6 +225,15 @@ def bin_utility(counts_v, data, bin_options):
     beta          = data['beta']
     gamma         = data['gamma']
     return interface.utility(events, counts, alpha, beta, gamma, bin_options)
+
+def bin_distance(x, y, counts_v, data, bin_options):
+    """Call the binning library."""
+    events        = len(counts_v)
+    counts        = statistics.countStatistic(counts_v)
+    alpha         = data['alpha']
+    beta          = data['beta']
+    gamma         = data['gamma']
+    return interface.distance(x, y, events, counts, alpha, beta, gamma, bin_options)
 
 # prombs wrapper
 # ------------------------------------------------------------------------------
@@ -316,10 +332,11 @@ def precomputeUtilityRec(counts, data, m, hashutil, queue, i_, j_):
                 precomputeUtilityRec(counts, data, m-1, hashutil, queue, i, j)
                 counts[j][i] -= 1
 
+utility_threads   = []
+utility_queue_in  = Queue.Queue()
+utility_queue_out = Queue.Queue()
 def precomputeUtility(counts, data, m, hashutil):
-    utility_queue_in  = Queue.Queue()
-    utility_queue_out = Queue.Queue()
-    utility_threads   = []
+    global utility_threads
     if not utility_threads:
         # launch daemon threads
         for i in range(options['threads']):
@@ -461,18 +478,23 @@ def sample(result, data):
     for i in range(0, options['samples']):
         print >> sys.stderr, "Sampling... %.1f%%" % ((float(i)+1)/float(options['samples'])*100)
         index, utility = selectItem(result['counts'], data)
-        event  = experiment(index, data, result, msocket)
-        result['samples'].append(index)
-        result['counts'][event][index] += 1
+        event = experiment(index, data, result, msocket)
+        # compute Kullback-Leibler distance for the new sample
+        if options['distances']:
+            result['distances'].append(bin_distance(index, event, result['counts'], data, options))
+        # record new sample
+        result['samples'  ].append(index)
+        result['counts'   ][event][index] += 1
         if options['video']:
             save_frame(result, data, utility, i)
     index, utility = selectItem(result['counts'], data)
     # update result
     bin_result = bin(result['counts'], data, options)
-    bin_result['counts']  = result['counts']
-    bin_result['samples'] = result['samples']
-    bin_result['states']  = result['states']
-    bin_result['utility'] = utility
+    bin_result['counts']    = result['counts']
+    bin_result['distances'] = result['distances']
+    bin_result['samples']   = result['samples']
+    bin_result['states']    = result['states']
+    bin_result['utility']   = utility
     if options['port']:
         close_msocket(msocket)
     return bin_result
@@ -570,6 +592,7 @@ options = {
     'effective_counts'           : False,
     'effective_posterior_counts' : False,
     'model_posterior'            : True,
+    'distances'                  : False,
     'hmm'                        : False,
     'path_iteration'             : False,
     'rho'                        : 0.4
@@ -583,7 +606,7 @@ def main():
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
                       "strategy=", "kl-component", "kl-multibin", "algorithm=", "samples=",
                       "mgs-samples", "no-model-posterior", "video=", "hmm", "rho=",
-                      "path-iteration" ]
+                      "path-iteration", "distances" ]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
     except getopt.GetoptError:
         usage()
@@ -615,6 +638,8 @@ def main():
         if o in ("-h", "--help"):
             usage()
             return 0
+        if o == "--distances":
+            options["distances"] = True
         if o == "-b":
             options["bprob"] = True
         if o == "--lapsing":

@@ -36,5 +36,11 @@ void hmm_computeUtilityAt(
         prob_t *forward,
         prob_t *backward,
         binProblem *bp);
+prob_t hmm_computeDistance(
+        size_t x,
+        size_t y,
+        prob_t *forward,
+        prob_t *backward,
+        binProblem *bp);
 
 #endif /* LOCAL_UTILITY_H */

@@ -404,6 +404,40 @@ void hmm_computeUtilityAt(
         result->content[bp->bd->events] = utility;
 }
 
+prob_t hmm_computeDistance(
+        size_t x,
+        size_t y,
+        prob_t *forward,
+        prob_t *backward,
+        binProblem *bp)
+{
+        prob_t expectation;
+        prob_t result;
+        prob_t tmp;
+
+        /* add one event y */
+        bp->add_event.n     = 1;
+        bp->add_event.which = y;
+
+        /* compute predictive entropy */
+        tmp = hmm_fb_rec(forward, backward, x, &hmm_he, bp) - forward[bp->bd->L-1];
+
+        expectation = EXP(tmp);
+        /* result gets -log(expectation) */
+        result      = -tmp;
+
+        /* compute parameter entropy */
+        tmp = hmm_fb_rec(forward, backward, x, &hmm_hu, bp) - forward[bp->bd->L-1];
+
+        result += -EXP(tmp)/expectation;
+
+        /* clean up */
+        bp->add_event.n     =  0;
+        bp->add_event.which = -1;
+
+        return result;
+}
+
 /******************************************************************************
  * Main
  ******************************************************************************/

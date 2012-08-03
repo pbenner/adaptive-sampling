@@ -313,3 +313,35 @@ utilityAt(
 
         return result;
 }
+
+/*
+ * Compute the Kullback-Leibler distance between the distribution
+ * given by the counts and the one by adding the event (x,y)
+ */
+double
+distance(
+        int x,
+        int y,
+        int events,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
+        Options *options)
+{
+        binData bd;
+        bin_init(events, counts, alpha, beta, gamma, options, &bd);
+        binProblem bp; binProblemInit(&bp, &bd);
+
+        prob_t forward [bd.L];
+        prob_t backward[bd.L];
+        prob_t result;
+
+        hmm_forward (forward,  &bp);
+        hmm_backward(backward, &bp);
+        result = hmm_computeDistance(x, y, forward, backward, &bp);
+
+        bin_free(&bd);
+
+        return result;
+}
