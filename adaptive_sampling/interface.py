@@ -152,6 +152,9 @@ _lib.utility.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(
 _lib.utilityAt.restype      = POINTER(VECTOR)
 _lib.utilityAt.argtypes     = [c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
+_lib.distance.restype       = c_double
+_lib.distance.argtypes      = [c_int, c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+
 # convert datatypes
 # ------------------------------------------------------------------------------
 
@@ -286,3 +289,30 @@ def utilityAt(i, events, counts, alpha, beta, gamma, options):
      _lib._free_vector(c_result)
 
      return (result[0:-1], result[-1])
+
+def distance(x, y, events, counts, alpha, beta, gamma, options):
+     c_x           = c_int(x)
+     c_y           = c_int(y)
+     c_events      = c_int(events)
+     c_counts      = (events*POINTER(MATRIX))()
+     c_alpha       = (events*POINTER(MATRIX))()
+     for i in range(0, events):
+          c_counts[i]  = _lib._alloc_matrix(len(counts[i]), len(counts[i][0]))
+          copyMatrixToC(counts[i], c_counts[i])
+          c_alpha[i]   = _lib._alloc_matrix(len(alpha[i]), len(alpha[i][0]))
+          copyMatrixToC(alpha[i],  c_alpha[i])
+     c_beta  = _lib._alloc_vector(len(beta))
+     copyVectorToC(beta,  c_beta)
+     c_gamma = _lib._alloc_matrix(len(gamma), len(gamma[0]))
+     copyMatrixToC(gamma,  c_gamma)
+     c_options = pointer(OPTIONS(options))
+
+     c_result = _lib.distance(c_x, c_y, c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
+
+     for i in range(0, events):
+          _lib._free_matrix(c_counts[i])
+          _lib._free_matrix(c_alpha[i])
+     _lib._free_vector(c_beta)
+     _lib._free_matrix(c_gamma)
+
+     return c_result
