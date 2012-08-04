@@ -98,7 +98,7 @@ def usage():
     print
     print "Sampling strategies:"
     print "       --strategy=STRATEGY            - uniform, uniform-random, kl-divergence (default),"
-    print "                                        effective-counts, effective-posterior-counts, or variance"
+    print "                                        effective-counts, effective-posterior-counts"
     print "       --kl-component                 - if kl-divergence is selected as strategy then use"
     print "                                        add the component divergence"
     print "       --kl-multibin                  - if kl-divergence is selected as strategy then use"
@@ -240,17 +240,15 @@ def bin_distance(x, y, counts_v, data, bin_options):
 
 def prombsUtility(counts, data):
     bin_options = options.copy()
+    # hmm
+    if options['hmm']:
+        return bin_utility(counts, data, bin_options)
+    # prombs
     bin_options['utility']         = True
     bin_options['model_posterior'] = False
     bin_options['marginal']        = 0
     bin_options['n_moments']       = 0
-    if options['strategy'] == 'variance':
-        bin_options['n_moments'] = 2
-    result = bin_utility(counts, data, bin_options)
-#    result = bin(counts, data, bin_options)
-    return result
-    if options['strategy'] == 'variance':
-        return map(math.sqrt, statistics.centralMoments(result['moments'], 2))
+    result = bin(counts, data, bin_options)
     if options['strategy'] == 'kl-divergence':
         return result['utility']
     if options['strategy'] == 'kl-multibin':
@@ -380,8 +378,6 @@ def selectItem(counts, data):
     elif options['strategy'] == 'effective-counts':
         utility = computeUtility(counts, data)
     elif options['strategy'] == 'effective-posterior-counts':
-        utility = computeUtility(counts, data)
-    elif options['strategy'] == 'variance':
         utility = computeUtility(counts, data)
     else:
         raise IOError('Unknown strategy: '+options['strategy'])

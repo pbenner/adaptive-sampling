@@ -9,7 +9,8 @@ run_sampling() {
 generate_plots() {
     ./example2.py
 
-    pdftk example2-?.pdf cat output example2.pdf
+    pdftk example2-tmp/example2-?.pdf cat output example2.pdf
+    rm -f example2-tmp/example2-?.pdf
 }
 
 

@@ -99,34 +99,34 @@ def plotEntropies(targets, filename, title):
 # ------------------------------------------------------------------------------
 
 targets1 = [
-    { 'file': 'example2.result01', 'color': 'blue',    'name': r'$U^*_1$' },
-    { 'file': 'example2.result02', 'color': 'red',     'name': r'$U^*_2$' },
-    { 'file': 'example2.result03', 'color': '#ee8d18', 'name': r'$U^*_3$' },
-    { 'file': 'example2.result04', 'color': 'green',   'name': r'$U^*_4$' }
+    { 'file': 'example2-tmp/example2.result01', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2-tmp/example2.result02', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2-tmp/example2.result03', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2-tmp/example2.result04', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets2 = [
-    { 'file': 'example2.result05', 'color': 'blue',    'name': r'$U^*_1$' },
-    { 'file': 'example2.result06', 'color': 'red',     'name': r'$U^*_2$' },
-    { 'file': 'example2.result07', 'color': '#ee8d18', 'name': r'$U^*_3$' },
-    { 'file': 'example2.result08', 'color': 'green',   'name': r'$U^*_4$' }
+    { 'file': 'example2-tmp/example2.result05', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2-tmp/example2.result06', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2-tmp/example2.result07', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2-tmp/example2.result08', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets3 = [
-    { 'file': 'example2.result09', 'color': 'blue',    'name': r'$U^*_1$' },
-    { 'file': 'example2.result10', 'color': 'red',     'name': r'$U^*_2$' },
-    { 'file': 'example2.result11', 'color': '#ee8d18', 'name': r'$U^*_3$' },
-    { 'file': 'example2.result12', 'color': 'green',   'name': r'$U^*_4$' }
+    { 'file': 'example2-tmp/example2.result09', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2-tmp/example2.result10', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2-tmp/example2.result11', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2-tmp/example2.result12', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets4 = [
-    { 'file': 'example2.result13', 'color': 'blue',    'name': r'$U^*_1$' },
-    { 'file': 'example2.result14', 'color': 'red',     'name': r'$U^*_2$' },
-    { 'file': 'example2.result15', 'color': '#ee8d18', 'name': r'$U^*_3$' },
-    { 'file': 'example2.result16', 'color': 'green',   'name': r'$U^*_4$' }
+    { 'file': 'example2-tmp/example2.result13', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2-tmp/example2.result14', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2-tmp/example2.result15', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2-tmp/example2.result16', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 targets5 = [
-    { 'file': 'example2.result17', 'color': 'blue',    'name': r'$U^*_1$' },
-    { 'file': 'example2.result18', 'color': 'red',     'name': r'$U^*_2$' },
-    { 'file': 'example2.result19', 'color': '#ee8d18', 'name': r'$U^*_3$' },
-    { 'file': 'example2.result20', 'color': 'green',   'name': r'$U^*_4$' }
+    { 'file': 'example2-tmp/example2.result17', 'color': 'blue',    'name': r'$U^*_1$' },
+    { 'file': 'example2-tmp/example2.result18', 'color': 'red',     'name': r'$U^*_2$' },
+    { 'file': 'example2-tmp/example2.result19', 'color': '#ee8d18', 'name': r'$U^*_3$' },
+    { 'file': 'example2-tmp/example2.result20', 'color': 'green',   'name': r'$U^*_4$' }
     ]
 
 def main():
@@ -140,11 +140,11 @@ def main():
         target['utility'] = parseConfig(target['file'])
     for target in targets5:
         target['utility'] = parseConfig(target['file'])
-    plotEntropies(targets1, 'example2-1.pdf', "(a) 0 Samples")
-    plotEntropies(targets2, 'example2-2.pdf', "(a) 1 Sample")
-    plotEntropies(targets3, 'example2-3.pdf', "(a) 3 Samples")
-    plotEntropies(targets4, 'example2-4.pdf', "(b) 6 Samples")
-    plotEntropies(targets5, 'example2-5.pdf', "(c) 200 Samples")
+    plotEntropies(targets1, 'example2-tmp/example2-1.pdf', "(a) 0 Samples")
+    plotEntropies(targets2, 'example2-tmp/example2-2.pdf', "(a) 1 Sample")
+    plotEntropies(targets3, 'example2-tmp/example2-3.pdf', "(a) 3 Samples")
+    plotEntropies(targets4, 'example2-tmp/example2-4.pdf', "(b) 6 Samples")
+    plotEntropies(targets5, 'example2-tmp/example2-5.pdf', "(c) 200 Samples")
 
 if __name__ == "__main__":
     sys.exit(main())
