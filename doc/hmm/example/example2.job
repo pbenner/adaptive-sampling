@@ -17,35 +17,35 @@ echo "starting the job on $(hostname)"
 set -x
 
 # generate samples
-adaptive-sampling -n   1 -m --hmm --rho=0.8 --save=example2.sample1   --look-ahead=0 example2.cfg
-adaptive-sampling -n   3 -m --hmm --rho=0.8 --save=example2.sample3   --look-ahead=0 example2.cfg
-adaptive-sampling -n   6 -m --hmm --rho=0.8 --save=example2.sample6   --look-ahead=0 example2.cfg
-adaptive-sampling -n 200 -m --hmm --rho=0.8 --save=example2.sample200 --look-ahead=0 example2.cfg
+adaptive-sampling -n   1 -m --hmm --rho=0.8 --save=example2-tmp/example2.sample1   --look-ahead=0 example2.cfg
+adaptive-sampling -n   3 -m --hmm --rho=0.8 --save=example2-tmp/example2.sample3   --look-ahead=0 example2.cfg
+adaptive-sampling -n   6 -m --hmm --rho=0.8 --save=example2-tmp/example2.sample6   --look-ahead=0 example2.cfg
+adaptive-sampling -n 200 -m --hmm --rho=0.8 --save=example2-tmp/example2.sample200 --look-ahead=0 example2.cfg
 
 # compute utilities
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2.result01 --look-ahead=0 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2.result02 --look-ahead=1 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2.result03 --look-ahead=2 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2.result04 --look-ahead=3 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2-tmp/example2.result01 --look-ahead=0 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2-tmp/example2.result02 --look-ahead=1 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2-tmp/example2.result03 --look-ahead=2 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --save=example2-tmp/example2.result04 --look-ahead=3 example2.cfg
 
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample1 --save=example2.result05 --look-ahead=0 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample1 --save=example2.result06 --look-ahead=1 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample1 --save=example2.result07 --look-ahead=2 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample1 --save=example2.result08 --look-ahead=3 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample1 --save=example2-tmp/example2.result05 --look-ahead=0 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample1 --save=example2-tmp/example2.result06 --look-ahead=1 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample1 --save=example2-tmp/example2.result07 --look-ahead=2 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample1 --save=example2-tmp/example2.result08 --look-ahead=3 example2.cfg
 
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample3 --save=example2.result09 --look-ahead=0 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample3 --save=example2.result10 --look-ahead=1 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample3 --save=example2.result11 --look-ahead=2 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample3 --save=example2.result12 --look-ahead=3 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample3 --save=example2-tmp/example2.result09 --look-ahead=0 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample3 --save=example2-tmp/example2.result10 --look-ahead=1 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample3 --save=example2-tmp/example2.result11 --look-ahead=2 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample3 --save=example2-tmp/example2.result12 --look-ahead=3 example2.cfg
 
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample6 --save=example2.result13 --look-ahead=0 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample6 --save=example2.result14 --look-ahead=1 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample6 --save=example2.result15 --look-ahead=2 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample6 --save=example2.result16 --look-ahead=3 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample6 --save=example2-tmp/example2.result13 --look-ahead=0 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample6 --save=example2-tmp/example2.result14 --look-ahead=1 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample6 --save=example2-tmp/example2.result15 --look-ahead=2 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample6 --save=example2-tmp/example2.result16 --look-ahead=3 example2.cfg
 
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample200 --save=example2.result17 --look-ahead=0 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample200 --save=example2.result18 --look-ahead=1 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample200 --save=example2.result19 --look-ahead=2 example2.cfg
-adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2.sample200 --save=example2.result20 --look-ahead=3 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample200 --save=example2-tmp/example2.result17 --look-ahead=0 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample200 --save=example2-tmp/example2.result18 --look-ahead=1 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample200 --save=example2-tmp/example2.result19 --look-ahead=2 example2.cfg
+adaptive-sampling --threads=16 -n 0 -m --hmm --rho=0.8 --load=example2-tmp/example2.sample200 --save=example2-tmp/example2.result20 --look-ahead=3 example2.cfg
 
 echo "finished the job"
