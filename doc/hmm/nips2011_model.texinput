@@ -275,7 +275,7 @@ with $\mu_{\Thetab^1_1 \given \Zb_{1:1}}(d\thetab_{1} \given \zb_{1:1})
 Both, the forward measure and the backward probabilities can be
 computed in $\Oc(L^2)$.
 
-\section*{Adaptive sequential sampling}
+\section*{Active learning in sequential experiments}
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\textwidth,page=1]{example/decision-tree.pdf}
@@ -406,6 +406,9 @@ We obtain the optimal stimulus $x^*_{n+1}$ from
   \E_{Y_{n+1}}[U^*_p(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n}) \given X_{n+1} = x_{n+1}, \Eb_{1:n} = \eb_{1:n}]
   \ .
 \end{equation*}
+
+\section*{Active learning with hidden Markov models}
+%
 We first consider the case of one-step look-ahead. A suitable utility
 measure $u_1(X_{n+1} = x,  Y_{n+1} = y \given \Eb_{1:n} = \eb_{1:n})$ for a
 stimulus $x$ with response $y$ is given by the Kullback-Leibler
@@ -552,6 +555,33 @@ utilities is here implicit in the utility function. That is, if we
 have an optimal policy $\pi^*$ then the expected utility of future
 experiments should always be less or equal to the expected immediate
 utility. This also justifies the use of myopic sampling strategies.
+
+\section*{Submodular utility functions}
+%
+For a sequence of experiments $\{ \Eb_{1:n} = \eb_{1:n} \}$ a
+\emph{submodular set function} satisfies
+\begin{multline*}
+  u_{m+1}(E_{n+1} = e_{n+1}, \Eb_{1:m} = \eb_{1:m})
+  - 
+  u_{m}(\Eb_{1:m} = \eb_{1:m})
+  \\
+  \ge
+  u_{n+1}(E_{n+1} = e_{n+1}, \Eb_{1:n} = \eb_{1:n})
+  - 
+  u_{n}(\Eb_{1:n} = \eb_{1:n})
+  \ ,
+\end{multline*}
+where $m \le n$, which is for the Kullback-Leibler divergence
+equivalent to
+\begin{equation*}
+  u_{m+1}(E_{n+1} = e_{n+1} \given \Eb_{1:m} = \eb_{1:m})
+  \ge
+  u_{n+1}(E_{n+1} = e_{n+1} \given \Eb_{1:n} = \eb_{1:n})
+  \ .
+\end{equation*}
+In other words, we can learn more from an experiment $\{ E_{n+1} =
+e_{n+1} \}$ if we have less prior kowledge. See \cite{Nemhauser1978}
+for the maximization of approximated submodular set functions.
 
 \section*{Computation}
 %
