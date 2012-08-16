@@ -16,27 +16,29 @@ function result = adsamp(counts, varargin)
 %  'n_moments', 2: compute the first N>=2 moments
 %  'model_posterior', 2
 %  'bprob', 1
-%  'utility', 1
-%  'kl_component', 1
+%  'kl_psi', 1
 %  'kl_multibin', 0
 %  'effective_counts', 0
-%  'marginal', 1: compute full marginal distribution
-%  'marginal_step', 0.01: step size for the marginal distribution
-%  'marginal_range', [0.0 1.0]: limit range for the marginal distribution
+%  'effective_posterior_counts', 0
+%  'density', 1: compute full density distribution
+%  'density_step', 0.01: step size for the density distribution
+%  'density_range', [0.0 1.0]: limit range for the density distribution
 %  'epsilon', 0.00001: precision for the extended prombs
 %  'threads', getNumberOfCores: number of threads
 %  'stacksize', 256*1024: thread stack size
 %  'algorithm', 'prombs': select an algorithm 
-%      [mgs | prombstree | prombs]
+%      [prombs | mgs]
 %  'which', 0: for which event to compute the binning
+%  'hmm', 0: use hidden Markov model
+%  'rho', 0.4: cohesion parameter for the hidden Markov model
 %  'samples', [100 2000]
 %
 %
 % Example:
 %  counts = [ 1 1 2 1; 1 1 1 1 ];
 %  adsamp(counts)
-%  r = adsamp(counts, 'marginal_range', [0.0 0.5]);
-%  r.marginals
+%  r = adsamp(counts, 'density_range', [0.0 0.5]);
+%  r.density
 
 [K, L] = size(counts);
 countstat  = count_statistic(counts);
@@ -63,18 +65,20 @@ p = inputParser;
 p.addParamValue('n_moments', 2, @isscalar);
 p.addParamValue('model_posterior', 2, @isscalar);
 p.addParamValue('bprob', 1, @isscalar);
-p.addParamValue('utility', 1, @isscalar);
-p.addParamValue('kl_component', 1, @isscalar);
+p.addParamValue('kl_psi', 1, @isscalar);
 p.addParamValue('kl_multibin', 0, @isscalar);
 p.addParamValue('effective_counts', 0, @isscalar);
-p.addParamValue('marginal', 1, @isscalar);
-p.addParamValue('marginal_step', 0.01, ispos);
-p.addParamValue('marginal_range', [0.0 1.0], isinterval);
+p.addParamValue('effective_posterior_counts', 0, @isscalar);
+p.addParamValue('density', 1, @isscalar);
+p.addParamValue('density_step', 0.01, ispos);
+p.addParamValue('density_range', [0.0 1.0], isinterval);
 p.addParamValue('epsilon', 0.00001, ispos);
 p.addParamValue('threads', getNumberOfCores, @isscalar);
 p.addParamValue('stacksize', 256*1024, ispos);
 p.addParamValue('algorithm', 'prombs', @ischar);
 p.addParamValue('which', 0, @isscalar);
+p.addParamValue('hmm', 0, @isscalar);
+p.addParamValue('rho', 0.4, @isscalar);
 p.addParamValue('samples', [100 2000], ispair);
 p.KeepUnmatched = true;
 p.parse(varargin{:});
@@ -83,17 +87,13 @@ options = p.Results;
 switch p.Results.algorithm
 	case 'prombs'
 		options.algorithm = 0;
-	case 'prombstree'
-		options.algorithm = 1;
 	case 'mgs'
 		if p.Results.utility
 			error('utility cannot be calculated for algorithm mgs')
 		end
-		options.algorithm = 2;
+		options.algorithm = 1;
 	otherwise
 		error(['algorithm ' p.Results.algorithm ' is not implemented'])
 end
 
-
-result  = adaptive_sampling(countstat, args.Results.alpha, args.Results.beta, args.Results.gamma, options);
-
+result  = samplingUtility(countstat, args.Results.alpha, args.Results.beta, args.Results.gamma, options);

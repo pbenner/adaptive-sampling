@@ -4,7 +4,9 @@ INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/include
 
 EXTRA_DIST = \
 	README \
-	adaptive_sampling.c \
+	interface.h \
+	binningPosterior.c \
+	samplingUtility.c \
 	adsamp.m \
 	categorial_sample.m \
 	count_statistic.m \
@@ -23,11 +25,15 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAG
 
 MATLAB_LDFLAGS_EXTRA = ../src/.libs/libadaptive-sampling.a
 
-all: adaptive_sampling$(MATLAB_LDEXTENSION)
+all: binningPosterior$(MATLAB_LDEXTENSION) samplingUtility$(MATLAB_LDEXTENSION)
 
-adaptive_sampling.o: adaptive_sampling.c
+binningPosterior.o: binningPosterior.c
 	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
-adaptive_sampling$(MATLAB_LDEXTENSION): adaptive_sampling.o
+binningPosterior$(MATLAB_LDEXTENSION): binningPosterior.o
+	$(CC) -o $@ $< $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_EXTRA) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
+samplingUtility.o: samplingUtility.c
+	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
+samplingUtility$(MATLAB_LDEXTENSION): samplingUtility.o
 	$(CC) -o $@ $< $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_EXTRA) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
 
 tar:
@@ -37,5 +43,7 @@ tar:
 	$(RM) -r adaptive-sampling-matlab
 
 clean-local:
-	$(RM) adaptive_sampling.o
-	$(RM) adaptive_sampling$(MATLAB_LDEXTENSION)
+	$(RM) binningPosterior.o
+	$(RM) binningPosterior$(MATLAB_LDEXTENSION)
+	$(RM) samplingUtility.o
+	$(RM) samplingUtility$(MATLAB_LDEXTENSION)

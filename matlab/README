@@ -20,7 +20,10 @@ cd matlab
 export MATLAB_DIR=/path/to/matlab
 
 gcc -DHAVE_CONFIG_H -DMATLAB_MEX_FILE -DNDEBUG -I. -I.. -I../include -I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -O3 -fno-exceptions -ffast-math -Wall -Wwrite-strings -Winline -Wno-trigraphs -fPIC -c -o adaptive_sampling.o adaptive_sampling.c
-gcc -shared -o adaptive-sampling.mexw32 adaptive_sampling.o -Wl,--rpath-link,${MATLAB_DIR}/bin/win32 -L${MATLAB_DIR}/bin/win32 -Wl,-version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.map -Wl,--no-undefined -static-libgcc -lm -lmx -lmex -lmat ../src/.libs/libadaptive-sampling.a
+gcc -shared -o binningPosterior.mexw32 adaptive_sampling.o -Wl,--rpath-link,${MATLAB_DIR}/bin/win32 -L${MATLAB_DIR}/bin/win32 -Wl,-version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.map -Wl,--no-undefined -static-libgcc -lm -lmx -lmex -lmat ../src/.libs/libbinningPosterior.a
+
+gcc -DHAVE_CONFIG_H -DMATLAB_MEX_FILE -DNDEBUG -I. -I.. -I../include -I${MATLAB_DIR}/extern/include -I${MATLAB_DIR}/simulink/include -O3 -fno-exceptions -ffast-math -Wall -Wwrite-strings -Winline -Wno-trigraphs -fPIC -c -o adaptive_sampling.o adaptive_sampling.c
+gcc -shared -o samplingUtility.mexw32 adaptive_sampling.o -Wl,--rpath-link,${MATLAB_DIR}/bin/win32 -L${MATLAB_DIR}/bin/win32 -Wl,-version-script,${MATLAB_DIR}/extern/lib/win32/mexFunction.map -Wl,--no-undefined -static-libgcc -lm -lmx -lmex -lmat ../src/.libs/libsamplingUtility.a
 
 In case mexFunction.map does not exist:
 

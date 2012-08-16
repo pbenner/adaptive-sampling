@@ -32,7 +32,6 @@
 #include <adaptive-sampling/datatypes.h>
 #include <adaptive-sampling/interface.h>
 
-
 static
 void invalidOptions(const char* name) {
         mexPrintf("Field `%s' does not exist.\n", name);
@@ -49,29 +48,70 @@ double getScalar(const mxArray* array, const char* name) {
 }
 
 static
-Options* getOptions(const mxArray *array)
+mxArray* copyMatrixToMatlab(matrix_t* in) {
+        mxArray *out = mxCreateDoubleMatrix(in->rows, in->columns, mxREAL);
+        mwSize  nsubs = mxGetNumberOfDimensions(out);
+        mwIndex* subs = mxCalloc(nsubs,sizeof(mwIndex));
+        double* m = mxGetPr(out);
+        mwIndex index;
+        size_t i, j;
+
+        for (i = 0; i < in->rows; i++) {
+                for (j = 0; j < in->columns; j++) {
+                        subs[0] = i;
+                        subs[1] = j;
+                        index = mxCalcSingleSubscript(out, nsubs, subs);
+                        m[index] = in->content[i][j];
+                }
+        }
+        mxFree(subs);
+
+        return out;
+}
+
+static
+mxArray* copyVectorToMatlab(vector_t* in) {
+        mxArray *out = mxCreateDoubleMatrix(1, in->size, mxREAL);
+        mwSize  nsubs = mxGetNumberOfDimensions(out);
+        mwIndex* subs = mxCalloc(nsubs,sizeof(mwIndex));
+        double* m = mxGetPr(out);
+        mwIndex index;
+        size_t i;
+
+        for (i = 0; i < in->size; i++) {
+                subs[1] = i;
+                index = mxCalcSingleSubscript(out, nsubs, subs);
+                m[index] = in->content[i];
+        }
+        mxFree(subs);
+
+        return out;
+}
+
+static
+options_t* getOptions(const mxArray *array)
 {
-        Options* options = (Options*)malloc(sizeof(Options));
+        options_t* options = (options_t*)malloc(sizeof(options_t));
         mxArray* tmp;
         double*  ptr;
 
         options->model_posterior = getScalar(array, "model_posterior");
-        options->utility = getScalar(array, "utility");
-        options->kl_component = getScalar(array, "kl_component");
+        options->kl_psi = getScalar(array, "kl_psi");
         options->kl_multibin  = getScalar(array, "kl_multibin");
         options->effective_counts = getScalar(array, "effective_counts");
+        options->effective_posterior_counts = getScalar(array, "effective_posterior_counts");
         options->bprob = getScalar(array, "bprob");
 
-        options->marginal = getScalar(array, "marginal");
-        options->marginal_step = getScalar(array, "marginal_step");
+        options->density = getScalar(array, "density");
+        options->density_step = getScalar(array, "density_step");
 
-        tmp = mxGetField(array, 0, "marginal_range");
-        if (tmp == 0) invalidOptions("marginal_range");
+        tmp = mxGetField(array, 0, "density_range");
+        if (tmp == 0) invalidOptions("density_range");
         ptr = mxGetPr(tmp);
-        options->marginal_range.from = ptr[0];
-        options->marginal_range.to   = ptr[1];
+        options->density_range.from = ptr[0];
+        options->density_range.to   = ptr[1];
         options->n_moments = getScalar(array, "n_moments");
-        options->n_marginals = (int)floor(1.0/options->marginal_step) + 1;
+        options->n_density = (int)floor(1.0/options->density_step) + 1;
 
         options->epsilon = getScalar(array, "epsilon");
         options->verbose = 0;
@@ -80,6 +120,8 @@ Options* getOptions(const mxArray *array)
         options->stacksize = getScalar(array, "stacksize");
         options->algorithm = getScalar(array, "algorithm");
         options->which = getScalar(array, "which");
+        options->hmm = getScalar(array, "hmm");
+        options->rho = getScalar(array, "rho");
 
         tmp = mxGetField(array, 0, "samples");
         if (tmp == 0) invalidOptions("samples");
@@ -202,155 +244,4 @@ matrix_t* getGamma(const mxArray* array, size_t L) {
         copyMatrix(gamma, array, 0);
 
         return gamma;
-}
-
-static
-void freeResult(BinningResult * result) {
-        if (result->moments) {
-                free_matrix(result->moments);
-        }
-        if (result->marginals) {
-                free_matrix(result->marginals);
-        }
-        if (result->bprob) {
-                free_vector(result->bprob);
-        }
-        if (result->mpost) {
-                free_vector(result->mpost);
-        }
-        if (result->utility) {
-                free_vector(result->utility);
-        }
-        free(result);
-}
-
-static
-BinningResult * callBinning(const mxArray *prhs[]) {
-
-        size_t  L = mxGetN(prhs[0]);
-        size_t  K = mxGetM(prhs[0])/L;
-        matrix_t** counts;
-        matrix_t** alpha;
-        vector_t* beta;
-        matrix_t* gamma;
-        Options* options;
-        BinningResult * result;
-
-        counts  = getCounts(prhs[0]);
-        alpha   = getAlpha(prhs[1], K, L);
-        beta    = getBeta(prhs[2], L);
-        gamma   = getGamma(prhs[3], L);
-        options = getOptions(prhs[4]);
-
-        result = binning(K, counts, alpha, beta, gamma, options);
-
-        freeCounts(counts);
-        freeAlpha(alpha);
-        free_vector(beta);
-        free_matrix(gamma);
-        free(options);
-
-        return result;
-}
-
-static
-mxArray* copyMatrixToMatlab(matrix_t* in) {
-        mxArray *out = mxCreateDoubleMatrix(in->rows, in->columns, mxREAL);
-        mwSize  nsubs = mxGetNumberOfDimensions(out);
-        mwIndex* subs = mxCalloc(nsubs,sizeof(mwIndex));
-        double* m = mxGetPr(out);
-        mwIndex index;
-        size_t i, j;
-
-        for (i = 0; i < in->rows; i++) {
-                for (j = 0; j < in->columns; j++) {
-                        subs[0] = i;
-                        subs[1] = j;
-                        index = mxCalcSingleSubscript(out, nsubs, subs);
-                        m[index] = in->content[i][j];
-                }
-        }
-        mxFree(subs);
-
-        return out;
-}
-
-static
-mxArray* copyVectorToMatlab(vector_t* in) {
-        mxArray *out = mxCreateDoubleMatrix(1, in->size, mxREAL);
-        mwSize  nsubs = mxGetNumberOfDimensions(out);
-        mwIndex* subs = mxCalloc(nsubs,sizeof(mwIndex));
-        double* m = mxGetPr(out);
-        mwIndex index;
-        size_t i;
-
-        for (i = 0; i < in->size; i++) {
-                subs[1] = i;
-                index = mxCalcSingleSubscript(out, nsubs, subs);
-                m[index] = in->content[i];
-        }
-        mxFree(subs);
-
-        return out;
-}
-
-static
-void copyResult(BinningResult* result, mxArray *plhs[]) {
-        const char **fnames;
-        const int nfields = 5;
-
-        /* allocate memory  for storing pointers */
-        fnames = mxCalloc(nfields, sizeof(*fnames));
-        fnames[0] = "moments";
-        fnames[1] = "marginals";
-        fnames[2] = "bprob";
-        fnames[3] = "mpost";
-        fnames[4] = "utility";
-
-        plhs[0] = mxCreateStructMatrix(1, 1, nfields, fnames);
-        mxFree((void *)fnames);
-
-        if (result->moments) {
-                mxSetField(plhs[0], 0, "moments", copyMatrixToMatlab(result->moments));
-        }
-        if (result->marginals) {
-                mxSetField(plhs[0], 0, "marginals", copyMatrixToMatlab(result->marginals));
-        }
-        if (result->bprob) {
-                mxSetField(plhs[0], 0, "bprob", copyVectorToMatlab(result->bprob));
-        }
-        if (result->mpost) {
-                mxSetField(plhs[0], 0, "mpost", copyVectorToMatlab(result->mpost));
-        }
-        if (result->utility) {
-                mxSetField(plhs[0], 0, "utility", copyVectorToMatlab(result->utility));
-        }
-}
-
-/*  the gateway routine.  */
-void mexFunction( int nlhs, mxArray *plhs[],
-                  int nrhs, const mxArray *prhs[] )
-{
-        BinningResult * result;
-
-        /* check proper input and output */
-        if (nrhs != 5) {
-                mexErrMsgTxt("Usage: binning(counts, alpha, beta, gamma, options).");
-        }
-        if (nlhs > 1) {
-                mexErrMsgTxt("Too many output arguments.");
-        }
-        if (!mxIsClass(prhs[0], "double") || !mxIsClass(prhs[1], "double") ||
-            !mxIsClass(prhs[2], "double") || !mxIsClass(prhs[3], "double")) {
-                mexErrMsgTxt("All matrices must be of type double.");
-        }
-        if (!mxIsStruct(prhs[4])) {
-                mexErrMsgTxt("Input must be a structure.");
-        }
-
-        result = callBinning(prhs);
-        copyResult(result, plhs);
-        freeResult(result);
-
-        return;
 }
