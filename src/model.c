@@ -136,7 +136,7 @@ prob_t iec_log(int kk, int k, binProblem *bp)
                 alpha[i] = countAlpha(i, kk, k, bp);
         }
         if (bp != NULL && kk <= bp->fix_prob.pos && bp->fix_prob.pos <= k) {
-                /* compute marginals
+                /* compute density
                  * TODO: extend to multinomial case */
                 if (bp->fix_prob.which == 0) {
                         return LOG(gamma) + (c[0]-1)*LOG(bp->fix_prob.val)
@@ -245,6 +245,7 @@ void hmm_fb(prob_t *result, prob_t *forward, prob_t *backward, prob_t (*f)(int, 
         size_t j;
 
         for (j = 0; j < bp->bd->L; j++) {
+                notice(NONE, "hmm_fb: %.1f%%", (float)100*(j+1)/bp->bd->L);
                 result[j] = hmm_fb_rec(forward, backward, j, f, bp) - forward[bp->bd->L-1];
         }
 }

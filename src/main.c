@@ -35,11 +35,11 @@
 
 #include <gsl/gsl_sf_gamma.h>
 
-#include <bayesian-binning-test.h>
 #include <break-probabilities.h>
 #include <datatypes.h>
+#include <density.h>
 #include <effective-counts.h>
-#include <marginal.h>
+#include <main-test.h>
 #include <model.h>
 #include <model-posterior.h>
 #include <moment.h>
@@ -66,24 +66,25 @@ void computeModelPrior(binData* bd)
 }
 
 static
-void computeUtility(vector_t *utility, prob_t evidence_ref, binData* bd)
+void computeUtility(utility_t *result, prob_t evidence_ref, binData* bd)
 {
         /* compute kl-divergence */
-        if (bd->options->kl_component || bd->options->kl_multibin) {
-                computeKLUtility(utility, evidence_ref, bd);
+        if (bd->options->kl_psi || bd->options->kl_multibin) {
+                computeKLUtility(result, evidence_ref, bd);
         }
         /* compute effective counts */
         else if (bd->options->effective_counts) {
-                computeEffectiveCountsUtility(utility, evidence_ref, bd);
+                computeEffectiveCountsUtility(result, evidence_ref, bd);
         }
+        /* compute effective posterior counts */
         else if (bd->options->effective_posterior_counts) {
-                computeEffectivePosteriorCountsUtility(utility, evidence_ref, bd);
+                computeEffectivePosteriorCountsUtility(result, evidence_ref, bd);
         }
 }
 
 static
 void computeBinning(
-        BinningResult* result,
+        marginal_t* result,
         binData *bd)
 {
         binProblem bp; binProblemInit(&bp, bd);
@@ -91,7 +92,7 @@ void computeBinning(
         prob_t evidence_log_tmp[bd->L];
 
         /* init sampler */
-        if (bd->options->algorithm == 2) {
+        if (bd->options->algorithm == 1) {
                 mgs_init(bd->options->samples[0], bd->options->samples[1],
                          bd->prior_log, &execPrombs_f, bd->L, (void *)&bp);
         }
@@ -101,9 +102,9 @@ void computeBinning(
         if (bd->options->model_posterior) {
                 computeModelPosteriors(evidence_log_tmp, result->mpost, evidence_ref, bd);
         }
-        /* compute marginal */
-        if (bd->options->marginal) {
-                computeMarginal(result->marginals, evidence_ref, bd);
+        /* compute density */
+        if (bd->options->density) {
+                computeDensity(result->density, evidence_ref, bd);
         }
         /* compute break probability */
         if (bd->options->bprob) {
@@ -113,12 +114,8 @@ void computeBinning(
         if (bd->options->n_moments > 0) {
                 computeMoments(result->moments, evidence_ref, bd);
         }
-        /* compute sampling utility */
-        if (bd->options->utility && bd->options->algorithm == 0) {
-                computeUtility(result->utility, evidence_ref, bd);
-        }
 
-        if (bd->options->algorithm == 2) {
+        if (bd->options->algorithm == 1) {
                 mgs_free();
         }
         binProblemFree(&bp);
@@ -126,7 +123,7 @@ void computeBinning(
 
 static
 void computeHMM(
-        BinningResult* result,
+        marginal_t* result,
         binData *bd)
 {
         binProblem bp; binProblemInit(&bp, bd);
@@ -141,19 +138,9 @@ void computeHMM(
         if (bd->options->n_moments > 0) {
                 hmm_computeMoments(result->moments, forward, backward, &bp);
         }
-        /* compute marginal */
-        if (bd->options->marginal) {
-                hmm_computeMarginal(result->marginals, forward, backward, &bp);
-        }
-        /* compute sampling utility */
-        if (bd->options->utility && bd->options->algorithm == 0) {
-                size_t i;
-                matrix_t *tmp = alloc_matrix(bd->events, bd->L);
-                hmm_computeUtility(tmp, forward, backward, &bp);
-                for (i = 0; i < bd->L; i++) {
-                        result->utility->content[i] = tmp->content[bd->events][i];
-                }
-                free_matrix(tmp);
+        /* compute density */
+        if (bd->options->density) {
+                hmm_computeDensity(result->density, forward, backward, &bp);
         }
 
         binProblemFree(&bp);
@@ -183,7 +170,7 @@ void __free__() {
 }
 
 /******************************************************************************
- * Library entry point
+ * Binning init and free
  ******************************************************************************/
 
 void bin_init(
@@ -192,7 +179,7 @@ void bin_init(
         matrix_t **alpha,
         vector_t  *beta,
         matrix_t  *gamma,
-        Options* options,
+        options_t* options,
         binData* bd)
 {
         size_t L = counts[0]->columns;
@@ -218,24 +205,27 @@ void bin_free(binData* bd)
         free(bd->prior_log);
 }
 
-BinningResult *
-binning(
+/******************************************************************************
+ * Library entry point
+ ******************************************************************************/
+
+marginal_t *
+posterior(
         int events,
         matrix_t **counts,
         matrix_t **alpha,
         vector_t  *beta,
         matrix_t  *gamma,
-        Options *options)
+        options_t *options)
 {
         binData bd;
         size_t L = counts[0]->columns;
 
-        BinningResult *result = (BinningResult *)malloc(sizeof(BinningResult));
-        result->moments   = (options->n_moments       ? alloc_matrix(options->n_moments, L)   : NULL);
-        result->marginals = (options->marginal        ? alloc_matrix(L, options->n_marginals) : NULL);
-        result->bprob     = (options->bprob           ? alloc_vector(L)                       : NULL);
-        result->mpost     = (options->model_posterior ? alloc_vector(L)                       : NULL);
-        result->utility   = (options->utility         ? alloc_vector(L)                       : NULL);
+        marginal_t *result = (marginal_t *)malloc(sizeof(marginal_t));
+        result->moments    = (options->n_moments       ? alloc_matrix(options->n_moments, L)   : NULL);
+        result->density    = (options->density         ? alloc_matrix(L, options->n_density)   : NULL);
+        result->bprob      = (options->bprob           ? alloc_vector(L)                       : NULL);
+        result->mpost      = (options->model_posterior ? alloc_vector(L)                       : NULL);
 
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
 
@@ -256,27 +246,37 @@ binning(
 /*
  * Compute the expected utility N steps ahead
  */
-matrix_t*
+utility_t*
 utility(
         int events,
         matrix_t **counts,
         matrix_t **alpha,
         vector_t  *beta,
         matrix_t  *gamma,
-        Options *options)
+        options_t *options)
 {
         binData bd;
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
         binProblem bp; binProblemInit(&bp, &bd);
 
-        prob_t forward [bd.L];
-        prob_t backward[bd.L];
-        matrix_t *result = alloc_matrix(events+1, bp.bd->L);
+        utility_t *result   = (utility_t *)malloc(sizeof(utility_t));
+        result->expectation = alloc_matrix(events, bp.bd->L);
+        result->utility     = alloc_vector(bp.bd->L);
 
-        hmm_forward (forward,  &bp);
-        hmm_backward(backward, &bp);
-        hmm_computeUtility(result, forward, backward, &bp);
+        if (options->hmm) {
+                prob_t forward [bd.L];
+                prob_t backward[bd.L];
 
+                hmm_forward (forward,  &bp);
+                hmm_backward(backward, &bp);
+                hmm_computeUtility(result, forward, backward, &bp);
+        }
+        else {
+                prob_t evidence_log_tmp[bd.L];
+                prob_t evidence_ref = evidence(evidence_log_tmp, &bp);
+
+                computeUtility(result, evidence_ref, &bd);
+        }
         bin_free(&bd);
 
         return result;
@@ -294,21 +294,26 @@ utilityAt(
         matrix_t **alpha,
         vector_t  *beta,
         matrix_t  *gamma,
-        Options *options)
+        options_t *options)
 {
         binData bd;
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
         binProblem bp; binProblemInit(&bp, &bd);
 
-        prob_t forward [bd.L];
-        prob_t backward[bd.L];
         /* result stores (expectation_1, ..., expectation_n, utility) */
-        vector_t *result   = alloc_vector(events+1);
+        vector_t *result = alloc_vector(events+1);
 
-        hmm_forward (forward,  &bp);
-        hmm_backward(backward, &bp);
-        hmm_computeUtilityAt(pos, result, forward, backward, &bp);
+        if (options->hmm) {
+                prob_t forward [bd.L];
+                prob_t backward[bd.L];
 
+                hmm_forward (forward,  &bp);
+                hmm_backward(backward, &bp);
+                hmm_computeUtilityAt(pos, result, forward, backward, &bp);
+        }
+        else {
+                warn(NONE, "This function is only implemented the hidden Markov model.");
+        }
         bin_free(&bd);
 
         return result;
@@ -327,20 +332,25 @@ distance(
         matrix_t **alpha,
         vector_t  *beta,
         matrix_t  *gamma,
-        Options *options)
+        options_t *options)
 {
         binData bd;
         bin_init(events, counts, alpha, beta, gamma, options, &bd);
         binProblem bp; binProblemInit(&bp, &bd);
 
-        prob_t forward [bd.L];
-        prob_t backward[bd.L];
-        prob_t result;
+        prob_t result = 0.0;
 
-        hmm_forward (forward,  &bp);
-        hmm_backward(backward, &bp);
-        result = hmm_computeDistance(x, y, forward, backward, &bp);
+        if (options->hmm) {
+                prob_t forward [bd.L];
+                prob_t backward[bd.L];
 
+                hmm_forward (forward,  &bp);
+                hmm_backward(backward, &bp);
+                result = hmm_computeDistance(x, y, forward, backward, &bp);
+        }
+        else {
+                warn(NONE, "This function is only implemented the hidden Markov model.");
+        }
         bin_free(&bd);
 
         return result;

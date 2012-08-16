@@ -46,26 +46,6 @@
  ******************************************************************************/
 
 static
-prob_t expectation(
-        size_t i,
-        size_t j,
-        prob_t evidence_ref,
-        binProblem *bp)
-{
-        prob_t evidence_log;
-        prob_t evidence_log_tmp[bp->bd->L];
-
-        bp->add_event.n     = 1;
-        bp->add_event.which = i;
-        bp->add_event.pos   = j;
-        evidence_log        = evidence(evidence_log_tmp, bp);
-        bp->add_event.pos   = -1;
-        bp->add_event.n     = 0;
-
-        return EXP(evidence_log - evidence_ref);
-}
-
-static
 prob_t predictive_f(int kk, int k, binProblem *bp)
 {
         prob_t sum = 0;
@@ -85,7 +65,7 @@ prob_t predictive_f(int kk, int k, binProblem *bp)
  ******************************************************************************/
 
 static
-prob_t KLComponentUtility_f(int kk, int k, void *data)
+prob_t KLPsiUtility_f(int kk, int k, void *data)
 {
         binProblem *bp = (binProblem *)data;
         size_t i;
@@ -109,7 +89,7 @@ prob_t KLComponentUtility_f(int kk, int k, void *data)
 }
 
 static
-prob_t KLComponentUtility_g(int kk, int k, void *data)
+prob_t KLPsiUtility_g(int kk, int k, void *data)
 {
         binProblem *bp = (binProblem *)data;
         size_t i;
@@ -128,6 +108,7 @@ prob_t KLComponentUtility_g(int kk, int k, void *data)
                         sum     += count[i];
                 }
                 if (kk <= bp->add_event.pos && bp->add_event.pos <= k) {
+                        /* negate this to get a positive term */
                         gamma *= -(gsl_sf_psi(count[bp->add_event.which])-gsl_sf_psi(sum));
                 }
                 return LOG(gamma) + (mbeta_log(count, bp) - mbeta_log(alpha, bp));
@@ -135,29 +116,30 @@ prob_t KLComponentUtility_g(int kk, int k, void *data)
 }
 
 static
-prob_t KLComponentUtility(size_t i, prob_t evidence_ref, binProblem *bp)
+void KLPsiUtility(utility_t* result, size_t i, prob_t evidence_ref, binProblem *bp)
 {
         prob_t ev_log[bp->bd->L];
-        prob_t sum1, sum2, result = 0;
+        prob_t sum1, sum2;
         size_t j;
 
         for (j = 0; j < bp->bd->events; j++) {
-
                 bp->add_event.n     = 1;
                 bp->add_event.pos   = i;
                 bp->add_event.which = j;
 
+                /* we use two functions for the utility to keep track
+                 * of negative terms */
+
                 /* localUtility_f */
-                prombs(ev_log, bp->ak, bp->bd->prior_log, KLComponentUtility_f, bp->bd->L, minM(bp), (void *)bp);
+                prombs(ev_log, bp->ak, bp->bd->prior_log, KLPsiUtility_f, bp->bd->L, minM(bp), (void *)bp);
                 sum1    = sumModels(ev_log, bp);
                 /* localUtility_g */
-                prombs(ev_log, bp->ak, bp->bd->prior_log, KLComponentUtility_g, bp->bd->L, minM(bp), (void *)bp);
+                prombs(ev_log, bp->ak, bp->bd->prior_log, KLPsiUtility_g, bp->bd->L, minM(bp), (void *)bp);
                 sum2    = sumModels(ev_log, bp);
 
-                result += +EXP(sum1 - evidence_ref);
-                result += -EXP(sum2 - evidence_ref);
+                result->utility->content[i] += +EXP(sum1 - evidence_ref);
+                result->utility->content[i] += -EXP(sum2 - evidence_ref);
         }
-        return result;
 }
 
 /******************************************************************************
@@ -189,16 +171,13 @@ prob_t KLMultibinUtility_f(int kk, int k, void *data)
 }
 
 static
-prob_t KLMultibinUtility(size_t i, prob_t evidence_ref, binProblem *bp)
+void KLMultibinUtility(utility_t* result, size_t i, prob_t evidence_ref, binProblem *bp)
 {
         prob_t ev_log[bp->bd->L];
-        prob_t sum, result = 0;
-        prob_t tmp;
+        prob_t sum;
         size_t j;
 
         for (j = 0; j < bp->bd->events; j++) {
-
-                tmp = expectation(j, i, evidence_ref, bp);
 
                 bp->add_event.n     = 1;
                 bp->add_event.pos   = i;
@@ -206,12 +185,45 @@ prob_t KLMultibinUtility(size_t i, prob_t evidence_ref, binProblem *bp)
 
                 /* localUtility_f */
                 prombs(ev_log, bp->ak, bp->bd->prior_log, KLMultibinUtility_f, bp->bd->L, minM(bp), (void *)bp);
-                sum     = sumModels(ev_log, bp);
+                sum = sumModels(ev_log, bp);
 
-                result += -EXP(sum - evidence_ref);
-                result += -tmp*LOG(tmp);
+                result->utility->content[i] += -EXP(sum - evidence_ref);
+                result->utility->content[i] += -result->expectation->content[j][i]*LOG(result->expectation->content[j][i]);
         }
-        return result;
+}
+
+/******************************************************************************
+ * Expectation
+ ******************************************************************************/
+
+static
+prob_t expectation(
+        size_t i,
+        size_t j,
+        prob_t evidence_ref,
+        binProblem *bp)
+{
+        prob_t evidence_log;
+        prob_t evidence_log_tmp[bp->bd->L];
+
+        bp->add_event.n     = 1;
+        bp->add_event.which = i;
+        bp->add_event.pos   = j;
+        evidence_log        = evidence(evidence_log_tmp, bp);
+        bp->add_event.pos   = -1;
+        bp->add_event.n     = 0;
+
+        return EXP(evidence_log - evidence_ref);
+}
+
+static
+void computeExpectation(utility_t* result, size_t i, prob_t evidence_ref, binProblem *bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->events; j++) {
+                result->expectation->content[j][i] = expectation(j, i, evidence_ref, bp);
+        }
 }
 
 /******************************************************************************
@@ -224,15 +236,18 @@ void * computeKLUtility_thread(void* data_)
         pthread_data_t *data  = (pthread_data_t *)data_;
         binProblem *bp = data->bp;
         int i = data->i;
-        vector_t *result    = (vector_t *)data->result;
+        utility_t *result    = (utility_t *)data->result;
         prob_t evidence_ref = data->evidence_ref;
 
-        result->content[i] = 0;
-        if (bp->bd->options->kl_component) {
-                result->content[i] += KLComponentUtility(i, evidence_ref, bp);
+        /* for each event compute its expectation */
+        computeExpectation(result, i, evidence_ref, bp);
+
+        /* compute utilities */
+        if (bp->bd->options->kl_psi) {
+                KLPsiUtility(result, i, evidence_ref, bp);
         }
         if (bp->bd->options->kl_multibin) {
-                result->content[i] += KLMultibinUtility(i, evidence_ref, bp);
+                KLMultibinUtility(result, i, evidence_ref, bp);
         }
 
         return NULL;
@@ -284,7 +299,7 @@ prob_t hmm_hu(int from, int to, binProblem* bp)
         /* alpha */
         for (j = from; j <= to; j++) {
                 for (i = 0; i < bp->bd->events; i++) {
-                        alpha[i] = countAlpha(i, j, j, bp); 
+                        alpha[i] = countAlpha(i, j, j, bp);
                 }
                 result -= mbeta_log(alpha, bp);
         }
@@ -306,7 +321,7 @@ prob_t hmm_hu(int from, int to, binProblem* bp)
 }
 
 void hmm_computeUtility(
-        matrix_t *result,
+        utility_t *result,
         prob_t *forward,
         prob_t *backward,
         binProblem *bp)
@@ -320,15 +335,15 @@ void hmm_computeUtility(
                 /* compute expectation */
                 hmm_fb(tmp, forward, backward, &hmm_he, bp);
                 for (j = 0; j < bp->bd->L; j++) {
-                        result->content[i][j] = +EXP(tmp[j]);
+                        result->expectation->content[i][j] = +EXP(tmp[j]);
                 }
                 /* compute utility */
                 hmm_fb(tmp, forward, backward, &hmm_hu, bp);
                 for (j = 0; j < bp->bd->L; j++) {
                         /* predictive entropy */
-                        result->content[bp->bd->events][j] += -result->content[i][j]*LOG(result->content[i][j]);
+                        result->utility->content[j] += -result->expectation->content[i][j]*LOG(result->expectation->content[i][j]);
                         /* parameter entropy */
-                        result->content[bp->bd->events][j] += -EXP(tmp[j]);
+                        result->utility->content[j] += -EXP(tmp[j]);
                 }
                 bp->add_event.pos   = -1;
                 bp->add_event.n     =  0;
@@ -443,7 +458,7 @@ prob_t hmm_computeDistance(
  ******************************************************************************/
 
 void computeKLUtility(
-        vector_t *result,
+        utility_t *result,
         prob_t evidence_ref,
         binData* bd)
 {

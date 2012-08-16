@@ -144,10 +144,10 @@ def plotSpikeRate(ax, x, result, dt):
     ax.set_ylim(y1, y2)
     return p[0]
 
-def plotMarginal(ax, x, result):
+def plotDensity(ax, x, result):
     N = len(result['moments'][0])
-    y = np.linspace(0, 1, len(result['marginals'][0]))
-    z = np.log(1+np.array(zip(*result['marginals'])))
+    y = np.linspace(0, 1, len(result['density'][0]))
+    z = np.log(1+np.array(zip(*result['density'])))
     im = NonUniformImage(ax, norm=Normalize(0,5,clip=True), interpolation='nearest', cmap=cm.Greys)
     im.set_data(x, y, z)
     ax.images.append(im)
@@ -178,8 +178,8 @@ def plotBinning(result, options):
     p11 = plotMoments(ax11, x, result)
     p12 = None
     p22 = None
-    if result['marginals'] and options['marginal']:
-        plotMarginal(ax11, x, result)
+    if result['density'] and options['density']:
+        plotDensity(ax11, x, result)
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
     if result['mpost'] and options['model_posterior']:
@@ -219,8 +219,8 @@ def plotBinningSpikes(x, timings, result, options):
     p12 = None
     p22 = None
     p32 = None
-    if result['marginals'] and options['marginal']:
-        plotMarginal(ax21, x, result)
+    if result['density'] and options['density']:
+        plotDensity(ax21, x, result)
     if result['bprob'] and options['bprob']:
         p12 = plotBinBoundaries(ax12, x, result)
     if result['mpost'] and options['model_posterior']:
@@ -261,8 +261,8 @@ def plotSampling(result, options, data):
     p12 = None
     p22 = None
     p32 = None
-    if result['marginals'] and options['marginal']:
-        plotMarginal(ax11, x, result)
+    if result['density'] and options['density']:
+        plotDensity(ax11, x, result)
     if data['gt']:
         p12 = plotGroundTruth(ax12, x, data['gt'])
     if result['bprob'] and options['bprob']:

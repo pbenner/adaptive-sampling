@@ -141,126 +141,35 @@ matrix_t* getGamma(SEXP r_gamma, size_t L) {
 }
 
 static
-Options* getOptions(SEXP r_options)
+options_t* getOptions(SEXP r_options)
 {
-        Options* options = (Options*)malloc(sizeof(Options));
+        options_t* options = (options_t*)malloc(sizeof(options_t));
 
-        options->model_posterior     = getreal(r_options, "model_posterior", 0);
-        options->utility             = getreal(r_options, "utility", 0);
-        options->kl_component        = getreal(r_options, "kl_component", 0);
-        options->kl_multibin         = getreal(r_options, "kl_multibin",  0);
-        options->effective_counts    = getreal(r_options, "effective_counts", 0);
-        options->bprob               = getreal(r_options, "bprob", 0);
-        options->marginal            = getreal(r_options, "marginal", 0);
-        options->marginal_step       = getreal(r_options, "marginal_step", 0);
-        options->marginal_range.from = getreal(r_options, "marginal_range", 0);
-        options->marginal_range.to   = getreal(r_options, "marginal_range", 1);
-        options->n_moments           = getreal(r_options, "n_moments", 0);
-        options->n_marginals         = floor(1.0/options->marginal_step) + 1;
-        options->epsilon             = getreal(r_options, "epsilon", 0);
-        options->verbose             = 0;
-        options->prombsTest          = 0;
-        options->threads             = getreal(r_options, "threads", 0);
-        options->stacksize           = getreal(r_options, "stacksize", 0);
-        options->algorithm           = getreal(r_options, "algorithm", 0);
-        options->which               = getreal(r_options, "which", 0);
-        options->samples[0]          = getreal(r_options, "samples", 0);
-        options->samples[1]          = getreal(r_options, "samples", 1);
+        options->model_posterior            = getreal(r_options, "model.posterior", 0);
+        options->kl_psi                     = getreal(r_options, "kl.psi", 0);
+        options->kl_multibin                = getreal(r_options, "kl.multibin",  0);
+        options->effective_counts           = getreal(r_options, "effective.counts", 0);
+        options->effective_posterior_counts = getreal(r_options, "effective.posterior.counts", 0);
+        options->bprob                      = getreal(r_options, "bprob", 0);
+        options->density                    = getreal(r_options, "density", 0);
+        options->density_step               = getreal(r_options, "density.step", 0);
+        options->density_range.from         = getreal(r_options, "density.range", 0);
+        options->density_range.to           = getreal(r_options, "density.range", 1);
+        options->n_moments                  = getreal(r_options, "n.moments", 0);
+        options->n_density                  = floor(1.0/options->density_step) + 1;
+        options->epsilon                    = getreal(r_options, "epsilon", 0);
+        options->verbose                    = 0;
+        options->prombsTest                 = 0;
+        options->threads                    = getreal(r_options, "threads", 0);
+        options->stacksize                  = getreal(r_options, "stacksize", 0);
+        options->algorithm                  = getreal(r_options, "algorithm", 0);
+        options->which                      = getreal(r_options, "which", 0);
+        options->samples[0]                 = getreal(r_options, "samples", 0);
+        options->samples[1]                 = getreal(r_options, "samples", 1);
+        options->hmm                        = getreal(r_options, "hmm", 0);
+        options->rho                        = getreal(r_options, "rho", 0);
 
         return options;
-}
-
-static
-SEXP copyResult(BinningResult* result) {
-        SEXP r_matrix;
-        SEXP r_vector;
-        SEXP r_result;
-
-        PROTECT(r_result = allocSExp(ENVSXP));
-
-        if (result->moments) {
-                PROTECT(r_matrix = copyMatrixToR(result->moments));
-                defineVar(install("moments"), r_matrix, r_result);
-                UNPROTECT(1);
-        }
-        if (result->marginals) {
-                PROTECT(r_matrix = copyMatrixToR(result->marginals));
-                defineVar(install("marginals"), r_matrix, r_result);
-                UNPROTECT(1);
-        }
-        if (result->bprob) {
-                PROTECT(r_vector = copyVectorToR(result->bprob));
-                defineVar(install("bprob"), r_vector, r_result);
-                UNPROTECT(1);
-        }
-        if (result->mpost) {
-                PROTECT(r_vector = copyVectorToR(result->mpost));
-                defineVar(install("mpost"), r_vector, r_result);
-                UNPROTECT(1);
-        }
-        if (result->utility) {
-                PROTECT(r_vector = copyVectorToR(result->utility));
-                defineVar(install("utility"), r_vector, r_result);
-                UNPROTECT(1);
-        }
-        UNPROTECT(1);
-
-        return r_result;
-}
-
-static
-void freeResult(BinningResult * result) {
-        if (result->moments) {
-                free_matrix(result->moments);
-        }
-        if (result->marginals) {
-                free_matrix(result->marginals);
-        }
-        if (result->bprob) {
-                free_vector(result->bprob);
-        }
-        if (result->mpost) {
-                free_vector(result->mpost);
-        }
-        if (result->utility) {
-                free_vector(result->utility);
-        }
-        free(result);
-}
-
-static
-BinningResult * callBinning(
-        SEXP r_counts,
-        SEXP r_alpha,
-        SEXP r_beta,
-        SEXP r_gamma,
-        SEXP r_options) {
-
-        SEXP dim = getAttrib(r_counts, R_DimSymbol);
-        size_t L = INTEGER(dim)[0];
-        size_t K = INTEGER(dim)[2];
-        matrix_t** counts;
-        matrix_t** alpha;
-        vector_t* beta;
-        matrix_t* gamma;
-        Options* options;
-        BinningResult * result;
-
-        counts  = getCounts(L, K, r_counts);
-        alpha   = getCounts(L, K, r_alpha);
-        beta    = getBeta(r_beta, L);
-        gamma   = getGamma(r_gamma, L);
-        options = getOptions(r_options);
-
-        result = binning(K, counts, alpha, beta, gamma, options);
-
-        freeCounts(counts);
-        freeCounts(alpha);
-        free_vector(beta);
-        free_matrix(gamma);
-        free(options);
-
-        return result;
 }
 
 SEXP check_input(
@@ -299,21 +208,203 @@ SEXP check_input(
         return R_NilValue;
 }
 
-SEXP adaptive_sampling(
+/******************************************************************************
+ * posterior
+ *****************************************************************************/
+
+static
+SEXP copyPosterior(marginal_t* result) {
+        SEXP r_matrix;
+        SEXP r_vector;
+        SEXP r_result;
+
+        PROTECT(r_result = allocSExp(ENVSXP));
+
+        if (result->moments) {
+                PROTECT(r_matrix = copyMatrixToR(result->moments));
+                defineVar(install("moments"), r_matrix, r_result);
+                UNPROTECT(1);
+        }
+        if (result->density) {
+                PROTECT(r_matrix = copyMatrixToR(result->density));
+                defineVar(install("density"), r_matrix, r_result);
+                UNPROTECT(1);
+        }
+        if (result->bprob) {
+                PROTECT(r_vector = copyVectorToR(result->bprob));
+                defineVar(install("bprob"), r_vector, r_result);
+                UNPROTECT(1);
+        }
+        if (result->mpost) {
+                PROTECT(r_vector = copyVectorToR(result->mpost));
+                defineVar(install("mpost"), r_vector, r_result);
+                UNPROTECT(1);
+        }
+        UNPROTECT(1);
+
+        return r_result;
+}
+
+static
+void freePosterior(marginal_t * result) {
+        if (result->moments) {
+                free_matrix(result->moments);
+        }
+        if (result->density) {
+                free_matrix(result->density);
+        }
+        if (result->bprob) {
+                free_vector(result->bprob);
+        }
+        if (result->mpost) {
+                free_vector(result->mpost);
+        }
+        free(result);
+}
+
+static
+marginal_t * callPosterior(
+        SEXP r_counts,
+        SEXP r_alpha,
+        SEXP r_beta,
+        SEXP r_gamma,
+        SEXP r_options) {
+
+        SEXP dim = getAttrib(r_counts, R_DimSymbol);
+        size_t L = INTEGER(dim)[0];
+        size_t K = INTEGER(dim)[2];
+        matrix_t** counts;
+        matrix_t** alpha;
+        vector_t* beta;
+        matrix_t* gamma;
+        options_t* options;
+        marginal_t * result;
+
+        counts  = getCounts(L, K, r_counts);
+        alpha   = getCounts(L, K, r_alpha);
+        beta    = getBeta(r_beta, L);
+        gamma   = getGamma(r_gamma, L);
+        options = getOptions(r_options);
+
+        result  = posterior(K, counts, alpha, beta, gamma, options);
+
+        freeCounts(counts);
+        freeCounts(alpha);
+        free_vector(beta);
+        free_matrix(gamma);
+        free(options);
+
+        return result;
+}
+
+SEXP call_posterior(
         SEXP r_counts,
         SEXP r_alpha,
         SEXP r_beta,
         SEXP r_gamma,
         SEXP r_options)
 {
-        BinningResult *result;
+        marginal_t *result;
         SEXP r_result;
 
         check_input(r_counts, r_alpha, r_beta, r_gamma, r_options);
 
-        result = callBinning(r_counts, r_alpha, r_beta, r_gamma, r_options);
-        PROTECT(r_result = copyResult(result));
-        freeResult(result);
+        result = callPosterior(r_counts, r_alpha, r_beta, r_gamma, r_options);
+        PROTECT(r_result = copyPosterior(result));
+        freePosterior(result);
+        UNPROTECT(1);
+
+        return r_result;
+}
+
+/******************************************************************************
+ * utility
+ *****************************************************************************/
+
+static
+utility_t* callUtility(
+        SEXP r_counts,
+        SEXP r_alpha,
+        SEXP r_beta,
+        SEXP r_gamma,
+        SEXP r_options) {
+
+        SEXP dim = getAttrib(r_counts, R_DimSymbol);
+        size_t L = INTEGER(dim)[0];
+        size_t K = INTEGER(dim)[2];
+        matrix_t** counts;
+        matrix_t** alpha;
+        vector_t* beta;
+        matrix_t* gamma;
+        options_t* options;
+        utility_t * result;
+
+        counts  = getCounts(L, K, r_counts);
+        alpha   = getCounts(L, K, r_alpha);
+        beta    = getBeta(r_beta, L);
+        gamma   = getGamma(r_gamma, L);
+        options = getOptions(r_options);
+
+        result  = utility(K, counts, alpha, beta, gamma, options);
+
+        freeCounts(counts);
+        freeCounts(alpha);
+        free_vector(beta);
+        free_matrix(gamma);
+        free(options);
+
+        return result;
+}
+
+static
+SEXP copyUtility(utility_t* result) {
+        SEXP r_matrix;
+        SEXP r_vector;
+        SEXP r_result;
+
+        PROTECT(r_result = allocSExp(ENVSXP));
+
+        if (result->expectation) {
+                PROTECT(r_matrix = copyMatrixToR(result->expectation));
+                defineVar(install("expectation"), r_matrix, r_result);
+                UNPROTECT(1);
+        }
+        if (result->utility) {
+                PROTECT(r_vector = copyVectorToR(result->utility));
+                defineVar(install("utility"), r_vector, r_result);
+                UNPROTECT(1);
+        }
+        UNPROTECT(1);
+
+        return r_result;
+}
+
+static
+void freeUtility(utility_t * result) {
+        if (result->expectation) {
+                free_matrix(result->expectation);
+        }
+        if (result->utility) {
+                free_vector(result->utility);
+        }
+}
+
+SEXP call_utility(
+        SEXP r_counts,
+        SEXP r_alpha,
+        SEXP r_beta,
+        SEXP r_gamma,
+        SEXP r_options)
+{
+        utility_t* result;
+        SEXP r_result;
+        SEXP r_matrix;
+
+        check_input(r_counts, r_alpha, r_beta, r_gamma, r_options);
+
+        result = callUtility(r_counts, r_alpha, r_beta, r_gamma, r_options);
+        PROTECT(r_result = copyUtility(result));
+        freeUtility(result);
         UNPROTECT(1);
 
         return r_result;

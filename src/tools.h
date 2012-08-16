@@ -128,9 +128,6 @@ void callBinningAlgorithm(
                 prombs(ev_log, bp->ak, bp->bd->prior_log, f, bp->bd->L, minM(bp), (void *)bp);
                 break;
         case 1:
-                prombs_tree(ev_log, bp->bd->prior_log, f, bp->bd->L, minM(bp), (void *)bp);
-                break;
-        case 2:
                 mgs(ev_log, bp->bd->prior_log, f, bp->bd->L, (void *)bp);
                 break;
         }
