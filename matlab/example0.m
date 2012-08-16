@@ -14,6 +14,6 @@ function result = demo()
 
   options = default_options();
 
-  result  = adaptive_sampling(counts, alpha, beta, gamma, options);
+  result  = samplingUtility(counts, alpha, beta, gamma, options);
 
 end % demo

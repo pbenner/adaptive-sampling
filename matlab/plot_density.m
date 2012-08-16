@@ -1,7 +1,7 @@
-function plot_marginal(results, varargin)
-% plot_marginal(results [, parameters])
+function plot_density(results, varargin)
+% plot_density(results [, parameters])
 %
-% plot MPM marginal
+% plot MPM density
 %
 % results: structure of results returned by algorithm specified in
 %   Poppe, Benner & Elze (2012)
@@ -9,18 +9,18 @@ function plot_marginal(results, varargin)
 % The following parameters are implemented:
 %
 % parameter, default [: description]
-%  'marginal', 1: plot full marginal distribution (if available);
-%    if no marginal available, the first two moments are plotted
-%  'marginal_colormap', flipud(gray(256)): colormap for plotting marginals
-%  'marginal_colorbar_location', 'off': colorbar for marginals;
+%  'density', 1: plot full density distribution (if available);
+%    if no density available, the first two moments are plotted
+%  'density_colormap', flipud(gray(256)): colormap for plotting densitys
+%  'density_colorbar_location', 'off': colorbar for densitys;
 %    see help colorbar for more details about locations;
-%    'marginal_colorbar_location', 'off' switches colorbar off
-%  'autoclip_marginal', 1: clip y axis of the marginals to sensible values
+%    'density_colorbar_location', 'off' switches colorbar off
+%  'autoclip_density', 1: clip y axis of the densitys to sensible values
 %    if not set, the whole range between 0 and 1 is plotted
-%  'normalize_marginal_plot', 0: normalize marginals so that different
-%    plots are easier to compare; if z are marginals, normalized marginals
+%  'normalize_density_plot', 0: normalize densitys so that different
+%    plots are easier to compare; if z are densitys, normalized densitys
 %    n are n = log(1+z) && n <= 5
-%  'median_plotprobs', 'r': plot properties of median (if marginal 
+%  'median_plotprobs', 'r': plot properties of median (if density 
 %    available)
 %  'quartiles', 1: plot 1st and 3rd quartile
 %  'quartiles_plotprobs', 'r--': plot properties of quartiles (apart from
@@ -44,24 +44,24 @@ function plot_marginal(results, varargin)
 % Examples:
 %  counts = [10 11 10 10 12 10 11 20 21 19 19 20 20 19 21 20; ...
 %    90 89 90 90 88 90 89 80 79 81 81 80 80 81 79 80];
-%  r = adsamp(counts, 'marginal_step', 0.001)
-%  plot_marginal(r);
-%  plot_marginal(r, ...
-%    'marginal_colorbar_location', 'NorthOutside', ...
-%    'marginal_colormap', winter);
+%  r = adsamp(counts, 'density_step', 0.001)
+%  plot_density(r);
+%  plot_density(r, ...
+%    'density_colorbar_location', 'NorthOutside', ...
+%    'density_colormap', winter);
 %
 %  counts = [1 2 2 3 2 4 4 5 3 4 6 5 4 5 4 5 5 4 3 4 4 5 5 6 6 6 7 8 8 8 7 5 4 4 2 2; ...
 %    9 8 8 7 8 6 6 5 7 6 4 5 6 5 6 5 5 6 7 6 6 5 5 4 4 4 3 2 2 2 3 5 6 6 8 8];
 %  r = adsamp(counts)
-%  plot_marginal(r, 'bprob', 1);
+%  plot_density(r, 'bprob', 1);
 
 % options:
 p = inputParser;
-p.addParamValue('marginal', 1, @isscalar);
-p.addParamValue('marginal_colormap', flipud(gray(256)), @isnumeric);
-p.addParamValue('marginal_colorbar_location', 'off', @ischar);
-p.addParamValue('autoclip_marginal', 1, @isscalar);
-p.addParamValue('normalize_marginal_plot', 0, @isscalar);
+p.addParamValue('density', 1, @isscalar);
+p.addParamValue('density_colormap', flipud(gray(256)), @isnumeric);
+p.addParamValue('density_colorbar_location', 'off', @ischar);
+p.addParamValue('autoclip_density', 1, @isscalar);
+p.addParamValue('normalize_density_plot', 0, @isscalar);
 p.addParamValue('median_plotprobs', 'r', @ischar);
 p.addParamValue('quartiles', 1, @isscalar);
 p.addParamValue('quartiles_plotprobs', 'r--', @ischar);
@@ -85,13 +85,13 @@ p.parse(varargin{:});
 legend_handles = [];
 legend_strings = {};
 
-if isfield(results, 'marginals')
+if isfield(results, 'density')
 	% calculate quantiles [.025 .25 .50 .75 .975]:
-	n = length(results.marginals(:, 1));
+	n = length(results.density(:, 1));
 	quantiles_p = [.025 .25 .50 .75 .975];
 	quantiles = zeros(5, n);
 	for i=1:n
-		v = results.marginals(i, :);
+		v = results.density(i, :);
 		% normalized cumsum:
 		ncumsum = cumsum(v)/sum(v);
 		% make data distinct:
@@ -100,11 +100,11 @@ if isfield(results, 'marginals')
 		quantiles(:, i) = interp1(ncd, ind/ind(end), quantiles_p);
 	end
 	
-	if p.Results.marginal
-		image_matrix = flipud(results.marginals');
-		if p.Results.normalize_marginal_plot
+	if p.Results.density
+		image_matrix = flipud(results.density');
+		if p.Results.normalize_density_plot
 			image_matrix = log(1+image_matrix);
-			maplength = length(p.Results.marginal_colormap);
+			maplength = length(p.Results.density_colormap);
 			image_matrix = maplength*(image_matrix/5);
 			image(...
 				[1 n], ...
@@ -118,12 +118,12 @@ if isfield(results, 'marginals')
 		end
 		
 		set(gca, 'YDir', 'normal');
-		colormap(p.Results.marginal_colormap);
-		if ~strcmp(p.Results.marginal_colorbar_location, 'off')
-			colorbar('location', p.Results.marginal_colorbar_location)
+		colormap(p.Results.density_colormap);
+		if ~strcmp(p.Results.density_colorbar_location, 'off')
+			colorbar('location', p.Results.density_colorbar_location)
 		end
 		xlim(p.Results.X([1,end]));
-    if p.Results.autoclip_marginal
+    if p.Results.autoclip_density
 			if p.Results.outer_quantiles
 				ylim([min(quantiles(1, :)) max(quantiles(5, :))]);
 			else
@@ -157,7 +157,7 @@ if isfield(results, 'marginals')
 end
 
 % plot moments:
-if ~isfield(results, 'marginals') ||  p.Results.add_moments
+if ~isfield(results, 'density') ||  p.Results.add_moments
 	if ~isfield(results, 'moments')
 		error('results structure does not contain moments')
 	end
