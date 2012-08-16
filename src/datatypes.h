@@ -32,7 +32,7 @@
 
 /* data that has to be immutable */
 typedef struct {
-        Options *options;
+        options_t *options;
         /* number of timesteps */
         size_t L;
         size_t events;

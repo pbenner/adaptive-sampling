@@ -68,15 +68,15 @@ def usage():
     print "       --look-ahead=N                 - recursion depth for the sampling look ahead"
     print "       --hmm                          - use hidden Markov model"
     print "       --rho                          - rho parameter for the HMM"
-    print "   -m  --marginal                     - compute full marginal distribution"
-    print "   -r  --marginal-range=(FROM,TO)     - limit range for the marginal distribution"
-    print "   -s  --marginal-step=STEP           - step size for the marginal distribution"
+    print "   -m  --density                     - compute full density distribution"
+    print "   -r  --density-range=(FROM,TO)     - limit range for the density distribution"
+    print "   -s  --density-step=STEP           - step size for the density distribution"
     print "       --no-model-posterior           - do not compute the model posterior"
     print "       --epsilon=EPSILON              - epsilon for the extended prombs"
     print "   -n  --samples=N                    - number of samples"
     print "   -k  --moments=N                    - compute the first N>=2 moments"
     print "       --which=EVENT                  - for which event to compute the binning"
-    print "       --algorithm=NAME               - select an algorithm [mgs, prombstree, default: prombs]"
+    print "       --algorithm=NAME               - select an algorithm [mgs, default: prombs]"
     print "       --mgs-samples=BURN_IN:SAMPLES  - number of samples [default: 100:2000] for mgs"
     print "       --path-iteratin                - use path iteration algorithm instead of backward"
     print "                                        to compute n-step utilities"
@@ -99,8 +99,8 @@ def usage():
     print "Sampling strategies:"
     print "       --strategy=STRATEGY            - uniform, uniform-random, kl-divergence (default),"
     print "                                        effective-counts, effective-posterior-counts"
-    print "       --kl-component                 - if kl-divergence is selected as strategy then use"
-    print "                                        add the component divergence"
+    print "       --kl-psi                       - if kl-divergence is selected as strategy then use"
+    print "                                        add the psi divergence"
     print "       --kl-multibin                  - if kl-divergence is selected as strategy then use"
     print "                                        add the multibin divergence"
     print
@@ -150,7 +150,7 @@ def saveResult(result):
     config.add_section('Sampling Result')
     config.set('Sampling Result', 'counts',    "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['counts'])))
     config.set('Sampling Result', 'moments',   "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
-    config.set('Sampling Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
+    config.set('Sampling Result', 'density',   "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['density'])))
     config.set('Sampling Result', 'samples',   " ".join(map(str, result['samples'])))
     config.set('Sampling Result', 'utility',   " ".join(map(str, result['utility'])))
     config.set('Sampling Result', 'bprob',     " ".join(map(str, result['bprob'])))
@@ -174,20 +174,20 @@ def loadResult():
         distances = []
         bprob     = []
 
-        counts    = config.readMatrix(config_parser, 'Sampling Result', 'counts',    int)
-        moments   = config.readMatrix(config_parser, 'Sampling Result', 'moments',   float)
-        marginals = config.readMatrix(config_parser, 'Sampling Result', 'marginals', float)
-        samples   = config.readVector(config_parser, 'Sampling Result', 'samples',   int)
-        mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',     float)
+        counts    = config.readMatrix(config_parser, 'Sampling Result', 'counts',  int)
+        moments   = config.readMatrix(config_parser, 'Sampling Result', 'moments', float)
+        density   = config.readMatrix(config_parser, 'Sampling Result', 'density', float)
+        samples   = config.readVector(config_parser, 'Sampling Result', 'samples', int)
+        mpost     = config.readVector(config_parser, 'Sampling Result', 'mpost',   float)
         states    = config.readStates(config_parser, 'Sampling Result', 'states')
         if config_parser.has_option('Sampling Result', 'distances'):
             distances = config.readVector(config_parser, 'Sampling Result', 'distances', float)
         if config_parser.has_option('Sampling Result', 'bprob'):
-            bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',     float)
+            bprob = config.readVector(config_parser, 'Sampling Result', 'bprob',   float)
         result = {
             'distances' : distances,
             'moments'   : moments,
-            'marginals' : marginals,
+            'density'   : density,
             'bprob'     : bprob,
             'mpost'     : mpost,
             'counts'    : counts,
@@ -197,7 +197,7 @@ def loadResult():
         result = {
             'distances' : [],
             'moments'   : [],
-            'marginals' : [],
+            'density'   : [],
             'bprob'     : [],
             'mpost'     : [],
             'counts'    : [],
@@ -205,19 +205,19 @@ def loadResult():
             'states'    : [] }
     return result
 
-# binning interface
+# call the interface
 # ------------------------------------------------------------------------------
 
-def bin(counts_v, data, bin_options):
+def call_posterior(counts_v, data, bin_options):
     """Call the binning library."""
     events = len(counts_v)
     counts = statistics.countStatistic(counts_v)
     alpha  = data['alpha']
     beta   = data['beta']
     gamma  = data['gamma']
-    return interface.binning(events, counts, alpha, beta, gamma, bin_options)
+    return interface.posterior(events, counts, alpha, beta, gamma, bin_options)
 
-def bin_utility(counts_v, data, bin_options):
+def call_utility(counts_v, data, bin_options):
     """Call the binning library."""
     events        = len(counts_v)
     counts        = statistics.countStatistic(counts_v)
@@ -226,7 +226,7 @@ def bin_utility(counts_v, data, bin_options):
     gamma         = data['gamma']
     return interface.utility(events, counts, alpha, beta, gamma, bin_options)
 
-def bin_distance(x, y, counts_v, data, bin_options):
+def call_distance(x, y, counts_v, data, bin_options):
     """Call the binning library."""
     events        = len(counts_v)
     counts        = statistics.countStatistic(counts_v)
@@ -234,39 +234,6 @@ def bin_distance(x, y, counts_v, data, bin_options):
     beta          = data['beta']
     gamma         = data['gamma']
     return interface.distance(x, y, events, counts, alpha, beta, gamma, bin_options)
-
-# prombs wrapper
-# ------------------------------------------------------------------------------
-
-def prombsUtility(counts, data):
-    bin_options = options.copy()
-    # hmm
-    if options['hmm']:
-        return bin_utility(counts, data, bin_options)
-    # prombs
-    bin_options['utility']         = True
-    bin_options['model_posterior'] = False
-    bin_options['marginal']        = 0
-    bin_options['n_moments']       = 0
-    result = bin(counts, data, bin_options)
-    if options['strategy'] == 'kl-divergence':
-        return result['utility']
-    if options['strategy'] == 'kl-multibin':
-        return result['utility']
-    if options['strategy'] == 'effective-counts':
-        return result['utility']
-    if options['strategy'] == 'effective-posterior-counts':
-        return result['utility']
-
-def prombsExpectation(y, counts, data):
-    bin_options = options.copy()
-    bin_options['utility']         = False
-    bin_options['model_posterior'] = False
-    bin_options['marginal']        = 0
-    bin_options['n_moments']       = 1
-    bin_options['which']           = y
-    result = bin(counts, data, bin_options)
-    return result['moments'][0]
 
 # recursive computation of utilities
 # ------------------------------------------------------------------------------
@@ -278,9 +245,10 @@ def recursiveUtility(counts, data, m, hashutil):
     key = computeKey(counts)
     # compute immediate utility if not done yet
     if not hashutil.get(key):
-        hashutil[key] = prombsUtility(counts, data)
+        hashutil[key] = call_utility(counts, data, options)
     # receive utility and expectation
-    (expectation, utility) = hashutil[key]
+    tmp = hashutil[key]
+    (expectation, utility) = (tmp['expectation'], tmp['utility'])
     if m == 0:
         return utility
     else:
@@ -308,7 +276,7 @@ class ThreadUtility(threading.Thread):
     def run(self):
         while True:
             counts = self.queue_in.get()
-            result = prombsUtility(counts, self.data)
+            result = call_utility(counts, self.data, options)
             self.queue_out.put((counts, result))
             self.queue_in.task_done()
 
@@ -437,7 +405,7 @@ def save_frame(result, data, utility, i):
     importMatplotlib('Agg')
     from matplotlib.pyplot import savefig
     pyplot.clf()
-    bin_result = bin(result['counts'], data, options)
+    bin_result = call_posterior(result['counts'], data, options)
     bin_result['counts']  = result['counts']
     bin_result['samples'] = result['samples']
     bin_result['states']  = result['states']
@@ -477,7 +445,7 @@ def sample(result, data):
         event = experiment(index, data, result, msocket)
         # compute Kullback-Leibler distance for the new sample
         if options['distances']:
-            result['distances'].append(bin_distance(index, event, result['counts'], data, options))
+            result['distances'].append(call_distance(index, event, result['counts'], data, options))
         # record new sample
         result['samples'  ].append(index)
         result['counts'   ][event][index] += 1
@@ -485,7 +453,7 @@ def sample(result, data):
             save_frame(result, data, utility, i)
     index, utility = selectItem(result['counts'], data)
     # update result
-    bin_result = bin(result['counts'], data, options)
+    bin_result = call_posterior(result['counts'], data, options)
     bin_result['counts']    = result['counts']
     bin_result['distances'] = result['distances']
     bin_result['samples']   = result['samples']
@@ -562,9 +530,9 @@ options = {
     'epsilon'                    : 0.00001,
     'n_moments'                  : 2,
     'mgs_samples'                : (100,2000),
-    'marginal'                   : 0,
-    'marginal_step'              : 0.01,
-    'marginal_range'             : (0.0,1.0),
+    'density'                    : 0,
+    'density_step'               : 0.01,
+    'density_range'              : (0.0,1.0),
     'which'                      : 0,
     'lapsing'                    : 0.0,
     'threads'                    : 1,
@@ -583,7 +551,7 @@ options = {
     'compare'                    : False,
     'bprob'                      : False,
     'utility'                    : False,
-    'kl_component'               : False,
+    'kl_psi'                     : False,
     'kl_multibin'                : False,
     'effective_counts'           : False,
     'effective_posterior_counts' : False,
@@ -597,10 +565,10 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range=",
-                      "marginal-step=", "which=", "epsilon=", "moments", "look-ahead=",
+        longopts   = ["help", "verbose", "load=", "save=", "density", "density-range=",
+                      "density-step=", "which=", "epsilon=", "moments", "look-ahead=",
                       "savefig=", "lapsing=", "port=", "threads=", "stacksize=",
-                      "strategy=", "kl-component", "kl-multibin", "algorithm=", "samples=",
+                      "strategy=", "kl-psi", "kl-multibin", "algorithm=", "samples=",
                       "mgs-samples", "no-model-posterior", "video=", "hmm", "rho=",
                       "path-iteration", "distances" ]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:n:bhvt", longopts)
@@ -619,12 +587,12 @@ def main():
             options["look_ahead"] = int(a)
         if o in ("-n", "--samples"):
             options["samples"] = int(a)
-        if o in ("-m", "--marginal"):
-            options["marginal"] = True
-        if o in ("-r", "--marginal-range"):
-            options['marginal_range'] = tuple(map(float, a[1:-1].split(',')))
-        if o in ("-s", "--marginal-step"):
-            options["marginal_step"] = float(a)
+        if o in ("-m", "--density"):
+            options["density"] = True
+        if o in ("-r", "--density-range"):
+            options['density_range'] = tuple(map(float, a[1:-1].split(',')))
+        if o in ("-s", "--density-step"):
+            options["density_step"] = float(a)
         if o in ("-k", "--moments"):
             if int(a) >= 2:
                 options["n_moments"] = int(a)
@@ -642,8 +610,8 @@ def main():
             options["lapsing"] = float(a)
         if o == "--strategy":
             options["strategy"] = a
-        if o == "--kl-component":
-            options["kl_component"] = True
+        if o == "--kl-psi":
+            options["kl_psi"] = True
         if o == "--kl-multibin":
             options["kl_multibin"] = True
         if o == "--load":
@@ -685,10 +653,10 @@ def main():
         if o == "--path-iteration":
             options["path_iteration"] = True
     if (options["strategy"] == "kl-divergence" and
-        options["kl_component"] == False       and
+        options["kl_psi"]   == False           and
         options["kl_multibin"]  == False):
        # set default kl divergence
-       options["kl_component"]  = True
+       options["kl_psi"]   = True
     if options["strategy"] == "effective-counts":
         options["effective_counts"] = True
     if options["strategy"] == "effective-posterior-counts":

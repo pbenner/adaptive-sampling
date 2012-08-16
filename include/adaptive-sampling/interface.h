@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef BAYESIAN_BINNING_H
-#define BAYESIAN_BINNING_H
+#ifndef ADAPTIVE_SAMPLING_INTERFACE_H
+#define ADAPTIVE_SAMPLING_INTERFACE_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -27,6 +27,19 @@
 void __init__(double epsilon);
 void __free__();
 
-BinningResult * binning(int events, matrix_t **counts, matrix_t **alpha, vector_t *beta, matrix_t *gamma, Options *options);
+marginal_t* posterior(
+        int events,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t *beta,
+        matrix_t *gamma,
+        options_t *options);
+utility_t* utility(
+        int events,
+        matrix_t **counts,
+        matrix_t **alpha,
+        vector_t  *beta,
+        matrix_t  *gamma,
+        options_t *options);
 
-#endif /* BAYESIAN_BINNING */
+#endif /* ADAPTIVE_SAMPLING_INTERFACE */

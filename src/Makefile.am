@@ -5,13 +5,13 @@ INCLUDES = -I$(top_srcdir)/include
 ## bayesian-binning library
 lib_LTLIBRARIES  = libadaptive-sampling.la
 libadaptive_sampling_la_SOURCES = \
-	bayesian-binning.c \
-	bayesian-binning-test.h bayesian-binning-test.c \
 	break-probabilities.c break-probabilities.h \
 	datatypes.h \
+	density.c density.h \
 	effective-counts.c effective-counts.h \
 	interface.c interface.h \
-	marginal.c marginal.h \
+	main.c \
+	main-test.h main-test.c \
 	model.c model.h \
 	model-posterior.c model-posterior.h \
 	moment.c moment.h \

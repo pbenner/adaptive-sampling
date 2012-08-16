@@ -29,10 +29,10 @@ if   os.path.exists(os.path.dirname(__file__)+'/../src/.libs/libadaptive-samplin
      _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.so')
 elif os.path.exists(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.dylib'):
      _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/libadaptive-sampling.dylib')
-elif os.path.exists(os.path.dirname(__file__)+'/../src/.libs/cygbayesian-binning-0.dll'):
-     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/cygbayesian-binning-0.dll')
+elif os.path.exists(os.path.dirname(__file__)+'/../src/.libs/cygadaptive-sampling-0.dll'):
+     _lib = cdll.LoadLibrary(os.path.dirname(__file__)+'/../src/.libs/cygadaptive-sampling-0.dll')
 else:
-     for libname in ['libadaptive-sampling.so.0', 'cygbayesian-binning-0.dll', 'libadaptive-sampling.0.dylib']:
+     for libname in ['libadaptive-sampling.so.0', 'cygadaptive-sampling-0.dll', 'libadaptive-sampling.0.dylib']:
           if not _lib:
                try:
                     _lib = cdll.LoadLibrary(libname)
@@ -53,7 +53,7 @@ class MATRIX(Structure):
                  ("columns", c_int),
                  ("content", POINTER(POINTER(c_double)))]
 
-class MARGINAL_RANGE(Structure):
+class DENSITY_RANGE(Structure):
      _fields_ = [("from", c_float),
                  ("to",   c_float)]
 
@@ -64,19 +64,18 @@ class OPTIONS(Structure):
                  ("bprob",                c_int),
                  ("threads",              c_int),
                  ("stacksize",            c_int),
-                 ("utility",              c_int),
-                 ("kl_component",         c_int),
+                 ("kl_psi",               c_int),
                  ("kl_multibin",          c_int),
                  ("effective_counts",     c_int),
                  ("effective_posterior_counts", c_int),
                  ("which",                c_int),
                  ("algorithm",            c_int),
                  ("samples",            2*c_int),
-                 ("marginal",             c_int),
-                 ("marginal_step",        c_float),
-                 ("marginal_range",       MARGINAL_RANGE),
+                 ("density",              c_int),
+                 ("density_step",         c_float),
+                 ("density_range",        DENSITY_RANGE),
                  ("n_moments",            c_int),
-                 ("n_marginals",          c_int),
+                 ("n_density",            c_int),
                  ("model_posterior",      c_int),
                  ("hmm",                  c_int),
                  ("rho",                  c_float)]
@@ -86,17 +85,17 @@ class OPTIONS(Structure):
           self.stacksize            = c_int(options["stacksize"])
           self.samples[0]           = c_int(options["mgs_samples"][0])
           self.samples[1]           = c_int(options["mgs_samples"][1])
-          self.marginal             = c_int(options["marginal"])
-          self.marginal_step        = c_float(options["marginal_step"])
-          self.marginal_range       = MARGINAL_RANGE(*options["marginal_range"])
+          self.density              = c_int(options["density"])
+          self.density_step         = c_float(options["density_step"])
+          self.density_range        = DENSITY_RANGE(*options["density_range"])
           self.n_moments            = c_int(options["n_moments"])
-          self.n_marginals          = c_int(int(math.floor(1.0/options["marginal_step"]) + 1))
+          self.n_density            = c_int(int(math.floor(1.0/options["density_step"]) + 1))
           self.epsilon              = c_float(options["epsilon"])
-          self.verbose              = c_int(1) if options["verbose"]    else c_int(0)
-          self.prombsTest           = c_int(1) if options["prombsTest"] else c_int(0)
-          self.bprob                = c_int(1) if options["bprob"]      else c_int(0)
-          self.utility              = c_int(1) if options["utility"]    else c_int(0)
-          self.kl_component         = c_int(1) if options["kl_component"] else c_int(0)
+          self.verbose              = c_int(1) if options["verbose"]     else c_int(0)
+          self.prombsTest           = c_int(1) if options["prombsTest"]  else c_int(0)
+          self.bprob                = c_int(1) if options["bprob"]       else c_int(0)
+          self.utility              = c_int(1) if options["utility"]     else c_int(0)
+          self.kl_psi               = c_int(1) if options["kl_psi"]      else c_int(0)
           self.kl_multibin          = c_int(1) if options["kl_multibin"] else c_int(0)
           self.effective_counts     = c_int(1) if options["effective_counts"]  else c_int(0)
           self.effective_posterior_counts = c_int(1) if options["effective_posterior_counts"]  else c_int(0)
@@ -105,19 +104,21 @@ class OPTIONS(Structure):
           self.rho                  = c_float(options["rho"])
           if options["algorithm"] == "prombs":
                self.algorithm = c_int(0)
-          elif options["algorithm"] == "prombstree":
-               self.algorithm = c_int(1)
           elif options["algorithm"] == "mgs":
-               self.algorithm = c_int(2)
+               self.algorithm = c_int(1)
           else:
                raise IOError("Unknown algorithm.")
 
-class BINNING_RESULT(Structure):
+class POSTERIOR(Structure):
      _fields_ = [("moments",   POINTER(MATRIX)),
-                 ("marginals", POINTER(MATRIX)),
+                 ("density",   POINTER(MATRIX)),
                  ("bprob",     POINTER(VECTOR)),
                  ("mpost",     POINTER(VECTOR)),
                  ("utility",   POINTER(VECTOR))]
+
+class UTILITY(Structure):
+     _fields_ = [("expectation", POINTER(MATRIX)),
+                 ("utility",     POINTER(VECTOR))]
 
 # function prototypes
 # ------------------------------------------------------------------------------
@@ -143,10 +144,10 @@ _lib._init_.argtype         = [c_double]
 _lib._free_.restype         = None
 _lib._free_.argtype         = []
 
-_lib.binning.restype        = POINTER(BINNING_RESULT)
-_lib.binning.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.posterior.restype      = POINTER(POSTERIOR)
+_lib.posterior.argtypes     = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
-_lib.utility.restype        = POINTER(MATRIX)
+_lib.utility.restype        = POINTER(UTILITY)
 _lib.utility.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
 _lib.utilityAt.restype      = POINTER(VECTOR)
@@ -191,7 +192,7 @@ def init(epsilon):
 def free():
      _lib._free_()
 
-def binning(events, counts, alpha, beta, gamma, options):
+def posterior(events, counts, alpha, beta, gamma, options):
      c_events = c_int(events)
      c_counts = (events*POINTER(MATRIX))()
      c_alpha  = (events*POINTER(MATRIX))()
@@ -206,7 +207,7 @@ def binning(events, counts, alpha, beta, gamma, options):
      copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
-     tmp = _lib.binning(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
+     tmp = _lib.posterior(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
 
      for i in range(0, events):
           _lib._free_matrix(c_counts[i])
@@ -215,22 +216,19 @@ def binning(events, counts, alpha, beta, gamma, options):
      _lib._free_matrix(c_gamma)
 
      result = \
-     { 'moments'   : getMatrix(tmp.contents.moments)   if bool(tmp.contents.moments)   else [],
-       'marginals' : getMatrix(tmp.contents.marginals) if bool(tmp.contents.marginals) else [],
-       'bprob'     : getVector(tmp.contents.bprob)     if bool(tmp.contents.bprob)     else [],
-       'mpost'     : getVector(tmp.contents.mpost)     if bool(tmp.contents.mpost)     else [],
-       'utility'   : getVector(tmp.contents.utility)   if bool(tmp.contents.utility)   else [] }
+         { 'moments'   : getMatrix(tmp.contents.moments)   if bool(tmp.contents.moments)   else [],
+           'density'   : getMatrix(tmp.contents.density)   if bool(tmp.contents.density)   else [],
+           'bprob'     : getVector(tmp.contents.bprob)     if bool(tmp.contents.bprob)     else [],
+           'mpost'     : getVector(tmp.contents.mpost)     if bool(tmp.contents.mpost)     else [] }
 
      if bool(tmp.contents.moments):
           _lib._free_matrix(tmp.contents.moments)
-     if bool(tmp.contents.marginals):
-          _lib._free_matrix(tmp.contents.marginals)
+     if bool(tmp.contents.density):
+          _lib._free_matrix(tmp.contents.density)
      if bool(tmp.contents.bprob):
           _lib._free_vector(tmp.contents.bprob)
      if bool(tmp.contents.mpost):
           _lib._free_vector(tmp.contents.mpost)
-     if bool(tmp.contents.utility):
-          _lib._free_vector(tmp.contents.utility)
      _lib._free(tmp)
 
      return result
@@ -250,17 +248,25 @@ def utility(events, counts, alpha, beta, gamma, options):
      copyMatrixToC(gamma,  c_gamma)
      c_options = pointer(OPTIONS(options))
 
-     c_result = _lib.utility(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
-     result   = getMatrix(c_result)
+     tmp = _lib.utility(c_events, c_counts, c_alpha, c_beta, c_gamma, c_options)
 
      for i in range(0, events):
           _lib._free_matrix(c_counts[i])
           _lib._free_matrix(c_alpha[i])
      _lib._free_vector(c_beta)
      _lib._free_matrix(c_gamma)
-     _lib._free_matrix(c_result)
 
-     return (result[0:-1], result[-1])
+     result = \
+         { 'expectation' : getMatrix(tmp.contents.expectation) if bool(tmp.contents.expectation) else [],
+           'utility'     : getVector(tmp.contents.utility)     if bool(tmp.contents.utility)     else [] }
+
+     if bool(tmp.contents.expectation):
+          _lib._free_matrix(tmp.contents.expectation)
+     if bool(tmp.contents.utility):
+          _lib._free_vector(tmp.contents.utility)
+     _lib._free(tmp)
+
+     return result
 
 def utilityAt(i, events, counts, alpha, beta, gamma, options):
      c_i           = c_int(i)

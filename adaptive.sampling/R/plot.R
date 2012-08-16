@@ -1,113 +1,25 @@
-make.options <- function(
-	n_moments=2, 
-	model_posterior=1, 
-	bprob = 1, utility = 1, 
-	kl_component=1, 
-	kl_multibin=0, 
-	effective_counts = 0,
-	marginal = 1,
-	marginal_step = 0.01,
-	marginal_range = c(0, 1),
-	epsilon = 0.00001,
-	threads = 1,
-	stacksize = 256*1024,
-	algorithm = 0,
-	which = 0,
-	samples = c(100, 2000)) {
-  env <- environment()
-  env$n_moments             <- n_moments
-  env$model_posterior       <- model_posterior
-  env$bprob                 <- bprob
-  env$utility               <- utility
-  env$kl_component          <- kl_component
-  env$kl_multibin           <- kl_multibin
-  env$effective_counts      <- effective_counts
-  env$marginal              <- marginal
-  env$marginal_step         <- marginal_step
-  env$marginal_range        <- marginal_range
-  env$epsilon               <- epsilon
-  env$threads               <- threads
-  env$stacksize             <- stacksize
-  env$algorithm             <- algorithm
-  env$which                 <- which
-  env$samples               <- samples
+# Copyright (C) 2011, 2012 Tobias Elze
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-  env
-}
-
-default.alpha <- function(alpha) {
-  K <- dim(alpha)[1]
-  L <- dim(alpha)[2]
-  result <- array(dim=c(L,L,K))
-  for (k in 1:K) {
-    result[,,k] <- generate.alpha(alpha[k,])
-  }
-  result
-}
-
-generate.alpha <- function(alpha) {
-  result <- outer(rep(1,length(alpha)),alpha)
-  result[lower.tri(result)] <- 0
-  for (i in 1:length(alpha)) {
-    result[i,] <- cumsum(result[i,])
-    for (j in i:length(alpha)) {
-      result[i,j] <- result[i,j]/(j-i+1)
-    }
-  }
-  result
-}
-
-default.beta <- function(n) {
-  return(rep(1, n))
-}
-
-default.gamma <- function(n) {
-  result <- outer(rep(1,n),rep(1,n))
-  result[lower.tri(result)] <- 0
-  result
-}
-
-count.statistic <- function(counts) {
-  K <- dim(counts)[1]
-  L <- dim(counts)[2]
-  result <- array(dim=c(L,L,K))
-  for (k in 1:K) {
-    result[,,k] <- generate.statistic(counts[k,])
-  }
-  result
-}
-
-generate.statistic <- function(counts) {
-  result <- outer(rep(1,length(counts)),counts)
-  result[lower.tri(result)] <- 0
-  for (i in 1:length(counts)) {
-    result[i,] <- cumsum(result[i,])
-  }
-  result
-}
-
-adaptive.sampling <- function(counts, alpha, beta, gamma, ...) {
-  L <- dim(counts)[1]
-  K <- dim(counts)[3]
-  storage.mode(counts) <- "double"
-  storage.mode(alpha)  <- "double"
-  storage.mode(beta)   <- "double"
-  storage.mode(gamma)  <- "double"
-  
-  options <- make.options(...)
-
-  result <- as.list(.Call("adaptive_sampling",
-                counts, alpha, beta, gamma, options))
-  attr(result, 'class') <- 'sampling'
-  result
-}
-
-plot.binning.marginal <- function(
+plot.binning.density <- function(
 	results,
-	plot.marginal = TRUE,
-	marginalcolor = gray((256:0)/256),
-	autoclip.marginal = TRUE,
-	normalize.marginal.plot = FALSE,
+	plot.density = TRUE,
+	densitycolor = gray((256:0)/256),
+	autoclip.density = TRUE,
+	normalize.density.plot = FALSE,
 	median.color = 'red',
 	median.lty = 'solid',
 	plot.quartiles = TRUE,
@@ -153,15 +65,15 @@ plot.binning.marginal <- function(
 		op <- par(mar=margins)
 	}
 	
-	if(isfield('marginals'))
+	if(isfield('density'))
 	{
 		plotActive = TRUE
-		n <- dim(results$marginals)[1]
+		n <- dim(results$density)[1]
 		quantiles.p <- c(.025, .25, .50, .75, .975)
 		quantiles <- matrix(numeric(5*n), ncol=n)
 		for(i in 1:n)
 		{
-			v = results$marginals[i,]
+			v = results$density[i,]
 			# normalized cumsum:
 			ncumsum = cumsum(v)/sum(v)
 			# make data distinct:
@@ -172,18 +84,18 @@ plot.binning.marginal <- function(
 			quantiles[, i] = sapply(quantiles.p, interp)
 		}
 		
-		if(plot.marginal)
+		if(plot.density)
 		{
-			imagematrix = results$marginals
-			if(normalize.marginal.plot)
+			imagematrix = results$density
+			if(normalize.density.plot)
 			{
 				imagematrix = log(1+imagematrix)
-				maplength = length(marginalcolor)
+				maplength = length(densitycolor)
 				imagematrix = maplength*(imagematrix/5);
 			}
 			if(is.null(x.labels)) { x.labels = 1:n }
 			xaxislabel = ifelse(xaxis.location == 'bottom', xlab, "")
-			ylimits = if(autoclip.marginal) 
+			ylimits = if(autoclip.density) 
 				ifelse(
 					rep(plot.outer.quantiles, 2), 
 					c(max(0, min(quantiles[1,])-0.01), min(1, max(quantiles[5,])+0.01)), 
@@ -192,7 +104,7 @@ plot.binning.marginal <- function(
 			image(
 				x = x.labels,
 				z = imagematrix, 
-				col=marginalcolor, 
+				col=densitycolor, 
 				ylim = ylimits,
 				xaxt='n',
 				xlab = xaxislabel,
@@ -218,7 +130,7 @@ plot.binning.marginal <- function(
 		}
 	}
 	# plot moments:
-	if(!isfield('marginals') || plot.moments)
+	if(!isfield('density') || plot.moments)
 	{
 		if(!isfield('moments')) { warning("could not find moments", call.=F) }
 		else
@@ -290,7 +202,7 @@ plot.binning <- function(
 	op <- par(mfrow=c(2, 1))
 	marginright = ifelse(plot.bprob, 4.1, 0.2)
 	par(mar=c(0.1, 4.1, 2.1, marginright))
-	plot.binning.marginal(results, plot.bprob=plot.bprob,  xaxis.location = 'top', ...)
+	plot.binning.density(results, plot.bprob=plot.bprob,  xaxis.location = 'top', ...)
 	xaxp = par("xaxp")
 	par(mar=c(4.1, 4.1, 0.1, marginright))
 	bb = barplot(
@@ -316,20 +228,5 @@ plot.binning <- function(
 	par(op)
 }
 
-plot.sampling <- function(samplingresult, ...)
-	plot.binning(unclass(samplingresult), ...)
-
-sampling.demo <- function() {
-  L = 6 # number of stimuli
-  K = 2 # number of responses
-  counts_success <- c(2,3,2,4,7,7)
-  counts_failure <- c(8,7,7,6,3,2)
-  counts <- count.statistic(t(matrix(c(counts_success, counts_failure), L)))
-  alpha_success  <- c(1,1,1,1,1,1)
-  alpha_failure  <- c(1,1,1,1,1,1)
-  alpha  <- default.alpha(t(matrix(c(alpha_success, alpha_failure), L)))
-  beta   <- default.beta(L)
-  gamma  <- default.gamma(L)
-
-  adaptive.sampling(counts, alpha, beta, gamma)
-}
+plot.binning.posterior <- function(posterior, ...)
+	plot.binning(unclass(posterior), ...)

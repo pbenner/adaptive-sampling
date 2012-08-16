@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-# Copyright (C) 2010 Philipp Benner
+# Copyright (C) 2010, 2011, 2012 Philipp Benner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,14 +53,14 @@ def usage():
     print "   -b                                - compute break probabilities"
     print "       --hmm                         - use hidden Markov model"
     print "       --rho                         - rho parameter for the HMM"
-    print "   -m  --marginal                    - compute full marginal distribution"
-    print "   -r  --marginal-range=(FROM,TO)    - limit range for the marginal distribution"
-    print "   -s  --marginal-step=STEP          - step size for the marginal distribution"
+    print "   -m  --density                     - compute full density distribution"
+    print "   -r  --density-range=(FROM,TO)     - limit range for the density distribution"
+    print "   -s  --density-step=STEP           - step size for the density distribution"
     print "       --no-model-posterior          - do not compute the model posterior"
     print "       --epsilon=EPSILON             - epsilon for the extended prombs"
     print "   -k  --moments=N                   - compute the first N>=2 moments"
     print "       --which=EVENT                 - for which event to compute the binning"
-    print "       --algorithm=NAME              - select an algorithm [mgs, prombstree, default: prombs]"
+    print "       --algorithm=NAME              - select an algorithm [mgs, default: prombs]"
     print "       --mgs-samples=BURN_IN:SAMPLES - number of samples [default: 100:2000]"
     print
     print "       --threads=THREADS             - number of threads [default: 1]"
@@ -85,7 +85,7 @@ def load_config():
         raise IOError("Invalid configuration file.")
 
     moments   = config.readMatrix(config_parser, 'Result', 'moments',   float)
-    marginals = config.readMatrix(config_parser, 'Result', 'marginals', float)
+    density = config.readMatrix(config_parser, 'Result', 'density', float)
     mpost     = config.readVector(config_parser, 'Result', 'mpost',     float)
     if config_parser.has_option('Result', 'bprob'):
         bprob = config.readVector(config_parser, 'Result', 'bprob',     float)
@@ -93,7 +93,7 @@ def load_config():
         bprob     = []
     result = {
         'moments'   : moments,
-        'marginals' : marginals,
+        'density' : density,
         'bprob'     : bprob,
         'mpost'     : mpost }
     return result
@@ -101,13 +101,13 @@ def load_config():
 # binning
 # ------------------------------------------------------------------------------
 
-def bin(counts, alpha, beta, gamma):
+def call_posterior(counts, alpha, beta, gamma):
     """Call the binning library."""
     if options['load']:
         return load_config()
     else:
         events = len(counts)
-        return interface.binning(events, counts, alpha, beta, gamma, options)
+        return interface.posterior(events, counts, alpha, beta, gamma, options)
 
 # save result
 # ------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ def saveResult(result):
     config = ConfigParser.ConfigParser()
     config.add_section('Result')
     config.set('Result', 'moments', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['moments'])))
-    config.set('Result', 'marginals', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['marginals'])))
+    config.set('Result', 'density', "\n"+"\n".join(map(lambda arg: " ".join(map(str, arg)), result['density'])))
     config.set('Result', 'bprob',   " ".join(map(str, result['bprob'])))
     config.set('Result', 'mpost',   " ".join(map(str, result['mpost'])))
     configfile = open(options['save'], 'wb')
@@ -164,7 +164,7 @@ def parseConfig(config_file):
         counts = config.readCounts(config_parser, 'Counts')
         K, L   = len(counts), len(counts[0])
         alpha, beta, gamma = config.getParameters(config_parser, 'Counts', os.path.dirname(config_file), K, L)
-        result = bin(counts, alpha, beta, gamma)
+        result = call_posterior(counts, alpha, beta, gamma)
         if options['save']:
             saveResult(result)
         else:
@@ -190,7 +190,7 @@ def parseConfig(config_file):
         x, counts = timingsToCounts(timings, binsize, srange)
         K, L   = len(counts), len(counts[0])
         alpha, beta, gamma = config.getParameters(config_parser, 'Trials', os.path.dirname(config_file), K, L)
-        result    = bin(counts, alpha, beta, gamma)
+        result    = call_posterior(counts, alpha, beta, gamma)
         if options['save']:
             saveResult(result)
         else:
@@ -211,9 +211,9 @@ def parseConfig(config_file):
 options = {
     'epsilon'              : 0.00001,
     'mgs_samples'          : (100,2000),
-    'marginal'             : 0,
-    'marginal_step'        : 0.01,
-    'marginal_range'       : (0.0,1.0),
+    'density'              : 0,
+    'density_step'         : 0.01,
+    'density_range'        : (0.0,1.0),
     'n_moments'            : 2,
     'which'                : 0,
     'threads'              : 1,
@@ -228,7 +228,7 @@ options = {
     'compare'              : False,
     'bprob'                : False,
     'utility'              : False,
-    'kl_component'         : False,
+    'kl_psi'               : False,
     'kl_multibin'          : False,
     'effective_counts'     : False,
     'effective_posterior_counts' : False,
@@ -240,8 +240,8 @@ options = {
 def main():
     global options
     try:
-        longopts   = ["help", "verbose", "load=", "save=", "marginal", "marginal-range:"
-                      "marginal-step=", "which=", "epsilon=", "moments=", "prombsTest",
+        longopts   = ["help", "verbose", "load=", "save=", "density", "density-range:"
+                      "density-step=", "which=", "epsilon=", "moments=", "prombsTest",
                       "savefig=", "threads=", "stacksize=", "algorithm=",
                       "mgs-samples=", "no-model-posterior", "hmm", "rho="]
         opts, tail = getopt.getopt(sys.argv[1:], "mr:s:k:bhvt", longopts)
@@ -256,12 +256,12 @@ def main():
         if o in ("-t", "--prombsTest"):
             sys.stderr.write("Testing prombs.\n")
             options["prombsTest"] = True
-        if o in ("-m", "--marginal"):
-            options["marginal"] = True
-        if o in ("-r", "--marginal-range"):
-            options['marginal_range'] = tuple(map(float, a[1:-1].split(',')))
-        if o in ("-s", "--marginal-step"):
-            options["marginal_step"] = float(a)
+        if o in ("-m", "--density"):
+            options["density"] = True
+        if o in ("-r", "--density-range"):
+            options['density_range'] = tuple(map(float, a[1:-1].split(',')))
+        if o in ("-s", "--density-step"):
+            options["density_step"] = float(a)
         if o in ("-k", "--moments"):
             if int(a) >= 2:
                 options["n_moments"] = int(a)

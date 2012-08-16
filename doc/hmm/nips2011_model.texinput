@@ -11,10 +11,10 @@ rewards, but to learn as much as possible about a stimulus-response
 relation during an experiment. For instance \cite{Bellman1956}
 considered this problem for $L=2$ and independent arms.
 
-Efficient adaptive sampling methods rely on well-justified smoothing
-methods that allow sharing of statistical strength across neighboring
-stimuli. The sampling method then focuses on regions where no sharing
-strength is possible and that are more informative.
+% Efficient adaptive sampling methods rely on well-justified smoothing
+% methods that allow sharing of statistical strength across neighboring
+% stimuli. The sampling method then focuses on regions where no sharing
+% strength is possible and that are more informative.
 
 \section*{Model}
 %

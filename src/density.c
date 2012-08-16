@@ -39,7 +39,7 @@
 #include <tools.h>
 
 /******************************************************************************
- * HMM marginal functions
+ * HMM density functions
  ******************************************************************************/
 
 static
@@ -69,8 +69,8 @@ prob_t hmm_hd(int from, int to, binProblem* bp)
         return result;
 }
 
-void hmm_computeMarginal(
-       matrix_t *marginal,
+void hmm_computeDensity(
+       matrix_t *density,
        prob_t *forward,
        prob_t *backward,
        binProblem *bp)
@@ -78,10 +78,10 @@ void hmm_computeMarginal(
         size_t i, j;
         prob_t tmp[bp->bd->L];
 
-        for (j = 0; j < bp->bd->options->n_marginals; j++) {
-                prob_t p = j*bp->bd->options->marginal_step;
-                if (bp->bd->options->marginal_range.from <= p &&
-                    bp->bd->options->marginal_range.to   >= p &&
+        for (j = 0; j < bp->bd->options->n_density; j++) {
+                prob_t p = j*bp->bd->options->density_step;
+                if (bp->bd->options->density_range.from <= p &&
+                    bp->bd->options->density_range.to   >= p &&
                     p != 0.0 && p != 1.0) {
 
                         bp->fix_prob.pos   = -1;
@@ -90,7 +90,7 @@ void hmm_computeMarginal(
 
                         hmm_fb(tmp, forward, backward, &hmm_hd, bp);
                         for (i = 0; i < bp->bd->L; i++) {
-                                marginal->content[i][j] = EXP(tmp[i]);
+                                density->content[i][j] = EXP(tmp[i]);
                         }
 
                         bp->fix_prob.pos   = -1;
@@ -99,18 +99,18 @@ void hmm_computeMarginal(
                 }
                 else {
                         for (i = 0; i < bp->bd->L; i++) {
-                                marginal->content[i][j] = 0;
+                                density->content[i][j] = 0;
                         }
                 }
         }
 }
 
 /******************************************************************************
- * Prombs marginal functions
+ * Prombs density functions
  ******************************************************************************/
 
 static
-prob_t marginal(
+prob_t density(
         int pos,
         prob_t val,
         int which,
@@ -136,34 +136,34 @@ prob_t marginal(
  ******************************************************************************/
 
 static
-void * computeMarginal_thread(void* data_)
+void * computeDensity_thread(void* data_)
 {
         pthread_data_t *data  = (pthread_data_t *)data_;
         binProblem *bp = data->bp;
         int i = data->i, j;
-        matrix_t *marginals = (matrix_t *)data->result;
+        matrix_t *result = (matrix_t *)data->result;
         prob_t evidence_ref = data->evidence_ref;
 
         /* Moments */
-        for (j = 0; j < bp->bd->options->n_marginals; j++) {
-                prob_t p = j*bp->bd->options->marginal_step;
-                if (bp->bd->options->marginal_range.from <= p &&
-                    bp->bd->options->marginal_range.to   >= p &&
+        for (j = 0; j < bp->bd->options->n_density; j++) {
+                prob_t p = j*bp->bd->options->density_step;
+                if (bp->bd->options->density_range.from <= p &&
+                    bp->bd->options->density_range.to   >= p &&
                     p != 0.0 && p != 1.0) {
-                        marginals->content[i][j] = marginal(i, p, bp->bd->options->which, evidence_ref, bp);
+                        result->content[i][j] = density(i, p, bp->bd->options->which, evidence_ref, bp);
                 }
                 else {
-                        marginals->content[i][j] = 0;
+                        result->content[i][j] = 0;
                 }
         }
         return NULL;
 }
 
-void computeMarginal(
-        matrix_t *marginals,
+void computeDensity(
+        matrix_t *result,
         prob_t evidence_ref,
         binData *bd)
 {
-        threaded_computation((void *)marginals, evidence_ref, bd, computeMarginal_thread,
-                             "Computing marginal: %.1f%%");
+        threaded_computation((void *)result, evidence_ref, bd, computeDensity_thread,
+                             "Computing density: %.1f%%");
 }

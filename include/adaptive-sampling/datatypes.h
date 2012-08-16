@@ -28,7 +28,7 @@
 
 #include <adaptive-sampling/linalg.h>
 
-typedef struct options {
+typedef struct _options_ {
         float epsilon;
         int verbose;
         int prombsTest;
@@ -36,10 +36,8 @@ typedef struct options {
         int bprob;
         int threads;
         int stacksize;
-        /* compute sampling utility */
-        int utility;
         /* specify components of the utility function */
-        int kl_component;
+        int kl_psi;
         int kl_multibin;
         int effective_counts;
         int effective_posterior_counts;
@@ -50,27 +48,31 @@ typedef struct options {
         /* burnin length and number of samples */
         int samples[2];
         /* compute marginal */
-        int marginal;
-        float marginal_step;
+        int density;
+        float density_step;
         struct {
                 float from;
                 float to;
-        } marginal_range;
+        } density_range;
         int n_moments;
-        int n_marginals;
+        int n_density;
         int model_posterior;
         /* use hidden markov model instead of prombs */
         int hmm;
         /* hmm parameters */
         float rho;
-} Options;
+} options_t;
 
-typedef struct binningResult{
+typedef struct _marginal_ {
         matrix_t *moments;
-        matrix_t *marginals;
+        matrix_t *density;
         vector_t *bprob;
         vector_t *mpost;
+} marginal_t;
+
+typedef struct _utility_ {
+        matrix_t *expectation;
         vector_t *utility;
-} BinningResult;
+} utility_t;
 
 #endif /* ADAPTIVE_SAMPLING_DATATYPES_H */

@@ -30,7 +30,7 @@
  */
 
 static
-prob_t prombs_rec_(
+prob_t prombs_simple_(
         prob_t *result,
         size_t j,
         prob_t (*f)(int, int, void*),
@@ -45,7 +45,7 @@ prob_t prombs_rec_(
 
                 for (i = 0; i < j; i++) {
                         if (result[i] == -HUGE_VAL) {
-                                result[i] = prombs_rec_(result, i, f, data);
+                                result[i] = prombs_simple_(result, i, f, data);
                         }
                         sum = logadd(sum, result[i] + f(i+1, j, data));
                 }
@@ -53,7 +53,7 @@ prob_t prombs_rec_(
         }
 }
 
-prob_t prombs_rec(
+prob_t prombs_simple(
         size_t L,
         prob_t (*f)(int, int, void*),
         void *data)
@@ -65,5 +65,5 @@ prob_t prombs_rec(
                 result[i] = -HUGE_VAL;
         }
 
-        return prombs_rec_(result, L-1, f, data);
+        return prombs_simple_(result, L-1, f, data);
 }

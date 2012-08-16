@@ -24,9 +24,9 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-void computeMarginal(matrix_t *marginals, prob_t evidence_ref, binData *bd);
-void hmm_computeMarginal(
-       matrix_t *marginal,
+void computeDensity(matrix_t *result, prob_t evidence_ref, binData *bd);
+void hmm_computeDensity(
+       matrix_t *result,
        prob_t *forward,
        prob_t *backward,
        binProblem *bp);

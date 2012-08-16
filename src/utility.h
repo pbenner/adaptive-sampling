@@ -24,9 +24,12 @@
 
 #include <adaptive-sampling/datatypes.h>
 
-void computeKLUtility(vector_t *result, prob_t evidence_ref, binData *bd);
+void computeKLUtility(
+        utility_t *result,
+        prob_t evidence_ref,
+        binData *bd);
 void hmm_computeUtility(
-        matrix_t *result,
+        utility_t *result,
         prob_t *forward,
         prob_t *backward,
         binProblem *bp);

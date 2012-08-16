@@ -110,11 +110,45 @@ prob_t effectiveCounts(size_t pos, prob_t evidence_ref, binProblem *bp)
 }
 
 /******************************************************************************
+ * Expectation
+ ******************************************************************************/
+
+static
+prob_t expectation(
+        size_t i,
+        size_t j,
+        prob_t evidence_ref,
+        binProblem *bp)
+{
+        prob_t evidence_log;
+        prob_t evidence_log_tmp[bp->bd->L];
+
+        bp->add_event.n     = 1;
+        bp->add_event.which = i;
+        bp->add_event.pos   = j;
+        evidence_log        = evidence(evidence_log_tmp, bp);
+        bp->add_event.pos   = -1;
+        bp->add_event.n     = 0;
+
+        return EXP(evidence_log - evidence_ref);
+}
+
+static
+void computeExpectation(utility_t* result, size_t i, prob_t evidence_ref, binProblem *bp)
+{
+        size_t j;
+
+        for (j = 0; j < bp->bd->events; j++) {
+                result->expectation->content[j][i] = expectation(j, i, evidence_ref, bp);
+        }
+}
+
+/******************************************************************************
  * Main
  ******************************************************************************/
 
 void computeEffectiveCountsUtility(
-        vector_t *result,
+        utility_t *result,
         prob_t evidence_ref,
         binData* bd)
 {
@@ -123,14 +157,19 @@ void computeEffectiveCountsUtility(
 
         for (i = 0; i < bd->L; i++) {
                 notice(NONE, "Computing effective counts... %.1f%%", (float)100*(i+1)/bd->L);
-                result->content[i] = -effectiveCounts(i, evidence_ref, &bp);
+
+                /* for each event compute its expectation */
+                computeExpectation(result, i, evidence_ref, &bp);
+
+                /* compute utilities */
+                result->utility->content[i] = -effectiveCounts(i, evidence_ref, &bp);
         }
 
         binProblemFree(&bp);
 }
 
 void computeEffectivePosteriorCountsUtility(
-        vector_t *result,
+        utility_t *result,
         prob_t evidence_ref,
         binData* bd)
 {
@@ -139,7 +178,12 @@ void computeEffectivePosteriorCountsUtility(
 
         for (i = 0; i < bd->L; i++) {
                 notice(NONE, "Computing posterior effective counts... %.1f%%", (float)100*(i+1)/bd->L);
-                result->content[i] = -effectivePosteriorCounts(i, evidence_ref, &bp);
+
+                /* for each event compute its expectation */
+                computeExpectation(result, i, evidence_ref, &bp);
+
+                /* compute utilities */
+                result->utility->content[i] = -effectivePosteriorCounts(i, evidence_ref, &bp);
         }
 
         binProblemFree(&bp);
