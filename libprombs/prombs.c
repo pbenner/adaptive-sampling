@@ -92,7 +92,9 @@ void prombs(
         size_t i, j;
 
         /* init */
-        init_f(ak, f, L, data);
+        if (f != NULL) {
+                init_f(ak, f, L, data);
+        }
         for (j = 0; j < L; j++) {
                 pr[j] = ak->content[0][j];
         }

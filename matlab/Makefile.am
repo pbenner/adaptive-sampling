@@ -23,18 +23,25 @@ EXTRA_DIST = \
 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CFLAGS) $(AM_CFLAGS)
 
-MATLAB_LDFLAGS_EXTRA = ../src/.libs/libadaptive-sampling.a
+MATLAB_LDFLAGS_SAMPLING = ../src/.libs/libadaptive-sampling.a
+MATLAB_LDFLAGS_PROMBS   = ../libprombs/.libs/libprombs.a
 
-all: binningPosterior$(MATLAB_LDEXTENSION) samplingUtility$(MATLAB_LDEXTENSION)
+all: binningPosterior$(MATLAB_LDEXTENSION) samplingUtility$(MATLAB_LDEXTENSION) prombs$(MATLAB_LDEXTENSION)
 
+interface.o: interface.c
+	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
 binningPosterior.o: binningPosterior.c
 	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
-binningPosterior$(MATLAB_LDEXTENSION): binningPosterior.o
-	$(CC) -o $@ $< $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_EXTRA) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
+binningPosterior$(MATLAB_LDEXTENSION): binningPosterior.o interface.o
+	$(CC) -o $@ $+ $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_SAMPLING) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
 samplingUtility.o: samplingUtility.c
 	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
-samplingUtility$(MATLAB_LDEXTENSION): samplingUtility.o
-	$(CC) -o $@ $< $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_EXTRA) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
+samplingUtility$(MATLAB_LDEXTENSION): samplingUtility.o interface.o
+	$(CC) -o $@ $+ $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_SAMPLING) $(MATLAB_LIBS) $(LIBS) $(LIB_PTHREAD)
+prombs.o: prombs.c
+	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
+prombs$(MATLAB_LDEXTENSION): prombs.o interface.o
+	$(CC) -o $@ $+ $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_PROMBS) $(MATLAB_LIBS) $(LIBS)
 
 tar:
 	mkdir adaptive-sampling-matlab
@@ -43,7 +50,10 @@ tar:
 	$(RM) -r adaptive-sampling-matlab
 
 clean-local:
+	$(RM) interface.o
 	$(RM) binningPosterior.o
 	$(RM) binningPosterior$(MATLAB_LDEXTENSION)
 	$(RM) samplingUtility.o
 	$(RM) samplingUtility$(MATLAB_LDEXTENSION)
+	$(RM) prombs.o
+	$(RM) prombs$(MATLAB_LDEXTENSION)
