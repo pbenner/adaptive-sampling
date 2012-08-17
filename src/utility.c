@@ -260,23 +260,21 @@ void * computeKLUtility_thread(void* data_)
 static
 prob_t hmm_he(int from, int to, binProblem* bp)
 {
-        size_t i, j;
+        size_t i;
         prob_t c1[bp->bd->events];
         prob_t c2[bp->bd->events];
         prob_t alpha[bp->bd->events];
         prob_t result = 0;
 
         /* alpha */
-        for (j = from; j <= to; j++) {
-                for (i = 0; i < bp->bd->events; i++) {
-                        alpha[i] = countAlpha(i, j, j, bp); 
-                }
-                result -= mbeta_log(alpha, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                alpha[i] = countAlpha(i, from, from, bp); 
         }
+        result -= mbeta_log(alpha, bp);
         /* counts */
         for (i = 0; i < bp->bd->events; i++) {
-                c1[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
-                c2[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
+                c1[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                c2[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
         }
         c2[bp->add_event.which] += bp->add_event.n;
         /* marginal */
@@ -290,22 +288,20 @@ prob_t hmm_he(int from, int to, binProblem* bp)
 static
 prob_t hmm_hu(int from, int to, binProblem* bp)
 {
-        size_t i, j;
+        size_t i;
         prob_t c[bp->bd->events];
         prob_t alpha[bp->bd->events];
         prob_t result = 0.0;
         prob_t sum    = 0.0;
 
         /* alpha */
-        for (j = from; j <= to; j++) {
-                for (i = 0; i < bp->bd->events; i++) {
-                        alpha[i] = countAlpha(i, j, j, bp);
-                }
-                result -= mbeta_log(alpha, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                alpha[i] = countAlpha(i, from, from, bp);
         }
+        result -= mbeta_log(alpha, bp);
         /* counts */
         for (i = 0; i < bp->bd->events; i++) {
-                c[i]  = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
+                c[i]  = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
         }
         if (bp->add_event.n) {
                 c[bp->add_event.which] += bp->add_event.n;
