@@ -69,21 +69,19 @@ prob_t moment(
 static
 prob_t hmm_he(int from, int to, binProblem* bp)
 {
-        size_t i, j;
+        size_t i;
         prob_t c1[bp->bd->events];
         prob_t c2[bp->bd->events];
         prob_t alpha[bp->bd->events];
         prob_t result = 0;
 
-        for (j = from; j <= to; j++) {
-                for (i = 0; i < bp->bd->events; i++) {
-                        alpha[i] = countAlpha(i, j, j, bp); 
-                }
-                result -= mbeta_log(alpha, bp);
-        }
         for (i = 0; i < bp->bd->events; i++) {
-                c1[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
-                c2[i] = countAlpha(i, from, to, bp) + countStatistic(i, from, to, bp) + from - to;
+                alpha[i] = countAlpha(i, from, from, bp); 
+        }
+        result -= mbeta_log(alpha, bp);
+        for (i = 0; i < bp->bd->events; i++) {
+                c1[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
+                c2[i] = countAlpha(i, from, from, bp) + countStatistic(i, from, to, bp);
         }
         c2[bp->add_event.which] += bp->add_event.n;
         /* marginal */
