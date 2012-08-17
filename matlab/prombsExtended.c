@@ -23,19 +23,45 @@
 
 #include <adaptive-sampling/prombs.h>
 
+typedef struct _data_t_ {
+        const mxArray* f;
+        const mxArray* h;
+        mwSize  nsubs;
+        mwIndex* subs;
+} data_t;
+
+prob_t prombs_f(int i, int j, void* _data)
+{
+        data_t* data = (data_t *)_data;
+
+        data->subs[0] = i;
+        data->subs[1] = j;
+        return mxGetPr(data->f)[mxCalcSingleSubscript(data->f, data->nsubs, data->subs)];
+}
+
+prob_t prombs_h(int i, int j, void* _data)
+{
+        data_t* data = (data_t *)_data;
+
+        data->subs[0] = i;
+        data->subs[1] = j;
+        return mxGetPr(data->h)[mxCalcSingleSubscript(data->h, data->nsubs, data->subs)];
+}
+
 static
 mxArray* callPrombs(const mxArray *prhs[], size_t L, size_t m)
 {
-        matrix_t* f = alloc_matrix(L, L);
+        matrix_t* ak = alloc_matrix(L, L);
         prob_t g[L];
         prob_t result[L];
+        mwSize nsubs = mxGetNumberOfDimensions(prhs[1]);
+        data_t data  = { prhs[1], prhs[2], nsubs, mxCalloc(nsubs, sizeof(mwIndex)) };
 
         copyArray (g, prhs[0], L);
-        copyMatrix(f, prhs[1], 0);
 
-        prombs(result, f, g, NULL, L, m, NULL);
+        prombsExt(result, ak, g, prombs_f, prombs_h, L, m, &data);
 
-        free_matrix(f);
+        free_matrix(ak);
 
         return copyArrayToMatlab(result, L);
 }
@@ -45,23 +71,29 @@ void checkInput(int nlhs, mxArray *plhs[],
                 int nrhs, const mxArray *prhs[])
 {
         /* check proper input and output */
-        if (nrhs != 2 && nrhs != 3) {
-                mexErrMsgTxt("Usage: prombs(g, f) OR prombs(g, f, m).");
+        if (nrhs != 4 && nrhs != 5) {
+                mexErrMsgTxt("Usage: prombsExtended(g, f, h, epsilon) OR prombs(g, f, h, epsilon, m).");
         }
         if (nlhs > 1) {
                 mexErrMsgTxt("Too many output arguments.");
         }
-        if (!mxIsClass(prhs[0], "double") || !mxIsClass(prhs[1], "double")) {
+        if (!mxIsClass(prhs[0], "double") || !mxIsClass(prhs[1], "double") || !mxIsClass(prhs[2], "double")) {
                 mexErrMsgTxt("All vectors and matrices must be of type double.");
         }
-        if (nrhs == 3 && ((mxGetM(prhs[2]) > 1) || (mxGetN(prhs[2]) > 1))) {
-                mexErrMsgTxt("Third input argument is not a scalar.");
+        if (nrhs == 5 && ((mxGetM(prhs[4]) > 1) || (mxGetN(prhs[4]) > 1))) {
+                mexErrMsgTxt("Fifth input argument is not a scalar.");
         }
         if (mxGetM(prhs[0]) > 1) {
                 mexErrMsgTxt("First input is not a row vector.");
         }
         if (mxGetM(prhs[1]) != mxGetN(prhs[0]) || mxGetN(prhs[1]) != mxGetN(prhs[0])) {
                 mexErrMsgTxt("Second input is not an LxL matrix.");
+        }
+        if (mxGetM(prhs[2]) != mxGetN(prhs[0]) || mxGetN(prhs[2]) != mxGetN(prhs[0])) {
+                mexErrMsgTxt("Third input is not an LxL matrix.");
+        }
+        if (*mxGetPr(prhs[3]) == 0.0 || *mxGetPr(prhs[3]) > 1.0) {
+                mexErrMsgTxt("Invalid epsilon.");
         }
 }
 
@@ -77,8 +109,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
         L = mxGetN(prhs[0]);
 
         /* if we have four arguments the obtain m */
-        if (nrhs == 3) {
-                m = (size_t)*mxGetPr(prhs[2]) > 0 ? (size_t)*mxGetPr(prhs[2]) - 1 : 0;
+        if (nrhs == 5) {
+                m = (size_t)*mxGetPr(prhs[4]) > 0 ? (size_t)*mxGetPr(prhs[4]) - 1 : 0;
                 if (m > L-1) {
                         m = L-1;
                 }
@@ -86,6 +118,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         else {
                 m = L-1;
         }
+        __init_prombs__(*mxGetPr(prhs[3]));
 
         plhs[0] = callPrombs(prhs, L, m);
 
