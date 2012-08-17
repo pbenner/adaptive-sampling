@@ -24,8 +24,8 @@
 #include <adaptive-sampling/prombs.h>
 
 static
-mxArray* callPrombs(const mxArray *prhs[], size_t L, size_t m) {
-
+mxArray* callPrombs(const mxArray *prhs[], size_t L, size_t m)
+{
         matrix_t* f = alloc_matrix(L, L);
         prob_t g[L];
         prob_t result[L];
@@ -78,7 +78,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         /* if we have four arguments the obtain m */
         if (nrhs == 3) {
-                m = (size_t)*mxGetPr(prhs[2]);
+                m = (size_t)*mxGetPr(prhs[2]) > 0 ? (size_t)*mxGetPr(prhs[2]) - 1 : 0;
                 if (m > L-1) {
                         m = L-1;
                 }
