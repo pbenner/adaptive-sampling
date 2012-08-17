@@ -5,21 +5,26 @@ INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/include
 EXTRA_DIST = \
 	README \
 	interface.h \
+	interface.c \
 	binningPosterior.c \
 	samplingUtility.c \
+	prombs.c \
+	prombsExtended.c \
+	prombsTest.m \
+	prombsExtendedTest.m \
 	adsamp.m \
 	categorial_sample.m \
 	count_statistic.m \
 	default_alpha.m \
 	default_gamma.m \
 	default_options.m \
-	demo.m \
+	example0.m \
 	example1.m \
 	example2.m \
 	example3.m \
 	getNumberOfCores.m \
 	plot_binning.m \
-	plot_marginal.m
+	plot_density.m
 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CFLAGS) $(AM_CFLAGS)
 
