@@ -26,7 +26,7 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAG
 MATLAB_LDFLAGS_SAMPLING = ../src/.libs/libadaptive-sampling.a
 MATLAB_LDFLAGS_PROMBS   = ../libprombs/.libs/libprombs.a
 
-all: binningPosterior$(MATLAB_LDEXTENSION) samplingUtility$(MATLAB_LDEXTENSION) prombs$(MATLAB_LDEXTENSION)
+all: binningPosterior$(MATLAB_LDEXTENSION) samplingUtility$(MATLAB_LDEXTENSION) prombs$(MATLAB_LDEXTENSION) prombsExtended$(MATLAB_LDEXTENSION)
 
 interface.o: interface.c
 	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
@@ -41,6 +41,10 @@ samplingUtility$(MATLAB_LDEXTENSION): samplingUtility.o interface.o
 prombs.o: prombs.c
 	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
 prombs$(MATLAB_LDEXTENSION): prombs.o interface.o
+	$(CC) -o $@ $+ $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_PROMBS) $(MATLAB_LIBS) $(LIBS)
+prombsExtended.o: prombsExtended.c
+	$(COMPILE) $(MATLAB_CFLAGS) -c -o $@ $<
+prombsExtended$(MATLAB_LDEXTENSION): prombsExtended.o interface.o
 	$(CC) -o $@ $+ $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_PROMBS) $(MATLAB_LIBS) $(LIBS)
 
 tar:
@@ -57,3 +61,5 @@ clean-local:
 	$(RM) samplingUtility$(MATLAB_LDEXTENSION)
 	$(RM) prombs.o
 	$(RM) prombs$(MATLAB_LDEXTENSION)
+	$(RM) prombsExtended.o
+	$(RM) prombsExtended$(MATLAB_LDEXTENSION)
