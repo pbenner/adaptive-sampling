@@ -64,7 +64,7 @@ export GSL_DIR=/path/to/gsl
 
 - Now compile the plugin:
 
-CC=x86_64-w64-mingw32-gcc CFLAGS=-I${GSL_DIR} ./configure --enable-mini-gsl --enable-pthreads=no --prefix=/mingw
+CC=x86_64-w64-mingw32-gcc CFLAGS=-I${GSL_DIR} RANLIB=x86_64-w64-mingw32-ranlib ./configure --enable-mini-gsl --enable-pthreads=no --prefix=/mingw
 
 make
 
