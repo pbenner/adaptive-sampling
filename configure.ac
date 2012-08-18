@@ -224,7 +224,8 @@ dnl ,----------------------------
 dnl | GCC_OPTIONS
 dnl `----------------------------
 
-CFLAGS=""
+# do not reset CFLAGS so we can accept command line options
+# CFLAGS=""
 AC_ARG_ENABLE([debug],
 	[AS_HELP_STRING([--enable-debug],
 								[turn on debugging @<:@default=no@:>@])],
