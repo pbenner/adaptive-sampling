@@ -54,7 +54,7 @@ prombsExtended$(MATLAB_LDEXTENSION): prombsExtended.o interface.o
 
 tar:
 	mkdir adaptive-sampling-matlab
-	cp  *.m *.mex* adaptive-sampling-matlab
+	cp  *.m ../matlab-bin/*.mex* adaptive-sampling-matlab
 	tar -cjvf adaptive-sampling-matlab.tar.bz2 adaptive-sampling-matlab
 	$(RM) -r adaptive-sampling-matlab
 
