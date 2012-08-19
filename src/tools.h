@@ -64,7 +64,7 @@ int minM(binProblem *bp)
 }
 
 static __inline__
-matrix_t * alloc_prombs_matrix(size_t L) {
+prob_t** alloc_prombs_matrix(size_t L) {
         size_t i;
         prob_t** m = (prob_t **)malloc(L*sizeof(prob_t*));
         for (i = 0; i < L; i++) {
