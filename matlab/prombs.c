@@ -42,6 +42,7 @@ void free_prombs_matrix(prob_t** m, size_t L) {
         free(m);
 }
 
+static
 void copyPrombsMatrix(prob_t** to, const mxArray* from, size_t L) {
         double* m = mxGetPr(from);
         size_t i, j;
