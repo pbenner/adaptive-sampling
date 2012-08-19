@@ -64,11 +64,30 @@ int minM(binProblem *bp)
 }
 
 static __inline__
+matrix_t * alloc_prombs_matrix(size_t L) {
+        size_t i;
+        prob_t** m = (prob_t **)malloc(L*sizeof(prob_t*));
+        for (i = 0; i < L; i++) {
+                m[i] = (prob_t *)malloc(L*sizeof(prob_t));
+        }
+        return m;
+}
+
+static __inline__
+void free_prombs_matrix(prob_t** m, size_t L) {
+        size_t i;
+        for (i = 0; i < L; i++) {
+                free(m[i]);
+        }
+        free(m);
+}
+
+static __inline__
 void binProblemInit(binProblem *bp, binData* bd)
 {
         bp->bd              = bd;
         if (bd->options->algorithm == 0) {
-                bp->ak      = alloc_matrix(bd->L, bd->L);
+                bp->ak      = alloc_prombs_matrix(bd->L);
         }
         else {
                 bp->ak      = NULL;
@@ -87,7 +106,7 @@ static __inline__
 void binProblemFree(binProblem *bp)
 {
         if (bp->ak) {
-                free_matrix(bp->ak);
+                free_prombs_matrix(bp->ak, bp->bd->L);
         }
 }
 

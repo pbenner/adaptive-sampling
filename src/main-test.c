@@ -35,7 +35,7 @@
 
 #include <datatypes.h>
 #include <model.h>
-#include <utility.h>
+#include <tools.h>
 
 /******************************************************************************
  * Prombs test functions                                                  
@@ -69,7 +69,7 @@ void prombsTest(binData *bd)
         prob_t result2[bd->L];
         prob_t sum;
         size_t i;
-        matrix_t *ak = alloc_matrix(bd->L, bd->L);
+        prob_t **ak = alloc_prombs_matrix(bd->L);
 
         /* set prior to 1 */
         for (i = 0; i < bd->L; i++) {
@@ -94,5 +94,5 @@ void prombsTest(binData *bd)
         }
         (void)printf("prombsExt: %.10f\n", (double)sum);
 
-        free_matrix(ak);
+        free_prombs_matrix(ak, bd->L);
 }
