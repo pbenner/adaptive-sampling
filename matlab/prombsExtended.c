@@ -23,6 +23,25 @@
 
 #include <adaptive-sampling/prombs.h>
 
+static __inline__
+prob_t** alloc_prombs_matrix(size_t L) {
+        size_t i;
+        prob_t** m = (prob_t **)malloc(L*sizeof(prob_t*));
+        for (i = 0; i < L; i++) {
+                m[i] = (prob_t *)malloc(L*sizeof(prob_t));
+        }
+        return m;
+}
+
+static __inline__
+void free_prombs_matrix(prob_t** m, size_t L) {
+        size_t i;
+        for (i = 0; i < L; i++) {
+                free(m[i]);
+        }
+        free(m);
+}
+
 typedef struct _data_t_ {
         const mxArray* f;
         const mxArray* h;
@@ -51,7 +70,7 @@ prob_t prombs_h(int i, int j, void* _data)
 static
 mxArray* callPrombs(const mxArray *prhs[], size_t L, size_t m)
 {
-        matrix_t* ak = alloc_matrix(L, L);
+        prob_t** ak = alloc_prombs_matrix(L);
         prob_t g[L];
         prob_t result[L];
         mwSize nsubs = mxGetNumberOfDimensions(prhs[1]);
@@ -61,7 +80,7 @@ mxArray* callPrombs(const mxArray *prhs[], size_t L, size_t m)
 
         prombsExt(result, ak, g, prombs_f, prombs_h, L, m, &data);
 
-        free_matrix(ak);
+        free_prombs_matrix(ak, L);
 
         return copyArrayToMatlab(result, L);
 }

@@ -23,19 +23,56 @@
 
 #include <adaptive-sampling/prombs.h>
 
+static __inline__
+prob_t** alloc_prombs_matrix(size_t L) {
+        size_t i;
+        prob_t** m = (prob_t **)malloc(L*sizeof(prob_t*));
+        for (i = 0; i < L; i++) {
+                m[i] = (prob_t *)malloc(L*sizeof(prob_t));
+        }
+        return m;
+}
+
+static __inline__
+void free_prombs_matrix(prob_t** m, size_t L) {
+        size_t i;
+        for (i = 0; i < L; i++) {
+                free(m[i]);
+        }
+        free(m);
+}
+
+void copyPrombsMatrix(prob_t** to, const mxArray* from, size_t L) {
+        double* m = mxGetPr(from);
+        size_t i, j;
+        mwSize  nsubs = mxGetNumberOfDimensions(from);
+        mwIndex* subs = mxCalloc(nsubs,sizeof(mwIndex));
+        mwIndex index;
+
+        for (i = 0; i < L; i++) {
+                for (j = 0; j < L; j++) {
+                        subs[0] = i;
+                        subs[1] = j;
+                        index = mxCalcSingleSubscript(from, nsubs, subs);
+                        to[i][j] = m[index];
+                }
+        }
+        mxFree(subs);
+}
+
 static
 mxArray* callPrombs(const mxArray *prhs[], size_t L, size_t m)
 {
-        matrix_t* f = alloc_matrix(L, L);
+        prob_t** f = alloc_prombs_matrix(L);
         prob_t g[L];
         prob_t result[L];
 
-        copyArray (g, prhs[0], L);
-        copyMatrix(f, prhs[1], 0);
+        copyArray       (g, prhs[0], L);
+        copyPrombsMatrix(f, prhs[1], L);
 
         prombs(result, f, g, NULL, L, m, NULL);
 
-        free_matrix(f);
+        free_prombs_matrix(f, L);
 
         return copyArrayToMatlab(result, L);
 }
