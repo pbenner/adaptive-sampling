@@ -48,7 +48,7 @@ typedef struct {
 typedef struct {
         binData* bd;
         /* temporary memory for prombs */
-        matrix_t *ak;
+        prob_t** ak;
         /* break probability */
         int bprob_pos;
         /* effective counts */
