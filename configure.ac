@@ -24,7 +24,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE([gnu dist-bzip2])
-dnl turn of AC_PROC_CC's default behaviour
+dnl turn of AC_PROG_CC's default behaviour
 : ${CFLAGS=""}
 AC_PROG_CC
 AC_C_CONST
