@@ -22,13 +22,13 @@
 #include <adaptive-sampling/linalg.h>
 #include <adaptive-sampling/probtype.h>
 
-extern void __init_prombs__(prob_t epsilon);
-extern void prombs(prob_t *result, prob_t **ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
-extern prob_t prombs_rec(
+void __init_prombs__(prob_t epsilon);
+void prombs(prob_t *result, prob_t **ak, prob_t *g, prob_t (*f)(int, int, void*), size_t L, size_t m, void *data);
+prob_t prombs_rec(
         size_t j,
         prob_t (*f)(int, int, void*),
         void *data);
-extern void prombsExt(
+void prombsExt(
         prob_t *result,
         prob_t **ak,
         prob_t *g,
