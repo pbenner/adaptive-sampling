@@ -1,14 +1,15 @@
 Package: adaptive.sampling
-Version: 1.0-1
-Depends: R (>= 2.10.0)
-Date: 03-03-2012
-Title: wrapper for the Gnu Scientific Library
-Author: Philipp Benner <philipp.benner@mis.mpg.de>
-	Tobias Elze <tobias-elze@tobias-elze.de>
-SystemRequirements: Gnu Scientific Library version >= 1.12
-Description: A wrapper for the adaptive-sampling library.
 Maintainer: Philipp Benner <philipp.benner@mis.mpg.de>
 License: GPL-2
-Packaged: 2012-03-03 20:34:30 UTC; philipp
+Title: wrapper for the Gnu Scientific Library
+Author: Philipp Benner <philipp.benner@mis.mpg.de> Tobias Elze
+    <tobias-elze@tobias-elze.de>
+SystemRequirements: Gnu Scientific Library version >= 1.12
+Description: A wrapper for the adaptive-sampling library.
+Version: 1.0-1
 Repository: CRAN
 Date/Publication: 2012-03-03 03:28:12
+Packaged: 2012-03-03 20:34:30 UTC; philipp
+Depends: R (>= 2.10.0)
+Date: 03-03-2012
+Collate: 'binning.R' 'options.R' 'plot.R' 'sampling.R' 'tools.R'
