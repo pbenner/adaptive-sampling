@@ -19,6 +19,4 @@ install: $(TARGET)
 	$(R) CMD INSTALL $^
 
 $(LIB)/NAMESPACE $(MAN): $(SRC)
-	$(R) CMD roxygen -d $(LIB)
-
-
+	$(R) --vanilla --quiet < roxygen.R
