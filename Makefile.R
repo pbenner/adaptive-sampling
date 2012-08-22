@@ -9,16 +9,7 @@ TARGET = $(LIB)_$(VERSION).tar.gz
 
 all: $(TARGET)
 
-$(TARGET): $(LIB) $(MAN)
-	if [ -d "$$HOME/.usr" ] ; then \
-		export PATH="$$HOME/.usr/bin:$$HOME/.cabal/bin/:$$PATH"; \
-		export CPATH=$$HOME/.usr/include; \
-		export LD_LIBRARY_PATH=$$HOME/.usr/lib:$$LD_LIBRARY_PATH; \
-		export LIBRARY_PATH=$$LD_LIBRARY_PATH; \
-		export PYTHONPATH=$$HOME/.usr/lib/python2.6/site-packages/; \
-		export PERL5LIB=$$HOME/.usr/share/perl; \
-		export MANPATH=$$HOME/.usr/share/man:$$MANPATH; \
-	fi ; 
+$(TARGET): $(LIB) $(LIB)/NAMESPACE $(MAN)
 	$(R) CMD build $(LIB)
 
 test: $(TARGET)
@@ -27,7 +18,7 @@ test: $(TARGET)
 install: $(TARGET)
 	$(R) CMD INSTALL $^
 
-$(MAN): $(SRC)
+$(LIB)/NAMESPACE $(MAN): $(SRC)
 	$(R) CMD roxygen -d $(LIB)
 
 
