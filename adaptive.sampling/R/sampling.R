@@ -51,6 +51,7 @@
 #'   A predictive approach to nonparametric inference for adaptive 
 #'   sequential sampling of psychophysical experiments.
 #'   Journal of Mathematical Psychology 56 (2012) 179-195
+#' @useDynLib adaptive.sampling
 NULL
 
 #' Calculate utility measure for an adaptive sampling step.
@@ -77,8 +78,7 @@ NULL
 #'  alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
 #'  beta   <- default.beta(L)
 #'  gamma  <- default.gamma(L)
-#'
-#'  sampling.utility(counts, alpha, beta, gamma)
+#' @export
 
 sampling.utility <- function(counts, alpha, beta, gamma, ...) {
   L <- dim(counts)[1]
@@ -91,7 +91,8 @@ sampling.utility <- function(counts, alpha, beta, gamma, ...) {
   options <- make.options(...)
 
   utility <- as.list(.Call("call_utility",
-                           counts, alpha, beta, gamma, options))
+                           counts, alpha, beta, gamma, options,
+                           "adaptive.sampling"))
   attr(utility, 'class') <- 'sampling.utility'
   utility
 }
