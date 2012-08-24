@@ -3,7 +3,9 @@
 pkginclude_HEADERS = \
 	adaptive-sampling/datatypes.h \
 	adaptive-sampling/interface.h \
-	adaptive-sampling/linalg.h
+	adaptive-sampling/linalg.h \
+	adaptive-sampling/probtype.h \
+	adaptive-sampling/prombs.h
 
 ## install headers
 include_HEADERS =
@@ -12,8 +14,7 @@ include_HEADERS =
 EXTRA_DIST = \
 	adaptive-sampling/exception.h \
 	adaptive-sampling/logarithmetic.h \
-	adaptive-sampling/probtype.h \
-	adaptive-sampling/prombs.h \
 	adaptive-sampling/mgs.h \
+	adaptive-sampling/probtype.h.in \
 	adaptive-sampling/uthash.h \
 	gnugetopt.h

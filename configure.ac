@@ -292,7 +292,7 @@ dnl ,----------------------------
 dnl | AC_OUTPUT
 dnl `----------------------------
 
-AC_CONFIG_HEADER([config.h:config.h.in])
+AC_CONFIG_HEADER([config.h:config.h.in include/adaptive-sampling/probtype.h:include/adaptive-sampling/probtype.h.in])
 AC_CONFIG_FILES([
 	Makefile
 	version.h
