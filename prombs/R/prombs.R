@@ -1,0 +1,145 @@
+# Copyright (C) 2011, 2012 Tobias Elze, Philipp Benner
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+##########
+# roxygen2 documentation:
+# #########
+
+#' Implements a predictive approach to non-parametric inference for adaptive sampling.
+#'
+#' \tabular{ll}{
+#' Package: \tab adaptive.sampling\cr
+#' Type: \tab Package\cr
+#' Version: \tab 1.0-1\cr
+#' Date: \tab 2012-08-20\cr
+#' License: \tab GPL-2\cr
+#' LazyLoad: \tab yes\cr
+#' }
+#'
+#' Implementing a predictive approach based on a hierarchical Bayesian
+#' model, adaptive.sampling calculates utilities that can be used to
+#' determine the successive step in an adaptive sequential sampling
+#' measurement, such as the stimulus-response relation in a psychophysical
+#' experiment.
+#' 
+#' The background and the algorithm are described in
+#' Poppe, S, Benner, P, Elze, T. 
+#'   A predictive approach to nonparametric inference for adaptive 
+#'   sequential sampling of psychophysical experiments.
+#'   Journal of Mathematical Psychology 56 (2012) 179?195
+#'
+#' @name adaptive.sampling
+#' @docType package
+#' @title Implements a predictive approach to non-parametric inference for adaptive sampling
+#' @author Philipp Benner \email{Philipp.Benner@@mis.mpg.de}, Tobias Elze \email{Tobias.Elze@@schepens.harvard.edu}
+#' @references
+#' Poppe, S, Benner, P, Elze, T. 
+#'   A predictive approach to nonparametric inference for adaptive 
+#'   sequential sampling of psychophysical experiments.
+#'   Journal of Mathematical Psychology 56 (2012) 179-195
+#' @useDynLib prombs
+NULL
+
+#' Calculate utility measure for an adaptive sampling step.
+#' 
+#' @param counts matrix of counts; each line one response option
+#'   dimensions: K rows, L columns
+#' @param alpha "pseudo counts"
+#' @param beta relative class weights
+#' @param gamma a priori importance of each consecutive bin
+#' @param ... further options; see \code{\link{make.options}}
+#' @references
+#' Poppe, S, Benner, P, Elze, T. 
+#'   A predictive approach to nonparametric inference for adaptive 
+#'   sequential sampling of psychophysical experiments.
+#'   Journal of Mathematical Psychology 56 (2012) 179-195
+#' @param examples
+#'  L = 6 # number of stimuli
+#'  K = 2 # number of responses
+#'  counts.success <- c(2,3,2,4,7,7)
+#'  counts.failure <- c(8,7,7,6,3,2)
+#'  counts <- count.statistic(t(matrix(c(counts.success, counts.failure), L)))
+#'  alpha.success  <- c(1,1,1,1,1,1)
+#'  alpha.failure  <- c(1,1,1,1,1,1)
+#'  alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
+#'  beta   <- default.beta(L)
+#'  gamma  <- default.gamma(L)
+#' @export
+
+prombs <- function(g, f, m=0) {
+  L <- length(g)
+
+  if (m == 0) {
+    m <- L
+  }
+  dim(g) <- c(L)
+  dim(f) <- c(L, L)
+  dim(m) <- c(1)
+
+  storage.mode(g) <- "double"
+  storage.mode(f) <- "double"
+  storage.mode(m) <- "integer"
+
+  .Call("call_prombs", g, f, m, "prombs")
+}
+
+#' Calculate utility measure for an adaptive sampling step.
+#' 
+#' @param counts matrix of counts; each line one response option
+#'   dimensions: K rows, L columns
+#' @param alpha "pseudo counts"
+#' @param beta relative class weights
+#' @param gamma a priori importance of each consecutive bin
+#' @param ... further options; see \code{\link{make.options}}
+#' @references
+#' Poppe, S, Benner, P, Elze, T. 
+#'   A predictive approach to nonparametric inference for adaptive 
+#'   sequential sampling of psychophysical experiments.
+#'   Journal of Mathematical Psychology 56 (2012) 179-195
+#' @param examples
+#'  L = 6 # number of stimuli
+#'  K = 2 # number of responses
+#'  counts.success <- c(2,3,2,4,7,7)
+#'  counts.failure <- c(8,7,7,6,3,2)
+#'  counts <- count.statistic(t(matrix(c(counts.success, counts.failure), L)))
+#'  alpha.success  <- c(1,1,1,1,1,1)
+#'  alpha.failure  <- c(1,1,1,1,1,1)
+#'  alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
+#'  beta   <- default.beta(L)
+#'  gamma  <- default.gamma(L)
+#' @export
+
+prombsExtended <- function(g, f, h, epsilon, m=0) {
+  L <- length(g)
+
+  if (m == 0) {
+    m <- L
+  }
+  dim(g)       <- c(L)
+  dim(f)       <- c(L, L)
+  dim(h)       <- c(L, L)
+  dim(epsilon) <- c(1)
+  dim(m)       <- c(1)
+
+  storage.mode(g)       <- "double"
+  storage.mode(f)       <- "double"
+  storage.mode(h)       <- "double"
+  storage.mode(m)       <- "integer"
+  storage.mode(epsilon) <- "double"
+
+  .Call("call_prombs_extended", g, f, h, epsilon, m, "prombs")
+}

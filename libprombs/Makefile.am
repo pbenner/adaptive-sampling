@@ -3,6 +3,6 @@
 INCLUDES = -I$(top_srcdir)/include
 
 ## library
-noinst_LTLIBRARIES = libprombs.la
+lib_LTLIBRARIES = libprombs.la
 
 libprombs_la_SOURCES = prombs.c prombs-simple.c
