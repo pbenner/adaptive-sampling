@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _MGS_H_
-#define _MGS_H_
+#ifndef ADAPTIVE_SAMPLING_MGS_H
+#define ADAPTIVE_SAMPLING_MGS_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -26,10 +26,10 @@
 #include <adaptive-sampling/linalg.h>
 #include <adaptive-sampling/probtype.h>
 
-extern void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
-extern void mgs_init(size_t R, size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
-extern void mgs_free();
-extern size_t * mgs_get_counts();
-extern void mgs_get_bprob(vector_t *bprob, size_t L);
+void mgs(prob_t *result, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
+void mgs_init(size_t R, size_t N, prob_t *g, prob_t (*f)(int, int, void*), size_t L, void *data);
+void mgs_free();
+size_t * mgs_get_counts();
+void mgs_get_bprob(vector_t *bprob, size_t L);
 
-#endif /* _MGS_H_ */
+#endif /* ADAPTIVE_SAMPLING_MGS_H */
