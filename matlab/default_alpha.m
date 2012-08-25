@@ -3,11 +3,10 @@ function out = default_alpha(in)
 %   Convert a matrix to a list of matrices with default alpha values.
 %
   [K, L] = size(in);
-  out    = [];
+  out    = zeros(K, L, L);
 
   for k = 1:K
-    m = generate_alpha(in(k,:));
-    out = [out; m];
+    out(k,:,:) = generate_alpha(in(k,:));
   end
 
 end % default_alpha

@@ -4,11 +4,10 @@ function out = count_statistic(in)
 %   TODO: This is a naive implementation! Use the outer product!
 %
   [K, L] = size(in);
-  out    = [];
+  out    = zeros(K, L, L);
 
   for k = 1:K
-    m = compute_counts(in(k,:));
-    out = [out; m];
+    out(k,:,:) = compute_counts(in(k,:));
   end
 
 end % count_statistic

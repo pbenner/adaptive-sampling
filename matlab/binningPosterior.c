@@ -23,9 +23,13 @@
 
 static
 marginal_t * callBinning(const mxArray *prhs[]) {
+        if (mxGetNumberOfDimensions(prhs[0]) != 3) {
+                mexErrMsgTxt("Invalid dimension of counts matrix.");
+        }
 
-        size_t  L = mxGetN(prhs[0]);
-        size_t  K = mxGetM(prhs[0])/L;
+        size_t K = mxGetDimensions(prhs[0])[0];
+        size_t L = mxGetDimensions(prhs[0])[1];
+
         matrix_t** counts;
         matrix_t** alpha;
         vector_t* beta;
@@ -33,7 +37,7 @@ marginal_t * callBinning(const mxArray *prhs[]) {
         options_t* options;
         marginal_t * result;
 
-        counts  = getCounts(prhs[0]);
+        counts  = getCounts(prhs[0], K, L);
         alpha   = getAlpha(prhs[1], K, L);
         beta    = getBeta(prhs[2], L);
         gamma   = getGamma(prhs[3], L);

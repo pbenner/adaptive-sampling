@@ -134,7 +134,7 @@ options_t* getOptions(const mxArray *array)
         return options;
 }
 
-void copyMatrix(matrix_t* to, const mxArray* from, size_t offset) {
+void copyMatrix(matrix_t* to, const mxArray* from) {
         const size_t R = to->rows;
         const size_t C = to->columns;
         double* m = mxGetPr(from);
@@ -145,8 +145,29 @@ void copyMatrix(matrix_t* to, const mxArray* from, size_t offset) {
 
         for (i = 0; i < R; i++) {
                 for (j = 0; j < C; j++) {
-                        subs[0] = i+offset;
+                        subs[0] = i;
                         subs[1] = j;
+                        index = mxCalcSingleSubscript(from, nsubs, subs);
+                        to->content[i][j] = m[index];
+                }
+        }
+        mxFree(subs);
+}
+
+void copy3DMatrix(matrix_t* to, const mxArray* from, size_t which) {
+        const size_t R = to->rows;
+        const size_t C = to->columns;
+        double* m = mxGetPr(from);
+        size_t i, j;
+        mwSize  nsubs = mxGetNumberOfDimensions(from);
+        mwIndex* subs = mxCalloc(nsubs,sizeof(mwIndex));
+        mwIndex index;
+
+        for (i = 0; i < R; i++) {
+                for (j = 0; j < C; j++) {
+                        subs[0] = which;
+                        subs[1] = i;
+                        subs[2] = j;
                         index = mxCalcSingleSubscript(from, nsubs, subs);
                         to->content[i][j] = m[index];
                 }
@@ -184,15 +205,21 @@ void copyArray(prob_t* to, const mxArray* from, size_t size) {
         mxFree(subs);
 }
 
-matrix_t** getCounts(const mxArray* array) {
-        size_t L = mxGetN(array);
-        size_t K = mxGetM(array)/L;
+matrix_t** getCounts(const mxArray* array, size_t K, size_t L) {
+        if (mxGetNumberOfDimensions(array) != 3) {
+                mexErrMsgTxt("Invalid dimension of counts matrix.");
+        }
+        if (mxGetDimensions(array)[0] != K ||
+            mxGetDimensions(array)[1] != L ||
+            mxGetDimensions(array)[2] != L) {
+                mexErrMsgTxt("Invalid dimension of counts matrix.");
+        }
         size_t k;
         matrix_t** counts = (matrix_t**)malloc((K+1)*sizeof(matrix_t*));
 
         for (k = 0; k < K; k++) {
                 counts[k] = alloc_matrix(L, L);
-                copyMatrix(counts[k], array, k*L);
+                copy3DMatrix(counts[k], array, k);
         }
         counts[k] = NULL;
 
@@ -209,7 +236,12 @@ void freeCounts(matrix_t** counts) {
 }
 
 matrix_t** getAlpha(const mxArray* array, size_t K, size_t L) {
-        if (mxGetN(array) != L || mxGetM(array)/L != K) {
+        if (mxGetNumberOfDimensions(array) != 3) {
+                mexErrMsgTxt("Invalid dimension of alpha matrix.");
+        }
+        if (mxGetDimensions(array)[0] != K ||
+            mxGetDimensions(array)[1] != L ||
+            mxGetDimensions(array)[2] != L) {
                 mexErrMsgTxt("Invalid dimension of alpha matrix.");
         }
         size_t k;
@@ -217,7 +249,7 @@ matrix_t** getAlpha(const mxArray* array, size_t K, size_t L) {
 
         for (k = 0; k < K; k++) {
                 alpha[k] = alloc_matrix(L, L);
-                copyMatrix(alpha[k], array, k*L);
+                copy3DMatrix(alpha[k], array, k);
         }
         alpha[k] = NULL;
 
@@ -250,7 +282,7 @@ matrix_t* getGamma(const mxArray* array, size_t L) {
         }
         matrix_t* gamma = alloc_matrix(L, L);
 
-        copyMatrix(gamma, array, 0);
+        copyMatrix(gamma, array);
 
         return gamma;
 }
