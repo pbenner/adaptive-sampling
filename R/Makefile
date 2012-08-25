@@ -9,7 +9,7 @@ all: $(TARGETS)
 %_$(VERSION).tar.gz: %/NAMESPACE
 	$(R) CMD build $*
 
-%/NAMESPACE: %/R/*.R
+%/NAMESPACE: %/R/*.R %/src/*.c
 	$(R) --vanilla --quiet < roxygen_$*.R
 
 check: $(TARGETS)
