@@ -22,3 +22,4 @@ install: $(TARGETS)
 clean:
 	$(RM) -r $(addsuffix .Rcheck,$(PACKAGES))
 	$(RM) $(TARGETS)
+	$(RM) $(NAMESPACES)
