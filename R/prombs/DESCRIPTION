@@ -4,7 +4,8 @@ License: GPL-2
 Title: wrapper for the Gnu Scientific Library
 Author: Philipp Benner <philipp.benner@mis.mpg.de>
     Tobias Elze <tobias-elze@tobias-elze.de>
-SystemRequirements: Gnu Scientific Library version >= 1.12
+URL: http://adaptivesampling.org
+SystemRequirements: adaptive-sampling library (https://alioth.debian.org/projects/sampling/)
 Description: A wrapper for the adaptive-sampling library.
 Version: 1.0-1
 Repository: CRAN
