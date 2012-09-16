@@ -1,7 +1,7 @@
 Package: prombs
 Maintainer: Philipp Benner <philipp.benner@mis.mpg.de>
 License: GPL-2
-Title: wrapper for the Gnu Scientific Library
+Title: wrapper for the prombs library
 Author: Philipp Benner <philipp.benner@mis.mpg.de>
     Tobias Elze <tobias-elze@tobias-elze.de>
 URL: http://adaptivesampling.org
