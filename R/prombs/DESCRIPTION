@@ -5,7 +5,8 @@ Title: wrapper for the prombs library
 Author: Philipp Benner <philipp.benner@mis.mpg.de>
     Tobias Elze <tobias-elze@tobias-elze.de>
 URL: http://adaptivesampling.org
-SystemRequirements: adaptive-sampling library (https://alioth.debian.org/projects/sampling/)
+SystemRequirements: adaptive-sampling library
+    (https://alioth.debian.org/projects/sampling/)
 Description: A wrapper for the adaptive-sampling library.
 Version: 1.0-1
 Repository: CRAN
