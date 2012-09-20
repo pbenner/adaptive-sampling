@@ -15,12 +15,20 @@ CLEANFILES        = $(dist_bin_SCRIPTS)
 
 man1_MANS         = adaptive-sampling.1 bayesian-binning.1
 
-EXTRA_DIST        = adaptive.sampling/R/*.R                     \
-                    adaptive.sampling/src/*.c                   \
-                    adaptive.sampling/demo/*.R                  \
-                    adaptive.sampling/src/Makevars              \
-                    adaptive.sampling/DESCRIPTION               \
-                    adaptive.sampling/NAMESPACE                 \
+EXTRA_DIST        = R/adaptive.sampling/R/*.R                   \
+                    R/adaptive.sampling/src/*.c                 \
+                    R/adaptive.sampling/demo/*.R                \
+                    R/adaptive.sampling/src/Makevars            \
+                    R/adaptive.sampling/DESCRIPTION             \
+                    R/prombs/R/*.R                              \
+                    R/prombs/src/*.c                            \
+                    R/prombs/demo/*.R                           \
+                    R/prombs/src/Makevars                       \
+                    R/prombs/DESCRIPTION                        \
+                    R/Makefile                                  \
+                    R/README                                    \
+                    R/roxygen_adaptive.sampling.R               \
+                    R/roxygen_prombs.R                          \
                     adaptive-sampling.1 bayesian-binning.1      \
                     adaptive-sampling.in bayesian-binning.in    \
                     adaptive-sampling.xml bayesian-binning.xml  \

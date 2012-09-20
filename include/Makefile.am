@@ -15,6 +15,5 @@ EXTRA_DIST = \
 	adaptive-sampling/exception.h \
 	adaptive-sampling/logarithmetic.h \
 	adaptive-sampling/mgs.h \
-	adaptive-sampling/probtype.h.in \
 	adaptive-sampling/uthash.h \
 	gnugetopt.h
