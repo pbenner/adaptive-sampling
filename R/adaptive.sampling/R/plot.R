@@ -14,6 +14,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+#' Plot the density of the binning posterior.
+#'
+#' @export
+
 plot.binning.density <- function(
 	results,
 	plot.density = TRUE,
@@ -227,6 +231,11 @@ plot.binning <- function(
 	box()
 	par(op)
 }
+
+#' Plot the  binning posterior.
+#'
+#' @export
+#' @S3Method(plot, binning.posterior)
 
 plot.binning.posterior <- function(posterior, ...)
 	plot.binning(unclass(posterior), ...)

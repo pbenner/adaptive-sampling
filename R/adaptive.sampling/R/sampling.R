@@ -14,11 +14,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-
-##########
-# roxygen2 documentation:
-# #########
-
 #' Implements a predictive approach to non-parametric inference for adaptive sampling.
 #'
 #' \tabular{ll}{
@@ -26,6 +21,7 @@
 #' Type: \tab Package\cr
 #' Version: \tab 1.0-1\cr
 #' Date: \tab 2012-08-20\cr
+#' URL: \tab http://www.adaptivesampling.org\cr
 #' License: \tab GPL-2\cr
 #' LazyLoad: \tab yes\cr
 #' }
@@ -47,37 +43,38 @@
 #' @title Implements a predictive approach to non-parametric inference for adaptive sampling
 #' @author Philipp Benner \email{Philipp.Benner@@mis.mpg.de}, Tobias Elze \email{Tobias.Elze@@schepens.harvard.edu}
 #' @references
-#' Poppe, S, Benner, P, Elze, T. 
-#'   A predictive approach to nonparametric inference for adaptive 
-#'   sequential sampling of psychophysical experiments.
-#'   Journal of Mathematical Psychology 56 (2012) 179-195
+#'  Poppe, S, Benner, P, Elze, T.
+#'  A predictive approach to nonparametric inference for adaptive
+#'  sequential sampling of psychophysical experiments.
+#'  Journal of Mathematical Psychology 56 (2012) 179-195
 #' @useDynLib adaptive.sampling
 NULL
 
 #' Calculate utility measure for an adaptive sampling step.
 #' 
 #' @param counts matrix of counts; each line one response option
-#'   dimensions: K rows, L columns
+#'  dimensions: K rows, L columns
 #' @param alpha "pseudo counts"
 #' @param beta relative class weights
 #' @param gamma a priori importance of each consecutive bin
 #' @param ... further options; see \code{\link{make.options}}
 #' @references
-#' Poppe, S, Benner, P, Elze, T. 
-#'   A predictive approach to nonparametric inference for adaptive 
-#'   sequential sampling of psychophysical experiments.
-#'   Journal of Mathematical Psychology 56 (2012) 179-195
-#' @param examples
-#'  L = 6 # number of stimuli
-#'  K = 2 # number of responses
-#'  counts.success <- c(2,3,2,4,7,7)
-#'  counts.failure <- c(8,7,7,6,3,2)
-#'  counts <- count.statistic(t(matrix(c(counts.success, counts.failure), L)))
-#'  alpha.success  <- c(1,1,1,1,1,1)
-#'  alpha.failure  <- c(1,1,1,1,1,1)
-#'  alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
-#'  beta   <- default.beta(L)
-#'  gamma  <- default.gamma(L)
+#'  Poppe, S, Benner, P, Elze, T.
+#'  A predictive approach to nonparametric inference for adaptive
+#'  sequential sampling of psychophysical experiments.
+#'  Journal of Mathematical Psychology 56 (2012) 179-195
+#' @examples
+#' L = 6 # number of stimuli
+#' K = 2 # number of responses
+#' counts.success <- c(2,3,2,4,7,7)
+#' counts.failure <- c(8,7,7,6,3,2)
+#' counts <- count.statistic(t(matrix(c(counts.success, counts.failure), L)))
+#' alpha.success  <- c(1,1,1,1,1,1)
+#' alpha.failure  <- c(1,1,1,1,1,1)
+#' alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
+#' beta   <- default.beta(L)
+#' gamma  <- default.gamma(L)
+#' result <- sampling.utility(counts, alpha, beta, gamma)
 #' @export
 
 sampling.utility <- function(counts, alpha, beta, gamma, ...) {
