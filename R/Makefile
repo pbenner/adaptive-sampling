@@ -24,3 +24,12 @@ clean:
 	$(RM) -r $(addsuffix .Rcheck,$(PACKAGES))
 	$(RM) $(TARGETS)
 	$(RM) $(NAMESPACES)
+
+# Vignette
+################################################################################
+
+adaptive.sampling.pdf:
+	 R CMD Rd2pdf --title='Adaptive Sampling' -o adaptive.sampling.pdf adaptive.sampling/man/*.Rd
+
+prombs.pdf:
+	 R CMD Rd2pdf --title='Proximal MultiBin Summation (ProMBS)' -o prombs.pdf prombs/man/*.Rd
