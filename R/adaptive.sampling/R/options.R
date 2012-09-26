@@ -26,6 +26,7 @@
 #' @param density whether or not to compute the density
 #' @param density.step step size for computing the density
 #' @param density.range limits the range within which the density is computed
+#' @param epsilon precision parameter for the extended prombs
 #' @param threads number of threads that are used for computation
 #' @param stacksize stacksize limit for multiple pthreads
 #' @param algorithm 0: prombs, 1: multibin sampler
