@@ -42,6 +42,7 @@
 #' @docType package
 #' @title Implements a predictive approach to non-parametric inference for adaptive sampling
 #' @author Philipp Benner \email{Philipp.Benner@@mis.mpg.de}, Tobias Elze \email{Tobias.Elze@@schepens.harvard.edu}
+#' @seealso \code{\link{adaptive.sampling}} \code{\link{binning.posterior}}
 #' @references
 #'  Poppe, S, Benner, P, Elze, T.
 #'  A predictive approach to nonparametric inference for adaptive
@@ -58,6 +59,7 @@ NULL
 #' @param beta relative class weights
 #' @param gamma a priori importance of each consecutive bin
 #' @param ... further options; see \code{\link{make.options}}
+#' @seealso \code{\link{binning.posterior}}
 #' @references
 #'  Poppe, S, Benner, P, Elze, T.
 #'  A predictive approach to nonparametric inference for adaptive

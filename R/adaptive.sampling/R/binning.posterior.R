@@ -22,6 +22,7 @@
 #' @param beta relative class weights
 #' @param gamma a priori importance of each consecutive bin
 #' @param ... further options; see \code{\link{make.options}}
+#' @seealso \code{\link{sampling.utility}}
 #' @references
 #'  Poppe, S, Benner, P, Elze, T. 
 #'  A predictive approach to nonparametric inference for adaptive 

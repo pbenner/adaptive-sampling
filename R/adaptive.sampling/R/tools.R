@@ -17,7 +17,7 @@
 #' Computes the full set of alpha parameters from a reduced set of pseudo counts.
 #' 
 #' @param alpha KxL matrix of pseudo counts where K is the number of
-#'    responses and L the number of stimuli
+#' responses and L the number of stimuli
 #' @examples
 #' L = 6
 #' alpha.success  <- c(1,1,1,1,1,1)
@@ -70,7 +70,7 @@ default.gamma <- function(n) {
 #' Computes the full count statistics from a set of bare counts.
 #' 
 #' @param counts KxL matrix of counts where K is the number of
-#'    responses and L the number of stimuli
+#' responses and L the number of stimuli
 #' @examples
 #' L = 6 # number of stimuli
 #' counts_success <- c(2,3,2,4,7,7)
