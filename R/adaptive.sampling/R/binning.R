@@ -39,7 +39,7 @@
 #' beta   <- default.beta(L)
 #' gamma  <- default.gamma(L)
 #' result <- binning.posterior(counts, alpha, beta, gamma)
-#' result <- binning.posterior(counts, alpha, beta, gamma, n.moments=5)
+#' result <- binning.posterior(counts, alpha, beta, gamma, n.moments=5, bprob=FALSE)
 #' @export
 
 binning.posterior <- function(counts, alpha, beta, gamma, ...) {

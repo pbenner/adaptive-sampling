@@ -42,13 +42,13 @@
 
 make.options <-
   function(n.moments=2,
-           model.posterior=1,
-           bprob = 1,
-           kl.psi=1,
-           kl.multibin=0,
-           effective.counts = 0,
-           effective.posterior.counts = 0,
-           density = 1,
+           model.posterior = TRUE,
+           bprob = TRUE,
+           kl.psi = TRUE,
+           kl.multibin = FALSE,
+           effective.counts = FALSE,
+           effective.posterior.counts = FALSE,
+           density = TRUE,
            density.step = 0.01,
            density.range = c(0, 1),
            epsilon = 0.00001,
@@ -56,7 +56,7 @@ make.options <-
            stacksize = 256*1024,
            algorithm = 0,
            which = 0,
-           hmm = 0,
+           hmm = FALSE,
            rho = 0.4,
            samples = c(100, 2000))
 {
