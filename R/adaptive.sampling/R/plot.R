@@ -191,49 +191,54 @@ plot.binning.density <- function(
 	}
 }
 
-plot.binning <- function(
-	results, 
-	bar.color="darkgreen", 
-	xlab = "",
-	posterior.label = "posterior",
-	plot.bprob=FALSE, 
-	...)
-{
-	op <- par(mfrow=c(2, 1))
-	marginright = ifelse(plot.bprob, 4.1, 0.2)
-	par(mar=c(0.1, 4.1, 2.1, marginright))
-	plot.binning.density(results, plot.bprob=plot.bprob,  xaxis.location = 'top', ...)
-	xaxp = par("xaxp")
-	par(mar=c(4.1, 4.1, 0.1, marginright))
-	bb = barplot(
-		results$mpost, 
-		col=bar.color, 
-		xlab = xlab, 
-		ylab=posterior.label,
-		names.arg = 1:length(results$mpost),
-		xaxs="i",
-		yaxs="r")
-	axis(1, at=bb, labels=FALSE)
-	grid(nx=0, ny=NULL, col="gray")
-	barplot(
-		results$mpost, 
-		col=bar.color, 
-		xlab = xlab, 
-		ylab=posterior.label,
-		names.arg = 1:length(results$mpost),
-		xaxs="i",
-		yaxs="r",
-		add=TRUE)
-	box()
-	par(op)
-}
-
 #' Plot the binning posterior.
 #'
 #' @param x binning posterior object
-#' @param ... optional arguments (TODO)
+#' @param bar.color color code for the bars of the model posterior
+#' @param xlab label for the x-axis that will be printed below the
+#' model posterior
+#' @param posterior.label TODO
+#' @param plot.bprob whether or not to plot break probabilities
+#' @param ... arguments to be passed to methods, such as graphical
+#' parameters (see \code{\link{par}}).
 #' @export
 #' @method plot binning.posterior
 
-plot.binning.posterior <- function(x, ...)
-	plot.binning(unclass(x), ...)
+plot.binning.posterior <- function(
+	x, 
+	bar.color="darkgreen", 
+	xlab = "",
+	posterior.label = "",
+	plot.bprob = FALSE, 
+	...)
+{
+	x <- unclass(x)
+
+	op <- par(mfrow=c(2, 1))
+	marginright = ifelse(plot.bprob, 4.1, 0.2)
+	par(mar=c(0.1, 4.1, 2.1, marginright))
+	plot.binning.density(x, plot.bprob=plot.bprob,  xaxis.location = 'top', ...)
+	xaxp = par("xaxp")
+	par(mar=c(4.1, 4.1, 0.1, marginright))
+	bb = barplot(
+		x$mpost, 
+		col  = bar.color, 
+		xlab = xlab, 
+		ylab = posterior.label,
+		names.arg = 1:length(x$mpost),
+		xaxs = "i",
+		yaxs = "r")
+	axis(1, at=bb, labels=FALSE)
+	grid(nx=0, ny=NULL, col="gray")
+	barplot(
+		x$mpost, 
+		col  = bar.color, 
+		xlab = xlab, 
+		ylab = posterior.label,
+		names.arg = 1:length(x$mpost),
+		xaxs = "i",
+		yaxs = "r",
+		add  = TRUE)
+	box()
+	par(op)
+}
