@@ -11,8 +11,10 @@ all: $(TARGETS)
 $(TARGETS): %_$(VERSION).tar.gz: %/NAMESPACE
 	$(R) CMD build $(RFLAGS) $*
 
-$(NAMESPACES): %/NAMESPACE: $(wildcard %/R/*.R) $(wildcard %/src/*.c)
+.SECONDEXPANSION:
+$(NAMESPACES): %/NAMESPACE: $$(wildcard %/R/*.R) $$(wildcard %/src/*.c)
 	$(R) --vanilla --quiet < roxygen_$*.R
+	touch $@
 
 check: $(TARGETS)
 	$(R) CMD check $(RFLAGS) $(TARGETS)
@@ -26,12 +28,3 @@ clean:
 	$(RM) -r $(addsuffix /man,   $(PACKAGES))
 	$(RM) $(TARGETS)
 	$(RM) $(NAMESPACES)
-
-# Vignette
-################################################################################
-
-adaptive.sampling.pdf:
-	 R CMD Rd2pdf --title='Adaptive Sampling' -o adaptive.sampling.pdf adaptive.sampling/man/*.Rd
-
-prombs.pdf:
-	 R CMD Rd2pdf --title='Proximal MultiBin Summation (ProMBS)' -o prombs.pdf prombs/man/*.Rd

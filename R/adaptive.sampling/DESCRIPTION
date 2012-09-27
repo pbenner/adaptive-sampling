@@ -16,8 +16,8 @@ Depends:
     R (>= 2.10.0)
 Date: 03-03-2012
 Collate:
-    'binning.R'
-    'options.R'
     'plot.R'
-    'sampling.R'
     'tools.R'
+    'binning.posterior.R'
+    'make.options.R'
+    'sampling.utility.R'
