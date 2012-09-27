@@ -14,70 +14,71 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-
-##########
-# roxygen2 documentation:
-# #########
-
-#' Implements a predictive approach to non-parametric inference for adaptive sampling.
+#' Implements the proximal multibin summation (ProMBS) algorithm.
 #'
 #' \tabular{ll}{
-#' Package: \tab adaptive.sampling\cr
+#' Package: \tab prombs\cr
 #' Type: \tab Package\cr
 #' Version: \tab 1.0-1\cr
 #' Date: \tab 2012-08-20\cr
+#' URL: \tab http://www.adaptivesampling.org\cr
 #' License: \tab GPL-2\cr
 #' LazyLoad: \tab yes\cr
 #' }
 #'
-#' Implementing a predictive approach based on a hierarchical Bayesian
-#' model, adaptive.sampling calculates utilities that can be used to
-#' determine the successive step in an adaptive sequential sampling
-#' measurement, such as the stimulus-response relation in a psychophysical
-#' experiment.
+#' Inference in product partition models requires an average over
+#' all possible partitions of the data. This algorithm focuses on
+#' a particular case of product partition models where the data allows
+#' a well-ordering for which it efficiently evaluates all possible
+#' partitions.
 #' 
 #' The background and the algorithm are described in
 #' Poppe, S, Benner, P, Elze, T. 
 #'   A predictive approach to nonparametric inference for adaptive 
 #'   sequential sampling of psychophysical experiments.
-#'   Journal of Mathematical Psychology 56 (2012) 179?195
+#'   Journal of Mathematical Psychology 56 (2012) 179-195
 #'
-#' @name adaptive.sampling
+#' See also
+#' Daniel Barry and J. A. Hartigan
+#'   Product Partition Models for Change Point Problems
+#'   Ann. Statist. Volume 20, Number 1 (1992), 260-279.
+#'
+#' @name prombs
 #' @docType package
-#' @title Implements a predictive approach to non-parametric inference for adaptive sampling
+#' @title Implements the proximal multibin summation (ProMBS) algorithm.
 #' @author Philipp Benner \email{Philipp.Benner@@mis.mpg.de}, Tobias Elze \email{Tobias.Elze@@schepens.harvard.edu}
 #' @references
-#' Poppe, S, Benner, P, Elze, T. 
-#'   A predictive approach to nonparametric inference for adaptive 
-#'   sequential sampling of psychophysical experiments.
-#'   Journal of Mathematical Psychology 56 (2012) 179-195
+#'  Poppe, S, Benner, P, Elze, T. 
+#'  A predictive approach to nonparametric inference for adaptive 
+#'  sequential sampling of psychophysical experiments.
+#'  Journal of Mathematical Psychology 56 (2012) 179-195
+#' @seealso \code{\link{prombs}} \code{\link{prombsExtended}}
 #' @useDynLib prombs
 NULL
 
-#' Calculate utility measure for an adaptive sampling step.
+#' Proximal MultiBin Summation (ProMBS)
 #' 
-#' @param counts matrix of counts; each line one response option
-#'   dimensions: K rows, L columns
-#' @param alpha "pseudo counts"
-#' @param beta relative class weights
-#' @param gamma a priori importance of each consecutive bin
-#' @param ... further options; see \code{\link{make.options}}
+#' @param g vector of length L with values on log scale
+#' @param f LxL upper triangular matrix with values on log scale
+#' @param m integer m <= L that specifies the number of products
+#' @seealso \code{\link{prombsExtended}}
 #' @references
-#' Poppe, S, Benner, P, Elze, T. 
-#'   A predictive approach to nonparametric inference for adaptive 
-#'   sequential sampling of psychophysical experiments.
-#'   Journal of Mathematical Psychology 56 (2012) 179-195
-#' @param examples
-#'  L = 6 # number of stimuli
-#'  K = 2 # number of responses
-#'  counts.success <- c(2,3,2,4,7,7)
-#'  counts.failure <- c(8,7,7,6,3,2)
-#'  counts <- count.statistic(t(matrix(c(counts.success, counts.failure), L)))
-#'  alpha.success  <- c(1,1,1,1,1,1)
-#'  alpha.failure  <- c(1,1,1,1,1,1)
-#'  alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
-#'  beta   <- default.beta(L)
-#'  gamma  <- default.gamma(L)
+#'  Poppe, S, Benner, P, Elze, T. 
+#'  A predictive approach to nonparametric inference for adaptive 
+#'  sequential sampling of psychophysical experiments.
+#'  Journal of Mathematical Psychology 56 (2012) 179-195
+#' @examples
+#' g = c(1, 2, 3, 4, 5)
+#' f = c(1, 2, 3, 4, 5,
+#'       0, 1, 2, 3, 4,
+#'       0, 0, 1, 2, 3,
+#'       0, 0, 0, 1, 2,
+#'       0, 0, 0, 0, 1)
+#'
+#' dim(f) <- c(5,5)
+#' f      <- t(f)
+#'
+#' exp(prombs(log(g), log(f)));
 #' @export
 
 prombs <- function(g, f, m=0) {
@@ -97,30 +98,39 @@ prombs <- function(g, f, m=0) {
   .Call("call_prombs", g, f, m, "prombs")
 }
 
-#' Calculate utility measure for an adaptive sampling step.
+#' Extended Proximal MultiBin Summation (ProMBS)
 #' 
-#' @param counts matrix of counts; each line one response option
-#'   dimensions: K rows, L columns
-#' @param alpha "pseudo counts"
-#' @param beta relative class weights
-#' @param gamma a priori importance of each consecutive bin
-#' @param ... further options; see \code{\link{make.options}}
+#' @param g vector of length L with values on log scale
+#' @param f LxL upper triangular matrix with values on log scale
+#' @param h LxL upper triangular matrix with values on normal scale
+#' @param epsilon precision parameter
+#' @param m integer m <= L that specifies the number of products
+#' @seealso \code{\link{prombs}}
 #' @references
-#' Poppe, S, Benner, P, Elze, T. 
-#'   A predictive approach to nonparametric inference for adaptive 
-#'   sequential sampling of psychophysical experiments.
-#'   Journal of Mathematical Psychology 56 (2012) 179-195
-#' @param examples
-#'  L = 6 # number of stimuli
-#'  K = 2 # number of responses
-#'  counts.success <- c(2,3,2,4,7,7)
-#'  counts.failure <- c(8,7,7,6,3,2)
-#'  counts <- count.statistic(t(matrix(c(counts.success, counts.failure), L)))
-#'  alpha.success  <- c(1,1,1,1,1,1)
-#'  alpha.failure  <- c(1,1,1,1,1,1)
-#'  alpha  <- default.alpha(t(matrix(c(alpha.success, alpha.failure), L)))
-#'  beta   <- default.beta(L)
-#'  gamma  <- default.gamma(L)
+#'  Poppe, S, Benner, P, Elze, T. 
+#'  A predictive approach to nonparametric inference for adaptive 
+#'  sequential sampling of psychophysical experiments.
+#'  Journal of Mathematical Psychology 56 (2012) 179-195
+#' @examples
+#' g = c(1, 2, 3, 4, 5)
+#' f = c(1, 2, 3, 4, 5,
+#'       0, 1, 2, 3, 4,
+#'       0, 0, 1, 2, 3,
+#'       0, 0, 0, 1, 2,
+#'       0, 0, 0, 0, 1)
+#' h = c(1, 2, 3, 4, 5,
+#'       0, 1, 2, 3, 4,
+#'       0, 0, 1, 2, 3,
+#'       0, 0, 0, 1, 2,
+#'       0, 0, 0, 0, 1)
+#'
+#' dim(f) <- c(5,5)
+#' f      <- t(f)
+#'
+#' dim(h) <- c(5,5)
+#' h      <- t(h)
+#'
+#' exp(prombsExtended(log(g), log(f), h, 0.0001));
 #' @export
 
 prombsExtended <- function(g, f, h, epsilon, m=0) {
