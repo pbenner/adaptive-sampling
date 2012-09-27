@@ -1,4 +1,4 @@
-Package: prombs
+Package: multibin.summation
 Maintainer: Philipp Benner <philipp.benner@mis.mpg.de>
 License: GPL-2
 Title: wrapper for the prombs library
@@ -17,3 +17,4 @@ Depends:
 Date: 03-03-2012
 Collate:
     'prombs.R'
+    'multibin.summation.R'
