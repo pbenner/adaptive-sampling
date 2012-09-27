@@ -22,6 +22,8 @@ install: $(TARGETS)
 
 clean:
 	$(RM) -r $(addsuffix .Rcheck,$(PACKAGES))
+	$(RM) -r $(addsuffix .pdf,   $(PACKAGES))
+	$(RM) -r $(addsuffix /man,   $(PACKAGES))
 	$(RM) $(TARGETS)
 	$(RM) $(NAMESPACES)
 
