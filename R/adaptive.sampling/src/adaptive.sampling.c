@@ -47,6 +47,25 @@ double getreal(SEXP env, const char* name, size_t n)
 }
 
 static
+int getbool(SEXP env, const char* name, size_t n)
+{
+        SEXP ans;
+        int result;
+
+        if(!isEnvironment(env)) {
+                error("should be an environment");
+        }
+        PROTECT(ans = findVar(install(name), env));
+        if(isSymbol(ans) && isNull(TAG(ans))) {
+                error("options entry for %s is null", name);
+        }
+        result = LOGICAL(ans)[n];
+        UNPROTECT(1);
+
+        return result;
+}
+
+static
 void copyMatrixToC(matrix_t* to, SEXP from, size_t rows, size_t columns, size_t offset) {
         double *r_counts = REAL(from);
         size_t i, j;
@@ -145,13 +164,13 @@ options_t* getOptions(SEXP r_options)
 {
         options_t* options = (options_t*)malloc(sizeof(options_t));
 
-        options->model_posterior            = getreal(r_options, "model.posterior", 0);
-        options->kl_psi                     = getreal(r_options, "kl.psi", 0);
-        options->kl_multibin                = getreal(r_options, "kl.multibin",  0);
-        options->effective_counts           = getreal(r_options, "effective.counts", 0);
-        options->effective_posterior_counts = getreal(r_options, "effective.posterior.counts", 0);
-        options->bprob                      = getreal(r_options, "bprob", 0);
-        options->density                    = getreal(r_options, "density", 0);
+        options->model_posterior            = getbool(r_options, "model.posterior", 0);
+        options->kl_psi                     = getbool(r_options, "kl.psi", 0);
+        options->kl_multibin                = getbool(r_options, "kl.multibin",  0);
+        options->effective_counts           = getbool(r_options, "effective.counts", 0);
+        options->effective_posterior_counts = getbool(r_options, "effective.posterior.counts", 0);
+        options->bprob                      = getbool(r_options, "bprob", 0);
+        options->density                    = getbool(r_options, "density", 0);
         options->density_step               = getreal(r_options, "density.step", 0);
         options->density_range.from         = getreal(r_options, "density.range", 0);
         options->density_range.to           = getreal(r_options, "density.range", 1);
@@ -166,7 +185,7 @@ options_t* getOptions(SEXP r_options)
         options->which                      = getreal(r_options, "which", 0);
         options->samples[0]                 = getreal(r_options, "samples", 0);
         options->samples[1]                 = getreal(r_options, "samples", 1);
-        options->hmm                        = getreal(r_options, "hmm", 0);
+        options->hmm                        = getbool(r_options, "hmm", 0);
         options->rho                        = getreal(r_options, "rho", 0);
 
         return options;
