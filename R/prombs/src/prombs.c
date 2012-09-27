@@ -87,7 +87,6 @@ SEXP check_input(
         /* check g */
         SEXP dim = getAttrib(r_g, R_DimSymbol);
         if(length(dim) != 1) {
-                printf("dim: %d\n", (int)length(dim));
                 error("g is not a vector");
         }
         size_t L = INTEGER(dim)[0];
