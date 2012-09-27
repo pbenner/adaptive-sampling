@@ -1,7 +1,5 @@
-In order to build and install the R library (adaptive.sampling), call
+In order to build and install the R libraries (adaptive.sampling and multibin.summation), call
 
 make
-(optional:)
-make check
+make check (optional)
 make install
-
