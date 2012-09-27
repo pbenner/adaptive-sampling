@@ -21,3 +21,4 @@ Collate:
     'binning.posterior.R'
     'make.options.R'
     'sampling.utility.R'
+    'adaptive.sampling.R'
