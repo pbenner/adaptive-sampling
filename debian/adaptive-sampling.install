@@ -1,3 +1,6 @@
 usr/bin/adaptive-sampling
+usr/bin/bayesian-binning
 usr/share/man/man1/adaptive-sampling.1
-usr/lib/python*/dist-packages/bayesian_binning/adaptive_sampling.py
+usr/share/man/man1/bayesian-binning.1
+usr/lib/python*/dist-packages/adaptive_sampling/adaptive_sampling.py
+usr/lib/python*/dist-packages/adaptive_sampling/bayesian_binning.py
