@@ -4,7 +4,6 @@ pkginclude_HEADERS = \
 	adaptive-sampling/datatypes.h \
 	adaptive-sampling/interface.h \
 	adaptive-sampling/linalg.h \
-	adaptive-sampling/probtype.h \
 	adaptive-sampling/prombs.h
 
 ## install headers

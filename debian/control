@@ -8,7 +8,7 @@ Homepage: http://www.adaptivesampling.org
 
 Package: adaptive-sampling
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, libbayesian-binning0 (>= ${source:Version}), python (>= 2.5), python-matplotlib, python-numpy
+Depends: ${shlibs:Depends}, ${misc:Depends}, libadaptive-sampling0 (>= ${source:Version}), python (>= 2.5), python-matplotlib, python-numpy
 Description: adaptive sampling for experiments with well-ordered items
  This program can be used to optimize the sampling (measurement)
  process with respect to a given utility-measure. Example measures are

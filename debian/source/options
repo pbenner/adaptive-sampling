@@ -1,1 +1,1 @@
---extend-diff-ignore='.*stamp.*|config.h.in|Makefile|Makefile.in|aclocal.m4|configure'
+--extend-diff-ignore='doc/hmm|math/.*(py|nb|cfg|result|R)|matlab-bin'

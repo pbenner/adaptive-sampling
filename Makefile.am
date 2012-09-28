@@ -18,17 +18,19 @@ man1_MANS         = adaptive-sampling.1 bayesian-binning.1
 EXTRA_DIST        = R/adaptive.sampling/R/*.R                   \
                     R/adaptive.sampling/src/*.c                 \
                     R/adaptive.sampling/demo/*.R                \
+                    R/adaptive.sampling/demo/00Index            \
                     R/adaptive.sampling/src/Makevars            \
                     R/adaptive.sampling/DESCRIPTION             \
-                    R/prombs/R/*.R                              \
-                    R/prombs/src/*.c                            \
-                    R/prombs/demo/*.R                           \
-                    R/prombs/src/Makevars                       \
-                    R/prombs/DESCRIPTION                        \
+                    R/multibin.summation/R/*.R                  \
+                    R/multibin.summation/src/*.c                \
+                    R/multibin.summation/demo/*.R               \
+                    R/multibin.summation/demo/00Index           \
+                    R/multibin.summation/src/Makevars           \
+                    R/multibin.summation/DESCRIPTION            \
                     R/Makefile                                  \
                     R/README                                    \
                     R/roxygen_adaptive.sampling.R               \
-                    R/roxygen_prombs.R                          \
+                    R/roxygen_multibin.summation.R              \
                     adaptive-sampling.1 bayesian-binning.1      \
                     adaptive-sampling.in bayesian-binning.in    \
                     adaptive-sampling.xml bayesian-binning.xml  \
@@ -36,16 +38,14 @@ EXTRA_DIST        = R/adaptive.sampling/R/*.R                   \
                     debian/copyright                            \
                     debian/compat                               \
                     debian/changelog                            \
-                    debian/libbayesian-binning0-dev.install     \
+                    debian/libadaptive-sampling0-dev.install    \
+                    debian/libadaptive-sampling0.install        \
                     debian/rules                                \
-                    debian/bayesian-binning.examples            \
-                    debian/bayesian-binning.install             \
-                    debian/bayesian-binning.README.Debian       \
-                    debian/libbayesian-binning0.install         \
                     debian/docs                                 \
                     debian/adaptive-sampling.examples           \
                     debian/adaptive-sampling.install            \
-                    debian/adaptive-sampling.README.Debian
+                    debian/adaptive-sampling.README.Debian      \
+                    debian/source/*
 
 DB2MAN            = /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
 XP                = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
