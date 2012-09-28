@@ -31,6 +31,6 @@ binning.demo <- function() {
   binning.posterior(counts, alpha, beta, gamma)
 }
 
-marginal <- binning.demo()
+result <- binning.demo()
 
-plot(marginal)
+plot(result)
