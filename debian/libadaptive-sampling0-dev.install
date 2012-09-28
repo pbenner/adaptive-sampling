@@ -1,0 +1,5 @@
+usr/include
+usr/lib/libadaptive-sampling*.a
+usr/lib/libadaptive-sampling*.so
+usr/lib/libprombs*.a
+usr/lib/libprombs*.so

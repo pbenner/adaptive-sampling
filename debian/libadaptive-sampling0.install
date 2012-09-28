@@ -1,0 +1,8 @@
+usr/lib/libadaptive-sampling*.so.*
+usr/lib/libprombs*.so.*
+usr/lib/python*/dist-packages/adaptive_sampling/__init__.py
+usr/lib/python*/dist-packages/adaptive_sampling/interface.py
+usr/lib/python*/dist-packages/adaptive_sampling/config.py
+usr/lib/python*/dist-packages/adaptive_sampling/policy.py
+usr/lib/python*/dist-packages/adaptive_sampling/statistics.py
+usr/lib/python*/dist-packages/adaptive_sampling/visualization.py
