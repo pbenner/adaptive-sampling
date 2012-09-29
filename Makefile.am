@@ -27,25 +27,13 @@ EXTRA_DIST        = R/adaptive.sampling/R/*.R                   \
                     R/multibin.summation/demo/00Index           \
                     R/multibin.summation/src/Makevars           \
                     R/multibin.summation/DESCRIPTION            \
-                    R/Makefile                                  \
+                    R/makefile                                  \
                     R/README                                    \
                     R/roxygen_adaptive.sampling.R               \
                     R/roxygen_multibin.summation.R              \
                     adaptive-sampling.1 bayesian-binning.1      \
                     adaptive-sampling.in bayesian-binning.in    \
-                    adaptive-sampling.xml bayesian-binning.xml  \
-                    debian/control                              \
-                    debian/copyright                            \
-                    debian/compat                               \
-                    debian/changelog                            \
-                    debian/libadaptive-sampling0-dev.install    \
-                    debian/libadaptive-sampling0.install        \
-                    debian/rules                                \
-                    debian/docs                                 \
-                    debian/adaptive-sampling.examples           \
-                    debian/adaptive-sampling.install            \
-                    debian/adaptive-sampling.README.Debian      \
-                    debian/source/*
+                    adaptive-sampling.xml bayesian-binning.xml
 
 DB2MAN            = /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
 XP                = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
