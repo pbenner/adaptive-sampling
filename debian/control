@@ -9,19 +9,17 @@ Homepage: http://www.adaptivesampling.org
 Package: adaptive-sampling
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, libadaptive-sampling0 (>= ${source:Version}), python (>= 2.5), python-matplotlib, python-numpy
-Description: adaptive sampling for experiments with well-ordered items
- This program can be used to optimize the sampling (measurement)
- process with respect to a given utility-measure. Example measures are
- for instance the expected gain in Shannon information or reduction in
- variance. All computations are based on the Bayesian binning library,
- which is an inference algorithm for data from a set of multinomial
- distributions that are related through a well-ordering (for instance
- space or time). Nearby data points are binned together if the
- parameters of the underlying distributions are inferred to be
- equal. This allows one to increase statistical strength and thereby gives
- a better estimate of the underlying multinomial parameters.
+Description: adaptive placement of measurments in experiments with ordered items
+ This program can be used to optimize the measurement process in
+ experiments with respect to a given utility-measure. Example measures
+ are for instance the expected gain in Shannon information or
+ reduction in variance. All computations are based on the Bayesian
+ binning library, which is an inference algorithm for multinomial data
+ where the independent variables are ordered (for instance time). The
+ method allows sharing of statistical strength and thereby increases
+ the certainty of posterior estimates.
  .
- The package includes several examples for sampling psychometric
+ The package includes several examples for measuring psychometric
  functions.
 
 Package: libadaptive-sampling0
@@ -29,24 +27,24 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libgsl0ldbl
 Recommends: python (>= 2.5)
-Description: library providing a Bayesian binning algorithm for well-ordered data
+Description: library providing a Bayesian binning algorithm for ordered data
  The Bayesian binning library is an inference algorithm for data from
- a set of multinomial distributions that are related through a
- well-ordering (for instance space or time). Nearby data points are
- binned together if the parameters of the underlying distributions are
- inferred to be equal. This allows one to increase statistical strength
- and thereby gives a better estimate of the underlying multinomial
- parameters.
+ a set of multinomial distributions where the independent variables
+ are ordered (for instance time). Nearby data points are binned
+ together if the parameters of the underlying distributions are
+ inferred to be equal, which is called sharing of statistical
+ strength. The library can be used for adaptive sampling or pure data
+ analysis. One application if for instance the analysis of spike trains.
 
 Package: libadaptive-sampling0-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, libadaptive-sampling0 (= ${binary:Version}), libgsl0-dev
-Description: library providing a bayesian binning algorithm for well-ordered data
+Description: library providing a bayesian binning algorithm for ordered data
  The Bayesian binning library is an inference algorithm for data from
- a set of multinomial distributions that are related through a
- well-ordering (for instance space or time). Nearby data points are
- binned together if the parameters of the underlying distributions are
- inferred to be equal. This allows one to increase statistical strength
- and thereby gives a better estimate of the underlying multinomial
- parameters.
+ a set of multinomial distributions where the independent variables
+ are ordered (for instance time). Nearby data points are binned
+ together if the parameters of the underlying distributions are
+ inferred to be equal, which is called sharing of statistical
+ strength. The library can be used for adaptive sampling or pure data
+ analysis. One application if for instance the analysis of spike trains.
