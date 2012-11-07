@@ -5,7 +5,7 @@ function result = example1()
 
   % K: responses
   % L: stimuli
-  [K, L] = size(bare_counts);
+  [K, L]  = size(bare_counts);
 
   counts  = count_statistic(bare_counts);
   alpha   = default_alpha(ones(K, L));
@@ -14,6 +14,6 @@ function result = example1()
 
   options = default_options();
 
-  result  = samplingUtility(counts, alpha, beta, gamma, options);
+  result  = binningPosterior(counts, alpha, beta, gamma, options);
 
 end % example1

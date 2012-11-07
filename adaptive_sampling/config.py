@@ -90,6 +90,7 @@ def readStates(config_parser, section, option):
 ################################################################################
 
 def generate_alpha(alpha_v):
+    """Generate a set of default alpha parameters."""
     K = len(alpha_v)
     L = len(alpha_v[0])
     ones  = np.ones(L, dtype=float)
@@ -102,6 +103,7 @@ def generate_alpha(alpha_v):
     return alpha
 
 def generate_beta(beta_v, num_models, apply_model_penalty=True):
+    """Generate a set of default beta parameters on log scale."""
     if beta_v == []:
         beta = np.ones(num_models)/num_models
     else:
@@ -131,6 +133,7 @@ def generate_beta(beta_v, num_models, apply_model_penalty=True):
     return beta
 
 def generate_gamma(num_models):
+    """Generate a set of default gamma parameters."""
     gamma = np.ones([num_models, num_models])
     return np.triu(gamma)
 
