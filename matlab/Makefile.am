@@ -24,6 +24,7 @@ EXTRA_DIST = \
 	example1.m \
 	example2.m \
 	example3.m \
+	example4.m \
 	getNumberOfCores.m \
 	plot_binning.m \
 	plot_density.m
