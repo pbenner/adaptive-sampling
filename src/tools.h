@@ -42,7 +42,7 @@ prob_t sumModels(prob_t *ev_log, binProblem* bp)
         int i;
 
         for (i = 0; i < bp->bd->L; i++) {
-                if (bp->bd->beta->content[i] > 0) {
+                if (bp->bd->beta->content[i] > -HUGE_VAL) {
                         sum = logadd(sum, ev_log[i]);
                 }
         }
@@ -56,7 +56,7 @@ int minM(binProblem *bp)
 {
         int i;
         for (i = bp->bd->L-1; i > 0; i--) {
-                if (bp->bd->beta->content[i] > 0) {
+                if (bp->bd->beta->content[i] > -HUGE_VAL) {
                         return i;
                 }
         }

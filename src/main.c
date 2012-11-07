@@ -51,16 +51,15 @@
  ******************************************************************************/
 
 static
-void computeModelPrior(binData* bd)
+void copyModelPrior(binData* bd)
 {
         size_t m_b;
         for (m_b = 0; m_b < bd->L; m_b++) {
-                if (bd->beta->content[m_b] == 0) {
-                        bd->prior_log[m_b] = -HUGE_VAL;
+                if (bd->beta->content[m_b] <= -HUGE_VAL) {
+                        bd->prior_log[m_b] = (prob_t)-HUGE_VAL;
                 }
                 else {
-                        bd->prior_log[m_b] = -gsl_sf_lnchoose(bd->L-1, m_b) +
-                                LOG(bd->beta->content[m_b]);
+                        bd->prior_log[m_b] = (prob_t)bd->beta->content[m_b];
                 }
         }
 }
@@ -197,7 +196,7 @@ void bin_init(
         bd->prior_log   = (prob_t *)malloc(L*sizeof(prob_t));
 
         /* compute the model prior once for all computations */
-        computeModelPrior(bd);
+        copyModelPrior(bd);
 }
 
 void bin_free(binData* bd)

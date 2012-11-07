@@ -123,38 +123,47 @@ class UTILITY(Structure):
 # function prototypes
 # ------------------------------------------------------------------------------
 
-_lib._alloc_vector.restype  = POINTER(VECTOR)
-_lib._alloc_vector.argtypes = [c_int]
+_lib._alloc_vector.restype   = POINTER(VECTOR)
+_lib._alloc_vector.argtypes  = [c_int]
 
-_lib._alloc_matrix.restype  = POINTER(MATRIX)
-_lib._alloc_matrix.argtypes = [c_int, c_int]
+_lib._alloc_matrix.restype   = POINTER(MATRIX)
+_lib._alloc_matrix.argtypes  = [c_int, c_int]
 
-_lib._free_vector.restype   = None
-_lib._free_vector.argtypes  = [POINTER(VECTOR)]
+_lib._free_vector.restype    = None
+_lib._free_vector.argtypes   = [POINTER(VECTOR)]
 
-_lib._free_matrix.restype   = None
-_lib._free_matrix.argtypes  = [POINTER(MATRIX)]
+_lib._free_matrix.restype    = None
+_lib._free_matrix.argtypes   = [POINTER(MATRIX)]
 
-_lib._free.restype          = None
-_lib._free.argtypes         = [POINTER(None)]
+_lib._free.restype           = None
+_lib._free.argtypes          = [POINTER(None)]
 
-_lib._init_.restype         = None
-_lib._init_.argtype         = [c_double]
+_lib._init_.restype          = None
+_lib._init_.argtype          = [c_double]
 
-_lib._free_.restype         = None
-_lib._free_.argtype         = []
+_lib._free_.restype          = None
+_lib._free_.argtype          = []
 
-_lib.posterior.restype      = POINTER(POSTERIOR)
-_lib.posterior.argtypes     = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.get_huge_val.restype    = c_double
+_lib.get_huge_val.argtype    = []
 
-_lib.utility.restype        = POINTER(UTILITY)
-_lib.utility.argtypes       = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.gsl_sf_choose.restype   = c_double
+_lib.gsl_sf_choose.argtype   = [c_uint, c_uint]
 
-_lib.utilityAt.restype      = POINTER(VECTOR)
-_lib.utilityAt.argtypes     = [c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.gsl_sf_lnchoose.restype = c_double
+_lib.gsl_sf_lnchoose.argtype = [c_uint, c_uint]
 
-_lib.distance.restype       = c_double
-_lib.distance.argtypes      = [c_int, c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+_lib.posterior.restype       = POINTER(POSTERIOR)
+_lib.posterior.argtypes      = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+
+_lib.utility.restype         = POINTER(UTILITY)
+_lib.utility.argtypes        = [c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+
+_lib.utilityAt.restype       = POINTER(VECTOR)
+_lib.utilityAt.argtypes      = [c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
+
+_lib.distance.restype        = c_double
+_lib.distance.argtypes       = [c_int, c_int, c_int, POINTER(POINTER(MATRIX)), POINTER(POINTER(MATRIX)), POINTER(VECTOR), POINTER(MATRIX), POINTER(OPTIONS)]
 
 # convert datatypes
 # ------------------------------------------------------------------------------
@@ -181,6 +190,18 @@ def getMatrix(c_m):
           for j in range(0, c_m.contents.columns):
                m[i].append(c_m.contents.content[i][j])
      return m
+
+# convert datatypes
+# ------------------------------------------------------------------------------
+
+def get_huge_val():
+     return _lib.get_huge_val()
+
+def gsl_sf_choose(n, m):
+     return _lib.gsl_sf_choose(n, m)
+
+def gsl_sf_lnchoose(n, m):
+     return _lib.gsl_sf_lnchoose(n, m)
 
 # 
 # ------------------------------------------------------------------------------

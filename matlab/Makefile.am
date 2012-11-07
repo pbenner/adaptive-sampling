@@ -16,8 +16,10 @@ EXTRA_DIST = \
 	categorial_sample.m \
 	count_statistic.m \
 	default_alpha.m \
+	default_beta.m \
 	default_gamma.m \
 	default_options.m \
+	lnchoose.m \
 	example0.m \
 	example1.m \
 	example2.m \

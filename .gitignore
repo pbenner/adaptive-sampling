@@ -1,8 +1,12 @@
 *.lo
 *.o
 *.la
+*.pyc
+*.Rcheck
 .libs
 .deps
+.DS_Store
+autom4te.cache
 libtool
 Makefile.in
 aclocal.m4
