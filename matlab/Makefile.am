@@ -56,14 +56,10 @@ prombsExtended$(MATLAB_LDEXTENSION): prombsExtended.o interface.o
 	$(CC) -o $@ $+ $(LDFLAGS) $(MATLAB_RPATH) $(MATLAB_LDFLAGS) $(MATLAB_LDFLAGS_PROMBS) $(MATLAB_LIBS) $(LIBS)
 
 tar:
-	mkdir adaptive-sampling-matlab
-	cp  *.m ../matlab-bin/precision\=double/*.mex* adaptive-sampling-matlab
-	tar -cjvf adaptive-sampling-matlab.tar.bz2 adaptive-sampling-matlab
-	$(RM) -r adaptive-sampling-matlab
-	mkdir adaptive-sampling-matlab-longdouble
-	cp  *.m ../matlab-bin/precision\=longdouble/*.mex* adaptive-sampling-matlab-longdouble
-	tar -cjvf adaptive-sampling-matlab-longdouble.tar.bz2 adaptive-sampling-matlab-longdouble
-	$(RM) -r adaptive-sampling-matlab-longdouble
+	mkdir adaptive-sampling-matlab-$(PACKAGE_VERSION)
+	cp  *.m ../matlab-bin/*.mex* adaptive-sampling-matlab-$(PACKAGE_VERSION)
+	tar -cjvf adaptive-sampling-matlab-$(PACKAGE_VERSION).tar.bz2 adaptive-sampling-matlab-$(PACKAGE_VERSION)
+	$(RM) -r adaptive-sampling-matlab-$(PACKAGE_VERSION)
 
 clean-local:
 	$(RM) interface.o
