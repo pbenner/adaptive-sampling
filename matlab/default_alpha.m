@@ -1,6 +1,6 @@
 function out = default_alpha(in)
-% DEFAULT_OPTIONS
-%   Convert a matrix to a list of matrices with default alpha values.
+% DEFAULT_ALPHA - Convert a matrix to a list of matrices with default alpha values
+
 %
   [K, L] = size(in);
   out    = zeros(K, L, L);

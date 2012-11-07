@@ -17,16 +17,19 @@
 import math
 import numpy as np
 
-def fac(n):
-    return n-1 + abs(n-1) and fac(n-1)*n or 1L
+from interface import gsl_sf_choose
+from interface import gsl_sf_lnchoose
 
-def binomial(n,k):
-    return fac(n) / (fac(k)*fac(n-k))
+def choose(n,k):
+    return gsl_sf_choose(n,k)
+
+def lnchoose(n,k):
+    return gsl_sf_lnchoose(n,k)
 
 def binomialTransform(moments, n):
     result = math.pow(-moments[0], n)
     for k in range(1, n+1):
-        result += binomial(n, k)*moments[k-1]*math.pow(-moments[0], n-k)
+        result += choose(n, k)*moments[k-1]*math.pow(-moments[0], n-k)
     return result
 
 def centralMoments(moments_list, n):

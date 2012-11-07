@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h> /* HUGE_VAL */
 
 #include <adaptive-sampling/exception.h>
 #include <adaptive-sampling/linalg.h>
@@ -34,6 +35,11 @@ void       _free_vector(vector_t *v)            { free_vector(v); }
 matrix_t * _alloc_matrix(int rows, int columns) { return alloc_matrix(rows, columns); }
 void       _free_matrix(matrix_t *m)            { free_matrix(m); }
 void       _free(void *ptr)                     { free(ptr); }
+
+double get_huge_val(void)
+{
+        return HUGE_VAL;
+}
 
 void _init_(double epsilon)
 {

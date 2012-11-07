@@ -9,7 +9,7 @@ function result = example1()
 
   counts  = count_statistic(bare_counts);
   alpha   = default_alpha(ones(K, L));
-  beta    = ones(1, L);
+  beta    = default_beta(L);
   gamma   = default_gamma(L);
 
   options = default_options();

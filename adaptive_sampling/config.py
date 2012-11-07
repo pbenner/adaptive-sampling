@@ -21,8 +21,11 @@ import numpy as np
 import ConfigParser
 import re
 import random
+import math
 
 import statistics
+
+from interface import get_huge_val
 
 ## functions for reading config options
 ################################################################################
@@ -98,12 +101,13 @@ def generate_alpha(alpha_v):
                 alpha[k][i,j] /= float(j-i+1)
     return alpha
 
-def generate_beta(beta_v, num_models):
+def generate_beta(beta_v, num_models, apply_model_penalty=True):
     if beta_v == []:
-        return np.ones(num_models)/num_models
-    beta = np.zeros(num_models)
+        beta = np.ones(num_models)/num_models
+    else:
+        beta = np.zeros(num_models)
     free_models = 0.0
-    p_sum = 0.0
+    p_sum       = 0.0
     for elem in beta_v:
         if isinstance(elem, tuple):
             p_sum += elem[1]
@@ -114,6 +118,16 @@ def generate_beta(beta_v, num_models):
             beta[elem[0]-1] = float(elem[1])
         else:
             beta[elem-1] = (1.0-p_sum)/free_models
+    # convert to log scale
+    for i in range(num_models):
+        if beta[i] > 0.0:
+            beta[i] = math.log(beta[i])
+        else:
+            beta[i] = -get_huge_val()
+    # multiply beta with (L-1 over m-1)^-1 on log scale
+    if apply_model_penalty:
+        model_penalty = [ statistics.gsl_sf_lnchoose(num_models-1, m) for m in range(num_models) ]
+        beta = map(lambda (a, b): a - b, zip(beta, model_penalty))
     return beta
 
 def generate_gamma(num_models):

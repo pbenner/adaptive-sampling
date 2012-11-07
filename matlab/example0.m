@@ -1,4 +1,4 @@
-function result = demo()
+function result = example0()
 %
   bare_counts = [ 1 1 2 1;
                   1 1 1 1 ];
@@ -9,7 +9,7 @@ function result = demo()
 
   counts  = count_statistic(bare_counts);
   alpha   = default_alpha(ones(K, L));
-  beta    = ones(1, L);
+  beta    = default_beta(L);
   gamma   = default_gamma(L);
 
   options = default_options();

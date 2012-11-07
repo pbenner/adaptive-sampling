@@ -25,6 +25,8 @@
 #include <adaptive-sampling/linalg.h>
 #include <datatypes.h>
 
+double get_huge_val(void);
+
 void _init_(double epsilon);
 void _free_();
 

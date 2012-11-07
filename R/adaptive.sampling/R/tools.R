@@ -47,13 +47,17 @@ generate.alpha <- function(alpha) {
   result
 }
 
-#' Computes a set of default values for the beta parameter.
+#' Computes a set of default values for the beta parameter on log scale.
 #' 
 #' @param n number of stimuli
 #' @export
 
 default.beta <- function(n) {
-  return(rep(1, n))
+  beta <- rep(1.0/n, n)
+  for (m in 1:n) {
+    beta[m] <- log(beta[m]) - lchoose(n-1,m-1)
+  }
+  return(beta)
 }
 
 #' Computes a set of default values for the gamma parameter.
