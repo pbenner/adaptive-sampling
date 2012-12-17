@@ -7,7 +7,6 @@ EXTRA_DIST = \
         binning-spikes/*.cfg                   \
         binning-spikes/*.py                    \
         binning-spikes/*.pdf                   \
-        binning-spikes/*.result*               \
         sampling/*.cfg                         \
         sampling/*.py                          \
         sampling/*.pdf                         \
