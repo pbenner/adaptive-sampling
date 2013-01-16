@@ -1,10 +1,10 @@
 # Makefile for the R library
-R          = R
-RFLAGS     = --no-multiarch
-VERSION    = 1.0-1
-PACKAGES   = $(wildcard adaptive.sampling.gp) adaptive.sampling multibin.summation
-TARGETS    = $(addsuffix _$(VERSION).tar.gz,$(PACKAGES))
-NAMESPACES = $(addsuffix /NAMESPACE,$(PACKAGES))
+R          ?= R
+RFLAGS     ?= --no-multiarch
+VERSION    ?= 1.0-1
+PACKAGES   ?= $(wildcard adaptive.sampling.gp) adaptive.sampling multibin.summation
+TARGETS     = $(addsuffix _$(VERSION).tar.gz,$(PACKAGES))
+NAMESPACES  = $(addsuffix /NAMESPACE,$(PACKAGES))
 
 all: $(TARGETS)
 
