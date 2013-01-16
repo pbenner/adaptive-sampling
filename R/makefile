@@ -2,7 +2,7 @@
 R          = R
 RFLAGS     = --no-multiarch
 VERSION    = 1.0-1
-PACKAGES   = adaptive.sampling multibin.summation
+PACKAGES   = $(wildcard adaptive.sampling.gp) adaptive.sampling multibin.summation
 TARGETS    = $(addsuffix _$(VERSION).tar.gz,$(PACKAGES))
 NAMESPACES = $(addsuffix /NAMESPACE,$(PACKAGES))
 
